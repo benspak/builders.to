@@ -300,7 +300,6 @@ const ApplicationForm = ({ isSubmitted, setIsSubmitted }) => {
             placeholder="Select lease duration"
             size="lg"
           >
-            <option value="6 months">6 Months</option>
             <option value="12 months">12 Months (1 Year)</option>
             <option value="18 months">18 Months</option>
             <option value="24 months">24 Months (2 Years)</option>
