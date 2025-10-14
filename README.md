@@ -25,6 +25,7 @@ npm install
 PORT=5000
 RESEND_API_KEY=your_resend_api_key_here
 RECIPIENT_EMAIL=benvspak@gmail.com
+FRONTEND_URL=http://localhost:3000
 NODE_ENV=development
 ```
 
@@ -47,7 +48,12 @@ cd frontend
 npm install
 ```
 
-3. Start the development server:
+3. Create a `.env` file in the frontend directory:
+```bash
+VITE_API_URL=http://localhost:5000
+```
+
+4. Start the development server:
 ```bash
 npm run dev
 ```
@@ -88,18 +94,28 @@ The application form collects:
 1. Create a new Web Service on Render.com
 2. Connect your repository
 3. Set the following:
-   - Build Command: `cd backend && npm install`
-   - Start Command: `cd backend && npm start`
-   - Environment Variables: Add `RESEND_API_KEY`, `RECIPIENT_EMAIL`, `NODE_ENV=production`
+   - **Build Command**: `cd backend && npm install`
+   - **Start Command**: `cd backend && npm start`
+   - **Environment Variables**:
+     - `RESEND_API_KEY`: Your Resend API key
+     - `RECIPIENT_EMAIL`: benvspak@gmail.com
+     - `FRONTEND_URL`: Your frontend URL (e.g., `https://your-frontend-app.onrender.com`)
+     - `NODE_ENV`: production
+     - `PORT`: 5000 (optional, Render sets this automatically)
+
+4. Copy the backend URL (e.g., `https://your-backend-app.onrender.com`)
 
 ### Frontend (Render.com)
 
 1. Create a new Static Site on Render.com
 2. Connect your repository
 3. Set the following:
-   - Build Command: `cd frontend && npm install && npm run build`
-   - Publish Directory: `frontend/dist`
-   - Add environment variable for API URL if needed
+   - **Build Command**: `cd frontend && npm install && npm run build`
+   - **Publish Directory**: `frontend/dist`
+   - **Environment Variables**:
+     - `VITE_API_URL`: Your backend URL from step 1 (e.g., `https://your-backend-app.onrender.com`)
+
+**Important**: The frontend MUST have the `VITE_API_URL` environment variable set to your backend URL, otherwise API calls will fail.
 
 ## 📧 Email Configuration
 
@@ -113,11 +129,15 @@ from: 'builders.to <applications@builders.to>'
 
 ## 🔒 Environment Variables
 
-### Backend
+### Backend (`backend/.env`)
 - `PORT`: Server port (default: 5000)
 - `RESEND_API_KEY`: Your Resend API key
 - `RECIPIENT_EMAIL`: Email address to receive applications (benvspak@gmail.com)
+- `FRONTEND_URL`: Frontend URL for CORS (e.g., `http://localhost:3000` for local, `https://your-frontend-app.onrender.com` for production)
 - `NODE_ENV`: Environment (development/production)
+
+### Frontend (`frontend/.env`)
+- `VITE_API_URL`: Backend API URL (e.g., `http://localhost:5000` for local, `https://your-backend-app.onrender.com` for production)
 
 ## 📄 License
 

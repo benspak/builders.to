@@ -109,7 +109,8 @@ const ApplicationForm = ({ isSubmitted, setIsSubmitted }) => {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/applications', {
+      const apiUrl = import.meta.env.VITE_API_URL || '';
+      const response = await fetch(`${apiUrl}/api/applications`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -117,9 +118,13 @@ const ApplicationForm = ({ isSubmitted, setIsSubmitted }) => {
         body: JSON.stringify(formData),
       });
 
+      if (!response.ok) {
+        throw new Error(`Server responded with status: ${response.status}`);
+      }
+
       const data = await response.json();
 
-      if (response.ok && data.success) {
+      if (data.success) {
         setIsSubmitted(true);
         toast({
           title: 'Application Submitted! 🎉',
