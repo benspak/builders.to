@@ -33,6 +33,7 @@ app.post('/api/applications', async (req, res) => {
       phone,
       email,
       moveInDate,
+      leaseDuration,
       project,
       builderHours,
       work,
@@ -40,7 +41,7 @@ app.post('/api/applications', async (req, res) => {
     } = req.body;
 
     // Validate required fields
-    if (!name || !phone || !email || !moveInDate || !project || !builderHours || !work || !budget) {
+    if (!name || !phone || !email || !moveInDate || !leaseDuration || !project || !builderHours || !work || !budget) {
       return res.status(400).json({
         error: 'All fields are required',
         success: false
@@ -70,6 +71,7 @@ app.post('/api/applications', async (req, res) => {
           <p><strong>Phone:</strong> ${phone}</p>
           <p><strong>Email:</strong> ${email}</p>
           <p><strong>Expected Move-in Date:</strong> ${moveInDate}</p>
+          <p><strong>Lease Duration:</strong> ${leaseDuration}</p>
           <p><strong>Monthly Budget:</strong> ${budget}</p>
         </div>
 
@@ -101,6 +103,7 @@ Name: ${name}
 Phone: ${phone}
 Email: ${email}
 Expected Move-in Date: ${moveInDate}
+Lease Duration: ${leaseDuration}
 Monthly Budget: ${budget}
 
 BUILDER DETAILS
