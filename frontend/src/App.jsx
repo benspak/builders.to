@@ -259,6 +259,168 @@ function App() {
         </VStack>
       </Container>
 
+      {/* About Ben Section */}
+      <Box bg="spotify.darkGray" py={{ base: 8, md: 10 }}>
+        <Container maxW="container.xl">
+          <VStack spacing={6}>
+            <VStack spacing={3} textAlign="center">
+              <Heading
+                as="h2"
+                fontSize={{ base: '2xl', md: '3xl' }}
+                color="white"
+              >
+                Meet the Founder
+              </Heading>
+              <Text
+                fontSize={{ base: 'sm', md: 'md' }}
+                color="whiteAlpha.700"
+                maxW="2xl"
+              >
+                The person behind builders.to - connecting founders with the tools and community they need to succeed.
+              </Text>
+            </VStack>
+
+            <Box
+              bg="spotify.gray"
+              p={{ base: 4, md: 6 }}
+              borderRadius="xl"
+              border="1px solid"
+              borderColor="whiteAlpha.200"
+              maxW="4xl"
+              w="full"
+            >
+              <VStack spacing={4}>
+                {/* Ben's Image */}
+                <Box
+                  borderRadius="full"
+                  overflow="hidden"
+                  w={{ base: "150px", md: "180px" }}
+                  h={{ base: "150px", md: "180px" }}
+                  border="3px solid"
+                  borderColor="spotify.green"
+                  position="relative"
+                >
+                  <Image
+                    src="/images/ben.jpg"
+                    alt="Ben Spak - Founder of builders.to"
+                    w="full"
+                    h="full"
+                    objectFit="cover"
+                  />
+                </Box>
+
+                {/* Ben's Info */}
+                <VStack spacing={3} textAlign="center">
+                  <VStack spacing={1}>
+                    <Heading
+                      as="h3"
+                      fontSize={{ base: 'xl', md: '2xl' }}
+                      color="white"
+                    >
+                      Ben Spak
+                    </Heading>
+                    <Text
+                      fontSize={{ base: 'md', md: 'lg' }}
+                      color="spotify.green"
+                      fontWeight="600"
+                    >
+                      I help your startup build and test an app - in 21 days!
+                    </Text>
+                  </VStack>
+
+                  <VStack spacing={3} align="center">
+                    <VStack spacing={1}>
+                      <Text color="white" fontSize="sm" fontWeight="600">
+                        Co-founder
+                      </Text>
+                      <HStack spacing={3} wrap="wrap" justify="center">
+                        <Box
+                          as="a"
+                          href="https://LaunchKit.to"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          color="spotify.green"
+                          _hover={{ color: "spotify.lightGreen" }}
+                          transition="color 0.2s"
+                        >
+                          LaunchKit.to
+                        </Box>
+                        <Box
+                          as="a"
+                          href="https://Testers.to"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          color="spotify.green"
+                          _hover={{ color: "spotify.lightGreen" }}
+                          transition="color 0.2s"
+                        >
+                          Testers.to
+                        </Box>
+                      </HStack>
+                    </VStack>
+
+                    <VStack spacing={1}>
+                      <Text color="white" fontSize="sm" fontWeight="600">
+                        Investor
+                      </Text>
+                      <Box
+                        as="a"
+                        href="https://Affect.fund"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        color="spotify.green"
+                        _hover={{ color: "spotify.lightGreen" }}
+                        transition="color 0.2s"
+                      >
+                        Affect.fund
+                      </Box>
+                    </VStack>
+
+                    <VStack spacing={1}>
+                      <Text color="white" fontSize="sm" fontWeight="600">
+                        Connect with Ben
+                      </Text>
+                      <HStack spacing={3} wrap="wrap" justify="center">
+                        <Box
+                          as="a"
+                          href="https://x.com/benvspak"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          color="spotify.green"
+                          _hover={{ color: "spotify.lightGreen" }}
+                          transition="color 0.2s"
+                          display="flex"
+                          alignItems="center"
+                          gap={1}
+                        >
+                          <Text fontSize="md">𝕏</Text>
+                          <Text>@benvspak</Text>
+                        </Box>
+                        <Box
+                          as="a"
+                          href="https://linkedin.com/in/benspak"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          color="spotify.green"
+                          _hover={{ color: "spotify.lightGreen" }}
+                          transition="color 0.2s"
+                          display="flex"
+                          alignItems="center"
+                          gap={1}
+                        >
+                          <Text fontSize="md">💼</Text>
+                          <Text>LinkedIn</Text>
+                        </Box>
+                      </HStack>
+                    </VStack>
+                  </VStack>
+                </VStack>
+              </VStack>
+            </Box>
+          </VStack>
+        </Container>
+      </Box>
+
       {/* Application Form Section */}
       <Box bg="spotify.darkGray" py={{ base: 12, md: 16 }}>
         <Container maxW="container.md">
