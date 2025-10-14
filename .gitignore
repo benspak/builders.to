@@ -1,6 +1,6 @@
 # Dependencies
 node_modules/
-*/node_modules/
+package-lock.json
 
 # Environment variables
 .env
@@ -9,42 +9,33 @@ node_modules/
 .env.test.local
 .env.production.local
 
+# Build outputs
+dist/
+build/
+*.local
+
 # Logs
 logs
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-lerna-debug.log*
 
-# OS
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# Build outputs
-dist/
-build/
-*/dist/
-*/build/
-
-# Temporary files
-*.tmp
-.cache/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 
 # Testing
 coverage/
+.nyc_output/
 
-# Production
-*.pem
+# Misc
+.cache/
+*.tsbuildinfo

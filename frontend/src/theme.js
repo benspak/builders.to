@@ -9,7 +9,7 @@ const theme = extendTheme({
     global: {
       body: {
         bg: '#121212',
-        color: 'white',
+        color: 'whiteAlpha.900',
       },
     },
   },
@@ -20,20 +20,24 @@ const theme = extendTheme({
       200: '#a3d9a5',
       300: '#7bc47f',
       400: '#57ae5b',
-      500: '#3f9142', // Primary green - Spotify inspired
-      600: '#2f7c34',
-      700: '#1e6423',
-      800: '#154c18',
-      900: '#0c3910',
+      500: '#3e9142',
+      600: '#2e7031',
+      700: '#1e4f21',
+      800: '#0e3010',
+      900: '#001800',
     },
-    dark: {
-      bg: '#121212',
-      bgSecondary: '#181818',
-      bgTertiary: '#282828',
-      text: '#ffffff',
-      textSecondary: '#b3b3b3',
-      border: '#404040',
+    spotify: {
+      green: '#1DB954',
+      darkGreen: '#1aa34a',
+      black: '#121212',
+      darkGray: '#181818',
+      gray: '#282828',
+      lightGray: '#b3b3b3',
     },
+  },
+  fonts: {
+    heading: `'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif`,
+    body: `'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif`,
   },
   components: {
     Button: {
@@ -43,40 +47,73 @@ const theme = extendTheme({
       },
       variants: {
         solid: {
-          bg: 'brand.500',
-          color: 'white',
+          bg: 'spotify.green',
+          color: 'black',
           _hover: {
-            bg: 'brand.600',
-            transform: 'translateY(-2px)',
-            boxShadow: 'lg',
+            bg: 'spotify.darkGreen',
+            transform: 'scale(1.02)',
           },
           _active: {
-            bg: 'brand.700',
+            bg: 'spotify.darkGreen',
           },
         },
         outline: {
-          borderColor: 'brand.500',
-          color: 'brand.500',
+          borderColor: 'whiteAlpha.300',
+          color: 'white',
           _hover: {
-            bg: 'rgba(63, 145, 66, 0.1)',
+            bg: 'whiteAlpha.100',
+            borderColor: 'whiteAlpha.500',
           },
         },
       },
-    },
-    Card: {
-      baseStyle: {
-        container: {
-          bg: 'dark.bgSecondary',
-          borderRadius: 'lg',
-          border: '1px solid',
-          borderColor: 'dark.border',
-        },
+      defaultProps: {
+        variant: 'solid',
       },
     },
-  },
-  fonts: {
-    heading: `-apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif`,
-    body: `-apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif`,
+    Input: {
+      variants: {
+        filled: {
+          field: {
+            bg: 'spotify.gray',
+            borderRadius: 'md',
+            border: '1px solid',
+            borderColor: 'transparent',
+            _hover: {
+              bg: 'spotify.gray',
+              borderColor: 'whiteAlpha.300',
+            },
+            _focus: {
+              bg: 'spotify.darkGray',
+              borderColor: 'spotify.green',
+            },
+          },
+        },
+      },
+      defaultProps: {
+        variant: 'filled',
+      },
+    },
+    Textarea: {
+      variants: {
+        filled: {
+          bg: 'spotify.gray',
+          borderRadius: 'md',
+          border: '1px solid',
+          borderColor: 'transparent',
+          _hover: {
+            bg: 'spotify.gray',
+            borderColor: 'whiteAlpha.300',
+          },
+          _focus: {
+            bg: 'spotify.darkGray',
+            borderColor: 'spotify.green',
+          },
+        },
+      },
+      defaultProps: {
+        variant: 'filled',
+      },
+    },
   },
 });
 
