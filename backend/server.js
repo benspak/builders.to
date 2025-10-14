@@ -6,15 +6,17 @@ import { Resend } from 'resend';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5555;
 
 // Initialize Resend
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Middleware
 app.use(cors({
-  origin: process.env.FRONTEND_URL || '*',
-  credentials: true
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
 
@@ -112,7 +114,7 @@ Submitted: ${new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }
 
     // Send email via Resend
     const { data, error } = await resend.emails.send({
-      from: 'builders.to <onboarding@resend.dev>', // Update this with your verified domain
+      from: 'builders.to <onboarding@builders.to>', // Update this with your verified domain
       to: [process.env.RECIPIENT_EMAIL || 'benvspak@gmail.com'],
       subject: `New Builder Application: ${name}`,
       html: emailHtml,
