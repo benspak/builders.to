@@ -110,7 +110,7 @@ const ApplicationForm = ({ isSubmitted, setIsSubmitted }) => {
 
     try {
       const apiUrl = import.meta.env.VITE_API_URL || '';
-      const response = await fetch(`${apiUrl}/api/applications`, {
+      const response = await fetch(`${apiUrl}/applications`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
