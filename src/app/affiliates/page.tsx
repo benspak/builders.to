@@ -184,7 +184,7 @@ export default function AffiliatesPage() {
             Ready to Start Earning?
           </h2>
           <p className="text-lg md:text-xl text-gray-300 mb-6 md:mb-8 px-2">
-            Join hundreds of successful affiliates who are already earning with LaunchKit. Apply today and start earning commissions within 24 hours.
+            Join hundreds of successful affiliates who are already earning with Builders.to. Apply today and start earning commissions within 24 hours.
           </p>
           <Link href="/contact" className="btn-primary text-lg">
             Get Started - Contact Us

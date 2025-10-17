@@ -21,23 +21,17 @@ export default function Navbar() {
         {/* Left: Brand */}
         <div className="flex items-center gap-6">
           <Link href="/" className="flex items-center gap-3 text-white font-bold text-xl">
-            <img src="/logo.png" alt="LaunchKit Logo" className="h-8 w-8" />
-            LaunchKit
+            <img src="/logo.png" alt="Builders.to Logo" className="h-8 w-8" />
+            Builders.to
           </Link>
 
           {/* Desktop links */}
           <div className="hidden md:flex items-center gap-6">
-            <Link href="/founders" className="text-gray-300 hover:text-white transition-colors">
-              Founders
-            </Link>
             <Link href="/pricing" className="text-gray-300 hover:text-white transition-colors">
               Pricing
             </Link>
             <Link href="/client-intake" className="text-gray-300 hover:text-white transition-colors">
               Fix My App
-            </Link>
-            <Link href="/resources" className="text-gray-300 hover:text-white transition-colors">
-              Resources
             </Link>
             <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">
               Contact
@@ -80,8 +74,8 @@ export default function Navbar() {
           <div className="absolute inset-y-0 right-0 w-full sm:w-[380px] bg-black border-l border-gray-700 shadow-2xl flex flex-col">
             <div className="flex items-center justify-between px-4 py-4 border-b border-gray-700">
               <span className="flex items-center gap-3 text-white font-bold text-xl">
-                <img src="/logo.png" alt="LaunchKit Logo" className="h-6 w-6" />
-                LaunchKit
+                <img src="/logo.png" alt="Builders.to Logo" className="h-6 w-6" />
+                Builders.to
               </span>
               <button
                 aria-label="Close menu"
@@ -93,13 +87,6 @@ export default function Navbar() {
             </div>
 
             <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
-              <Link
-                href="/founders"
-                onClick={() => setMobileOpen(false)}
-                className="block text-gray-300 hover:text-white py-2"
-              >
-                Founders
-              </Link>
               <Link
                 href="/pricing"
                 onClick={() => setMobileOpen(false)}
@@ -113,13 +100,6 @@ export default function Navbar() {
                 className="block text-gray-300 hover:text-white py-2"
               >
                 Fix My App
-              </Link>
-              <Link
-                href="/resources"
-                onClick={() => setMobileOpen(false)}
-                className="block text-gray-300 hover:text-white py-2"
-              >
-                Resources
               </Link>
               <Link
                 href="/contact"

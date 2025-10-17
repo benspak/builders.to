@@ -1,6 +1,6 @@
 git a# Environment Setup Guide
 
-This guide will help you set up the environment variables needed to run LaunchKit locally and in production.
+This guide will help you set up the environment variables needed to run Builders.to locally and in production.
 
 ## Quick Start
 

@@ -1,6 +1,6 @@
-# LaunchKit - Launch faster. Grow smarter.
+# Builders.to - Launch faster. Grow smarter.
 
-This is a [Next.js](https://nextjs.org) project for LaunchKit, giving founders the essential tools to go from idea to business: MVP development, business formation, funding resources, and marketing support - all in one place.
+This is a [Next.js](https://nextjs.org) project for Builders.to, giving founders the essential tools to go from idea to business: MVP development, business formation, funding resources, and marketing support - all in one place.
 
 ## Getting Started
 

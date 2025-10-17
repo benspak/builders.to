@@ -26,7 +26,7 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-semibold text-center mb-8 md:mb-16 text-white">Meet Our Team</h2>
           <p className="text-lg md:text-xl text-gray-300 text-center mb-12 max-w-3xl mx-auto">
-            The founders and experts behind LaunchKit who've helped startups go from idea to investor-ready MVP.
+            The founders and experts behind Builders.to who've helped startups go from idea to investor-ready MVP.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 max-w-4xl mx-auto">
@@ -190,7 +190,7 @@ export default function HomePage() {
             🚧 Obstacles New Startup Founders Face
           </h2>
           <p className="text-lg text-gray-300 text-center mb-12 max-w-3xl mx-auto">
-            We've identified the most common challenges that prevent founders from launching. Here's how LaunchKit solves each one:
+            We've identified the most common challenges that prevent founders from launching. Here's how Builders.to solves each one:
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
@@ -208,11 +208,8 @@ export default function HomePage() {
                 <li>• No clear business model or path to profit</li>
               </ul>
               <div className="space-y-2">
-                <Link href="/resources/business-naming" className="text-spotify-green hover:text-green-400 text-sm font-medium block">
-                  Get Business Foundation Resources →
-                </Link>
-                <Link href="/resources/mission-vision" className="text-spotify-green hover:text-green-400 text-sm font-medium block">
-                  Get Mission & Vision Resources →
+                <Link href="/contact" className="text-spotify-green hover:text-green-400 text-sm font-medium block">
+                  Get Business Foundation Help →
                 </Link>
               </div>
             </div>
@@ -231,14 +228,8 @@ export default function HomePage() {
                 <li>• No clear business model to monetize customers</li>
               </ul>
               <div className="space-y-2">
-                <Link href="/resources/customer-acquisition" className="text-spotify-green hover:text-green-400 text-sm font-medium block">
-                  Get Customer Acquisition Resources →
-                </Link>
-                <Link href="/resources/early-customer-acquisition" className="text-spotify-green hover:text-green-400 text-sm font-medium block">
-                  Get Sales Scripts & Outreach Plans →
-                </Link>
-                <Link href="/resources/business-model-roadmap" className="text-spotify-green hover:text-green-400 text-sm font-medium block">
-                  Get Business Model Resources →
+                <Link href="/contact" className="text-spotify-green hover:text-green-400 text-sm font-medium block">
+                  Get Sales & Marketing Help →
                 </Link>
               </div>
             </div>
@@ -257,14 +248,8 @@ export default function HomePage() {
                 <li>• MVP scope creep killing timelines and budgets</li>
               </ul>
               <div className="space-y-2">
-                <Link href="/resources/ai-landing-pages" className="text-spotify-green hover:text-green-400 text-sm font-medium block">
-                  Get AI Landing Page Resources →
-                </Link>
-                <Link href="/resources/domain-naming" className="text-spotify-green hover:text-green-400 text-sm font-medium block">
-                  Get Technical Resources →
-                </Link>
-                <Link href="/resources/mvp-project-scope" className="text-spotify-green hover:text-green-400 text-sm font-medium block">
-                  Master MVP Scope Management →
+                <Link href="/contact" className="text-spotify-green hover:text-green-400 text-sm font-medium block">
+                  Get Technical Development Help →
                 </Link>
               </div>
             </div>
@@ -283,11 +268,8 @@ export default function HomePage() {
                 <li>• Feature creep preventing MVP launch</li>
               </ul>
               <div className="space-y-2">
-                <Link href="/resources#growth" className="text-spotify-green hover:text-green-400 text-sm font-medium block">
-                  Get Growth Resources →
-                </Link>
-                <Link href="/resources/mvp-project-scope" className="text-spotify-green hover:text-green-400 text-sm font-medium block">
-                  Master MVP Scope Management →
+                <Link href="/contact" className="text-spotify-green hover:text-green-400 text-sm font-medium block">
+                  Get Growth & Scaling Help →
                 </Link>
               </div>
             </div>
@@ -306,11 +288,8 @@ export default function HomePage() {
                 <li>• How to pick a cofounder</li>
               </ul>
               <div className="space-y-2">
-                <Link href="/resources/build-while-employed" className="text-spotify-green hover:text-green-400 text-sm font-medium block">
-                  Get Mindset Resources →
-                </Link>
-                <Link href="/resources/free-up-time" className="text-spotify-green hover:text-green-400 text-sm font-medium block">
-                  Get Time Management Resources →
+                <Link href="/contact" className="text-spotify-green hover:text-green-400 text-sm font-medium block">
+                  Get Mindset & Execution Help →
                 </Link>
               </div>
             </div>
@@ -327,8 +306,8 @@ export default function HomePage() {
                 <li>• Founders unsure how much to raise or how to talk about valuation</li>
                 <li>• Competitors moving quickly, creating FOMO</li>
               </ul>
-              <Link href="/resources#growth" className="text-spotify-green hover:text-green-400 text-sm font-medium">
-                Get Funding Resources →
+              <Link href="/contact" className="text-spotify-green hover:text-green-400 text-sm font-medium">
+                Get Funding Help →
               </Link>
             </div>
 
@@ -344,8 +323,8 @@ export default function HomePage() {
                 <li>• Struggle to create hooks, stories, and consistent messaging</li>
                 <li>• Lack of clarity on pricing, positioning, or target market</li>
               </ul>
-              <Link href="/resources/business-naming" className="text-spotify-green hover:text-green-400 text-sm font-medium">
-                Get Branding Resources →
+              <Link href="/contact" className="text-spotify-green hover:text-green-400 text-sm font-medium">
+                Get Branding Help →
               </Link>
             </div>
 
@@ -362,27 +341,24 @@ export default function HomePage() {
                 <li>• Don't know what contracts (NDAs, agreements, IP protection) are necessary</li>
               </ul>
               <div className="space-y-2">
-                <Link href="/resources/pick-cofounder" className="text-spotify-green hover:text-green-400 text-sm font-medium block">
-                  Get Support Resources →
-                </Link>
-                <Link href="/resources/hr-compliance-admin" className="text-spotify-green hover:text-green-400 text-sm font-medium block">
-                  Get Legal Protection Resources →
+                <Link href="/contact" className="text-spotify-green hover:text-green-400 text-sm font-medium block">
+                  Get Support & Community Help →
                 </Link>
               </div>
             </div>
           </div>
 
-          {/* Resources Hub CTA */}
+          {/* Get Help CTA */}
           <div className="text-center mt-12">
             <div className="bg-gradient-to-r from-spotify-green to-green-600 p-8 rounded-lg">
               <h3 className="text-2xl md:text-3xl font-semibold text-white mb-4">
                 Get Solutions to All These Problems
               </h3>
               <p className="text-lg text-white mb-6 max-w-2xl mx-auto">
-                Our comprehensive resources hub has guides, templates, and tools to help you overcome every startup obstacle.
+                Our comprehensive MVP development service helps you overcome every startup obstacle with expert guidance and proven strategies.
               </p>
-              <Link href="/resources" className="bg-white text-spotify-green hover:bg-gray-100 px-8 py-3 rounded-lg font-semibold text-lg transition-colors">
-                Explore Resources Hub
+              <Link href="/contact" className="bg-white text-spotify-green hover:bg-gray-100 px-8 py-3 rounded-lg font-semibold text-lg transition-colors">
+                Get Expert Help
               </Link>
             </div>
           </div>
@@ -394,7 +370,7 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-semibold text-center mb-8 md:mb-16 text-white">How We Help Founders</h2>
           <p className="text-lg md:text-xl text-gray-300 text-center mb-12 max-w-3xl mx-auto">
-            See for yourself how LaunchKit has helped founders go from idea to investor-ready MVP in just 21 days.
+            See for yourself how Builders.to has helped founders go from idea to investor-ready MVP in just 21 days.
           </p>
 
           <div className="bg-dark-card p-8 md:p-12 rounded-lg border border-gray-700">
@@ -402,7 +378,7 @@ export default function HomePage() {
               <div className="mb-8">
                 <Image
                   src="/sanket-social-proof.png"
-                  alt="Sanket's testimonial about LaunchKit"
+                  alt="Sanket's testimonial about Builders.to"
                   width={800}
                   height={400}
                   className="mx-auto rounded-lg shadow-lg"
@@ -410,7 +386,7 @@ export default function HomePage() {
               </div>
               <div className="max-w-4xl mx-auto">
                 <blockquote className="text-xl md:text-2xl text-gray-300 italic mb-6 leading-relaxed">
-                  "LaunchKit helped me validate my business idea and get my MVP up and running."
+                  "Builders.to helped me validate my business idea and get my MVP up and running."
                 </blockquote>
                 <div className="flex items-center justify-center gap-4">
                   <div className="w-12 h-12 bg-spotify-green rounded-full flex items-center justify-center">

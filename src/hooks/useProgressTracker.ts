@@ -31,7 +31,7 @@ const STAGE_CONFIG = {
     tasks: [
       { id: 'build-base', name: 'Build Your Base (website/landing page)', xp: 30 },
       { id: 'shape-offer', name: 'Shape Your Offer (clear value prop)', xp: 20 },
-      { id: 'create-resource', name: 'Create a Starter Resource (free lead magnet)', xp: 20 },
+      { id: 'create-lead-magnet', name: 'Create a Lead Magnet (free content)', xp: 20 },
       { id: 'share-story', name: 'Share Your Founder Story (LinkedIn/X intro post)', xp: 30 },
     ]
   },
@@ -92,7 +92,7 @@ const STAGE_CONFIG = {
   }
 };
 
-const STORAGE_KEY = 'launchkit-startup-progress';
+const STORAGE_KEY = 'builders-startup-progress';
 
 export const useProgressTracker = () => {
   const [progressData, setProgressData] = useState<ProgressData>({

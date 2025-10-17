@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy - LaunchKit",
-  description: "LaunchKit Privacy Policy - How we collect, use, and protect your personal information.",
+  title: "Privacy Policy - Builders.to",
+  description: "Builders.to Privacy Policy - How we collect, use, and protect your personal information.",
 };
 
 export default function PrivacyPolicy() {
@@ -17,7 +17,7 @@ export default function PrivacyPolicy() {
             <section className="mb-8">
               <h2 className="text-2xl font-semibold text-white mb-4">1. Introduction</h2>
               <p className="text-gray-300 mb-4">
-                Welcome to LaunchKit ("we," "our," or "us"). This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website <a href="https://launchkit.to" className="text-spotify-green hover:text-green-400">launchkit.to</a> or use our services.
+                Welcome to Builders.to ("we," "our," or "us"). This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website <a href="https://builders.to" className="text-spotify-green hover:text-green-400">builders.to</a> or use our services.
               </p>
               <p className="text-gray-300 mb-4">
                 Please read this Privacy Policy carefully. If you do not agree with the terms of this Privacy Policy, please do not access the site or use our services.
@@ -161,8 +161,8 @@ export default function PrivacyPolicy() {
                 If you have any questions about this Privacy Policy or our privacy practices, please contact us:
               </p>
               <div className="bg-gray-800 p-4 rounded-lg">
-                <p className="text-gray-300 mb-2"><strong>Email:</strong> <a href="mailto:privacy@launchkit.to" className="text-spotify-green hover:text-green-400">privacy@launchkit.to</a></p>
-                <p className="text-gray-300 mb-2"><strong>Website:</strong> <a href="https://launchkit.to" className="text-spotify-green hover:text-green-400">https://launchkit.to</a></p>
+                <p className="text-gray-300 mb-2"><strong>Email:</strong> <a href="mailto:privacy@builders.to" className="text-spotify-green hover:text-green-400">privacy@builders.to</a></p>
+                <p className="text-gray-300 mb-2"><strong>Website:</strong> <a href="https://builders.to" className="text-spotify-green hover:text-green-400">https://builders.to</a></p>
                 <p className="text-gray-300"><strong>Contact Form:</strong> <a href="/contact" className="text-spotify-green hover:text-green-400">Contact Us</a></p>
               </div>
             </section>

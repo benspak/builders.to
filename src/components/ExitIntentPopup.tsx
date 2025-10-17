@@ -136,7 +136,7 @@ export default function ExitIntentPopup({ onClose, resourceTitle = "this resourc
           </div>
           <h3 className="text-2xl font-bold text-white mb-2">Wait! Don't Miss Out</h3>
           <p className="text-gray-300">
-            Get exclusive founder insights, new resources, and early access to LaunchKit updates.
+            Get exclusive founder insights and early access to Builders.to updates.
           </p>
         </div>
 

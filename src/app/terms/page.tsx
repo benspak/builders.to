@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Terms of Service - LaunchKit",
-  description: "LaunchKit Terms of Service - Legal terms and conditions for using our services.",
+  title: "Terms of Service - Builders.to",
+  description: "Builders.to Terms of Service - Legal terms and conditions for using our services.",
 };
 
 export default function TermsOfService() {
@@ -17,7 +17,7 @@ export default function TermsOfService() {
             <section className="mb-8">
               <h2 className="text-2xl font-semibold text-white mb-4">1. Acceptance of Terms</h2>
               <p className="text-gray-300 mb-4">
-                Welcome to LaunchKit. These Terms of Service ("Terms") govern your use of our website located at <a href="https://launchkit.to" className="text-spotify-green hover:text-green-400">launchkit.to</a> and our services (collectively, the "Service") operated by LaunchKit ("us," "we," or "our").
+                Welcome to Builders.to. These Terms of Service ("Terms") govern your use of our website located at <a href="https://builders.to" className="text-spotify-green hover:text-green-400">builders.to</a> and our services (collectively, the "Service") operated by Builders.to ("us," "we," or "our").
               </p>
               <p className="text-gray-300 mb-4">
                 By accessing or using our Service, you agree to be bound by these Terms. If you disagree with any part of these terms, then you may not access the Service.
@@ -27,7 +27,7 @@ export default function TermsOfService() {
             <section className="mb-8">
               <h2 className="text-2xl font-semibold text-white mb-4">2. Description of Service</h2>
               <p className="text-gray-300 mb-4">
-                LaunchKit provides MVP development services, business formation assistance, and startup consulting services. We help entrepreneurs and founders build and launch their minimum viable products (MVPs) within 21 days for a flat rate of $5,000.
+                Builders.to provides MVP development services, business formation assistance, and startup consulting services. We help entrepreneurs and founders build and launch their minimum viable products (MVPs) within 21 days for a flat rate of $5,000.
               </p>
               <p className="text-gray-300 mb-4">
                 Our services include but are not limited to:
@@ -99,12 +99,12 @@ export default function TermsOfService() {
               <h2 className="text-2xl font-semibold text-white mb-4">5. Intellectual Property Rights</h2>
               <h3 className="text-xl font-semibold text-white mb-3">5.1 Client Ownership</h3>
               <p className="text-gray-300 mb-4">
-                Upon full payment, you will own all rights, title, and interest in the custom-developed code, designs, and deliverables created specifically for your project, excluding any pre-existing intellectual property owned by LaunchKit or third parties.
+                Upon full payment, you will own all rights, title, and interest in the custom-developed code, designs, and deliverables created specifically for your project, excluding any pre-existing intellectual property owned by Builders.to or third parties.
               </p>
 
-              <h3 className="text-xl font-semibold text-white mb-3">5.2 LaunchKit Intellectual Property</h3>
+              <h3 className="text-xl font-semibold text-white mb-3">5.2 Builders.to Intellectual Property</h3>
               <p className="text-gray-300 mb-4">
-                LaunchKit retains ownership of all pre-existing intellectual property, including but not limited to frameworks, libraries, methodologies, and general knowledge used in providing services.
+                Builders.to retains ownership of all pre-existing intellectual property, including but not limited to frameworks, libraries, methodologies, and general knowledge used in providing services.
               </p>
 
               <h3 className="text-xl font-semibold text-white mb-3">5.3 Third-Party Components</h3>
@@ -129,7 +129,7 @@ export default function TermsOfService() {
             <section className="mb-8">
               <h2 className="text-2xl font-semibold text-white mb-4">7. Limitation of Liability</h2>
               <p className="text-gray-300 mb-4">
-                To the maximum extent permitted by law, LaunchKit shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from your use of the Service.
+                To the maximum extent permitted by law, Builders.to shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from your use of the Service.
               </p>
               <p className="text-gray-300 mb-4">
                 Our total liability to you for any damages arising from or related to these Terms or the Service shall not exceed the amount you paid us for the specific service giving rise to the claim.
@@ -149,7 +149,7 @@ export default function TermsOfService() {
             <section className="mb-8">
               <h2 className="text-2xl font-semibold text-white mb-4">9. Indemnification</h2>
               <p className="text-gray-300 mb-4">
-                You agree to defend, indemnify, and hold harmless LaunchKit and its officers, directors, employees, and agents from and against any claims, damages, obligations, losses, liabilities, costs, or debt, and expenses (including attorney's fees) resulting from or arising out of:
+                You agree to defend, indemnify, and hold harmless Builders.to and its officers, directors, employees, and agents from and against any claims, damages, obligations, losses, liabilities, costs, or debt, and expenses (including attorney's fees) resulting from or arising out of:
               </p>
               <ul className="list-disc list-inside text-gray-300 mb-4 space-y-2">
                 <li>Your use of the Service</li>
@@ -212,7 +212,7 @@ export default function TermsOfService() {
             <section className="mb-8">
               <h2 className="text-2xl font-semibold text-white mb-4">15. Entire Agreement</h2>
               <p className="text-gray-300 mb-4">
-                These Terms constitute the sole and entire agreement between you and LaunchKit regarding the Service and supersede all prior and contemporaneous understandings, agreements, representations, and warranties.
+                These Terms constitute the sole and entire agreement between you and Builders.to regarding the Service and supersede all prior and contemporaneous understandings, agreements, representations, and warranties.
               </p>
             </section>
 
@@ -222,8 +222,8 @@ export default function TermsOfService() {
                 If you have any questions about these Terms of Service, please contact us:
               </p>
               <div className="bg-gray-800 p-4 rounded-lg">
-                <p className="text-gray-300 mb-2"><strong>Email:</strong> <a href="mailto:legal@launchkit.to" className="text-spotify-green hover:text-green-400">legal@launchkit.to</a></p>
-                <p className="text-gray-300 mb-2"><strong>Website:</strong> <a href="https://launchkit.to" className="text-spotify-green hover:text-green-400">https://launchkit.to</a></p>
+                <p className="text-gray-300 mb-2"><strong>Email:</strong> <a href="mailto:legal@builders.to" className="text-spotify-green hover:text-green-400">legal@builders.to</a></p>
+                <p className="text-gray-300 mb-2"><strong>Website:</strong> <a href="https://builders.to" className="text-spotify-green hover:text-green-400">https://builders.to</a></p>
                 <p className="text-gray-300"><strong>Contact Form:</strong> <a href="/contact" className="text-spotify-green hover:text-green-400">Contact Us</a></p>
               </div>
             </section>

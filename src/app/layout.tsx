@@ -24,7 +24,7 @@ const workSans = Work_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "LaunchKit - Launch faster. Grow smarter.",
+  title: "Builders.to - Launch faster. Grow smarter.",
   description: "Get your MVP in 21 days. Beat competitors to market and start raising money.",
   icons: {
     icon: '/fav-logo.ico',
