@@ -10,6 +10,7 @@ package-lock.json
 .env.production.local
 
 # Build outputs
+.next/
 dist/
 build/
 *.local
