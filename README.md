@@ -19,7 +19,7 @@ A marketplace for builders and founders to offer services, get hired, or sell bu
 
 ### Backend
 - Node.js + Express
-- SQLite database
+- PostgreSQL database
 - JWT authentication
 - Stripe for payments
 
@@ -69,9 +69,8 @@ A marketplace for builders and founders to offer services, get hired, or sell bu
    PORT=5555
    JWT_SECRET=your_super_secret_jwt_key
    STRIPE_SECRET_KEY=sk_test_...
-   STRIPE_PUBLISHABLE_KEY=pk_test_...
    STRIPE_WEBHOOK_SECRET=whsec_...
-   DATABASE_PATH=./builders.db
+   DATABASE_URL=postgresql://localhost:5432/builders_dev
    NODE_ENV=development
    ```
 
@@ -79,6 +78,11 @@ A marketplace for builders and founders to offer services, get hired, or sell bu
    ```env
    VITE_API_URL=http://localhost:5555
    VITE_STRIPE_PUBLISHABLE_KEY=pk_test_...
+   ```
+
+   **Note**: Create a local PostgreSQL database before starting:
+   ```bash
+   createdb builders_dev
    ```
 
 ### Running the Application
@@ -140,17 +144,18 @@ The app will be available at http://localhost:3000. Make sure the backend is run
 
 ## Deployment
 
-### Backend (Render.com)
-1. Connect your repository
-2. Set build command: `cd backend && npm install`
-3. Set start command: `cd backend && npm start`
-4. Add environment variables in Render dashboard
+**Quick Deploy to Render**: The application includes `render.yaml` for automated deployment. See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) for complete instructions.
 
-### Frontend (Render.com)
-1. Create a new static site
-2. Set build command: `cd frontend && npm install && npm run build`
-3. Set publish directory: `frontend/dist`
-4. Add environment variables
+### Automatic Deployment
+1. Push code to GitHub
+2. Connect repository to Render
+3. Render automatically provisions:
+   - PostgreSQL database
+   - Backend web service
+   - Frontend static site
+
+### Manual Configuration
+If needed, see detailed instructions in [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)
 
 ## Stripe Setup
 
