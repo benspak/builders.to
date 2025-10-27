@@ -11,7 +11,8 @@ import {
   Text,
   Alert,
   AlertIcon,
-  VStack
+  VStack,
+  useColorModeValue
 } from '@chakra-ui/react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -24,6 +25,8 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
   const navigate = useNavigate();
+
+  const bgColor = useColorModeValue('white', 'gray.800');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -53,7 +56,7 @@ const Register = () => {
 
   return (
     <Container maxW="md" py={20}>
-      <Box bg="white" p={8} borderRadius="lg" shadow="md">
+      <Box bg={bgColor} p={8} borderRadius="lg" shadow="md">
         <VStack spacing={6}>
           <Heading size="lg">Join Builders.to</Heading>
 

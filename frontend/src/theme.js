@@ -59,7 +59,12 @@ const theme = extendTheme({
           fontSize: 'sm',
           fontWeight: 'medium',
           mb: 2,
-          color: 'inherit',
+          _light: {
+            color: 'gray.700',
+          },
+          _dark: {
+            color: 'gray.200',
+          },
         },
       },
     },
@@ -69,10 +74,22 @@ const theme = extendTheme({
       },
       baseStyle: {
         field: {
+          _light: {
+            bg: 'white',
+            borderColor: 'gray.300',
+            color: 'gray.900',
+            _hover: {
+              borderColor: 'gray.400',
+            },
+            _focus: {
+              borderColor: 'blue.500',
+              boxShadow: '0 0 0 1px #3182ce',
+            },
+          },
           _dark: {
             bg: 'gray.800',
             borderColor: 'gray.700',
-            color: 'white',
+            color: 'gray.100',
             _hover: {
               borderColor: 'gray.600',
             },
@@ -103,12 +120,42 @@ const theme = extendTheme({
     },
     Text: {
       baseStyle: {
-        color: 'inherit',
+        _light: {
+          color: 'gray.700',
+        },
+        _dark: {
+          color: 'gray.100',
+        },
       },
     },
     Heading: {
       baseStyle: {
-        color: 'inherit',
+        _light: {
+          color: 'gray.900',
+        },
+        _dark: {
+          color: 'gray.100',
+        },
+      },
+    },
+    Box: {
+      baseStyle: {
+        _light: {
+          color: 'inherit',
+        },
+        _dark: {
+          color: 'inherit',
+        },
+      },
+    },
+    Container: {
+      baseStyle: {
+        _light: {
+          color: 'inherit',
+        },
+        _dark: {
+          color: 'inherit',
+        },
       },
     },
   },
