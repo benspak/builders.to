@@ -4,7 +4,6 @@ services:
     runtime: node
     buildCommand: cd backend && npm ci
     startCommand: cd backend && npm start
-    nodeVersion: "18.20.8"
     envVars:
       - key: NODE_ENV
         value: production
