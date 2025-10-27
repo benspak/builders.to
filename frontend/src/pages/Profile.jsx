@@ -18,7 +18,7 @@ import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 
 const Profile = () => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
@@ -37,19 +37,27 @@ const Profile = () => {
   });
 
   useEffect(() => {
-    fetchProfile();
-  }, []);
-
-  const fetchProfile = async () => {
-    try {
-      const response = await axios.get('/api/profiles/me');
-      if (response.data) {
-        setProfile(response.data);
-      }
-    } catch (error) {
-      console.error('Failed to fetch profile:', error);
+    if (!authLoading && !user) {
+      navigate('/login');
     }
-  };
+  }, [user, authLoading, navigate]);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const response = await axios.get('/api/profiles/me');
+        if (response.data) {
+          setProfile(response.data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch profile:', error);
+      }
+    };
+
+    if (user) {
+      fetchProfile();
+    }
+  }, [user]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -67,12 +75,8 @@ const Profile = () => {
     }
   };
 
-  if (!user) {
-    return (
-      <Container maxW="md" py={20}>
-        <Heading>Please login to view your profile</Heading>
-      </Container>
-    );
+  if (authLoading || !user) {
+    return null;
   }
 
   return (

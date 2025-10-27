@@ -16,12 +16,28 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      // You can decode the token to get user info if needed
-    }
-    setLoading(false);
+    const restoreAuth = async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
+        // Verify token and restore user state
+        try {
+          const response = await axios.get('/api/auth/me');
+          if (response.data.user) {
+            setUser(response.data.user);
+          }
+        } catch (error) {
+          // Token is invalid or expired
+          console.error('Auth restoration failed:', error);
+          localStorage.removeItem('token');
+          delete axios.defaults.headers.common['Authorization'];
+        }
+      }
+      setLoading(false);
+    };
+
+    restoreAuth();
   }, []);
 
   const login = async (email, password) => {

@@ -26,7 +26,7 @@ import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 
 const Dashboard = () => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [listings, setListings] = useState([]);
   const [transactions, setTransactions] = useState([]);
 
@@ -45,6 +45,14 @@ const Dashboard = () => {
       console.error('Failed to fetch dashboard data:', error);
     }
   };
+
+  if (authLoading) {
+    return (
+      <Container maxW="6xl" py={8}>
+        <Heading>Loading...</Heading>
+      </Container>
+    );
+  }
 
   if (!user) {
     return (

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Container,
@@ -18,7 +18,7 @@ import axios from 'axios';
 import RichTextEditor from '../components/RichTextEditor';
 
 const CreateListing = () => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -29,8 +29,13 @@ const CreateListing = () => {
     description: ''
   });
 
-  if (!user) {
-    navigate('/login');
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/login');
+    }
+  }, [user, authLoading, navigate]);
+
+  if (authLoading || !user) {
     return null;
   }
 
