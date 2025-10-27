@@ -73,6 +73,8 @@ try {
   try {
     const tableInfo = db.prepare("PRAGMA table_info(listings)").all();
     const columns = tableInfo.map(col => col.name);
+    console.log('📋 Current listings table columns:', columns.join(', '));
+
     const hasPaymentStatus = columns.includes('payment_status');
     const hasPaid = columns.includes('paid');
 
@@ -83,6 +85,7 @@ try {
       try {
         // Get all data with old schema
         const oldData = db.prepare('SELECT id, paid FROM listings').all();
+        console.log(`📊 Found ${oldData.length} listings to migrate`);
 
         // Add new payment_status column
         db.exec('ALTER TABLE listings ADD COLUMN payment_status TEXT DEFAULT "pending"');
@@ -95,8 +98,12 @@ try {
         });
 
         console.log(`✓ Migrated ${oldData.length} listings to new schema`);
+
+        // Optionally drop the old 'paid' column (SQLite doesn't support DROP COLUMN easily)
+        // We'll just ignore it if it exists
       } catch (migrateError) {
         console.error('❌ Migration error:', migrateError.message);
+        console.error('Migration stack:', migrateError.stack);
         // Don't throw - continue anyway so server can start
       }
     }
@@ -109,19 +116,42 @@ try {
         console.log('✓ Added payment_status column');
       } catch (addError) {
         console.error('❌ Error adding payment_status:', addError.message);
+        console.error('Add column stack:', addError.stack);
       }
     }
 
     // Final check: ensure payment_status exists now
     const finalTableInfo = db.prepare("PRAGMA table_info(listings)").all();
     const finalColumns = finalTableInfo.map(col => col.name);
+    console.log('📋 Final listings table columns:', finalColumns.join(', '));
+
     if (finalColumns.includes('payment_status')) {
-      console.log('✓ Listings table schema verified');
+      console.log('✓ Listings table schema verified with payment_status column');
     } else {
       console.error('❌ WARNING: payment_status column missing after migration attempts');
+      console.error('This will cause SQL errors. Attempting emergency fix...');
+
+      try {
+        // Emergency: try to add the column again
+        db.exec('ALTER TABLE listings ADD COLUMN payment_status TEXT DEFAULT "pending"');
+        console.log('✓ Emergency: Added payment_status column');
+
+        // If there are existing listings with 'paid' column, migrate them
+        if (finalColumns.includes('paid')) {
+          const existingPaidListings = db.prepare('SELECT id, paid FROM listings').all();
+          existingPaidListings.forEach(row => {
+            const status = row.paid === 1 ? 'paid' : 'pending';
+            db.prepare('UPDATE listings SET payment_status = ? WHERE id = ?').run(status, row.id);
+          });
+          console.log(`✓ Emergency: Migrated ${existingPaidListings.length} listings`);
+        }
+      } catch (emergencyError) {
+        console.error('❌ Emergency fix failed:', emergencyError.message);
+      }
     }
   } catch (migrationError) {
     console.error('❌ Migration check error:', migrationError.message);
+    console.error('Migration check stack:', migrationError.stack);
     // Don't throw - let server continue
   }
 
