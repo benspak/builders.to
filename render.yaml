@@ -1,11 +1,26 @@
 services:
   - type: web
-    name: builders-to
-    env: node
-    plan: starter
-    buildCommand: npm install && npm run build
-    startCommand: npm start
+    name: builders-backend
+    runtime: node
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && npm start
     envVars:
       - key: NODE_ENV
         value: production
-    healthCheckPath: /
+      - key: PORT
+        fromService:
+          type: web
+          name: builders-backend
+          property: port
+
+  - type: web
+    name: builders-frontend
+    runtime: node
+    buildCommand: cd frontend && npm install && npm run build
+    publishPath: frontend/dist
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: builders-backend
+          property: host
