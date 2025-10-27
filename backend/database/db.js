@@ -1,208 +1,125 @@
-import Database from 'better-sqlite3';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
+import pg from 'pg';
+const { Pool } = pg;
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+// Database configuration
+const config = {
+  connectionString: process.env.DATABASE_URL || process.env.POSTGRES_DATABASE_URL,
+  // For Render internal database URL
+  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
+};
 
-// Initialize the database
-// Use absolute path for production
-const dbPath = process.env.DATABASE_PATH || path.join(__dirname, '../builders.db');
-console.log('📂 Initializing database at:', dbPath);
-console.log('📂 Environment:', process.env.NODE_ENV || 'development');
-console.log('📂 DATABASE_PATH:', process.env.DATABASE_PATH || 'not set');
+// Create connection pool
+const pool = new Pool(config);
 
-let db;
-const isDevelopment = process.env.NODE_ENV !== 'production';
+// Test connection
+pool.on('connect', () => {
+  console.log('✅ PostgreSQL pool connected');
+});
 
-try {
-  const dbOptions = isDevelopment ? { verbose: console.log } : {};
-  db = new Database(dbPath, dbOptions);
-  console.log('✅ Database initialized successfully');
+pool.on('error', (err) => {
+  console.error('❌ Unexpected error on idle client', err);
+});
 
-  // Test the connection
-  const testQuery = db.prepare('SELECT 1 as test').get();
-  console.log('✅ Database connection test passed:', testQuery);
-} catch (dbError) {
-  console.error('❌ Failed to initialize database:', dbError.message);
-  console.error('❌ Error stack:', dbError.stack);
-
-  // Try to create the database with retry
-  console.log('🔄 Retrying database initialization...');
+// Initialize database tables
+const initializeDatabase = async () => {
   try {
-    db = new Database(dbPath);
-    console.log('✅ Database initialized on retry');
-  } catch (retryError) {
-    console.error('❌ Retry also failed:', retryError.message);
-    throw retryError;
+    console.log('📊 Initializing PostgreSQL database...');
+
+    // Create users table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        email TEXT UNIQUE NOT NULL,
+        password_hash TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    console.log('✓ Users table ready');
+
+    // Create profiles table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS profiles (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        name TEXT NOT NULL,
+        sub_heading TEXT,
+        location TEXT,
+        about TEXT,
+        current_role TEXT,
+        additional_details TEXT,
+        key_achievements TEXT,
+        philosophy TEXT,
+        skills TEXT,
+        links TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    console.log('✓ Profiles table ready');
+
+    // Create listings table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS listings (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        category TEXT NOT NULL CHECK(category IN ('Jobs', 'Services', 'For Sale')),
+        title TEXT NOT NULL,
+        location TEXT,
+        description TEXT NOT NULL,
+        is_featured INTEGER DEFAULT 0,
+        payment_status TEXT DEFAULT 'pending' CHECK(payment_status IN ('pending', 'paid', 'featured')),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    console.log('✓ Listings table ready');
+
+    // Create transactions table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS transactions (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        listing_id INTEGER REFERENCES listings(id) ON DELETE SET NULL,
+        type TEXT NOT NULL CHECK(type IN ('listing', 'feature')),
+        amount REAL NOT NULL,
+        stripe_payment_intent_id TEXT,
+        status TEXT DEFAULT 'pending' CHECK(status IN ('pending', 'completed', 'failed')),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    console.log('✓ Transactions table ready');
+    console.log('🎉 PostgreSQL database initialized successfully!');
+  } catch (error) {
+    console.error('❌ Error initializing database:', error.message);
+    throw error;
   }
-}
+};
 
-// Enable foreign keys
-db.pragma('foreign_keys = ON');
+// Initialize on startup
+initializeDatabase();
 
-// Create tables if they don't exist
-try {
-  console.log('Creating database tables...');
-
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS users (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      email TEXT UNIQUE NOT NULL,
-      password_hash TEXT NOT NULL,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
-  console.log('✓ Users table ready');
-
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS profiles (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id INTEGER UNIQUE NOT NULL,
-      name TEXT NOT NULL,
-      sub_heading TEXT,
-      location TEXT,
-      about TEXT,
-      current_role TEXT,
-      additional_details TEXT,
-      key_achievements TEXT,
-      philosophy TEXT,
-      skills TEXT,
-      links TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-    )
-  `);
-  console.log('✓ Profiles table ready');
-
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS listings (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id INTEGER NOT NULL,
-      category TEXT NOT NULL CHECK(category IN ('Jobs', 'Services', 'For Sale')),
-      title TEXT NOT NULL,
-      location TEXT,
-      description TEXT NOT NULL,
-      is_featured INTEGER DEFAULT 0,
-      payment_status TEXT DEFAULT 'pending' CHECK(payment_status IN ('pending', 'paid', 'featured')),
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-    )
-  `);
-  console.log('✓ Listings table ready');
-
-  // Migration: Handle schema changes
+// Helper function to execute queries
+const query = async (text, params) => {
+  const start = Date.now();
   try {
-    const tableInfo = db.prepare("PRAGMA table_info(listings)").all();
-    const columns = tableInfo.map(col => col.name);
-    console.log('📋 Current listings table columns:', columns.join(', '));
-
-    const hasPaymentStatus = columns.includes('payment_status');
-    const hasPaid = columns.includes('paid');
-
-    // Migration scenario: Database has old 'paid' column but not 'payment_status'
-    if (hasPaid && !hasPaymentStatus) {
-      console.log('⚠️  Migrating database schema from paid to payment_status...');
-
-      try {
-        // Get all data with old schema
-        const oldData = db.prepare('SELECT id, paid FROM listings').all();
-        console.log(`📊 Found ${oldData.length} listings to migrate`);
-
-        // Add new payment_status column
-        db.exec('ALTER TABLE listings ADD COLUMN payment_status TEXT DEFAULT "pending"');
-        console.log('✓ Added payment_status column');
-
-        // Migrate data: convert paid (INTEGER 0/1) to payment_status (TEXT)
-        oldData.forEach(row => {
-          const status = row.paid === 1 ? 'paid' : 'pending';
-          db.prepare('UPDATE listings SET payment_status = ? WHERE id = ?').run(status, row.id);
-        });
-
-        console.log(`✓ Migrated ${oldData.length} listings to new schema`);
-
-        // Optionally drop the old 'paid' column (SQLite doesn't support DROP COLUMN easily)
-        // We'll just ignore it if it exists
-      } catch (migrateError) {
-        console.error('❌ Migration error:', migrateError.message);
-        console.error('Migration stack:', migrateError.stack);
-        // Don't throw - continue anyway so server can start
-      }
-    }
-
-    // Migration scenario: Fresh database or missing payment_status
-    if (!hasPaymentStatus && !hasPaid) {
-      console.log('⚠️  Adding payment_status column to listings table...');
-      try {
-        db.exec('ALTER TABLE listings ADD COLUMN payment_status TEXT DEFAULT "pending"');
-        console.log('✓ Added payment_status column');
-      } catch (addError) {
-        console.error('❌ Error adding payment_status:', addError.message);
-        console.error('Add column stack:', addError.stack);
-      }
-    }
-
-    // Final check: ensure payment_status exists now
-    const finalTableInfo = db.prepare("PRAGMA table_info(listings)").all();
-    const finalColumns = finalTableInfo.map(col => col.name);
-    console.log('📋 Final listings table columns:', finalColumns.join(', '));
-
-    if (finalColumns.includes('payment_status')) {
-      console.log('✓ Listings table schema verified with payment_status column');
-    } else {
-      console.error('❌ WARNING: payment_status column missing after migration attempts');
-      console.error('This will cause SQL errors. Attempting emergency fix...');
-
-      try {
-        // Emergency: try to add the column again
-        db.exec('ALTER TABLE listings ADD COLUMN payment_status TEXT DEFAULT "pending"');
-        console.log('✓ Emergency: Added payment_status column');
-
-        // If there are existing listings with 'paid' column, migrate them
-        if (finalColumns.includes('paid')) {
-          const existingPaidListings = db.prepare('SELECT id, paid FROM listings').all();
-          existingPaidListings.forEach(row => {
-            const status = row.paid === 1 ? 'paid' : 'pending';
-            db.prepare('UPDATE listings SET payment_status = ? WHERE id = ?').run(status, row.id);
-          });
-          console.log(`✓ Emergency: Migrated ${existingPaidListings.length} listings`);
-        }
-      } catch (emergencyError) {
-        console.error('❌ Emergency fix failed:', emergencyError.message);
-      }
-    }
-  } catch (migrationError) {
-    console.error('❌ Migration check error:', migrationError.message);
-    console.error('Migration check stack:', migrationError.stack);
-    // Don't throw - let server continue
+    const res = await pool.query(text, params);
+    const duration = Date.now() - start;
+    console.log('Executed query', { text, duration, rows: res.rowCount });
+    return res;
+  } catch (error) {
+    console.error('Query error:', { text, params, error: error.message });
+    throw error;
   }
+};
 
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS transactions (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id INTEGER NOT NULL,
-      listing_id INTEGER,
-      type TEXT NOT NULL CHECK(type IN ('listing', 'feature')),
-      amount REAL NOT NULL,
-      stripe_payment_intent_id TEXT,
-      status TEXT DEFAULT 'pending' CHECK(status IN ('pending', 'completed', 'failed')),
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-      FOREIGN KEY (listing_id) REFERENCES listings(id) ON DELETE SET NULL
-    )
-  `);
-  console.log('✓ Transactions table ready');
-  console.log('✓ All database tables initialized');
-  console.log('🎉 Database setup complete!');
-} catch (error) {
-  console.error('❌ Error initializing database:', error);
-  console.error('❌ Error message:', error.message);
-  console.error('❌ Error stack:', error.stack);
-  throw error;
-}
+// Database object with common operations
+const db = {
+  query,
+  pool,
+  async close() {
+    await pool.end();
+  }
+};
 
 export default db;

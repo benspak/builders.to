@@ -15,57 +15,28 @@ const createListingLimiter = rateLimit({
 });
 
 // Get all listings
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const { location, category, featured } = req.query;
 
-    // Check what columns exist in the listings table
-    let tableInfo;
-    try {
-      tableInfo = db.prepare("PRAGMA table_info(listings)").all();
-    } catch (pragmaError) {
-      console.error('❌ Error running PRAGMA table_info:', pragmaError);
-      throw new Error('Database schema error: Unable to read table structure');
-    }
-
-    const columns = tableInfo.map(col => col.name);
-    const hasPaymentStatus = columns.includes('payment_status');
-    const hasPaid = columns.includes('paid');
-
-    console.log('📋 Listing columns:', columns.join(', '));
-    console.log('🔍 hasPaymentStatus:', hasPaymentStatus, 'hasPaid:', hasPaid);
-
-    let query;
-    const params = [];
-
-    // Build query based on what columns exist
-    if (hasPaymentStatus) {
-      // New schema: use payment_status
-      query = 'SELECT * FROM listings WHERE (payment_status = "paid" OR payment_status = "featured")';
-    } else if (hasPaid) {
-      // Old schema: use paid column
-      query = 'SELECT * FROM listings WHERE paid = 1';
-    } else {
-      // Fallback: show all listings if neither column exists (shouldn't happen but be defensive)
-      console.warn('⚠️  Neither payment_status nor paid column found, showing all listings');
-      query = 'SELECT * FROM listings';
-    }
+    let query = 'SELECT * FROM listings WHERE (payment_status = $1 OR payment_status = $2)';
+    const params = ['paid', 'featured'];
 
     if (featured === 'true') {
       query += ' AND is_featured = 1';
     } else if (location) {
-      query += ' AND location = ?';
+      query += ' AND location = $' + (params.length + 1);
       params.push(location);
     } else if (category) {
-      query += ' AND category = ?';
+      query += ' AND category = $' + (params.length + 1);
       params.push(category);
     }
 
     query += ' ORDER BY is_featured DESC, created_at DESC';
 
     console.log('📝 Executing query:', query);
-    const listings = db.prepare(query).all(...params);
-    res.json(listings);
+    const result = await db.query(query, params);
+    res.json(result.rows);
   } catch (error) {
     console.error('Error fetching listings:', error);
     res.status(500).json({ error: error.message || 'Server error' });
@@ -73,9 +44,11 @@ router.get('/', (req, res) => {
 });
 
 // Get listing by ID
-router.get('/:id', optionalAuth, (req, res) => {
+router.get('/:id', optionalAuth, async (req, res) => {
   try {
-    const listing = db.prepare('SELECT * FROM listings WHERE id = ?').get(req.params.id);
+    const result = await db.query('SELECT * FROM listings WHERE id = $1', [req.params.id]);
+    const listing = result.rows[0];
+
     if (!listing) {
       return res.status(404).json({ error: 'Listing not found' });
     }
@@ -84,8 +57,6 @@ router.get('/:id', optionalAuth, (req, res) => {
     let isVisible;
     if ('payment_status' in listing) {
       isVisible = listing.payment_status === 'paid' || listing.payment_status === 'featured';
-    } else if ('paid' in listing) {
-      isVisible = listing.paid === 1;
     } else {
       // Fallback: if neither column exists, make it visible
       isVisible = true;
@@ -108,7 +79,7 @@ router.get('/:id', optionalAuth, (req, res) => {
 });
 
 // Create listing
-router.post('/', authenticateToken, createListingLimiter, (req, res) => {
+router.post('/', authenticateToken, createListingLimiter, async (req, res) => {
   try {
     const { category, title, location, description } = req.body;
 
@@ -118,40 +89,41 @@ router.post('/', authenticateToken, createListingLimiter, (req, res) => {
 
     // Check for duplicate posts from the same user
     // Look for similar listings by the same user in the last 24 hours
-    const existingListing = db.prepare(`
+    const existingResult = await db.query(`
       SELECT * FROM listings
-      WHERE user_id = ?
-        AND title = ?
-        AND description = ?
-        AND created_at > datetime('now', '-24 hours')
-    `).get(req.user.id, title, description);
+      WHERE user_id = $1
+        AND title = $2
+        AND description = $3
+        AND created_at > NOW() - INTERVAL '24 hours'
+    `, [req.user.id, title, description]);
 
-    if (existingListing) {
+    if (existingResult.rows.length > 0) {
       return res.status(409).json({
         error: 'Duplicate listing detected. You cannot post the same listing within 24 hours.'
       });
     }
 
     // Additional check: Look for any exact match in the last 7 days
-    const similarListing = db.prepare(`
+    const similarResult = await db.query(`
       SELECT * FROM listings
-      WHERE user_id = ?
-        AND title = ?
-        AND created_at > datetime('now', '-7 days')
-    `).get(req.user.id, title);
+      WHERE user_id = $1
+        AND title = $2
+        AND created_at > NOW() - INTERVAL '7 days'
+    `, [req.user.id, title]);
 
-    if (similarListing) {
+    if (similarResult.rows.length > 0) {
       return res.status(409).json({
         error: 'You have already posted a similar listing. Please wait or modify your post.'
       });
     }
 
-    const result = db.prepare(`
+    const result = await db.query(`
       INSERT INTO listings (user_id, category, title, location, description)
-      VALUES (?, ?, ?, ?, ?)
-    `).run(req.user.id, category, title, location, description);
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING id
+    `, [req.user.id, category, title, location, description]);
 
-    res.status(201).json({ message: 'Listing created successfully', id: result.lastInsertRowid });
+    res.status(201).json({ message: 'Listing created successfully', id: result.rows[0].id });
   } catch (error) {
     console.error('Error creating listing:', error);
     res.status(500).json({ error: error.message || 'Server error' });
@@ -159,23 +131,26 @@ router.post('/', authenticateToken, createListingLimiter, (req, res) => {
 });
 
 // Update listing
-router.put('/:id', authenticateToken, (req, res) => {
+router.put('/:id', authenticateToken, async (req, res) => {
   try {
     const { category, title, location, description } = req.body;
 
     // Check if listing belongs to user
-    const listing = db.prepare('SELECT * FROM listings WHERE id = ? AND user_id = ?').get(req.params.id, req.user.id);
-    if (!listing) {
+    const result = await db.query(
+      'SELECT * FROM listings WHERE id = $1 AND user_id = $2',
+      [req.params.id, req.user.id]
+    );
+
+    if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Listing not found or unauthorized' });
     }
 
+    const listing = result.rows[0];
+
     // Only allow editing of pending listings (not paid or featured)
-    // Handle both old and new schema
     let isPaid = false;
     if ('payment_status' in listing) {
       isPaid = listing.payment_status !== 'pending';
-    } else if ('paid' in listing) {
-      isPaid = listing.paid === 1;
     }
 
     if (isPaid) {
@@ -184,11 +159,11 @@ router.put('/:id', authenticateToken, (req, res) => {
       });
     }
 
-    db.prepare(`
+    await db.query(`
       UPDATE listings SET
-        category = ?, title = ?, location = ?, description = ?, updated_at = CURRENT_TIMESTAMP
-      WHERE id = ?
-    `).run(category, title, location, description, req.params.id);
+        category = $1, title = $2, location = $3, description = $4, updated_at = CURRENT_TIMESTAMP
+      WHERE id = $5
+    `, [category, title, location, description, req.params.id]);
 
     res.json({ message: 'Listing updated successfully' });
   } catch (error) {
@@ -198,14 +173,18 @@ router.put('/:id', authenticateToken, (req, res) => {
 });
 
 // Delete listing
-router.delete('/:id', authenticateToken, (req, res) => {
+router.delete('/:id', authenticateToken, async (req, res) => {
   try {
-    const listing = db.prepare('SELECT * FROM listings WHERE id = ? AND user_id = ?').get(req.params.id, req.user.id);
-    if (!listing) {
+    const listingResult = await db.query(
+      'SELECT * FROM listings WHERE id = $1 AND user_id = $2',
+      [req.params.id, req.user.id]
+    );
+
+    if (listingResult.rows.length === 0) {
       return res.status(404).json({ error: 'Listing not found or unauthorized' });
     }
 
-    db.prepare('DELETE FROM listings WHERE id = ?').run(req.params.id);
+    await db.query('DELETE FROM listings WHERE id = $1', [req.params.id]);
     res.json({ message: 'Listing deleted successfully' });
   } catch (error) {
     res.status(500).json({ error: 'Server error' });
@@ -213,49 +192,28 @@ router.delete('/:id', authenticateToken, (req, res) => {
 });
 
 // Get user's listings
-router.get('/user/my-listings', authenticateToken, (req, res) => {
+router.get('/user/my-listings', authenticateToken, async (req, res) => {
   try {
-    const listings = db.prepare('SELECT * FROM listings WHERE user_id = ? ORDER BY created_at DESC').all(req.user.id);
-    res.json(listings);
+    const result = await db.query(
+      'SELECT * FROM listings WHERE user_id = $1 ORDER BY created_at DESC',
+      [req.user.id]
+    );
+    res.json(result.rows);
   } catch (error) {
     res.status(500).json({ error: 'Server error' });
   }
 });
 
 // Get listings by user_id (public)
-router.get('/user/:userId', (req, res) => {
+router.get('/user/:userId', async (req, res) => {
   try {
-    // Check what columns exist in the listings table
-    const tableInfo = db.prepare("PRAGMA table_info(listings)").all();
-    const columns = tableInfo.map(col => col.name);
-    const hasPaymentStatus = columns.includes('payment_status');
-    const hasPaid = columns.includes('paid');
+    const result = await db.query(`
+      SELECT * FROM listings
+      WHERE user_id = $1 AND (payment_status = 'paid' OR payment_status = 'featured')
+      ORDER BY created_at DESC
+    `, [req.params.userId]);
 
-    let listings;
-    if (hasPaymentStatus) {
-      // New schema: use payment_status
-      listings = db.prepare(`
-        SELECT * FROM listings
-        WHERE user_id = ? AND (payment_status = 'paid' OR payment_status = 'featured')
-        ORDER BY created_at DESC
-      `).all(req.params.userId);
-    } else if (hasPaid) {
-      // Old schema: use paid column
-      listings = db.prepare(`
-        SELECT * FROM listings
-        WHERE user_id = ? AND paid = 1
-        ORDER BY created_at DESC
-      `).all(req.params.userId);
-    } else {
-      // Fallback: show all listings if neither column exists
-      listings = db.prepare(`
-        SELECT * FROM listings
-        WHERE user_id = ?
-        ORDER BY created_at DESC
-      `).all(req.params.userId);
-    }
-
-    res.json(listings);
+    res.json(result.rows);
   } catch (error) {
     console.error('Error fetching user listings:', error);
     res.status(500).json({ error: 'Server error' });

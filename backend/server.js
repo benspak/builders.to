@@ -29,7 +29,8 @@ const corsOptions = {
     'http://localhost:3000',
     'https://builders.to',
     'https://www.builders.to',
-    'https://builders-to.onrender.com'
+    'https://builders-to.onrender.com',
+    'https://builders-to-backend.onrender.com'
   ],
   credentials: true
 };
@@ -62,14 +63,14 @@ app.get('/health', (req, res) => {
 });
 
 // Database health check
-app.get('/health/db', (req, res) => {
+app.get('/health/db', async (req, res) => {
   try {
     // Try to query the database
-    const result = db.prepare('SELECT COUNT(*) as count FROM listings').get();
+    const result = await db.query('SELECT COUNT(*) as count FROM listings');
     res.json({
       status: 'ok',
       message: 'Database connection healthy',
-      listings_count: result.count
+      listings_count: parseInt(result.rows[0].count)
     });
   } catch (error) {
     console.error('Database health check failed:', error);

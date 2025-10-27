@@ -40,18 +40,19 @@ router.post('/create-listing-payment', authenticateToken, async (req, res) => {
     }
 
     // Check if listing exists and belongs to user
-    const listing = db.prepare('SELECT * FROM listings WHERE id = ? AND user_id = ?').get(listingId, req.user.id);
-    if (!listing) {
+    const result = await db.query(
+      'SELECT * FROM listings WHERE id = $1 AND user_id = $2',
+      [listingId, req.user.id]
+    );
+
+    if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Listing not found or unauthorized' });
     }
 
-    // Check if already paid - handle both old and new schema
-    let alreadyPaid = false;
-    if ('payment_status' in listing) {
-      alreadyPaid = listing.payment_status === 'paid' || listing.payment_status === 'featured';
-    } else if ('paid' in listing) {
-      alreadyPaid = listing.paid === 1;
-    }
+    const listing = result.rows[0];
+
+    // Check if already paid
+    const alreadyPaid = listing.payment_status === 'paid' || listing.payment_status === 'featured';
 
     if (alreadyPaid) {
       return res.status(400).json({ error: 'Listing already paid' });
@@ -88,10 +89,16 @@ router.post('/create-featured-payment', authenticateToken, async (req, res) => {
     }
 
     // Check if listing exists and belongs to user
-    const listing = db.prepare('SELECT * FROM listings WHERE id = ? AND user_id = ?').get(listingId, req.user.id);
-    if (!listing) {
+    const result = await db.query(
+      'SELECT * FROM listings WHERE id = $1 AND user_id = $2',
+      [listingId, req.user.id]
+    );
+
+    if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Listing not found or unauthorized' });
     }
+
+    const listing = result.rows[0];
 
     // Prevent double payment for featured
     if (listing.is_featured) {
@@ -136,7 +143,7 @@ webhookRouter.post('/', async (req, res) => {
       event = req.body;
     }
 
-    handleWebhookEvent(event);
+    await handleWebhookEvent(event);
     res.json({ received: true });
   } catch (err) {
     console.error('Webhook error:', err.message);
@@ -144,43 +151,32 @@ webhookRouter.post('/', async (req, res) => {
   }
 });
 
-const handleWebhookEvent = (event) => {
+const handleWebhookEvent = async (event) => {
   if (event.type === 'payment_intent.succeeded') {
     const paymentIntent = event.data.object;
     const { listingId, userId, type } = paymentIntent.metadata;
 
-    // Check what columns exist in the listings table
-    const tableInfo = db.prepare("PRAGMA table_info(listings)").all();
-    const columns = tableInfo.map(col => col.name);
-    const hasPaymentStatus = columns.includes('payment_status');
-    const hasPaid = columns.includes('paid');
-
     if (type === 'listing') {
-      // Mark listing as paid - handle both schemas
-      if (hasPaymentStatus) {
-        db.prepare('UPDATE listings SET payment_status = ? WHERE id = ?').run('paid', listingId);
-      } else if (hasPaid) {
-        db.prepare('UPDATE listings SET paid = ? WHERE id = ?').run(1, listingId);
-      }
+      // Mark listing as paid
+      await db.query('UPDATE listings SET payment_status = $1 WHERE id = $2', ['paid', listingId]);
 
       // Create transaction record
-      db.prepare(`
+      await db.query(`
         INSERT INTO transactions (user_id, listing_id, type, amount, stripe_payment_intent_id, status)
-        VALUES (?, ?, ?, ?, ?, ?)
-      `).run(userId, listingId, 'listing', 5.00, paymentIntent.id, 'completed');
+        VALUES ($1, $2, $3, $4, $5, $6)
+      `, [userId, listingId, 'listing', 5.00, paymentIntent.id, 'completed']);
     } else if (type === 'feature') {
       // Mark listing as featured
-      if (hasPaymentStatus) {
-        db.prepare('UPDATE listings SET is_featured = 1, payment_status = ? WHERE id = ?').run('featured', listingId);
-      } else if (hasPaid) {
-        db.prepare('UPDATE listings SET is_featured = 1, paid = ? WHERE id = ?').run(1, listingId);
-      }
+      await db.query(
+        'UPDATE listings SET is_featured = 1, payment_status = $1 WHERE id = $2',
+        ['featured', listingId]
+      );
 
       // Create transaction record
-      db.prepare(`
+      await db.query(`
         INSERT INTO transactions (user_id, listing_id, type, amount, stripe_payment_intent_id, status)
-        VALUES (?, ?, ?, ?, ?, ?)
-      `).run(userId, listingId, 'feature', 50.00, paymentIntent.id, 'completed');
+        VALUES ($1, $2, $3, $4, $5, $6)
+      `, [userId, listingId, 'feature', 50.00, paymentIntent.id, 'completed']);
     }
   }
 };

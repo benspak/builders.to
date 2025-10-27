@@ -5,43 +5,43 @@ import db from '../database/db.js';
 const router = express.Router();
 
 // Get user profile
-router.get('/me', authenticateToken, (req, res) => {
+router.get('/me', authenticateToken, async (req, res) => {
   try {
-    const profile = db.prepare('SELECT * FROM profiles WHERE user_id = ?').get(req.user.id);
-    res.json(profile || null);
+    const result = await db.query('SELECT * FROM profiles WHERE user_id = $1', [req.user.id]);
+    res.json(result.rows[0] || null);
   } catch (error) {
     res.status(500).json({ error: 'Server error' });
   }
 });
 
 // Get profile by user_id (must be before /:id to avoid route conflict)
-router.get('/user/:userId', (req, res) => {
+router.get('/user/:userId', async (req, res) => {
   try {
-    const profile = db.prepare('SELECT * FROM profiles WHERE user_id = ?').get(req.params.userId);
-    if (!profile) {
+    const result = await db.query('SELECT * FROM profiles WHERE user_id = $1', [req.params.userId]);
+    if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Profile not found' });
     }
-    res.json(profile);
+    res.json(result.rows[0]);
   } catch (error) {
     res.status(500).json({ error: 'Server error' });
   }
 });
 
 // Get profile by ID
-router.get('/:id', (req, res) => {
+router.get('/:id', async (req, res) => {
   try {
-    const profile = db.prepare('SELECT * FROM profiles WHERE id = ?').get(req.params.id);
-    if (!profile) {
+    const result = await db.query('SELECT * FROM profiles WHERE id = $1', [req.params.id]);
+    if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Profile not found' });
     }
-    res.json(profile);
+    res.json(result.rows[0]);
   } catch (error) {
     res.status(500).json({ error: 'Server error' });
   }
 });
 
 // Create or update profile
-router.post('/', authenticateToken, (req, res) => {
+router.post('/', authenticateToken, async (req, res) => {
   try {
     const {
       name,
@@ -56,35 +56,36 @@ router.post('/', authenticateToken, (req, res) => {
       links
     } = req.body;
 
-    const existing = db.prepare('SELECT * FROM profiles WHERE user_id = ?').get(req.user.id);
+    const existingResult = await db.query('SELECT * FROM profiles WHERE user_id = $1', [req.user.id]);
 
-    if (existing) {
+    if (existingResult.rows.length > 0) {
       // Update existing profile
-      const result = db.prepare(`
+      await db.query(`
         UPDATE profiles SET
-          name = ?, sub_heading = ?, location = ?, about = ?,
-          current_role = ?, additional_details = ?, key_achievements = ?,
-          philosophy = ?, skills = ?, links = ?, updated_at = CURRENT_TIMESTAMP
-        WHERE user_id = ?
-      `).run(
+          name = $1, sub_heading = $2, location = $3, about = $4,
+          current_role = $5, additional_details = $6, key_achievements = $7,
+          philosophy = $8, skills = $9, links = $10, updated_at = CURRENT_TIMESTAMP
+        WHERE user_id = $11
+      `, [
         name, sub_heading, location, about, current_role,
         additional_details, key_achievements, philosophy, skills, links, req.user.id
-      );
-      res.json({ message: 'Profile updated successfully', id: existing.id });
+      ]);
+      res.json({ message: 'Profile updated successfully', id: existingResult.rows[0].id });
     } else {
       // Create new profile
-      const result = db.prepare(`
+      const insertResult = await db.query(`
         INSERT INTO profiles (
           user_id, name, sub_heading, location, about,
           current_role, additional_details, key_achievements,
           philosophy, skills, links
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `).run(
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+        RETURNING id
+      `, [
         req.user.id, name, sub_heading, location, about,
         current_role, additional_details, key_achievements,
         philosophy, skills, links
-      );
-      res.status(201).json({ message: 'Profile created successfully', id: result.lastInsertRowid });
+      ]);
+      res.status(201).json({ message: 'Profile created successfully', id: insertResult.rows[0].id });
     }
   } catch (error) {
     res.status(500).json({ error: 'Server error' });
@@ -92,10 +93,10 @@ router.post('/', authenticateToken, (req, res) => {
 });
 
 // Get all profiles
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   try {
-    const profiles = db.prepare('SELECT * FROM profiles ORDER BY created_at DESC').all();
-    res.json(profiles);
+    const result = await db.query('SELECT * FROM profiles ORDER BY created_at DESC');
+    res.json(result.rows);
   } catch (error) {
     res.status(500).json({ error: 'Server error' });
   }
