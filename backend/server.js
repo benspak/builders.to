@@ -17,6 +17,9 @@ import { dashboardRoutes } from './routes/dashboard.js';
 const app = express();
 const PORT = process.env.PORT || 5555;
 
+// Trust proxy - required for rate limiting behind reverse proxy (Render.com)
+app.set('trust proxy', true);
+
 // Middleware
 app.use(helmet());
 
@@ -25,7 +28,8 @@ const corsOptions = {
   origin: [
     'http://localhost:3000',
     'https://builders.to',
-    'https://www.builders.to'
+    'https://www.builders.to',
+    'https://builders-to.onrender.com'
   ],
   credentials: true
 };

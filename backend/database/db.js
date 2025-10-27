@@ -69,6 +69,62 @@ try {
   `);
   console.log('✓ Listings table ready');
 
+  // Migration: Handle schema changes
+  try {
+    const tableInfo = db.prepare("PRAGMA table_info(listings)").all();
+    const columns = tableInfo.map(col => col.name);
+    const hasPaymentStatus = columns.includes('payment_status');
+    const hasPaid = columns.includes('paid');
+
+    // Migration scenario: Database has old 'paid' column but not 'payment_status'
+    if (hasPaid && !hasPaymentStatus) {
+      console.log('⚠️  Migrating database schema from paid to payment_status...');
+
+      try {
+        // Get all data with old schema
+        const oldData = db.prepare('SELECT id, paid FROM listings').all();
+
+        // Add new payment_status column
+        db.exec('ALTER TABLE listings ADD COLUMN payment_status TEXT DEFAULT "pending"');
+        console.log('✓ Added payment_status column');
+
+        // Migrate data: convert paid (INTEGER 0/1) to payment_status (TEXT)
+        oldData.forEach(row => {
+          const status = row.paid === 1 ? 'paid' : 'pending';
+          db.prepare('UPDATE listings SET payment_status = ? WHERE id = ?').run(status, row.id);
+        });
+
+        console.log(`✓ Migrated ${oldData.length} listings to new schema`);
+      } catch (migrateError) {
+        console.error('❌ Migration error:', migrateError.message);
+        // Don't throw - continue anyway so server can start
+      }
+    }
+
+    // Migration scenario: Fresh database or missing payment_status
+    if (!hasPaymentStatus && !hasPaid) {
+      console.log('⚠️  Adding payment_status column to listings table...');
+      try {
+        db.exec('ALTER TABLE listings ADD COLUMN payment_status TEXT DEFAULT "pending"');
+        console.log('✓ Added payment_status column');
+      } catch (addError) {
+        console.error('❌ Error adding payment_status:', addError.message);
+      }
+    }
+
+    // Final check: ensure payment_status exists now
+    const finalTableInfo = db.prepare("PRAGMA table_info(listings)").all();
+    const finalColumns = finalTableInfo.map(col => col.name);
+    if (finalColumns.includes('payment_status')) {
+      console.log('✓ Listings table schema verified');
+    } else {
+      console.error('❌ WARNING: payment_status column missing after migration attempts');
+    }
+  } catch (migrationError) {
+    console.error('❌ Migration check error:', migrationError.message);
+    // Don't throw - let server continue
+  }
+
   db.exec(`
     CREATE TABLE IF NOT EXISTS transactions (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
