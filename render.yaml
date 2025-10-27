@@ -34,4 +34,4 @@ services:
 databases:
   - name: builders-db
     databaseName: builders
-    plan: starter  # Free tier - can upgrade to paid plans later
+    plan: free  # Free tier - can upgrade to paid plans later
