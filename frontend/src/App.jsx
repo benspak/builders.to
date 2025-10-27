@@ -16,7 +16,7 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        <Box minH="100vh" bg="gray.50">
+        <Box minH="100vh">
           <Navbar />
           <Routes>
             <Route path="/" element={<Home />} />
