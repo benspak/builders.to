@@ -66,15 +66,15 @@ app.get('/health/db', (req, res) => {
   try {
     // Try to query the database
     const result = db.prepare('SELECT COUNT(*) as count FROM listings').get();
-    res.json({ 
-      status: 'ok', 
+    res.json({
+      status: 'ok',
       message: 'Database connection healthy',
       listings_count: result.count
     });
   } catch (error) {
     console.error('Database health check failed:', error);
-    res.status(500).json({ 
-      status: 'error', 
+    res.status(500).json({
+      status: 'error',
       message: 'Database connection failed',
       error: error.message
     });

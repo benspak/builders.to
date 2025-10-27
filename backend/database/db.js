@@ -20,14 +20,14 @@ try {
   const dbOptions = isDevelopment ? { verbose: console.log } : {};
   db = new Database(dbPath, dbOptions);
   console.log('✅ Database initialized successfully');
-  
+
   // Test the connection
   const testQuery = db.prepare('SELECT 1 as test').get();
   console.log('✅ Database connection test passed:', testQuery);
 } catch (dbError) {
   console.error('❌ Failed to initialize database:', dbError.message);
   console.error('❌ Error stack:', dbError.stack);
-  
+
   // Try to create the database with retry
   console.log('🔄 Retrying database initialization...');
   try {

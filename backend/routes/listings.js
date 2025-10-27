@@ -27,7 +27,7 @@ router.get('/', (req, res) => {
       console.error('❌ Error running PRAGMA table_info:', pragmaError);
       throw new Error('Database schema error: Unable to read table structure');
     }
-    
+
     const columns = tableInfo.map(col => col.name);
     const hasPaymentStatus = columns.includes('payment_status');
     const hasPaid = columns.includes('paid');
