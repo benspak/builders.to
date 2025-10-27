@@ -19,7 +19,18 @@ const PORT = process.env.PORT || 5555;
 
 // Middleware
 app.use(helmet());
-app.use(cors());
+
+// Configure CORS to allow requests from production domain
+const corsOptions = {
+  origin: [
+    'http://localhost:3000',
+    'https://builders.to',
+    'https://www.builders.to'
+  ],
+  credentials: true
+};
+app.use(cors(corsOptions));
+
 app.use(express.json({ limit: '10mb' }));
 
 // Rate limiting
