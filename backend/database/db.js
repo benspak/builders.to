@@ -1,9 +1,21 @@
 import pg from 'pg';
+import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+// Load environment variables
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+dotenv.config({ path: join(__dirname, '../.env') });
+
 const { Pool } = pg;
 
 // Database configuration
+const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_DATABASE_URL || 'postgresql://localhost:5432/builders';
+console.log('🔌 Connecting to database:', connectionString.replace(/:[^:@]*@/, ':****@'));
+
 const config = {
-  connectionString: process.env.DATABASE_URL || process.env.POSTGRES_DATABASE_URL,
+  connectionString: connectionString,
   // For Render internal database URL
   ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
 };

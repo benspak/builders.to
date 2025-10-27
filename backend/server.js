@@ -3,9 +3,17 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // Load environment variables FIRST before importing routes
-dotenv.config();
+dotenv.config({ path: join(__dirname, '.env') });
+
+// Debug: Log database connection info
+console.log('📊 Database URL:', process.env.POSTGRES_DATABASE_URL ? '✓ Set' : '✗ Not set');
 
 import db from './database/db.js';
 import { authRoutes } from './routes/auth.js';
