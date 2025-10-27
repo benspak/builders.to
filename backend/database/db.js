@@ -46,7 +46,7 @@ const initializeDatabase = async () => {
         sub_heading TEXT,
         location TEXT,
         about TEXT,
-        current_role TEXT,
+        "current_role" TEXT,
         additional_details TEXT,
         key_achievements TEXT,
         philosophy TEXT,

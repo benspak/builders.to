@@ -63,7 +63,7 @@ router.post('/', authenticateToken, async (req, res) => {
       await db.query(`
         UPDATE profiles SET
           name = $1, sub_heading = $2, location = $3, about = $4,
-          current_role = $5, additional_details = $6, key_achievements = $7,
+          "current_role" = $5, additional_details = $6, key_achievements = $7,
           philosophy = $8, skills = $9, links = $10, updated_at = CURRENT_TIMESTAMP
         WHERE user_id = $11
       `, [
@@ -76,7 +76,7 @@ router.post('/', authenticateToken, async (req, res) => {
       const insertResult = await db.query(`
         INSERT INTO profiles (
           user_id, name, sub_heading, location, about,
-          current_role, additional_details, key_achievements,
+          "current_role", additional_details, key_achievements,
           philosophy, skills, links
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
         RETURNING id
