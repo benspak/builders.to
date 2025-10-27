@@ -39,7 +39,7 @@ NODE_ENV=development
 
 **Frontend (.env):**
 ```env
-VITE_API_URL=http://localhost:5000
+VITE_API_URL=http://localhost:5555
 VITE_STRIPE_PUBLISHABLE_KEY=pk_test_your_stripe_publishable_key
 ```
 
@@ -67,7 +67,7 @@ npm run dev
 ### 5. Access the App
 
 - Frontend: http://localhost:3000
-- Backend API: http://localhost:5000
+- Backend API: http://localhost:5555
 
 ## Testing
 
@@ -85,7 +85,7 @@ Run: `node backend/database/init.js` (automatically created on first run)
 ### Stripe payment not working
 - Ensure your Stripe keys are correctly configured
 - Check that webhook URL is configured in Stripe dashboard
-- Use Stripe CLI for local webhook testing: `stripe listen --forward-to localhost:5000/api/payments/webhook`
+- Use Stripe CLI for local webhook testing: `stripe listen --forward-to localhost:5555/api/payments/webhook`
 
 ## Deployment
 

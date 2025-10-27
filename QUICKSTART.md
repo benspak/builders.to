@@ -218,7 +218,7 @@ npm run build
 
 For issues or questions, check:
 - Logs in terminal
-- Backend: http://localhost:5000/health
+- Backend: http://localhost:5555/health
 - Stripe dashboard for payment issues
 
 Happy building! 🚀

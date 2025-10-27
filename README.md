@@ -77,7 +77,7 @@ A marketplace for builders and founders to offer services, get hired, or sell bu
 
    Frontend `.env`:
    ```env
-   VITE_API_URL=http://localhost:5000
+   VITE_API_URL=http://localhost:5555
    VITE_STRIPE_PUBLISHABLE_KEY=pk_test_...
    ```
 
