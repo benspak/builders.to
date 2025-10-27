@@ -2,8 +2,9 @@ services:
   - type: web
     name: builders-backend
     runtime: node
-    buildCommand: cd backend && npm install
+    buildCommand: cd backend && npm install && npm run build
     startCommand: cd backend && npm start
+    nodeVersion: "18"
     envVars:
       - key: NODE_ENV
         value: production

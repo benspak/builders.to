@@ -9,9 +9,35 @@ const __dirname = dirname(__filename);
 // Initialize the database
 // Use absolute path for production
 const dbPath = process.env.DATABASE_PATH || path.join(__dirname, '../builders.db');
-console.log('Database path:', dbPath);
-const db = new Database(dbPath);
-console.log('Database initialized successfully');
+console.log('📂 Initializing database at:', dbPath);
+console.log('📂 Environment:', process.env.NODE_ENV || 'development');
+console.log('📂 DATABASE_PATH:', process.env.DATABASE_PATH || 'not set');
+
+let db;
+const isDevelopment = process.env.NODE_ENV !== 'production';
+
+try {
+  const dbOptions = isDevelopment ? { verbose: console.log } : {};
+  db = new Database(dbPath, dbOptions);
+  console.log('✅ Database initialized successfully');
+  
+  // Test the connection
+  const testQuery = db.prepare('SELECT 1 as test').get();
+  console.log('✅ Database connection test passed:', testQuery);
+} catch (dbError) {
+  console.error('❌ Failed to initialize database:', dbError.message);
+  console.error('❌ Error stack:', dbError.stack);
+  
+  // Try to create the database with retry
+  console.log('🔄 Retrying database initialization...');
+  try {
+    db = new Database(dbPath);
+    console.log('✅ Database initialized on retry');
+  } catch (retryError) {
+    console.error('❌ Retry also failed:', retryError.message);
+    throw retryError;
+  }
+}
 
 // Enable foreign keys
 db.pragma('foreign_keys = ON');
@@ -171,8 +197,11 @@ try {
   `);
   console.log('✓ Transactions table ready');
   console.log('✓ All database tables initialized');
+  console.log('🎉 Database setup complete!');
 } catch (error) {
   console.error('❌ Error initializing database:', error);
+  console.error('❌ Error message:', error.message);
+  console.error('❌ Error stack:', error.stack);
   throw error;
 }
 
