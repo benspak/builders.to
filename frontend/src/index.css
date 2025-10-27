@@ -12,3 +12,108 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background-color: #f7fafc;
 }
+
+/* Custom styles for Quill WYSIWYG Editor */
+.ql-toolbar.ql-snow {
+  border: 1px solid #e2e8f0;
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+  background-color: #f7fafc;
+}
+
+.ql-container.ql-snow {
+  border: 1px solid #e2e8f0;
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+}
+
+.ql-editor {
+  min-height: 150px;
+}
+
+.ql-editor.ql-blank::before {
+  color: #a0aec0;
+  font-style: normal;
+}
+
+.ql-snow .ql-stroke {
+  stroke: #4a5568;
+}
+
+.ql-snow .ql-fill {
+  fill: #4a5568;
+}
+
+.ql-snow .ql-picker-label {
+  color: #4a5568;
+}
+
+.ql-snow.ql-toolbar button:hover,
+.ql-snow .ql-toolbar button:hover,
+.ql-snow.ql-toolbar button:focus,
+.ql-snow .ql-toolbar button:focus,
+.ql-snow.ql-toolbar button.ql-active,
+.ql-snow .ql-toolbar button.ql-active {
+  background-color: #edf2f7;
+  border-radius: 4px;
+}
+
+/* Styles for rendered rich text content */
+.rich-text-display {
+  line-height: 1.6;
+}
+
+.rich-text-display h1,
+.rich-text-display h2,
+.rich-text-display h3 {
+  font-weight: bold;
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+}
+
+.rich-text-display h1 {
+  font-size: 1.875rem;
+}
+
+.rich-text-display h2 {
+  font-size: 1.5rem;
+}
+
+.rich-text-display h3 {
+  font-size: 1.25rem;
+}
+
+.rich-text-display p {
+  margin-bottom: 0.75rem;
+}
+
+.rich-text-display ul,
+.rich-text-display ol {
+  margin-left: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.rich-text-display li {
+  margin-bottom: 0.25rem;
+}
+
+.rich-text-display a {
+  color: #3182ce;
+  text-decoration: underline;
+}
+
+.rich-text-display a:hover {
+  text-decoration: none;
+}
+
+.rich-text-display strong {
+  font-weight: bold;
+}
+
+.rich-text-display em {
+  font-style: italic;
+}
+
+.rich-text-display u {
+  text-decoration: underline;
+}

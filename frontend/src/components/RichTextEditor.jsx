@@ -26,23 +26,15 @@ const RichTextEditor = ({ value, onChange, placeholder = 'Enter content here...'
   ];
 
   return (
-    <>
-      <style>{`
-        .ql-editor {
-          min-height: 150px;
-          max-height: 400px;
-        }
-      `}</style>
-      <ReactQuill
-        ref={quillRef}
-        theme="snow"
-        value={value}
-        onChange={onChange}
-        modules={modules}
-        formats={formats}
-        placeholder={placeholder}
-      />
-    </>
+    <ReactQuill
+      ref={quillRef}
+      theme="snow"
+      value={value}
+      onChange={onChange}
+      modules={modules}
+      formats={formats}
+      placeholder={placeholder}
+    />
   );
 };
 
@@ -55,41 +47,8 @@ export const RichTextDisplay = ({ content }) => {
 
   return (
     <Box
+      className="rich-text-display"
       dangerouslySetInnerHTML={{ __html: sanitizedContent }}
-      css={{
-        '& h1, & h2, & h3': {
-          fontWeight: 'bold',
-          marginTop: '1em',
-          marginBottom: '0.5em'
-        },
-        '& h1': { fontSize: '1.875rem' },
-        '& h2': { fontSize: '1.5rem' },
-        '& h3': { fontSize: '1.25rem' },
-        '& p': {
-          marginBottom: '0.75rem',
-          lineHeight: '1.6'
-        },
-        '& ul, & ol': {
-          marginLeft: '1.5rem',
-          marginBottom: '0.75rem'
-        },
-        '& li': {
-          marginBottom: '0.25rem'
-        },
-        '& a': {
-          color: '#3182ce',
-          textDecoration: 'underline'
-        },
-        '& strong': {
-          fontWeight: 'bold'
-        },
-        '& em': {
-          fontStyle: 'italic'
-        },
-        '& u': {
-          textDecoration: 'underline'
-        }
-      }}
     />
   );
 };
