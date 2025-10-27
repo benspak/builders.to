@@ -20,7 +20,7 @@ import {
   SkeletonText,
   Flex
 } from '@chakra-ui/react';
-import axios from 'axios';
+import axios from '../lib/axios';
 
 const PublicProfile = () => {
   const { userId } = useParams();

@@ -21,7 +21,7 @@ import {
 } from '@chakra-ui/react';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
-import axios from 'axios';
+import axios from '../lib/axios';
 import { useAuth } from '../context/AuthContext';
 import CheckoutForm from '../components/CheckoutForm';
 import RichTextEditor, { RichTextDisplay } from '../components/RichTextEditor';

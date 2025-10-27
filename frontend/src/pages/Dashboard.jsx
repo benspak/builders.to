@@ -23,7 +23,7 @@ import {
   Text
 } from '@chakra-ui/react';
 import { useAuth } from '../context/AuthContext';
-import axios from 'axios';
+import axios from '../lib/axios';
 
 const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();

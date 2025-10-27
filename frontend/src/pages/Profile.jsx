@@ -15,7 +15,7 @@ import {
   Divider
 } from '@chakra-ui/react';
 import { useAuth } from '../context/AuthContext';
-import axios from 'axios';
+import axios from '../lib/axios';
 
 const Profile = () => {
   const { user, loading: authLoading } = useAuth();

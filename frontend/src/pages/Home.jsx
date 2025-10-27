@@ -17,7 +17,7 @@ import {
   HStack
 } from '@chakra-ui/react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import axios from '../lib/axios';
 import { stripHtml } from '../components/RichTextEditor';
 
 const Home = () => {

@@ -14,7 +14,7 @@ import {
   AlertIcon
 } from '@chakra-ui/react';
 import { useAuth } from '../context/AuthContext';
-import axios from 'axios';
+import axios from '../lib/axios';
 import RichTextEditor from '../components/RichTextEditor';
 
 const CreateListing = () => {
