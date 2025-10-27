@@ -39,7 +39,8 @@ router.get('/', (req, res) => {
     const listings = db.prepare(query).all(...params);
     res.json(listings);
   } catch (error) {
-    res.status(500).json({ error: 'Server error' });
+    console.error('Error fetching listings:', error);
+    res.status(500).json({ error: error.message || 'Server error' });
   }
 });
 
