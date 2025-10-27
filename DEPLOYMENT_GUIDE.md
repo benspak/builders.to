@@ -138,10 +138,11 @@ The application will be available at:
 ### Overview
 
 The application uses `render.yaml` for infrastructure-as-code deployment. This file automatically configures:
-- Backend web service
-- Frontend static site
+- Backend web service (serves both API and frontend)
 - PostgreSQL database
 - Environment variables and connections
+
+**Note**: The frontend and backend are served from a single service to simplify deployment and handle SPA routing correctly.
 
 ### Deployment Steps
 
@@ -163,21 +164,18 @@ git push origin main
 
 #### 3. Deploy Services
 
-Render will create 3 services:
+Render will create 2 services:
 
 **a) PostgreSQL Database**:
 - Name: `builders-db`
 - Database: `builders`
-- Plan: `starter` (free tier)
+- Plan: `free` (free tier)
 
-**b) Backend Service**:
+**b) Backend Service** (serves API + frontend):
 - Name: `builders-backend`
-- Runtime: Node.js 18.20.8
-- Auto-deploys from main branch
-
-**c) Frontend Service**:
-- Name: `builders-frontend`
-- Type: Static site
+- Runtime: Node.js
+- Build Command: Builds frontend first, then backend
+- Start Command: Starts Express server that serves both API and static files
 - Auto-deploys from main branch
 
 #### 4. Configure Environment Variables
@@ -189,20 +187,13 @@ After deployment starts, add these environment variables in the Render dashboard
 # Already set by render.yaml:
 NODE_ENV=production
 DATABASE_URL=<auto-set from builders-db>
+VITE_API_URL=""  # Empty to use same-origin requests
 
 # Add these manually:
 JWT_SECRET=<generate a secure random string>
 STRIPE_SECRET_KEY=<from your Stripe dashboard>
 STRIPE_WEBHOOK_SECRET=<from your Stripe dashboard>
-```
-
-**Frontend Service** (`builders-frontend`):
-```env
-# Already set by render.yaml:
-VITE_API_URL=<auto-set to builders-backend URL>
-
-# Add this manually:
-VITE_STRIPE_PUBLISHABLE_KEY=<from your Stripe dashboard>
+POSTGRES_DATABASE_URL=<auto-set from builders-db>
 ```
 
 ### 5. Manual Render Setup (If not using render.yaml)
@@ -220,14 +211,7 @@ If you prefer manual setup or to update existing services:
    - **Start Command**: `cd backend && npm start`
    - **Node Version**: `18.20.8`
 
-#### Frontend Service Setup
-
-1. Go to Render dashboard → **New Static Site**
-2. Connect your GitHub repository
-3. Configure:
-   - **Name**: `builders-frontend`
-   - **Build Command**: `cd frontend && npm install && npm run build`
-   - **Publish Directory**: `frontend/dist`
+**Note**: Frontend is now served from the backend service, so no separate frontend service is needed.
 
 #### Database Setup
 
@@ -253,10 +237,13 @@ If you prefer manual setup or to update existing services:
 
 ### Frontend Environment Variables
 
-| Variable | Description | Example | Required |
-|----------|-------------|---------|----------|
-| `VITE_API_URL` | Backend API URL | `https://builders-backend.onrender.com` | Yes |
-| `VITE_STRIPE_PUBLISHABLE_KEY` | Stripe publishable key | `pk_live_...` or `pk_test_...` | Yes |
+**Note**: Since the frontend is now served from the backend, `VITE_API_URL` is set to empty (`""`) to allow same-origin API requests. This is handled automatically in `render.yaml`.
+
+The frontend still needs Stripe publishable key at build time. You'll need to set this in your local `.env` file when developing:
+
+```env
+VITE_STRIPE_PUBLISHABLE_KEY=pk_test_... or pk_live_...
+```
 
 ## Stripe Configuration
 

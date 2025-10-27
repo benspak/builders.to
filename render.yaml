@@ -2,9 +2,10 @@ services:
   - type: web
     name: builders-backend
     runtime: node
-    rootDir: backend
-    buildCommand: npm ci
-    startCommand: npm start
+    rootDir: .
+    buildCommand: |
+      cd frontend && npm ci && npm run build && cd ../backend && npm ci
+    startCommand: cd backend && npm start
     envVars:
       - key: NODE_ENV
         value: production
@@ -17,19 +18,12 @@ services:
         fromDatabase:
           name: builders-db
           property: connectionString
-
-  - type: web
-    name: builders-frontend
-    runtime: static
-    rootDir: frontend
-    buildCommand: npm ci && npm run build
-    staticPublishPath: dist
-    envVars:
+      # VITE_API_URL is empty - frontend uses relative API paths (same-origin)
+      # This allows the frontend to make API requests to the same domain
       - key: VITE_API_URL
-        fromService:
-          type: web
-          name: builders-backend
-          property: host
+        value: ""
+      # Note: VITE_STRIPE_PUBLISHABLE_KEY must be set manually in Render dashboard
+      # after deployment starts (required for Stripe checkout to work)
 
 databases:
   - name: builders-db

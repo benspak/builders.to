@@ -5,6 +5,7 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { existsSync } from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -41,10 +42,18 @@ const allowedOrigins = [
 // In development, allow all localhost
 const isDevelopment = process.env.NODE_ENV === 'development';
 
+// Check if we're serving static files (single-service mode)
+const isServingStatic = existsSync(join(__dirname, '../frontend/dist'));
+
 const corsOptions = {
   origin: (origin, callback) => {
     // Allow requests with no origin (mobile apps, Postman, curl, etc.)
     if (!origin) return callback(null, true);
+
+    // In single-service mode (serving static files), allow same-origin requests
+    if (isServingStatic) {
+      return callback(null, true);
+    }
 
     // In development, allow any localhost
     if (isDevelopment && origin.includes('localhost')) {
@@ -109,6 +118,26 @@ app.get('/health/db', async (req, res) => {
     });
   }
 });
+
+// Serve static files from frontend/build directory (production)
+const frontendPath = join(__dirname, '../frontend/dist');
+if (existsSync(frontendPath)) {
+  app.use(express.static(frontendPath));
+
+  // Catch-all handler: serve index.html for any non-API routes
+  // This allows React Router to handle client-side routing
+  app.get('*', (req, res) => {
+    // Don't serve index.html for API routes
+    if (req.path.startsWith('/api') || req.path.startsWith('/health')) {
+      return res.status(404).json({ error: 'Not found' });
+    }
+    res.sendFile(join(frontendPath, 'index.html'));
+  });
+
+  console.log('✅ Serving frontend static files from:', frontendPath);
+} else {
+  console.log('⚠️  Frontend static files not found. Running as API-only server.');
+}
 
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);

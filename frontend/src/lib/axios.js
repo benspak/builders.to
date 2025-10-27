@@ -11,9 +11,15 @@ if (API_URL && !API_URL.startsWith('http://') && !API_URL.startsWith('https://')
   API_URL = `https://${API_URL}`;
 }
 
-// Configure axios to use the API URL when in production
+// Configure axios to use the API URL when provided
+// If empty, axios will use relative paths (same-origin requests)
+// This works when frontend and backend are served from the same service
 if (API_URL) {
   axios.defaults.baseURL = API_URL;
+} else {
+  // No baseURL means requests will be relative to current origin
+  // This is perfect for same-origin deployments
+  axios.defaults.baseURL = '';
 }
 
 // Add request interceptor to attach auth token from localStorage on every request

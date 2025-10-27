@@ -151,8 +151,7 @@ The app will be available at http://localhost:3000. Make sure the backend is run
 2. Connect repository to Render
 3. Render automatically provisions:
    - PostgreSQL database
-   - Backend web service
-   - Frontend static site
+   - Backend web service (serves both API and frontend)
 
 ### Manual Configuration
 If needed, see detailed instructions in [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)
