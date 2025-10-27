@@ -4,6 +4,7 @@ import { ChakraProvider } from '@chakra-ui/react';
 import App from './App';
 import './index.css';
 import axios from 'axios';
+import theme from './theme';
 
 // Configure axios for production
 // In development, Vite proxy handles /api routes
@@ -15,7 +16,7 @@ if (API_URL) {
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <ChakraProvider>
+    <ChakraProvider theme={theme}>
       <App />
     </ChakraProvider>
   </React.StrictMode>
