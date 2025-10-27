@@ -2,8 +2,9 @@ services:
   - type: web
     name: builders-backend
     runtime: node
-    buildCommand: cd backend && npm ci
-    startCommand: cd backend && npm start
+    rootDir: backend
+    buildCommand: npm ci
+    startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production
@@ -17,16 +18,12 @@ services:
           name: builders-db
           property: connectionString
 
-databases:
-  - name: builders-db
-    databaseName: builders
-    plan: starter  # Free tier - can upgrade to paid plans later
-
   - type: web
     name: builders-frontend
     runtime: static
-    buildCommand: cd frontend && npm install && npm run build
-    staticPublishPath: frontend/dist
+    rootDir: frontend
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
     httpHeaders:
       - path: /*
         name: Cache-Control
@@ -41,3 +38,8 @@ databases:
           type: web
           name: builders-backend
           property: host
+
+databases:
+  - name: builders-db
+    databaseName: builders
+    plan: starter  # Free tier - can upgrade to paid plans later

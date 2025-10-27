@@ -24,14 +24,32 @@ app.set('trust proxy', true);
 app.use(helmet());
 
 // Configure CORS to allow requests from production domain
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://builders.to',
+  'https://www.builders.to'
+];
+
+// In development, allow all localhost
+const isDevelopment = process.env.NODE_ENV === 'development';
+
 const corsOptions = {
-  origin: [
-    'http://localhost:3000',
-    'https://builders.to',
-    'https://www.builders.to',
-    'https://builders-to.onrender.com',
-    'https://builders-to-backend.onrender.com'
-  ],
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, Postman, curl, etc.)
+    if (!origin) return callback(null, true);
+
+    // In development, allow any localhost
+    if (isDevelopment && origin.includes('localhost')) {
+      return callback(null, true);
+    }
+
+    // Allow specific domains or any Render domain
+    if (allowedOrigins.includes(origin) || origin.includes('.onrender.com')) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
 };
 app.use(cors(corsOptions));
