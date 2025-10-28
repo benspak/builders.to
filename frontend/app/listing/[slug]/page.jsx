@@ -33,7 +33,7 @@ const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY 
 
 export default function ListingDetail() {
   const params = useParams();
-  const id = params.id;
+  const slug = params.slug;
   const router = useRouter();
   const { user } = useAuth();
   const [listing, setListing] = useState(null);
@@ -52,11 +52,11 @@ export default function ListingDetail() {
   useEffect(() => {
     fetchListing();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+  }, [slug]);
 
   const fetchListing = async () => {
     try {
-      const response = await axios.get(`/api/listings/${id}`);
+      const response = await axios.get(`/api/listings/${slug}`);
       setListing(response.data);
       setEditFormData({
         category: response.data.category,
@@ -83,7 +83,7 @@ export default function ListingDetail() {
         ? '/api/payments/create-listing-payment'
         : '/api/payments/create-featured-payment';
 
-      const response = await axios.post(endpoint, { listingId: id });
+      const response = await axios.post(endpoint, { listingId: listing.id });
 
       if (response.data.clientSecret) {
         setClientSecret(response.data.clientSecret);
@@ -105,7 +105,7 @@ export default function ListingDetail() {
     }
 
     try {
-      await axios.delete(`/api/listings/${id}`);
+      await axios.delete(`/api/listings/${listing.id}`);
       router.push('/dashboard');
     } catch (error) {
       console.error('Failed to delete listing:', error);
@@ -129,7 +129,7 @@ export default function ListingDetail() {
 
   const handleSaveEdit = async () => {
     try {
-      await axios.put(`/api/listings/${id}`, editFormData);
+      await axios.put(`/api/listings/${listing.id}`, editFormData);
       await fetchListing();
       setEditing(false);
     } catch (error) {
@@ -188,11 +188,13 @@ export default function ListingDetail() {
 
               <HStack justify="space-between" fontSize="sm" color="gray.500">
                 <Text>Posted on {new Date(listing.created_at).toLocaleDateString()}</Text>
-                <Link href={`/user/${listing.user_id}`}>
-                  <Button size="sm" variant="link" colorScheme="blue">
-                    View Profile
-                  </Button>
-                </Link>
+                {listing.profile_username && (
+                  <Link href={`/user/${listing.profile_username}`}>
+                    <Button size="sm" variant="link" colorScheme="blue">
+                      View Profile
+                    </Button>
+                  </Link>
+                )}
               </HStack>
 
               {isOwner && listing.payment_status === 'pending' && (

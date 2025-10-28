@@ -102,7 +102,7 @@ export default function Dashboard() {
                     {listings.map(listing => (
                       <Tr key={listing.id}>
                         <Td>
-                          <Link href={`/listing/${listing.id}`}>{listing.title}</Link>
+                          <Link href={`/listing/${listing.slug}`}>{listing.title}</Link>
                         </Td>
                         <Td>
                           <Badge>{listing.category}</Badge>
@@ -115,7 +115,7 @@ export default function Dashboard() {
                         <Td>{listing.is_featured ? '⭐' : '-'}</Td>
                         <Td>{new Date(listing.created_at).toLocaleDateString()}</Td>
                         <Td>
-                          <Link href={`/listing/${listing.id}`}>
+                          <Link href={`/listing/${listing.slug}`}>
                             <Button size="sm">View</Button>
                           </Link>
                         </Td>

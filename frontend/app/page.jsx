@@ -106,17 +106,19 @@ export default function Home() {
                   </VStack>
                 </Flex>
                 <Heading size="sm" mt={2}>
-                  <Link href={`/listing/${listing.id}`}>{listing.title}</Link>
+                  <Link href={`/listing/${listing.slug}`}>{listing.title}</Link>
                 </Heading>
                 <HStack justify="space-between" align="center" mt={2} width="100%">
                   {listing.location && (
                     <Text fontSize="sm" color="gray.600">{listing.location}</Text>
                   )}
-                  <Link href={`/user/${listing.user_id}`}>
-                    <Button size="xs" variant="link" colorScheme="blue">
-                      Profile →
-                    </Button>
-                  </Link>
+                  {listing.profile_username && (
+                    <Link href={`/user/${listing.profile_username}`}>
+                      <Button size="xs" variant="link" colorScheme="blue">
+                        Profile →
+                      </Button>
+                    </Link>
+                  )}
                 </HStack>
               </CardHeader>
               <CardBody>

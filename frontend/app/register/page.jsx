@@ -20,6 +20,8 @@ import Link from 'next/link';
 import { useAuth } from '../../src/context/AuthContext';
 
 export default function Register() {
+  const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -44,9 +46,14 @@ export default function Register() {
       return;
     }
 
+    if (!name || !username) {
+      setError('Name and username are required');
+      return;
+    }
+
     setLoading(true);
 
-    const result = await register(email, password);
+    const result = await register(email, password, name, username);
     setLoading(false);
 
     if (result.success) {
@@ -71,6 +78,26 @@ export default function Register() {
 
           <form onSubmit={handleSubmit} style={{ width: '100%' }}>
             <VStack spacing={4}>
+              <FormControl isRequired>
+                <FormLabel>Name</FormLabel>
+                <Input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Your full name"
+                />
+              </FormControl>
+
+              <FormControl isRequired>
+                <FormLabel>Username</FormLabel>
+                <Input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="Choose a username"
+                />
+              </FormControl>
+
               <FormControl isRequired>
                 <FormLabel>Email</FormLabel>
                 <Input

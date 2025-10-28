@@ -3,6 +3,7 @@ import rateLimit from 'express-rate-limit';
 import { authenticateToken, optionalAuth } from '../middleware/auth.js';
 import db from '../database/db.js';
 import { logError } from '../utils/errorLogger.js';
+import { generateSlug } from '../utils/slug.js';
 
 const router = express.Router();
 
@@ -20,20 +21,27 @@ router.get('/', async (req, res) => {
   try {
     const { location, category, featured } = req.query;
 
-    let query = 'SELECT * FROM listings WHERE (payment_status = $1 OR payment_status = $2)';
+    let query = `
+      SELECT
+        l.*,
+        p.username as profile_username
+      FROM listings l
+      LEFT JOIN profiles p ON l.user_id = p.user_id
+      WHERE (l.payment_status = $1 OR l.payment_status = $2)
+    `;
     const params = ['paid', 'featured'];
 
     if (featured === 'true') {
-      query += ' AND is_featured = 1';
+      query += ' AND l.is_featured = 1';
     } else if (location) {
-      query += ' AND location = $' + (params.length + 1);
+      query += ' AND l.location = $' + (params.length + 1);
       params.push(location);
     } else if (category) {
-      query += ' AND category = $' + (params.length + 1);
+      query += ' AND l.category = $' + (params.length + 1);
       params.push(category);
     }
 
-    query += ' ORDER BY is_featured DESC, created_at DESC';
+    query += ' ORDER BY l.is_featured DESC, l.created_at DESC';
 
     const result = await db.query(query, params);
     res.json(result.rows);
@@ -43,10 +51,31 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Get listing by ID
-router.get('/:id', optionalAuth, async (req, res) => {
+// Get listing by ID or slug
+router.get('/:identifier', optionalAuth, async (req, res) => {
   try {
-    const result = await db.query('SELECT * FROM listings WHERE id = $1', [req.params.id]);
+    const { identifier } = req.params;
+
+    // Try to get by slug first, fallback to id for backward compatibility
+    let result;
+    if (isNaN(identifier)) {
+      // It's a slug
+      result = await db.query(`
+        SELECT l.*, p.username as profile_username
+        FROM listings l
+        LEFT JOIN profiles p ON l.user_id = p.user_id
+        WHERE l.slug = $1
+      `, [identifier]);
+    } else {
+      // It's an ID (backward compatibility)
+      result = await db.query(`
+        SELECT l.*, p.username as profile_username
+        FROM listings l
+        LEFT JOIN profiles p ON l.user_id = p.user_id
+        WHERE l.id = $1
+      `, [identifier]);
+    }
+
     const listing = result.rows[0];
 
     if (!listing) {
@@ -74,7 +103,7 @@ router.get('/:id', optionalAuth, async (req, res) => {
 
     res.json(listing);
   } catch (error) {
-    logError('GET /:id', error, { id: req.params.id, userId: req.user?.id });
+    logError('GET /:identifier', error, { identifier: req.params.identifier, userId: req.user?.id });
     res.status(500).json({ error: 'Server error' });
   }
 });
@@ -118,13 +147,26 @@ router.post('/', authenticateToken, createListingLimiter, async (req, res) => {
       });
     }
 
-    const result = await db.query(`
-      INSERT INTO listings (user_id, category, title, location, description)
-      VALUES ($1, $2, $3, $4, $5)
-      RETURNING id
-    `, [req.user.id, category, title, location, description]);
+    // Generate a unique slug from the title
+    const baseSlug = generateSlug(title);
+    let uniqueSlug = baseSlug;
+    let counter = 1;
 
-    res.status(201).json({ message: 'Listing created successfully', id: result.rows[0].id });
+    // Ensure slug is unique
+    while (true) {
+      const existing = await db.query('SELECT id FROM listings WHERE slug = $1', [uniqueSlug]);
+      if (existing.rows.length === 0) break;
+      uniqueSlug = `${baseSlug}-${counter}`;
+      counter++;
+    }
+
+    const result = await db.query(`
+      INSERT INTO listings (user_id, category, title, location, description, slug)
+      VALUES ($1, $2, $3, $4, $5, $6)
+      RETURNING id, slug
+    `, [req.user.id, category, title, location, description, uniqueSlug]);
+
+    res.status(201).json({ message: 'Listing created successfully', id: result.rows[0].id, slug: result.rows[0].slug });
   } catch (error) {
     logError('POST /', error, { userId: req.user?.id });
     res.status(500).json({ error: 'Failed to create listing' });
@@ -160,11 +202,27 @@ router.put('/:id', authenticateToken, async (req, res) => {
       });
     }
 
+    // Generate a new slug if the title has changed
+    let uniqueSlug = listing.slug;
+    if (title !== listing.title) {
+      const baseSlug = generateSlug(title);
+      uniqueSlug = baseSlug;
+      let counter = 1;
+
+      // Ensure slug is unique (excluding current listing)
+      while (true) {
+        const existing = await db.query('SELECT id FROM listings WHERE slug = $1 AND id != $2', [uniqueSlug, req.params.id]);
+        if (existing.rows.length === 0) break;
+        uniqueSlug = `${baseSlug}-${counter}`;
+        counter++;
+      }
+    }
+
     await db.query(`
       UPDATE listings SET
-        category = $1, title = $2, location = $3, description = $4, updated_at = CURRENT_TIMESTAMP
-      WHERE id = $5
-    `, [category, title, location, description, req.params.id]);
+        category = $1, title = $2, location = $3, description = $4, slug = $5, updated_at = CURRENT_TIMESTAMP
+      WHERE id = $6
+    `, [category, title, location, description, uniqueSlug, req.params.id]);
 
     res.json({ message: 'Listing updated successfully' });
   } catch (error) {
@@ -211,9 +269,13 @@ router.get('/user/my-listings', authenticateToken, async (req, res) => {
 router.get('/user/:userId', async (req, res) => {
   try {
     const result = await db.query(`
-      SELECT * FROM listings
-      WHERE user_id = $1 AND (payment_status = 'paid' OR payment_status = 'featured')
-      ORDER BY created_at DESC
+      SELECT
+        l.*,
+        p.username as profile_username
+      FROM listings l
+      LEFT JOIN profiles p ON l.user_id = p.user_id
+      WHERE l.user_id = $1 AND (l.payment_status = 'paid' OR l.payment_status = 'featured')
+      ORDER BY l.created_at DESC
     `, [req.params.userId]);
 
     res.json(result.rows);

@@ -27,7 +27,7 @@ import axios from '../../../src/lib/axios';
 
 export default function PublicProfile() {
   const params = useParams();
-  const userId = params.userId;
+  const username = params.username;
   const [profile, setProfile] = useState(null);
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -36,16 +36,16 @@ export default function PublicProfile() {
   useEffect(() => {
     fetchProfile();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId]);
+  }, [username]);
 
   const fetchProfile = async () => {
     try {
-      // Fetch profile by user_id
-      const profileResponse = await axios.get(`/api/profiles/user/${userId}`);
+      // Fetch profile by username
+      const profileResponse = await axios.get(`/api/profiles/username/${username}`);
       setProfile(profileResponse.data);
 
-      // Fetch user's listings
-      const listingsResponse = await axios.get(`/api/listings/user/${userId}`);
+      // Fetch user's listings by user_id
+      const listingsResponse = await axios.get(`/api/listings/user/${profileResponse.data.user_id}`);
       setListings(listingsResponse.data);
 
       setLoading(false);
@@ -86,6 +86,9 @@ export default function PublicProfile() {
               <Avatar size="2xl" name={profile.name} />
               <VStack align="start" spacing={2} flex={1}>
                 <Heading size="lg">{profile.name || 'Builder'}</Heading>
+                {profile.username && (
+                  <Text color="gray.500">@{profile.username}</Text>
+                )}
                 {profile.sub_heading && (
                   <Text color="gray.600">{profile.sub_heading}</Text>
                 )}
@@ -189,7 +192,7 @@ export default function PublicProfile() {
                           {listing.category} • {listing.location}
                         </Text>
                       </Box>
-                      <Link href={`/listing/${listing.id}`}>
+                      <Link href={`/listing/${listing.slug}`}>
                         <Button size="sm">
                           View
                         </Button>

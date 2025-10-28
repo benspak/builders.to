@@ -14,7 +14,8 @@ import {
   VStack,
   Alert,
   AlertIcon,
-  Divider
+  Divider,
+  Text
 } from '@chakra-ui/react';
 import { useAuth } from '../../src/context/AuthContext';
 import axios from '../../src/lib/axios';
@@ -27,6 +28,7 @@ export default function Profile() {
   const [error, setError] = useState('');
   const [profile, setProfile] = useState({
     name: '',
+    username: '',
     sub_heading: '',
     location: '',
     about: '',
@@ -83,7 +85,7 @@ export default function Profile() {
 
   return (
     <Container maxW="3xl" py={8}>
-      <Box bg={{ base: 'white', _dark: 'gray.800' }} p={8} borderRadius="lg" shadow="md">
+      <Box bg="white" _dark={{ bg: 'gray.800' }} p={8} borderRadius="lg" shadow="md">
         <VStack spacing={6} align="stretch">
           <Heading size="lg">Your Profile</Heading>
 
@@ -110,6 +112,18 @@ export default function Profile() {
                   onChange={(e) => setProfile({ ...profile, name: e.target.value })}
                   placeholder="Your name"
                 />
+              </FormControl>
+
+              <FormControl isRequired>
+                <FormLabel>Username</FormLabel>
+                <Input
+                  value={profile.username}
+                  onChange={(e) => setProfile({ ...profile, username: e.target.value })}
+                  placeholder="Your username (used in your profile URL)"
+                />
+                <Text fontSize="sm" color="gray.500" mt={1}>
+                  Your profile will be at /user/{profile.username || 'username'}
+                </Text>
               </FormControl>
 
               <FormControl>

@@ -48,10 +48,10 @@ export default function CreateListing() {
 
     try {
       const response = await axios.post('/api/listings', formData);
-      const listingId = response.data.id;
+      const slug = response.data.slug;
 
       // Redirect to listing detail page
-      router.push(`/listing/${listingId}`);
+      router.push(`/listing/${slug}`);
     } catch (error) {
       setError(error.response?.data?.error || 'Failed to create listing');
       setLoading(false);

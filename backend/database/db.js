@@ -49,11 +49,22 @@ const initializeDatabase = async () => {
         id SERIAL PRIMARY KEY,
         email TEXT UNIQUE NOT NULL,
         password_hash TEXT NOT NULL,
+        name TEXT,
+        username TEXT UNIQUE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
     console.log('✓ Users table ready');
+
+    // Add name and username columns if they don't exist (for existing databases)
+    try {
+      await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS name TEXT');
+      await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS username TEXT');
+      await pool.query('CREATE UNIQUE INDEX IF NOT EXISTS username_unique_idx ON users(username) WHERE username IS NOT NULL');
+    } catch (error) {
+      // Columns might already exist, ignore error
+    }
 
     // Create profiles table
     await pool.query(`
@@ -61,6 +72,7 @@ const initializeDatabase = async () => {
         id SERIAL PRIMARY KEY,
         user_id INTEGER UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
         name TEXT NOT NULL,
+        username TEXT,
         sub_heading TEXT,
         location TEXT,
         about TEXT,
@@ -76,6 +88,13 @@ const initializeDatabase = async () => {
     `);
     console.log('✓ Profiles table ready');
 
+    // Add username column if it doesn't exist
+    try {
+      await pool.query('ALTER TABLE profiles ADD COLUMN IF NOT EXISTS username TEXT');
+    } catch (error) {
+      // Column might already exist, ignore error
+    }
+
     // Create listings table
     await pool.query(`
       CREATE TABLE IF NOT EXISTS listings (
@@ -87,11 +106,46 @@ const initializeDatabase = async () => {
         description TEXT NOT NULL,
         is_featured INTEGER DEFAULT 0,
         payment_status TEXT DEFAULT 'pending' CHECK(payment_status IN ('pending', 'paid', 'featured')),
+        slug TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
     console.log('✓ Listings table ready');
+
+    // Add slug column if it doesn't exist (for existing databases)
+    try {
+      await pool.query('ALTER TABLE listings ADD COLUMN IF NOT EXISTS slug TEXT');
+      await pool.query('CREATE UNIQUE INDEX IF NOT EXISTS slug_unique_idx ON listings(slug) WHERE slug IS NOT NULL');
+
+      // Generate slugs for existing listings that don't have one
+      const existingListings = await pool.query('SELECT id, title FROM listings WHERE slug IS NULL');
+      for (const listing of existingListings.rows) {
+        const baseSlug = listing.title
+          .toLowerCase()
+          .trim()
+          .replace(/\s+/g, '-')
+          .replace(/[^\w\-]+/g, '')
+          .replace(/\-\-+/g, '-')
+          .replace(/^-+/, '')
+          .replace(/-+$/, '');
+
+        // Check for existing slug and make it unique if needed
+        let uniqueSlug = baseSlug;
+        let counter = 1;
+        while (true) {
+          const existing = await pool.query('SELECT id FROM listings WHERE slug = $1', [uniqueSlug]);
+          if (existing.rows.length === 0) break;
+          uniqueSlug = `${baseSlug}-${counter}`;
+          counter++;
+        }
+
+        await pool.query('UPDATE listings SET slug = $1 WHERE id = $2', [uniqueSlug, listing.id]);
+      }
+    } catch (error) {
+      // Column might already exist, ignore error
+      console.log('Slug column migration:', error.message);
+    }
 
     // Create transactions table
     await pool.query(`
