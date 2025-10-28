@@ -106,7 +106,7 @@ const CreateListing = () => {
 
               <FormControl isRequired>
                 <FormLabel>Description</FormLabel>
-                <Box bg="white" _dark={{ bg: 'gray.900' }} borderWidth="1px" borderColor="gray.300" _dark={{ borderColor: 'gray.600' }} borderRadius="md">
+                <Box bg="white" _dark={{ bg: 'gray.900', borderColor: 'gray.600' }} borderWidth="1px" borderColor="gray.300" borderRadius="md">
                   <RichTextEditor
                     value={formData.description}
                     onChange={(value) => setFormData({ ...formData, description: value })}
