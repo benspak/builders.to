@@ -8,15 +8,19 @@ const __dirname = dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Serve static files from dist directory
-app.use(express.static(join(__dirname, 'dist')));
+const staticDir = join(__dirname, 'dist');
 
-// Handle SPA routing - all routes should serve index.html
+// Serve static files from dist directory with fallthrough option
+// This allows the catch-all route to handle non-existent files
+app.use(express.static(staticDir, { fallthrough: true }));
+
+// Serve index.html for all routes that don't match static files (SPA routing)
 app.get('*', (req, res) => {
-  res.sendFile(join(__dirname, 'dist', 'index.html'));
+  res.sendFile(join(staticDir, 'index.html'));
 });
 
 app.listen(PORT, () => {
   console.log(`✅ Frontend server running on port ${PORT}`);
-  console.log(`📁 Serving static files from ${join(__dirname, 'dist')}`);
+  console.log(`📁 Serving static files from ${staticDir}`);
+  console.log(`🔀 SPA routing enabled - all routes serve index.html`);
 });
