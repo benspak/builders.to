@@ -89,7 +89,7 @@ export default function Login() {
           </form>
 
           <Text>
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <Link href="/register" style={{ color: 'blue' }}>Sign up</Link>
           </Text>
         </VStack>

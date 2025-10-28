@@ -34,6 +34,7 @@ export default function Home() {
 
   useEffect(() => {
     filterListings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [listings, selectedCategory, selectedLocation]);
 
   const fetchListings = async () => {
