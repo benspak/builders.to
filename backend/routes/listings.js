@@ -2,6 +2,7 @@ import express from 'express';
 import rateLimit from 'express-rate-limit';
 import { authenticateToken, optionalAuth } from '../middleware/auth.js';
 import db from '../database/db.js';
+import { logError } from '../utils/errorLogger.js';
 
 const router = express.Router();
 
@@ -37,12 +38,8 @@ router.get('/', async (req, res) => {
     const result = await db.query(query, params);
     res.json(result.rows);
   } catch (error) {
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Error fetching listings:', error);
-    } else {
-      console.error('Error fetching listings');
-    }
-    res.status(500).json({ error: error.message || 'Server error' });
+    logError('GET /', error);
+    res.status(500).json({ error: 'Server error' });
   }
 });
 
@@ -77,6 +74,7 @@ router.get('/:id', optionalAuth, async (req, res) => {
 
     res.json(listing);
   } catch (error) {
+    logError('GET /:id', error, { id: req.params.id, userId: req.user?.id });
     res.status(500).json({ error: 'Server error' });
   }
 });
@@ -128,12 +126,8 @@ router.post('/', authenticateToken, createListingLimiter, async (req, res) => {
 
     res.status(201).json({ message: 'Listing created successfully', id: result.rows[0].id });
   } catch (error) {
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Error creating listing:', error);
-    } else {
-      console.error('Error creating listing');
-    }
-    res.status(500).json({ error: error.message || 'Server error' });
+    logError('POST /', error, { userId: req.user?.id });
+    res.status(500).json({ error: 'Failed to create listing' });
   }
 });
 
@@ -174,12 +168,8 @@ router.put('/:id', authenticateToken, async (req, res) => {
 
     res.json({ message: 'Listing updated successfully' });
   } catch (error) {
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Error updating listing:', error);
-    } else {
-      console.error('Error updating listing');
-    }
-    res.status(500).json({ error: error.message || 'Server error' });
+    logError('PUT /:id', error, { id: req.params.id, userId: req.user?.id });
+    res.status(500).json({ error: 'Failed to update listing' });
   }
 });
 
@@ -198,6 +188,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     await db.query('DELETE FROM listings WHERE id = $1', [req.params.id]);
     res.json({ message: 'Listing deleted successfully' });
   } catch (error) {
+    logError('DELETE /:id', error, { id: req.params.id, userId: req.user?.id });
     res.status(500).json({ error: 'Server error' });
   }
 });
@@ -211,6 +202,7 @@ router.get('/user/my-listings', authenticateToken, async (req, res) => {
     );
     res.json(result.rows);
   } catch (error) {
+    logError('GET /user/my-listings', error, { userId: req.user?.id });
     res.status(500).json({ error: 'Server error' });
   }
 });
@@ -226,11 +218,7 @@ router.get('/user/:userId', async (req, res) => {
 
     res.json(result.rows);
   } catch (error) {
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Error fetching user listings:', error);
-    } else {
-      console.error('Error fetching user listings');
-    }
+    logError('GET /user/:userId', error, { userId: req.params.userId });
     res.status(500).json({ error: 'Server error' });
   }
 });

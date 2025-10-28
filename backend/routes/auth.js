@@ -2,6 +2,7 @@ import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import db from '../database/db.js';
+import { logError } from '../utils/errorLogger.js';
 
 const router = express.Router();
 
@@ -34,6 +35,7 @@ router.post('/register', async (req, res) => {
 
     res.status(201).json({ token, user: { id: userId, email } });
   } catch (error) {
+    logError('POST /register', error);
     res.status(500).json({ error: 'Server error' });
   }
 });
@@ -65,6 +67,7 @@ router.post('/login', async (req, res) => {
 
     res.json({ token, user: { id: user.id, email: user.email } });
   } catch (error) {
+    logError('POST /login', error);
     res.status(500).json({ error: 'Server error' });
   }
 });
@@ -92,6 +95,7 @@ router.get('/me', async (req, res) => {
     if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
       return res.status(401).json({ error: 'Invalid or expired token' });
     }
+    logError('GET /me', error);
     res.status(500).json({ error: 'Server error' });
   }
 });

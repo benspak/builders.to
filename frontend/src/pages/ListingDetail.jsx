@@ -78,19 +78,17 @@ const ListingDetail = () => {
         ? '/api/payments/create-listing-payment'
         : '/api/payments/create-featured-payment';
 
-      console.log('Creating payment with listing ID:', id);
       const response = await axios.post(endpoint, { listingId: id });
-      console.log('Payment response:', response.data);
 
       if (response.data.clientSecret) {
         setClientSecret(response.data.clientSecret);
         setShowPayment(true);
       } else {
-        console.error('No clientSecret in response:', response.data);
+        console.error('Failed to initialize payment');
         alert('Failed to initialize payment. Please try again.');
       }
     } catch (error) {
-      console.error('Failed to create payment:', error);
+      console.error('Failed to create payment');
       const errorMessage = error.response?.data?.error || 'Failed to create payment. Please try again.';
       alert(errorMessage);
     }

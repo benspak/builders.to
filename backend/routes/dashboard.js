@@ -1,6 +1,7 @@
 import express from 'express';
 import { authenticateToken } from '../middleware/auth.js';
 import db from '../database/db.js';
+import { logError } from '../utils/errorLogger.js';
 
 const router = express.Router();
 
@@ -18,11 +19,7 @@ router.get('/', authenticateToken, async (req, res) => {
 
     res.json({ listings: listingsResult.rows, transactions: transactionsResult.rows });
   } catch (error) {
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Error fetching dashboard data:', error);
-    } else {
-      console.error('Error fetching dashboard data');
-    }
+    logError('GET /', error, { userId: req.user?.id });
     res.status(500).json({ error: 'Server error' });
   }
 });
@@ -37,11 +34,7 @@ router.get('/transactions', authenticateToken, async (req, res) => {
 
     res.json(result.rows);
   } catch (error) {
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Error fetching transactions:', error);
-    } else {
-      console.error('Error fetching transactions');
-    }
+    logError('GET /transactions', error, { userId: req.user?.id });
     res.status(500).json({ error: 'Server error' });
   }
 });
@@ -55,11 +48,7 @@ router.get('/listings', authenticateToken, async (req, res) => {
     );
     res.json(result.rows);
   } catch (error) {
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Error fetching listings:', error);
-    } else {
-      console.error('Error fetching listings');
-    }
+    logError('GET /listings', error, { userId: req.user?.id });
     res.status(500).json({ error: 'Server error' });
   }
 });

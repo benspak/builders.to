@@ -106,11 +106,17 @@ app.get('/health/db', async (req, res) => {
       listings_count: parseInt(result.rows[0].count)
     });
   } catch (error) {
-    console.error('Database health check failed:', error);
+    // Don't expose error details in production
+    const errorMessage = process.env.NODE_ENV === 'production'
+      ? 'Database connection failed'
+      : error.message;
+
+    console.error('Database health check failed');
+
     res.status(500).json({
       status: 'error',
       message: 'Database connection failed',
-      error: error.message
+      error: errorMessage
     });
   }
 });

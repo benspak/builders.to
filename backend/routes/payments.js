@@ -2,6 +2,7 @@ import express from 'express';
 import Stripe from 'stripe';
 import { authenticateToken } from '../middleware/auth.js';
 import db from '../database/db.js';
+import { logError } from '../utils/errorLogger.js';
 
 const router = express.Router();
 
@@ -20,7 +21,7 @@ const getStripe = () => {
       console.log('✓ Stripe initialized successfully');
     }
     } catch (error) {
-      console.error('❌ Failed to initialize Stripe:', error.message);
+      console.error('❌ Failed to initialize Stripe');
     }
   } else if (!process.env.STRIPE_SECRET_KEY) {
     console.warn('⚠️  STRIPE_SECRET_KEY not set. Payment features will not work.');
@@ -72,8 +73,8 @@ router.post('/create-listing-payment', authenticateToken, async (req, res) => {
 
     res.json({ clientSecret: paymentIntent.client_secret, paymentIntentId: paymentIntent.id });
   } catch (error) {
-    console.error('Error creating listing payment:', error);
-    res.status(500).json({ error: error.message || 'Server error' });
+    logError('POST /create-listing-payment', error, { listingId: req.body.listingId, userId: req.user?.id });
+    res.status(500).json({ error: 'Failed to create payment' });
   }
 });
 
@@ -119,8 +120,8 @@ router.post('/create-featured-payment', authenticateToken, async (req, res) => {
 
     res.json({ clientSecret: paymentIntent.client_secret, paymentIntentId: paymentIntent.id });
   } catch (error) {
-    console.error('Error creating featured payment:', error);
-    res.status(500).json({ error: error.message || 'Server error' });
+    logError('POST /create-featured-payment', error, { listingId: req.body.listingId, userId: req.user?.id });
+    res.status(500).json({ error: 'Failed to create payment' });
   }
 });
 
@@ -152,8 +153,8 @@ webhookRouter.post('/', async (req, res) => {
     await handleWebhookEvent(event);
     res.json({ received: true });
   } catch (err) {
-    console.error('Webhook error:', err.message);
-    return res.status(400).send(`Webhook Error: ${err.message}`);
+    logError('POST /webhook', err);
+    return res.status(400).send('Webhook Error');
   }
 });
 

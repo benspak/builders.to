@@ -35,7 +35,7 @@ pool.on('connect', () => {
 });
 
 pool.on('error', (err) => {
-  console.error('❌ Unexpected error on idle client', err);
+  console.error('❌ Unexpected error on idle client');
 });
 
 // Initialize database tables
@@ -109,7 +109,7 @@ const initializeDatabase = async () => {
     console.log('✓ Transactions table ready');
     console.log('🎉 PostgreSQL database initialized successfully!');
   } catch (error) {
-    console.error('❌ Error initializing database:', error.message);
+    console.error('❌ Error initializing database');
     throw error;
   }
 };
@@ -138,9 +138,9 @@ const query = async (text, params) => {
 
     return res;
   } catch (error) {
-    // In production, don't expose query details or params
-    if (isDevelopment) {
-      console.error('Query error:', { text, params, error: error.message });
+    // Log error message without exposing query details or params in production
+    if (process.env.NODE_ENV === 'production') {
+      console.error('Query error occurred');
     } else {
       console.error('Query error:', error.message);
     }

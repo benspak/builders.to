@@ -1,6 +1,7 @@
 import express from 'express';
 import { authenticateToken } from '../middleware/auth.js';
 import db from '../database/db.js';
+import { logError } from '../utils/errorLogger.js';
 
 const router = express.Router();
 
@@ -10,6 +11,7 @@ router.get('/me', authenticateToken, async (req, res) => {
     const result = await db.query('SELECT * FROM profiles WHERE user_id = $1', [req.user.id]);
     res.json(result.rows[0] || null);
   } catch (error) {
+    logError('GET /me', error, { userId: req.user?.id });
     res.status(500).json({ error: 'Server error' });
   }
 });
@@ -23,6 +25,7 @@ router.get('/user/:userId', async (req, res) => {
     }
     res.json(result.rows[0]);
   } catch (error) {
+    logError('GET /user/:userId', error, { userId: req.params.userId });
     res.status(500).json({ error: 'Server error' });
   }
 });
@@ -36,6 +39,7 @@ router.get('/:id', async (req, res) => {
     }
     res.json(result.rows[0]);
   } catch (error) {
+    logError('GET /:id', error, { id: req.params.id });
     res.status(500).json({ error: 'Server error' });
   }
 });
@@ -88,6 +92,7 @@ router.post('/', authenticateToken, async (req, res) => {
       res.status(201).json({ message: 'Profile created successfully', id: insertResult.rows[0].id });
     }
   } catch (error) {
+    logError('POST /', error, { userId: req.user?.id });
     res.status(500).json({ error: 'Server error' });
   }
 });
@@ -98,6 +103,7 @@ router.get('/', async (req, res) => {
     const result = await db.query('SELECT * FROM profiles ORDER BY created_at DESC');
     res.json(result.rows);
   } catch (error) {
+    logError('GET /', error);
     res.status(500).json({ error: 'Server error' });
   }
 });

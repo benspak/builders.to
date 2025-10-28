@@ -28,9 +28,7 @@ export const AuthProvider = ({ children }) => {
           }
         } catch (error) {
           // Token is invalid or expired
-          console.error('Auth restoration failed:', error);
-          console.error('Error response:', error.response?.data);
-          console.error('Error status:', error.response?.status);
+          console.error('Auth restoration failed');
           localStorage.removeItem('token');
         }
       }
@@ -45,17 +43,12 @@ export const AuthProvider = ({ children }) => {
       const response = await axios.post('/api/auth/login', { email, password });
       const { token, user } = response.data;
 
-      console.log('Login successful, setting token and user:', { user });
-
       localStorage.setItem('token', token);
       setUser(user);
 
-      console.log('User state set, now:', user);
-
       return { success: true };
     } catch (error) {
-      console.error('Login error:', error);
-      console.error('Error response:', error.response?.data);
+      console.error('Login error:', error.response?.data?.error || 'Login failed');
       return { success: false, error: error.response?.data?.error || 'Login failed' };
     }
   };
@@ -65,17 +58,12 @@ export const AuthProvider = ({ children }) => {
       const response = await axios.post('/api/auth/register', { email, password });
       const { token, user } = response.data;
 
-      console.log('Registration successful, setting token and user:', { user });
-
       localStorage.setItem('token', token);
       setUser(user);
 
-      console.log('User state set, now:', user);
-
       return { success: true };
     } catch (error) {
-      console.error('Registration error:', error);
-      console.error('Error response:', error.response?.data);
+      console.error('Registration error:', error.response?.data?.error || 'Registration failed');
       return { success: false, error: error.response?.data?.error || 'Registration failed' };
     }
   };
