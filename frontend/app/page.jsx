@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import {
   Container,
+  Box,
   Heading,
   SimpleGrid,
   Card,
@@ -63,16 +64,21 @@ export default function Home() {
   };
 
   return (
-    <Container maxW="1200px" py={8}>
-      <VStack spacing={6} align="stretch">
-        <Heading size="xl">List Jobs, Offer Services, Sell Businesses</Heading>
-        <Heading size="md">Cost: $5 per listing</Heading>
-        <Flex gap={4} flexWrap="wrap">
+    <Container maxW="1200px" py={{ base: 4, md: 8 }} px={{ base: 4, md: 6 }}>
+      <VStack spacing={{ base: 4, md: 6 }} align="stretch">
+        <Heading size={{ base: "lg", md: "xl" }}>List Jobs, Offer Services, Sell Businesses</Heading>
+        <Heading size={{ base: "sm", md: "md" }} color="gray.600">Cost: $5 per listing</Heading>
+        <Flex
+          gap={4}
+          flexWrap="wrap"
+          direction={{ base: "column", sm: "row" }}
+        >
           <Select
             placeholder="All Categories"
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            maxW="200px"
+            size={{ base: "md", md: "sm" }}
+            width={{ base: "100%", sm: "200px" }}
           >
             <option value="all">All Categories</option>
             <option value="Jobs">Jobs</option>
@@ -84,7 +90,8 @@ export default function Home() {
             placeholder="All Locations"
             value={selectedLocation}
             onChange={(e) => setSelectedLocation(e.target.value)}
-            maxW="200px"
+            size={{ base: "md", md: "sm" }}
+            width={{ base: "100%", sm: "200px" }}
           >
             <option value="all">All Locations</option>
             {locations.map(loc => (
@@ -93,24 +100,27 @@ export default function Home() {
           </Select>
         </Flex>
 
-        <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
+        <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={{ base: 4, md: 6 }}>
           {filteredListings.map(listing => (
             <Card key={listing.id} variant="outline" _hover={{ shadow: 'md' }}>
               <CardHeader>
-                <Flex justify="space-between" align="start">
+                <Flex justify="space-between" align="start" wrap="wrap" gap={2}>
                   <VStack align="start" spacing={2}>
-                    {listing.is_featured && <Badge colorScheme="purple">Featured</Badge>}
-                    <Badge colorScheme={listing.category === 'Jobs' ? 'blue' : listing.category === 'Services' ? 'green' : 'orange'}>
+                    {listing.is_featured && <Badge colorScheme="purple" fontSize={{ base: "xs", md: "sm" }}>Featured</Badge>}
+                    <Badge
+                      colorScheme={listing.category === 'Jobs' ? 'blue' : listing.category === 'Services' ? 'green' : 'orange'}
+                      fontSize={{ base: "xs", md: "sm" }}
+                    >
                       {listing.category}
                     </Badge>
                   </VStack>
                 </Flex>
-                <Heading size="sm" mt={2}>
+                <Heading size={{ base: "xs", md: "sm" }} mt={2}>
                   <Link href={`/listing/${listing.slug}`}>{listing.title}</Link>
                 </Heading>
-                <HStack justify="space-between" align="center" mt={2} width="100%">
+                <HStack justify="space-between" align="center" mt={2} width="100%" spacing={2}>
                   {listing.location && (
-                    <Text fontSize="sm" color="gray.600">{listing.location}</Text>
+                    <Text fontSize={{ base: "xs", md: "sm" }} color="gray.600" noOfLines={1}>{listing.location}</Text>
                   )}
                   {listing.profile_username && (
                     <Link href={`/user/${listing.profile_username}`}>
@@ -122,7 +132,7 @@ export default function Home() {
                 </HStack>
               </CardHeader>
               <CardBody>
-                <Text noOfLines={3} fontSize="sm">{stripHtml(listing.description)}</Text>
+                <Text noOfLines={3} fontSize={{ base: "xs", md: "sm" }}>{stripHtml(listing.description)}</Text>
                 <Text fontSize="xs" color="gray.500" mt={2}>
                   {new Date(listing.created_at).toLocaleDateString()}
                 </Text>
@@ -132,9 +142,9 @@ export default function Home() {
         </SimpleGrid>
 
         {filteredListings.length === 0 && (
-          <Container textAlign="center" py={12}>
-            <Text color="gray.500">No listings found. Be the first to create one!</Text>
-          </Container>
+          <Box textAlign="center" py={{ base: 8, md: 12 }}>
+            <Text color="gray.500" fontSize={{ base: "sm", md: "md" }}>No listings found. Be the first to create one!</Text>
+          </Box>
         )}
       </VStack>
     </Container>
