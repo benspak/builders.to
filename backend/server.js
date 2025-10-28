@@ -103,6 +103,21 @@ console.log('   process.cwd():', process.cwd());
 console.log('\n📂 Directory structure:');
 console.log('   Parent dir contents:', readdirSync(join(__dirname, '..')));
 console.log('   Current dir contents:', readdirSync(__dirname));
+
+// Check if frontend folder exists and what's in it
+const frontendParentPath = join(__dirname, '..');
+if (existsSync(join(frontendParentPath, 'frontend'))) {
+  console.log('   Frontend folder exists! Contents:');
+  try {
+    const frontendContents = readdirSync(join(frontendParentPath, 'frontend'));
+    console.log('     ', frontendContents);
+  } catch (e) {
+    console.log('     Error reading frontend:', e.message);
+  }
+} else {
+  console.log('   Frontend folder does NOT exist');
+}
+
 console.log('\n   Checking paths:');
 
 let frontendPath = null;
