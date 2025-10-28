@@ -55,6 +55,78 @@ body {
   border-radius: 4px;
 }
 
+/* Dark mode styles for Quill - support for Chakra UI v3 */
+.chakra-ui-dark .ql-toolbar.ql-snow,
+[data-theme='dark'] .ql-toolbar.ql-snow,
+[data-color-mode='dark'] .ql-toolbar.ql-snow,
+[data-dark='true'] .ql-toolbar.ql-snow,
+.dark .ql-toolbar.ql-snow {
+  border-color: #475569;
+  background-color: #1e293b;
+}
+
+.chakra-ui-dark .ql-container.ql-snow,
+[data-theme='dark'] .ql-container.ql-snow,
+[data-color-mode='dark'] .ql-container.ql-snow,
+[data-dark='true'] .ql-container.ql-snow,
+.dark .ql-container.ql-snow {
+  border-color: #475569;
+  background-color: #0f172a;
+}
+
+.chakra-ui-dark .ql-editor,
+[data-theme='dark'] .ql-editor,
+[data-color-mode='dark'] .ql-editor,
+[data-dark='true'] .ql-editor,
+.dark .ql-editor {
+  color: #f1f5f9;
+}
+
+.chakra-ui-dark .ql-editor.ql-blank::before,
+[data-theme='dark'] .ql-editor.ql-blank::before,
+[data-color-mode='dark'] .ql-editor.ql-blank::before,
+[data-dark='true'] .ql-editor.ql-blank::before,
+.dark .ql-editor.ql-blank::before {
+  color: #94a3b8;
+}
+
+.chakra-ui-dark .ql-snow .ql-stroke,
+[data-theme='dark'] .ql-snow .ql-stroke,
+[data-color-mode='dark'] .ql-snow .ql-stroke,
+[data-dark='true'] .ql-snow .ql-stroke,
+.dark .ql-snow .ql-stroke {
+  stroke: #cbd5e1;
+}
+
+.chakra-ui-dark .ql-snow .ql-fill,
+[data-theme='dark'] .ql-snow .ql-fill,
+[data-color-mode='dark'] .ql-snow .ql-fill,
+[data-dark='true'] .ql-snow .ql-fill,
+.dark .ql-snow .ql-fill {
+  fill: #cbd5e1;
+}
+
+.chakra-ui-dark .ql-snow .ql-picker-label,
+[data-theme='dark'] .ql-snow .ql-picker-label,
+[data-color-mode='dark'] .ql-snow .ql-picker-label,
+[data-dark='true'] .ql-snow .ql-picker-label,
+.dark .ql-snow .ql-picker-label {
+  color: #f1f5f9;
+}
+
+.chakra-ui-dark .ql-snow.ql-toolbar button:hover,
+.chakra-ui-dark .ql-snow .ql-toolbar button:hover,
+[data-theme='dark'] .ql-snow.ql-toolbar button:hover,
+[data-theme='dark'] .ql-snow .ql-toolbar button:hover,
+[data-color-mode='dark'] .ql-snow.ql-toolbar button:hover,
+[data-color-mode='dark'] .ql-snow .ql-toolbar button:hover,
+[data-dark='true'] .ql-snow.ql-toolbar button:hover,
+[data-dark='true'] .ql-snow .ql-toolbar button:hover,
+.dark .ql-snow.ql-toolbar button:hover,
+.dark .ql-snow .ql-toolbar button:hover {
+  background-color: #334155;
+}
+
 /* Styles for rendered rich text content */
 .rich-text-display {
   line-height: 1.6;

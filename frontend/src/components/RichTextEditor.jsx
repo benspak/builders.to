@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { Box } from '@chakra-ui/react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
@@ -6,6 +6,30 @@ import DOMPurify from 'dompurify';
 
 const RichTextEditor = ({ value, onChange, placeholder = 'Enter content here...' }) => {
   const quillRef = useRef(null);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  useEffect(() => {
+    // Detect dark mode
+    const checkDarkMode = () => {
+      const mode = localStorage.getItem('chakra-ui-color-mode');
+      const htmlEl = document.documentElement;
+      setIsDarkMode(mode === 'dark' || htmlEl.classList.contains('chakra-ui-dark') || htmlEl.getAttribute('data-color-mode') === 'dark');
+    };
+
+    checkDarkMode();
+
+    // Watch for mode changes
+    const observer = new MutationObserver(() => {
+      checkDarkMode();
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class', 'data-color-mode']
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   const modules = {
     toolbar: [
@@ -26,15 +50,17 @@ const RichTextEditor = ({ value, onChange, placeholder = 'Enter content here...'
   ];
 
   return (
-    <ReactQuill
-      ref={quillRef}
-      theme="snow"
-      value={value}
-      onChange={onChange}
-      modules={modules}
-      formats={formats}
-      placeholder={placeholder}
-    />
+    <Box className="rich-text-editor-wrapper" data-dark={isDarkMode}>
+      <ReactQuill
+        ref={quillRef}
+        theme="snow"
+        value={value}
+        onChange={onChange}
+        modules={modules}
+        formats={formats}
+        placeholder={placeholder}
+      />
+    </Box>
   );
 };
 

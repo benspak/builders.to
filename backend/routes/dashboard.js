@@ -18,7 +18,11 @@ router.get('/', authenticateToken, async (req, res) => {
 
     res.json({ listings: listingsResult.rows, transactions: transactionsResult.rows });
   } catch (error) {
-    console.error('Error fetching dashboard data:', error);
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error fetching dashboard data:', error);
+    } else {
+      console.error('Error fetching dashboard data');
+    }
     res.status(500).json({ error: 'Server error' });
   }
 });
@@ -33,7 +37,11 @@ router.get('/transactions', authenticateToken, async (req, res) => {
 
     res.json(result.rows);
   } catch (error) {
-    console.error('Error fetching transactions:', error);
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error fetching transactions:', error);
+    } else {
+      console.error('Error fetching transactions');
+    }
     res.status(500).json({ error: 'Server error' });
   }
 });
@@ -47,7 +55,11 @@ router.get('/listings', authenticateToken, async (req, res) => {
     );
     res.json(result.rows);
   } catch (error) {
-    console.error('Error fetching listings:', error);
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error fetching listings:', error);
+    } else {
+      console.error('Error fetching listings');
+    }
     res.status(500).json({ error: 'Server error' });
   }
 });

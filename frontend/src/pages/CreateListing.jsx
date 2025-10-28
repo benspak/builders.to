@@ -58,10 +58,10 @@ const CreateListing = () => {
 
   return (
     <Container maxW="2xl" py={8}>
-      <Box bg="white" p={8} borderRadius="lg" shadow="md">
+      <Box bg="white" _dark={{ bg: 'gray.800' }} p={8} borderRadius="lg" shadow="md">
         <VStack spacing={6} align="stretch">
           <Heading size="lg">Create New Listing</Heading>
-          <Box as="p" color="gray.600">
+          <Box as="p" color="gray.600" _dark={{ color: 'gray.300' }}>
             Cost: $5 per listing. Featured listings (pinned to top) cost $50 extra.
           </Box>
 
@@ -75,7 +75,6 @@ const CreateListing = () => {
           <form onSubmit={handleSubmit}>
             <VStack spacing={4} align="stretch">
               <FormControl isRequired>
-                <FormLabel>Category</FormLabel>
                 <Select
                   placeholder="Select category"
                   value={formData.category}
@@ -107,7 +106,7 @@ const CreateListing = () => {
 
               <FormControl isRequired>
                 <FormLabel>Description</FormLabel>
-                <Box bg="white" borderWidth="1px" borderRadius="md">
+                <Box bg="white" _dark={{ bg: 'gray.900' }} borderWidth="1px" borderColor="gray.300" _dark={{ borderColor: 'gray.600' }} borderRadius="md">
                   <RichTextEditor
                     value={formData.description}
                     onChange={(value) => setFormData({ ...formData, description: value })}

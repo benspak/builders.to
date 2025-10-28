@@ -12,7 +12,13 @@ const { Pool } = pg;
 
 // Database configuration
 const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_DATABASE_URL || 'postgresql://localhost:5432/builders';
-console.log('🔌 Connecting to database:', connectionString.replace(/:[^:@]*@/, ':****@'));
+
+// Only log connection details in development
+if (process.env.NODE_ENV === 'development') {
+  console.log('🔌 Connecting to database:', connectionString.replace(/:[^:@]*@/, ':****@'));
+} else {
+  console.log('🔌 Connecting to database...');
+}
 
 const config = {
   connectionString: connectionString,
@@ -114,13 +120,30 @@ initializeDatabase();
 // Helper function to execute queries
 const query = async (text, params) => {
   const start = Date.now();
+  const isDevelopment = process.env.NODE_ENV === 'development';
+
   try {
     const res = await pool.query(text, params);
     const duration = Date.now() - start;
-    console.log('Executed query', { text, duration, rows: res.rowCount });
+
+    // Only log query details in development
+    if (isDevelopment) {
+      console.log('Executed query', { text, duration, rows: res.rowCount });
+    } else {
+      // In production, only log query count and duration if queries are slow (>100ms)
+      if (duration > 100) {
+        console.log(`Slow query detected (${duration}ms)`);
+      }
+    }
+
     return res;
   } catch (error) {
-    console.error('Query error:', { text, params, error: error.message });
+    // In production, don't expose query details or params
+    if (isDevelopment) {
+      console.error('Query error:', { text, params, error: error.message });
+    } else {
+      console.error('Query error:', error.message);
+    }
     throw error;
   }
 };

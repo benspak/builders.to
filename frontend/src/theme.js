@@ -63,7 +63,7 @@ const theme = extendTheme({
             color: 'gray.700',
           },
           _dark: {
-            color: 'gray.200',
+            color: 'gray.100',
           },
         },
       },
@@ -78,6 +78,9 @@ const theme = extendTheme({
             bg: 'white',
             borderColor: 'gray.300',
             color: 'gray.900',
+            _placeholder: {
+              color: 'gray.500',
+            },
             _hover: {
               borderColor: 'gray.400',
             },
@@ -87,11 +90,53 @@ const theme = extendTheme({
             },
           },
           _dark: {
-            bg: 'gray.800',
-            borderColor: 'gray.700',
+            bg: 'gray.700',
+            borderColor: 'gray.600',
             color: 'gray.100',
+            _placeholder: {
+              color: 'gray.400',
+            },
             _hover: {
-              borderColor: 'gray.600',
+              borderColor: 'gray.500',
+            },
+            _focus: {
+              borderColor: 'blue.500',
+              boxShadow: '0 0 0 1px #3182ce',
+            },
+          },
+        },
+      },
+    },
+    Select: {
+      defaultProps: {
+        focusBorderColor: 'blue.500',
+      },
+      baseStyle: {
+        field: {
+          _light: {
+            bg: 'white',
+            borderColor: 'gray.300',
+            color: 'gray.900',
+            _placeholder: {
+              color: 'gray.500',
+            },
+            _hover: {
+              borderColor: 'gray.400',
+            },
+            _focus: {
+              borderColor: 'blue.500',
+              boxShadow: '0 0 0 1px #3182ce',
+            },
+          },
+          _dark: {
+            bg: 'gray.700',
+            borderColor: 'gray.600',
+            color: 'gray.100',
+            _placeholder: {
+              color: 'gray.400',
+            },
+            _hover: {
+              borderColor: 'gray.500',
             },
             _focus: {
               borderColor: 'blue.500',

@@ -12,9 +12,13 @@ let stripe;
 const getStripe = () => {
   if (!stripe && process.env.STRIPE_SECRET_KEY) {
     try {
+      if (process.env.NODE_ENV === 'development') {
       console.log('✓ Initializing Stripe...');
-      stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+    }
+    stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+    if (process.env.NODE_ENV === 'development') {
       console.log('✓ Stripe initialized successfully');
+    }
     } catch (error) {
       console.error('❌ Failed to initialize Stripe:', error.message);
     }
@@ -139,7 +143,9 @@ webhookRouter.post('/', async (req, res) => {
       event = stripeInstance.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
     } else {
       // In development, accept webhooks without verification
-      console.log('Webhook received without verification (development mode)');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Webhook received without verification (development mode)');
+      }
       event = req.body;
     }
 

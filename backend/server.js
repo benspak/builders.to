@@ -13,8 +13,10 @@ const __dirname = dirname(__filename);
 // Load environment variables FIRST before importing routes
 dotenv.config({ path: join(__dirname, '.env') });
 
-// Debug: Log database connection info
-console.log('📊 Database URL:', process.env.POSTGRES_DATABASE_URL ? '✓ Set' : '✗ Not set');
+// Database connection status (only log in development)
+if (process.env.NODE_ENV === 'development') {
+  console.log('📊 Database URL:', process.env.POSTGRES_DATABASE_URL ? '✓ Set' : '✗ Not set');
+}
 
 import db from './database/db.js';
 import { authRoutes } from './routes/auth.js';
@@ -142,6 +144,9 @@ if (existsSync(frontendPath)) {
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`💳 Stripe: ${process.env.STRIPE_SECRET_KEY ? '✓ Configured' : '⚠️  Not configured'}`);
-  console.log(`🔐 JWT: ${process.env.JWT_SECRET ? '✓ Configured' : '⚠️  Not configured'}`);
+
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`💳 Stripe: ${process.env.STRIPE_SECRET_KEY ? '✓ Configured' : '⚠️  Not configured'}`);
+    console.log(`🔐 JWT: ${process.env.JWT_SECRET ? '✓ Configured' : '⚠️  Not configured'}`);
+  }
 });

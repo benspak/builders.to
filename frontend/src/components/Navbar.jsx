@@ -11,20 +11,25 @@ const Navbar = () => {
     navigate('/');
   };
 
+  const bg = useColorModeValue('white', 'gray.800');
+  const borderColor = useColorModeValue('gray.200', 'gray.700');
+  const linkColor = useColorModeValue('gray.800', 'gray.100');
+  const logoColor = useColorModeValue('blue.600', 'blue.400');
+
   return (
-    <Box bg="white" borderBottom="1px" borderColor="gray.200" mb={8}>
+    <Box bg={bg} borderBottom="1px" borderColor={borderColor} mb={8}>
       <Flex maxW="1200px" mx="auto" px={6} py={4} justify="space-between" align="center">
-        <Link as={RouterLink} to="/" fontSize="2xl" fontWeight="bold" color="blue.600">
+        <Link as={RouterLink} to="/" fontSize="2xl" fontWeight="bold" color={logoColor}>
           builders.to
         </Link>
 
         <Flex gap={4} align="center">
-          <Link as={RouterLink} to="/">Browse</Link>
+          <Link as={RouterLink} to="/" color={linkColor} fontWeight="medium">Browse</Link>
           {user ? (
             <>
-              <Link as={RouterLink} to="/create-listing">Create Listing</Link>
-              <Link as={RouterLink} to="/dashboard">Dashboard</Link>
-              <Link as={RouterLink} to="/profile">Profile</Link>
+              <Link as={RouterLink} to="/create-listing" color={linkColor} fontWeight="medium">Create Listing</Link>
+              <Link as={RouterLink} to="/dashboard" color={linkColor} fontWeight="medium">Dashboard</Link>
+              <Link as={RouterLink} to="/profile" color={linkColor} fontWeight="medium">Profile</Link>
               <Button size="sm" onClick={handleLogout}>Logout</Button>
             </>
           ) : (

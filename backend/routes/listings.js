@@ -34,11 +34,14 @@ router.get('/', async (req, res) => {
 
     query += ' ORDER BY is_featured DESC, created_at DESC';
 
-    console.log('📝 Executing query:', query);
     const result = await db.query(query, params);
     res.json(result.rows);
   } catch (error) {
-    console.error('Error fetching listings:', error);
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error fetching listings:', error);
+    } else {
+      console.error('Error fetching listings');
+    }
     res.status(500).json({ error: error.message || 'Server error' });
   }
 });
@@ -125,7 +128,11 @@ router.post('/', authenticateToken, createListingLimiter, async (req, res) => {
 
     res.status(201).json({ message: 'Listing created successfully', id: result.rows[0].id });
   } catch (error) {
-    console.error('Error creating listing:', error);
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error creating listing:', error);
+    } else {
+      console.error('Error creating listing');
+    }
     res.status(500).json({ error: error.message || 'Server error' });
   }
 });
@@ -167,7 +174,11 @@ router.put('/:id', authenticateToken, async (req, res) => {
 
     res.json({ message: 'Listing updated successfully' });
   } catch (error) {
-    console.error('Error updating listing:', error);
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error updating listing:', error);
+    } else {
+      console.error('Error updating listing');
+    }
     res.status(500).json({ error: error.message || 'Server error' });
   }
 });
@@ -215,7 +226,11 @@ router.get('/user/:userId', async (req, res) => {
 
     res.json(result.rows);
   } catch (error) {
-    console.error('Error fetching user listings:', error);
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error fetching user listings:', error);
+    } else {
+      console.error('Error fetching user listings');
+    }
     res.status(500).json({ error: 'Server error' });
   }
 });

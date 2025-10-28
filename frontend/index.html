@@ -10,6 +10,19 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   </head>
   <body>
+    <script>
+      // Initialize color mode before rendering
+      (function() {
+        try {
+          const mode = localStorage.getItem('chakra-ui-color-mode');
+          if (!mode) {
+            localStorage.setItem('chakra-ui-color-mode', 'dark');
+          }
+        } catch (e) {
+          console.error('Could not set color mode:', e);
+        }
+      })();
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
