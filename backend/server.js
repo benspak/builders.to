@@ -108,7 +108,7 @@ let hasFrontend = false;
 for (const path of possiblePaths) {
   const exists = existsSync(path);
   console.log(`   ${path}: ${exists ? '✓ EXISTS' : '✗ NOT FOUND'}`);
-  
+
   if (exists && !hasFrontend) {
     frontendPath = path;
     hasFrontend = true;
