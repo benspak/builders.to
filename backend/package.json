@@ -6,7 +6,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node --no-deprecation server.js",
-    "dev": "node --no-deprecation --watch server.js"
+    "dev": "node --no-deprecation --watch server.js",
+    "makeFeatured": "node scripts/makeFeatured.js"
   },
   "dependencies": {
     "express": "^4.21.2",
