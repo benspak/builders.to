@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import { useStripe, useElements, PaymentElement } from '@stripe/react-stripe-js';
 import { Button, Box, VStack, Heading, Alert, AlertIcon } from '@chakra-ui/react';

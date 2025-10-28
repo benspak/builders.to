@@ -1,14 +1,16 @@
+'use client';
+
 import { Box, Flex, Button, Link, useColorModeValue } from '@chakra-ui/react';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const handleLogout = () => {
     logout();
-    navigate('/');
+    router.push('/');
   };
 
   const bg = useColorModeValue('white', 'gray.800');
@@ -19,25 +21,25 @@ const Navbar = () => {
   return (
     <Box bg={bg} borderBottom="1px" borderColor={borderColor} mb={8}>
       <Flex maxW="1200px" mx="auto" px={6} py={4} justify="space-between" align="center">
-        <Link as={RouterLink} to="/" fontSize="2xl" fontWeight="bold" color={logoColor}>
+        <Link href="/" fontSize="2xl" fontWeight="bold" color={logoColor}>
           builders.to
         </Link>
 
         <Flex gap={4} align="center">
-          <Link as={RouterLink} to="/" color={linkColor} fontWeight="medium">Browse</Link>
+          <Link href="/" color={linkColor} fontWeight="medium">Browse</Link>
           {user ? (
             <>
-              <Link as={RouterLink} to="/create-listing" color={linkColor} fontWeight="medium">Create Listing</Link>
-              <Link as={RouterLink} to="/dashboard" color={linkColor} fontWeight="medium">Dashboard</Link>
-              <Link as={RouterLink} to="/profile" color={linkColor} fontWeight="medium">Profile</Link>
+              <Link href="/create-listing" color={linkColor} fontWeight="medium">Create Listing</Link>
+              <Link href="/dashboard" color={linkColor} fontWeight="medium">Dashboard</Link>
+              <Link href="/profile" color={linkColor} fontWeight="medium">Profile</Link>
               <Button size="sm" onClick={handleLogout}>Logout</Button>
             </>
           ) : (
             <>
-              <Link as={RouterLink} to="/login">
+              <Link href="/login">
                 <Button size="sm" variant="outline">Login</Button>
               </Link>
-              <Link as={RouterLink} to="/register">
+              <Link href="/register">
                 <Button size="sm" colorScheme="blue">Sign Up</Button>
               </Link>
             </>

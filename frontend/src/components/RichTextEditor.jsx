@@ -1,7 +1,16 @@
+'use client';
+
 import { useRef, useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { Box } from '@chakra-ui/react';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
+
+// Dynamically import ReactQuill to avoid SSR issues
+const ReactQuill = dynamic(() => import('react-quill'), {
+  ssr: false,
+  loading: () => <Box minH="150px" border="1px" borderColor="gray.300" borderRadius="md" p={4} color="gray.400">Loading editor...</Box>
+});
+
+// Dynamically import DOMPurify for client-side only
 import DOMPurify from 'dompurify';
 
 const RichTextEditor = ({ value, onChange, placeholder = 'Enter content here...' }) => {
@@ -66,10 +75,19 @@ const RichTextEditor = ({ value, onChange, placeholder = 'Enter content here...'
 
 // Component to safely render HTML content
 export const RichTextDisplay = ({ content }) => {
-  const sanitizedContent = DOMPurify.sanitize(content, {
-    ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'ul', 'ol', 'li', 'a'],
-    ALLOWED_ATTR: ['href', 'target', 'rel']
-  });
+  const [sanitizedContent, setSanitizedContent] = useState('');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && content) {
+      const clean = DOMPurify.sanitize(content, {
+        ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'ul', 'ol', 'li', 'a'],
+        ALLOWED_ATTR: ['href', 'target', 'rel']
+      });
+      setSanitizedContent(clean);
+    } else {
+      setSanitizedContent(content || '');
+    }
+  }, [content]);
 
   return (
     <Box
@@ -82,6 +100,10 @@ export const RichTextDisplay = ({ content }) => {
 // Utility function to strip HTML tags for previews
 export const stripHtml = (html) => {
   if (!html) return '';
+  if (typeof window === 'undefined') {
+    // Fallback for SSR: simple regex to remove tags
+    return html.replace(/<[^>]*>/g, '').trim();
+  }
   const doc = new DOMParser().parseFromString(html, 'text/html');
   return doc.body.textContent || '';
 };

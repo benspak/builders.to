@@ -1,3 +1,5 @@
+'use client';
+
 import { createContext, useContext, useState, useEffect } from 'react';
 import axios from '../lib/axios';
 
@@ -19,15 +21,12 @@ export const AuthProvider = ({ children }) => {
     const restoreAuth = async () => {
       const token = localStorage.getItem('token');
       if (token) {
-        // Verify token and restore user state
-        // The axios interceptor will automatically attach the token
         try {
           const response = await axios.get('/api/auth/me');
           if (response.data.user) {
             setUser(response.data.user);
           }
         } catch (error) {
-          // Token is invalid or expired
           console.error('Auth restoration failed');
           localStorage.removeItem('token');
         }
