@@ -749,6 +749,19 @@ body {
   background: #1f2937;
 }
 
+.table td a {
+  color: white;
+  text-decoration: none;
+}
+
+.table td a:hover {
+  opacity: 0.8;
+}
+
+[data-theme="dark"] .table td a {
+  color: white;
+}
+
 /* Tabs */
 .tabs {
   margin-bottom: var(--spacing-lg);

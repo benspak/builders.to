@@ -35,6 +35,41 @@ export function Toolbar() {
   const [isItalic, setIsItalic] = useState(false);
   const [isUnderline, setIsUnderline] = useState(false);
   const [showFormatMenu, setShowFormatMenu] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  useEffect(() => {
+    const checkDarkMode = () => {
+      const htmlEl = document.documentElement;
+      setIsDarkMode(htmlEl.getAttribute('data-theme') === 'dark');
+    };
+
+    checkDarkMode();
+
+    const observer = new MutationObserver(() => {
+      checkDarkMode();
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme']
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!showFormatMenu) return;
+
+    const handleClickOutside = (event) => {
+      const target = event.target;
+      if (!target.closest('[data-format-menu]')) {
+        setShowFormatMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showFormatMenu]);
 
   useEffect(() => {
     return editor.registerUpdateListener(({ editorState }) => {
@@ -123,23 +158,50 @@ export function Toolbar() {
     }
   };
 
+  const bgColor = isDarkMode ? 'var(--bg-secondary-dark)' : 'white';
+  const hoverBgColor = isDarkMode ? 'var(--bg-dark)' : 'var(--bg-secondary-light)';
+  const textColor = isDarkMode ? 'var(--text-dark)' : 'var(--text-light)';
+  const borderColor = isDarkMode ? 'var(--border-dark)' : 'var(--border-light)';
+  const toolbarBg = isDarkMode ? 'var(--bg-secondary-dark)' : 'var(--bg-secondary-light)';
+
   return (
     <div
       style={{
-        borderBottom: '1px solid var(--border-light)',
-        padding: '0.5rem',
-        backgroundColor: 'var(--bg-secondary-light)',
+        borderBottom: `1px solid ${borderColor}`,
+        padding: '0.75rem',
+        backgroundColor: toolbarBg,
         display: 'flex',
-        gap: '0.25rem',
+        gap: '0.5rem',
         flexWrap: 'wrap',
+        alignItems: 'center',
       }}
     >
-      <div style={{ position: 'relative' }}>
+      <div style={{ position: 'relative' }} data-format-menu>
         <button
-          className="btn btn-sm"
           onClick={() => setShowFormatMenu(!showFormatMenu)}
+          style={{
+            padding: '0.5rem 1rem',
+            border: `1px solid ${borderColor}`,
+            borderRadius: 'var(--radius-md)',
+            backgroundColor: bgColor,
+            color: textColor,
+            fontSize: '0.875rem',
+            fontWeight: 600,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            transition: 'all var(--transition-fast)',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = hoverBgColor;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = bgColor;
+          }}
         >
           Format
+          <span style={{ fontSize: '0.75rem' }}>▼</span>
         </button>
         {showFormatMenu && (
           <div
@@ -147,54 +209,61 @@ export function Toolbar() {
               position: 'absolute',
               top: '100%',
               left: 0,
-              background: 'white',
-              border: '1px solid var(--border-light)',
+              background: bgColor,
+              border: `1px solid ${borderColor}`,
               borderRadius: 'var(--radius-md)',
               boxShadow: 'var(--shadow-lg)',
               zIndex: 10,
               minWidth: '150px',
               marginTop: '0.25rem',
+              overflow: 'hidden',
             }}
           >
             <button
-              className="btn-link"
               onClick={() => formatParagraph()}
-              style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.5rem 1rem' }}
+              style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.75rem 1rem', border: 'none', background: 'none', cursor: 'pointer', transition: 'background var(--transition-fast)', color: textColor }}
+              onMouseEnter={(e) => e.currentTarget.style.background = hoverBgColor}
+              onMouseLeave={(e) => e.currentTarget.style.background = bgColor}
             >
               Paragraph
             </button>
             <button
-              className="btn-link"
               onClick={() => formatHeading('h1')}
-              style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.5rem 1rem' }}
+              style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.75rem 1rem', border: 'none', background: 'none', cursor: 'pointer', transition: 'background var(--transition-fast)', color: textColor }}
+              onMouseEnter={(e) => e.currentTarget.style.background = hoverBgColor}
+              onMouseLeave={(e) => e.currentTarget.style.background = bgColor}
             >
               Heading 1
             </button>
             <button
-              className="btn-link"
               onClick={() => formatHeading('h2')}
-              style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.5rem 1rem' }}
+              style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.75rem 1rem', border: 'none', background: 'none', cursor: 'pointer', transition: 'background var(--transition-fast)', color: textColor }}
+              onMouseEnter={(e) => e.currentTarget.style.background = hoverBgColor}
+              onMouseLeave={(e) => e.currentTarget.style.background = bgColor}
             >
               Heading 2
             </button>
             <button
-              className="btn-link"
               onClick={() => formatHeading('h3')}
-              style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.5rem 1rem' }}
+              style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.75rem 1rem', border: 'none', background: 'none', cursor: 'pointer', transition: 'background var(--transition-fast)', color: textColor }}
+              onMouseEnter={(e) => e.currentTarget.style.background = hoverBgColor}
+              onMouseLeave={(e) => e.currentTarget.style.background = bgColor}
             >
               Heading 3
             </button>
             <button
-              className="btn-link"
               onClick={() => formatQuote()}
-              style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.5rem 1rem' }}
+              style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.75rem 1rem', border: 'none', background: 'none', cursor: 'pointer', transition: 'background var(--transition-fast)', color: textColor }}
+              onMouseEnter={(e) => e.currentTarget.style.background = hoverBgColor}
+              onMouseLeave={(e) => e.currentTarget.style.background = bgColor}
             >
               Quote
             </button>
             <button
-              className="btn-link"
               onClick={() => formatCode()}
-              style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.5rem 1rem' }}
+              style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.75rem 1rem', border: 'none', background: 'none', cursor: 'pointer', transition: 'background var(--transition-fast)', color: textColor }}
+              onMouseEnter={(e) => e.currentTarget.style.background = hoverBgColor}
+              onMouseLeave={(e) => e.currentTarget.style.background = bgColor}
             >
               Code Block
             </button>
@@ -202,65 +271,168 @@ export function Toolbar() {
         )}
       </div>
 
-      <div style={{ height: '24px', width: '1px', backgroundColor: 'var(--border-light)', alignSelf: 'center' }} />
+      <div style={{ height: '28px', width: '1px', backgroundColor: borderColor, alignSelf: 'center' }} />
 
-      <div style={{ display: 'flex', gap: '0.25rem' }}>
+      <div style={{ display: 'flex', gap: '0.5rem' }}>
         <button
-          className={`btn btn-sm ${isBold ? 'btn-primary' : 'btn-outline'}`}
           onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold')}
           aria-label="Bold"
+          style={{
+            padding: '0.5rem 0.75rem',
+            border: `1px solid ${borderColor}`,
+            borderRadius: 'var(--radius-md)',
+            backgroundColor: isBold ? 'var(--primary)' : bgColor,
+            color: isBold ? 'white' : textColor,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            transition: 'all var(--transition-fast)',
+            fontSize: '1.125rem',
+          }}
+          onMouseEnter={(e) => {
+            if (!isBold) e.currentTarget.style.backgroundColor = hoverBgColor;
+          }}
+          onMouseLeave={(e) => {
+            if (!isBold) e.currentTarget.style.backgroundColor = bgColor;
+          }}
         >
           <MdFormatBold />
         </button>
         <button
-          className={`btn btn-sm ${isItalic ? 'btn-primary' : 'btn-outline'}`}
           onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'italic')}
           aria-label="Italic"
+          style={{
+            padding: '0.5rem 0.75rem',
+            border: `1px solid ${borderColor}`,
+            borderRadius: 'var(--radius-md)',
+            backgroundColor: isItalic ? 'var(--primary)' : bgColor,
+            color: isItalic ? 'white' : textColor,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            transition: 'all var(--transition-fast)',
+            fontSize: '1.125rem',
+          }}
+          onMouseEnter={(e) => {
+            if (!isItalic) e.currentTarget.style.backgroundColor = hoverBgColor;
+          }}
+          onMouseLeave={(e) => {
+            if (!isItalic) e.currentTarget.style.backgroundColor = bgColor;
+          }}
         >
           <MdFormatItalic />
         </button>
         <button
-          className={`btn btn-sm ${isUnderline ? 'btn-primary' : 'btn-outline'}`}
           onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'underline')}
           aria-label="Underline"
+          style={{
+            padding: '0.5rem 0.75rem',
+            border: `1px solid ${borderColor}`,
+            borderRadius: 'var(--radius-md)',
+            backgroundColor: isUnderline ? 'var(--primary)' : bgColor,
+            color: isUnderline ? 'white' : textColor,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            transition: 'all var(--transition-fast)',
+            fontSize: '1.125rem',
+          }}
+          onMouseEnter={(e) => {
+            if (!isUnderline) e.currentTarget.style.backgroundColor = hoverBgColor;
+          }}
+          onMouseLeave={(e) => {
+            if (!isUnderline) e.currentTarget.style.backgroundColor = bgColor;
+          }}
         >
           <MdFormatUnderlined />
         </button>
       </div>
 
-      <div style={{ height: '24px', width: '1px', backgroundColor: 'var(--border-light)', alignSelf: 'center' }} />
+      <div style={{ height: '28px', width: '1px', backgroundColor: borderColor, alignSelf: 'center' }} />
 
-      <div style={{ display: 'flex', gap: '0.25rem' }}>
+      <div style={{ display: 'flex', gap: '0.5rem' }}>
         <button
-          className="btn btn-sm btn-outline"
           onClick={formatQuote}
           aria-label="Quote"
+          style={{
+            padding: '0.5rem 0.75rem',
+            border: `1px solid ${borderColor}`,
+            borderRadius: 'var(--radius-md)',
+            backgroundColor: bgColor,
+            color: textColor,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            transition: 'all var(--transition-fast)',
+            fontSize: '1.125rem',
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = hoverBgColor}
+          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = bgColor}
         >
           <MdFormatQuote />
         </button>
         <button
-          className="btn btn-sm btn-outline"
           onClick={formatCode}
           aria-label="Code Block"
+          style={{
+            padding: '0.5rem 0.75rem',
+            border: `1px solid ${borderColor}`,
+            borderRadius: 'var(--radius-md)',
+            backgroundColor: bgColor,
+            color: textColor,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            transition: 'all var(--transition-fast)',
+            fontSize: '1.125rem',
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = hoverBgColor}
+          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = bgColor}
         >
           <MdCode />
         </button>
       </div>
 
-      <div style={{ height: '24px', width: '1px', backgroundColor: 'var(--border-light)', alignSelf: 'center' }} />
+      <div style={{ height: '28px', width: '1px', backgroundColor: borderColor, alignSelf: 'center' }} />
 
-      <div style={{ display: 'flex', gap: '0.25rem' }}>
+      <div style={{ display: 'flex', gap: '0.5rem' }}>
         <button
-          className="btn btn-sm btn-outline"
           onClick={() => insertList('unordered')}
           aria-label="Bullet List"
+          style={{
+            padding: '0.5rem 0.75rem',
+            border: `1px solid ${borderColor}`,
+            borderRadius: 'var(--radius-md)',
+            backgroundColor: bgColor,
+            color: textColor,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            transition: 'all var(--transition-fast)',
+            fontSize: '1.125rem',
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = hoverBgColor}
+          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = bgColor}
         >
           <MdFormatListBulleted />
         </button>
         <button
-          className="btn btn-sm btn-outline"
           onClick={() => insertList('ordered')}
           aria-label="Numbered List"
+          style={{
+            padding: '0.5rem 0.75rem',
+            border: `1px solid ${borderColor}`,
+            borderRadius: 'var(--radius-md)',
+            backgroundColor: bgColor,
+            color: textColor,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            transition: 'all var(--transition-fast)',
+            fontSize: '1.125rem',
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = hoverBgColor}
+          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = bgColor}
         >
           <MdFormatListNumbered />
         </button>
