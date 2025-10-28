@@ -120,30 +120,19 @@ initializeDatabase();
 // Helper function to execute queries
 const query = async (text, params) => {
   const start = Date.now();
-  const isDevelopment = process.env.NODE_ENV === 'development';
 
   try {
     const res = await pool.query(text, params);
     const duration = Date.now() - start;
 
-    // Only log query details in development
-    if (isDevelopment) {
-      console.log('Executed query', { text, duration, rows: res.rowCount });
-    } else {
-      // In production, only log query count and duration if queries are slow (>100ms)
-      if (duration > 100) {
-        console.log(`Slow query detected (${duration}ms)`);
-      }
+    // Only log slow queries (>500ms) to help identify performance issues
+    if (duration > 500) {
+      console.log(`⚠️  Slow query detected (${duration}ms)`);
     }
 
     return res;
   } catch (error) {
-    // Log error message without exposing query details or params in production
-    if (process.env.NODE_ENV === 'production') {
-      console.error('Query error occurred');
-    } else {
-      console.error('Query error:', error.message);
-    }
+    console.error('❌ Query error:', error.message);
     throw error;
   }
 };

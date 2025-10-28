@@ -40,6 +40,10 @@ services:
           property: host
       - key: VITE_STRIPE_PUBLISHABLE_KEY
         sync: false
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: no-cache
 
 databases:
   - name: builders-db

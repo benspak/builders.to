@@ -16,15 +16,24 @@ export default defineConfig({
   preview: {
     port: 3000,
     strictPort: true,
+    // Serve the built files correctly
+    headers: {
+      'Cache-Control': 'no-cache'
+    }
   },
   build: {
     outDir: 'dist',
     sourcemap: false,
     publicDir: 'public',
+    emptyOutDir: true,
     rollupOptions: {
       input: {
         main: './index.html',
       }
     }
+  },
+  define: {
+    // Ensure environment variables are available at build time
+    'import.meta.env.VITE_API_URL': JSON.stringify(process.env.VITE_API_URL || ''),
   }
 });
