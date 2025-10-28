@@ -5,7 +5,7 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
-import { existsSync } from 'fs';
+import { existsSync, statSync } from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -92,8 +92,15 @@ export const getDb = () => db;
 const frontendPath = join(__dirname, '../frontend/dist');
 const hasFrontend = existsSync(frontendPath);
 
+console.log('🔍 Checking for frontend dist...');
+console.log('   __dirname:', __dirname);
+console.log('   Looking for:', frontendPath);
+console.log('   Exists:', hasFrontend);
+
 if (hasFrontend) {
+  const stats = statSync(frontendPath);
   console.log('✅ Frontend dist found, will serve static files');
+  console.log('   Stats:', stats.isDirectory() ? 'Directory' : 'Not directory');
 } else {
   console.log('⚠️  Frontend dist not found, running as API-only');
 }
@@ -132,7 +139,7 @@ app.get('/health/db', async (req, res) => {
 // Serve static files from frontend/dist directory (production)
 if (hasFrontend) {
   console.log('📁 Serving static files from:', frontendPath);
-  
+
   // Serve static files (CSS, JS, images, etc.)
   app.use(express.static(frontendPath));
 
@@ -142,7 +149,7 @@ if (hasFrontend) {
     if (req.path.startsWith('/api/') || req.path.startsWith('/health')) {
       return res.status(404).json({ error: 'Not found' });
     }
-    
+
     // Serve index.html for all other routes (React Router handles client-side routing)
     res.sendFile(join(frontendPath, 'index.html'), (err) => {
       if (err) next(err);

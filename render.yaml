@@ -6,6 +6,7 @@ services:
     buildCommand: |
       cd frontend && npm ci && npm run build
       cd ../backend && npm ci
+      echo "Build complete. Dist exists:" && ls -la ../frontend/dist/ || echo "Dist not found"
     startCommand: cd backend && npm start
     envVars:
       - key: NODE_ENV
