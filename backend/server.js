@@ -92,9 +92,7 @@ export const getDb = () => db;
 // Try multiple possible paths for the dist folder
 const possiblePaths = [
   join(__dirname, '../frontend/dist'),           // From backend/ to ../frontend/dist
-  join(process.cwd(), 'frontend/dist'),           // From project root
-  join(process.cwd(), '../frontend/dist'),        // Alternative path
-  join(process.cwd(), '..', 'frontend/dist'),     // Another alternative
+  join(__dirname, '..', '..', 'frontend', 'dist'), // Absolute from backend
 ];
 
 console.log('🔍 Checking for frontend dist...');

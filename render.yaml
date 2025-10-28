@@ -4,12 +4,15 @@ services:
     runtime: node
     rootDir: .
     buildCommand: |
+      echo "Starting build process..."
       cd frontend && npm ci && npm run build
       echo "✓ Frontend build complete"
       cd ../backend && npm ci
       echo "✓ Backend dependencies installed"
-      echo "Verifying dist folder:"
-      ls -la ../frontend/dist/ && echo "✓ Dist folder found" || echo "✗ Dist folder not found"
+      echo "Verifying dist folder from backend directory:"
+      ls -la ../frontend/dist/ && echo "✓ Dist folder found at ../frontend/dist" || echo "✗ Dist folder not found at ../frontend/dist"
+      echo "Current directory:" && pwd
+      echo "Listing parent directory:" && ls -la ..
     startCommand: cd backend && npm start
     envVars:
       - key: NODE_ENV
