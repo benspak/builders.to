@@ -10,11 +10,11 @@ const PORT = process.env.PORT || 3000;
 
 const staticDir = join(__dirname, 'dist');
 
-// Serve static files from dist directory with fallthrough option
-// This allows the catch-all route to handle non-existent files
-app.use(express.static(staticDir, { fallthrough: true }));
+// Serve static files from dist directory
+app.use(express.static(staticDir));
 
 // Serve index.html for all routes that don't match static files (SPA routing)
+// This must come after the static middleware
 app.get('*', (req, res) => {
   res.sendFile(join(staticDir, 'index.html'));
 });

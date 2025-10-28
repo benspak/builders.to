@@ -10,8 +10,10 @@ Changed the frontend from a static site to a Node.js web service that uses Expre
 
 ### 1. Created Express Server (`frontend/server.js`)
 - Added an Express server that serves static files from the `dist` directory
+- Uses standard `express.static()` middleware to serve static assets
 - Implemented catch-all route (`app.get('*', ...)`) that serves `index.html` for all routes
 - This allows React Router to handle client-side routing
+- **Note**: Do NOT use `fallthrough: true` option with `express.static()` when using a catch-all route
 
 ### 2. Updated `frontend/package.json`
 - Added Express as a dependency
@@ -69,6 +71,16 @@ npm start      # Start Express server
 ```
 
 Visit http://localhost:3000 and navigate to routes like `/login`, `/register`, etc. and reload - they should persist!
+
+## Troubleshooting
+
+If SPA routing is still not working:
+
+1. **Verify the server is running**: Check the server logs on Render to ensure it started successfully
+2. **Check the catch-all route is last**: The `app.get('*', ...)` route must come AFTER `app.use(express.static())`
+3. **Don't use `fallthrough: true`**: This can interfere with the catch-all route behavior
+4. **Test locally**: Run `npm run build && npm start` and verify routes work before deploying
+5. **Check dist folder exists**: Ensure the build command creates the `dist` directory with `index.html`
 
 ## Deployment
 
