@@ -29,7 +29,9 @@ export default defineConfig({
       input: {
         main: './index.html',
       }
-    }
+    },
+    // Copy public files including _redirects
+    copyPublicDir: true
   },
   define: {
     // Ensure environment variables are available at build time
