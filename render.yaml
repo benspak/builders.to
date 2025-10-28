@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: builders-backend
+    env: node
+    plan: starter
+    buildCommand: |
+      cd frontend && npm ci && npm run build && cd .. && cd backend && npm ci && cd ..
+    startCommand: cd backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: builders-db
+          property: connectionString
+      - key: POSTGRES_DATABASE_URL
+        fromDatabase:
+          name: builders-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_PUBLISHABLE_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+
+databases:
+  - name: builders-db
+    plan: free
+    databaseName: builders
