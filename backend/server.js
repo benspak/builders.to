@@ -88,7 +88,17 @@ app.use('/api/', limiter);
 // Export database for routes
 export const getDb = () => db;
 
-// Routes
+// Check if frontend dist exists to serve static files in production
+const frontendPath = join(__dirname, '../frontend/dist');
+const hasFrontend = existsSync(frontendPath);
+
+if (hasFrontend) {
+  console.log('✅ Frontend dist found, will serve static files');
+} else {
+  console.log('⚠️  Frontend dist not found, running as API-only');
+}
+
+// Routes - these need to come BEFORE static file serving
 app.use('/api/auth', authRoutes);
 app.use('/api/profiles', profileRoutes);
 app.use('/api/listings', listingRoutes);
@@ -96,15 +106,13 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/payments/webhook', webhookRouter);
 app.use('/api/dashboard', dashboardRoutes);
 
-// Health check
+// Health check routes
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', message: 'Builders.to API is running' });
 });
 
-// Database health check
 app.get('/health/db', async (req, res) => {
   try {
-    // Try to query the database
     const result = await db.query('SELECT COUNT(*) as count FROM listings');
     res.json({
       status: 'ok',
@@ -122,30 +130,24 @@ app.get('/health/db', async (req, res) => {
 });
 
 // Serve static files from frontend/dist directory (production)
-const frontendPath = join(__dirname, '../frontend/dist');
-if (existsSync(frontendPath)) {
-  // Serve static files first (CSS, JS, images, etc.)
+if (hasFrontend) {
+  console.log('📁 Serving static files from:', frontendPath);
+  
+  // Serve static files (CSS, JS, images, etc.)
   app.use(express.static(frontendPath));
 
-  // Catch-all handler: serve index.html for any non-API routes
-  // This allows React Router to handle client-side routing
+  // Catch-all handler: serve index.html for SPA routing
   app.get('*', (req, res, next) => {
-    // Don't serve index.html for API routes
-    if (req.path.startsWith('/api') || req.path.startsWith('/health')) {
+    // Never serve index.html for API or health endpoints
+    if (req.path.startsWith('/api/') || req.path.startsWith('/health')) {
       return res.status(404).json({ error: 'Not found' });
     }
-    // Don't serve index.html for actual static files (they should have been handled above)
-    // Only serve index.html for routes that don't exist
+    
+    // Serve index.html for all other routes (React Router handles client-side routing)
     res.sendFile(join(frontendPath, 'index.html'), (err) => {
-      if (err) {
-        next(err);
-      }
+      if (err) next(err);
     });
   });
-
-  console.log('✅ Serving frontend static files from:', frontendPath);
-} else {
-  console.log('⚠️  Frontend static files not found. Running as API-only server.');
 }
 
 app.listen(PORT, () => {
