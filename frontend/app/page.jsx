@@ -65,7 +65,7 @@ export default function Home() {
   return (
     <Container maxW="1200px" py={8}>
       <VStack spacing={6} align="stretch">
-        <Heading size="xl">Find Builders, Join Teams, Buy Businesses</Heading>
+        <Heading size="xl">List Jobs, Offer Services, Sell Businesses</Heading>
 
         <Flex gap={4} flexWrap="wrap">
           <Select
