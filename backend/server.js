@@ -28,7 +28,8 @@ const app = express();
 const PORT = process.env.PORT || 5555;
 
 // Trust proxy - required for rate limiting behind reverse proxy (Render.com)
-app.set('trust proxy', true);
+// Only trust the first proxy (Render.com's reverse proxy) to prevent IP spoofing
+app.set('trust proxy', 1);
 
 // Middleware
 app.use(helmet());
