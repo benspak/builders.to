@@ -1,10 +1,11 @@
 services:
+  # Backend API Service
   - type: web
     name: builders-backend
     env: node
     plan: starter
-    buildCommand: npm run build
-    startCommand: npm start
+    buildCommand: cd backend && npm i
+    startCommand: cd backend && npm start
     envVars:
       - key: NODE_ENV
         value: production
@@ -23,6 +24,21 @@ services:
       - key: STRIPE_PUBLISHABLE_KEY
         sync: false
       - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+
+  # Frontend Static Site
+  - type: web
+    name: builders-frontend
+    env: static
+    buildCommand: cd frontend && npm ci && npm run build
+    staticPublishPath: frontend/dist
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          name: builders-backend
+          type: web
+          property: host
+      - key: VITE_STRIPE_PUBLISHABLE_KEY
         sync: false
 
 databases:

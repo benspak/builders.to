@@ -1,8 +1,8 @@
 import axios from 'axios';
 
 // Get the API URL from environment variables
-// In production, this will be set to the backend service URL
-// In development, the proxy in vite.config.js handles /api routes
+// In production: Set to the backend service URL (e.g., https://builders-backend.onrender.com)
+// In development: Empty string uses Vite proxy or relative paths
 let API_URL = import.meta.env.VITE_API_URL || '';
 
 // If API_URL is provided but doesn't include protocol, prepend https://
@@ -12,13 +12,13 @@ if (API_URL && !API_URL.startsWith('http://') && !API_URL.startsWith('https://')
 }
 
 // Configure axios to use the API URL when provided
-// If empty, axios will use relative paths (same-origin requests)
-// This works when frontend and backend are served from the same service
+// In production with separate services: Use full backend URL
+// In development: Use relative paths which work with Vite proxy
 if (API_URL) {
   axios.defaults.baseURL = API_URL;
 } else {
   // No baseURL means requests will be relative to current origin
-  // This is perfect for same-origin deployments
+  // In development, Vite proxy handles /api routes
   axios.defaults.baseURL = '';
 }
 

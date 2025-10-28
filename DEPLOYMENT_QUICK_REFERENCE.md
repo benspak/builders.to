@@ -19,9 +19,9 @@ One-page deployment checklist for Builders.to
 
 That's it! Render will automatically:
 - Create PostgreSQL database
-- Deploy backend service
-- Deploy frontend service
-- Set up connections
+- Deploy backend API service (separate service)
+- Deploy frontend static site (separate service)
+- Set up connections between services
 
 ## Required Environment Variables
 
@@ -33,11 +33,13 @@ JWT_SECRET=<generate_random_32_char_string>
 STRIPE_SECRET_KEY=sk_test_or_sk_live_...
 STRIPE_WEBHOOK_SECRET=whsec_...
 ```
+(Auto-configured by render.yaml: DATABASE_URL, POSTGRES_DATABASE_URL)
 
 ### Frontend (`builders-frontend`)
 ```env
 VITE_STRIPE_PUBLISHABLE_KEY=pk_test_or_pk_live_...
 ```
+(Auto-configured by render.yaml: VITE_API_URL to backend service)
 
 ## Stripe Setup (3 minutes)
 
@@ -71,9 +73,9 @@ curl https://builders-backend.onrender.com/health/db
 
 ## URLs After Deployment
 
-- **Frontend**: `https://builders-frontend.onrender.com`
-- **Backend**: `https://builders-backend.onrender.com`
-- **API**: `https://builders-backend.onrender.com/api`
+- **Frontend**: `https://builders-frontend.onrender.com` (Static Site)
+- **Backend API**: `https://builders-backend.onrender.com` (Web Service)
+- **Database**: Internal connection (managed by Render)
 
 ## Support
 

@@ -5,7 +5,6 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
-import { existsSync, statSync, readdirSync } from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -38,31 +37,24 @@ app.use(helmet());
 const allowedOrigins = [
   'http://localhost:3000',
   'https://builders.to',
-  'https://www.builders.to'
+  'https://www.builders.to',
+  'https://builders-frontend.onrender.com' // Frontend static site URL
 ];
 
 // In development, allow all localhost
 const isDevelopment = process.env.NODE_ENV === 'development';
-
-// Check if we're serving static files (single-service mode)
-const isServingStatic = existsSync(join(__dirname, '../frontend/dist'));
 
 const corsOptions = {
   origin: (origin, callback) => {
     // Allow requests with no origin (mobile apps, Postman, curl, etc.)
     if (!origin) return callback(null, true);
 
-    // In single-service mode (serving static files), allow same-origin requests
-    if (isServingStatic) {
-      return callback(null, true);
-    }
-
     // In development, allow any localhost
     if (isDevelopment && origin.includes('localhost')) {
       return callback(null, true);
     }
 
-    // Allow specific domains or any Render domain
+    // Allow specific domains or any Render static site domain
     if (allowedOrigins.includes(origin) || origin.includes('.onrender.com')) {
       callback(null, true);
     } else {
@@ -88,61 +80,11 @@ app.use('/api/', limiter);
 // Export database for routes
 export const getDb = () => db;
 
-// Check if frontend dist exists to serve static files in production
-// Try multiple possible paths for the dist folder
-const possiblePaths = [
-  join(__dirname, '../frontend/dist'),           // From backend/ to ../frontend/dist
-  join(__dirname, '..', '..', 'frontend', 'dist'), // Absolute from backend
-];
+// Backend API-only mode - frontend is served as separate static site
+console.log('🚀 Running as API-only backend service');
+console.log('📍 Frontend is served separately as a static site');
 
-console.log('🔍 Checking for frontend dist...');
-console.log('   __dirname:', __dirname);
-console.log('   process.cwd():', process.cwd());
-
-// Log the full directory structure
-console.log('\n📂 Directory structure:');
-console.log('   Parent dir contents:', readdirSync(join(__dirname, '..')));
-console.log('   Current dir contents:', readdirSync(__dirname));
-
-// Check if frontend folder exists and what's in it
-const frontendParentPath = join(__dirname, '..');
-if (existsSync(join(frontendParentPath, 'frontend'))) {
-  console.log('   Frontend folder exists! Contents:');
-  try {
-    const frontendContents = readdirSync(join(frontendParentPath, 'frontend'));
-    console.log('     ', frontendContents);
-  } catch (e) {
-    console.log('     Error reading frontend:', e.message);
-  }
-} else {
-  console.log('   Frontend folder does NOT exist');
-}
-
-console.log('\n   Checking paths:');
-
-let frontendPath = null;
-let hasFrontend = false;
-
-for (const path of possiblePaths) {
-  const exists = existsSync(path);
-  console.log(`   ${path}: ${exists ? '✓ EXISTS' : '✗ NOT FOUND'}`);
-
-  if (exists && !hasFrontend) {
-    frontendPath = path;
-    hasFrontend = true;
-  }
-}
-
-if (hasFrontend) {
-  const stats = statSync(frontendPath);
-  console.log('✅ Frontend dist found at:', frontendPath);
-  console.log('   Stats:', stats.isDirectory() ? 'Directory' : 'Not directory');
-} else {
-  console.log('⚠️  Frontend dist not found in any expected location');
-  console.log('   Running as API-only server');
-}
-
-// Routes - these need to come BEFORE static file serving
+// API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/profiles', profileRoutes);
 app.use('/api/listings', listingRoutes);
@@ -173,26 +115,10 @@ app.get('/health/db', async (req, res) => {
   }
 });
 
-// Serve static files from frontend/dist directory (production)
-if (hasFrontend) {
-  console.log('📁 Serving static files from:', frontendPath);
-
-  // Serve static files (CSS, JS, images, etc.)
-  app.use(express.static(frontendPath));
-
-  // Catch-all handler: serve index.html for SPA routing
-  app.get('*', (req, res, next) => {
-    // Never serve index.html for API or health endpoints
-    if (req.path.startsWith('/api/') || req.path.startsWith('/health')) {
-      return res.status(404).json({ error: 'Not found' });
-    }
-
-    // Serve index.html for all other routes (React Router handles client-side routing)
-    res.sendFile(join(frontendPath, 'index.html'), (err) => {
-      if (err) next(err);
-    });
-  });
-}
+// 404 handler for undefined routes
+app.use((req, res) => {
+  res.status(404).json({ error: 'Not found' });
+});
 
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);

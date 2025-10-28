@@ -33,8 +33,8 @@ Complete deployment guide for the Builders.to marketplace application.
 - Axios for API calls
 
 **Hosting**:
-- Backend: Render.com (Web Service)
-- Frontend: Render.com (Static Site)
+- Backend API: Render.com (Node.js Web Service)
+- Frontend: Render.com (Static Site, separate service)
 - Database: Render.com (PostgreSQL)
 
 ## Prerequisites
@@ -138,11 +138,12 @@ The application will be available at:
 ### Overview
 
 The application uses `render.yaml` for infrastructure-as-code deployment. This file automatically configures:
-- Backend web service (serves both API and frontend)
+- Backend API service (separate Node.js web service)
+- Frontend static site (separate static site service)
 - PostgreSQL database
 - Environment variables and connections
 
-**Note**: The frontend and backend are served from a single service to simplify deployment and handle SPA routing correctly.
+**Note**: Frontend and backend are separate services. The frontend is a static site that makes API calls to the backend service.
 
 ### Deployment Steps
 
@@ -164,18 +165,27 @@ git push origin main
 
 #### 3. Deploy Services
 
-Render will create 2 services:
+Render will create 3 services:
 
 **a) PostgreSQL Database**:
 - Name: `builders-db`
 - Database: `builders`
 - Plan: `free` (free tier)
 
-**b) Backend Service** (serves API + frontend):
+**b) Backend API Service**:
 - Name: `builders-backend`
 - Runtime: Node.js
-- Build Command: Builds frontend first, then backend
-- Start Command: Starts Express server that serves both API and static files
+- Build Command: `cd backend && npm i`
+- Start Command: `cd backend && npm start`
+- Serves only the API endpoints
+- Auto-deploys from main branch
+
+**c) Frontend Static Site**:
+- Name: `builders-frontend`
+- Type: Static Site
+- Build Command: `cd frontend && npm ci && npm run build`
+- Publishes: `frontend/dist` directory
+- Makes API calls to `builders-backend`
 - Auto-deploys from main branch
 
 #### 4. Configure Environment Variables
@@ -237,13 +247,12 @@ If you prefer manual setup or to update existing services:
 
 ### Frontend Environment Variables
 
-**Note**: Since the frontend is now served from the backend, `VITE_API_URL` is set to empty (`""`) to allow same-origin API requests. This is handled automatically in `render.yaml`.
+| Variable | Description | Example | Required |
+|----------|-------------|---------|----------|
+| `VITE_API_URL` | Backend API URL | Auto-set from backend service | Yes |
+| `VITE_STRIPE_PUBLISHABLE_KEY` | Stripe publishable key | `pk_test_...` or `pk_live_...` | Yes |
 
-The frontend still needs Stripe publishable key at build time. You'll need to set this in your local `.env` file when developing:
-
-```env
-VITE_STRIPE_PUBLISHABLE_KEY=pk_test_... or pk_live_...
-```
+**Note**: `VITE_API_URL` is automatically set to the backend service host by `render.yaml`. You only need to set `VITE_STRIPE_PUBLISHABLE_KEY` manually.
 
 ## Stripe Configuration
 
@@ -306,6 +315,11 @@ Expected response:
 }
 ```
 
+**Frontend Static Site**:
+- Visit: `https://builders-frontend.onrender.com`
+- Should load the React app
+- API calls should automatically connect to the backend service
+
 ### 2. Test Application Features
 
 1. **Register a new user**
@@ -334,16 +348,17 @@ Expected response:
 
 ### 3. Check Logs
 
-**Backend Logs**:
+**Backend API Logs**:
 - Go to Render dashboard
 - Select `builders-backend` service
 - Click **Logs** tab
-- Look for successful startup messages
+- Look for "Server running on port" messages
 
-**Frontend Build**:
+**Frontend Static Site**:
 - Go to Render dashboard
 - Select `builders-frontend` service
-- Check build logs for successful build
+- Check build logs for successful Vite build
+- Verify static files are published
 
 ## Troubleshooting
 
@@ -375,8 +390,9 @@ Too many requests from this IP
 
 **Solution**:
 1. Check backend CORS configuration in `backend/server.js`
-2. Verify frontend URL is in CORS allowed origins
-3. Check `VITE_API_URL` is set correctly
+2. Verify frontend URL (`https://builders-frontend.onrender.com`) is in allowed origins
+3. Check `VITE_API_URL` is automatically set by `render.yaml`
+4. Ensure both services are deployed and running
 
 **Issue**: Stripe payment fails
 
