@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link as RouterLink } from 'react-router-dom';
 import {
   Container,
   Box,
@@ -184,7 +184,7 @@ const PublicProfile = () => {
                           {listing.category} • {listing.location}
                         </Text>
                       </Box>
-                      <Button as="a" href={`/listing/${listing.id}`} size="sm">
+                      <Button as={RouterLink} to={`/listing/${listing.id}`} size="sm">
                         View
                       </Button>
                     </HStack>

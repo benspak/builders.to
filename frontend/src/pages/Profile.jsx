@@ -81,7 +81,7 @@ const Profile = () => {
 
   return (
     <Container maxW="3xl" py={8}>
-      <Box bg="white" p={8} borderRadius="lg" shadow="md">
+      <Box bg={{ base: 'white', _dark: 'gray.800' }} p={8} borderRadius="lg" shadow="md">
         <VStack spacing={6} align="stretch">
           <Heading size="lg">Your Profile</Heading>
 

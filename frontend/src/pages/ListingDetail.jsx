@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link as RouterLink } from 'react-router-dom';
 import {
   Container,
   Box,
@@ -187,7 +187,7 @@ const ListingDetail = () => {
 
               <HStack justify="space-between" fontSize="sm" color="gray.500">
                 <Text>Posted on {new Date(listing.created_at).toLocaleDateString()}</Text>
-                <Button as="a" href={`/user/${listing.user_id}`} size="sm" variant="link" colorScheme="blue">
+                <Button as={RouterLink} to={`/user/${listing.user_id}`} size="sm" variant="link" colorScheme="blue">
                   View Profile
                 </Button>
               </HStack>

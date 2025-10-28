@@ -146,6 +146,43 @@ const theme = extendTheme({
         },
       },
     },
+    Textarea: {
+      defaultProps: {
+        focusBorderColor: 'blue.500',
+      },
+      baseStyle: {
+        _light: {
+          bg: 'white',
+          borderColor: 'gray.300',
+          color: 'gray.900',
+          _placeholder: {
+            color: 'gray.500',
+          },
+          _hover: {
+            borderColor: 'gray.400',
+          },
+          _focus: {
+            borderColor: 'blue.500',
+            boxShadow: '0 0 0 1px #3182ce',
+          },
+        },
+        _dark: {
+          bg: 'gray.700',
+          borderColor: 'gray.600',
+          color: 'gray.100',
+          _placeholder: {
+            color: 'gray.400',
+          },
+          _hover: {
+            borderColor: 'gray.500',
+          },
+          _focus: {
+            borderColor: 'blue.500',
+            boxShadow: '0 0 0 1px #3182ce',
+          },
+        },
+      },
+    },
     Button: {
       defaultProps: {
         colorScheme: 'blue',
@@ -200,6 +237,16 @@ const theme = extendTheme({
         },
         _dark: {
           color: 'inherit',
+        },
+      },
+    },
+    Alert: {
+      parts: ['container', 'title', 'description', 'icon'],
+      baseStyle: {
+        container: {
+          _dark: {
+            bg: 'gray.800',
+          },
         },
       },
     },

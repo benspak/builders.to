@@ -110,11 +110,9 @@ const Home = () => {
                   {listing.location && (
                     <Text fontSize="sm" color="gray.600">{listing.location}</Text>
                   )}
-                  <Link to={`/user/${listing.user_id}`}>
-                    <Button size="xs" variant="link" colorScheme="blue">
-                      Profile →
-                    </Button>
-                  </Link>
+                  <Button as={Link} to={`/user/${listing.user_id}`} size="xs" variant="link" colorScheme="blue">
+                    Profile →
+                  </Button>
                 </HStack>
               </CardHeader>
               <CardBody>
