@@ -5,8 +5,11 @@ services:
     rootDir: .
     buildCommand: |
       cd frontend && npm ci && npm run build
+      echo "✓ Frontend build complete"
       cd ../backend && npm ci
-      echo "Build complete. Dist exists:" && ls -la ../frontend/dist/ || echo "Dist not found"
+      echo "✓ Backend dependencies installed"
+      echo "Verifying dist folder:"
+      ls -la ../frontend/dist/ && echo "✓ Dist folder found" || echo "✗ Dist folder not found"
     startCommand: cd backend && npm start
     envVars:
       - key: NODE_ENV
