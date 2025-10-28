@@ -1,6 +1,5 @@
 'use client';
 
-import { Box, ButtonGroup, IconButton, Menu, MenuButton, MenuList, MenuItem, Divider } from '@chakra-ui/react';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import {
   $getSelection,
@@ -35,6 +34,7 @@ export function Toolbar() {
   const [isBold, setIsBold] = useState(false);
   const [isItalic, setIsItalic] = useState(false);
   const [isUnderline, setIsUnderline] = useState(false);
+  const [showFormatMenu, setShowFormatMenu] = useState(false);
 
   useEffect(() => {
     return editor.registerUpdateListener(({ editorState }) => {
@@ -63,6 +63,7 @@ export function Toolbar() {
         }
       }
     });
+    setShowFormatMenu(false);
   };
 
   const formatParagraph = () => {
@@ -79,6 +80,7 @@ export function Toolbar() {
         }
       }
     });
+    setShowFormatMenu(false);
   };
 
   const formatQuote = () => {
@@ -122,88 +124,147 @@ export function Toolbar() {
   };
 
   return (
-    <Box
-      borderBottom="1px"
-      borderColor="gray.300"
-      _dark={{ borderColor: 'gray.600' }}
-      p={2}
-      bg="gray.50"
-      _dark={{ bg: 'gray.800' }}
-      display="flex"
-      gap={1}
-      flexWrap="wrap"
+    <div
+      style={{
+        borderBottom: '1px solid var(--border-light)',
+        padding: '0.5rem',
+        backgroundColor: 'var(--bg-secondary-light)',
+        display: 'flex',
+        gap: '0.25rem',
+        flexWrap: 'wrap',
+      }}
     >
-      <Menu>
-        <MenuButton size="sm">Format</MenuButton>
-        <MenuList>
-          <MenuItem onClick={() => formatParagraph()}>Paragraph</MenuItem>
-          <MenuItem onClick={() => formatHeading('h1')}>Heading 1</MenuItem>
-          <MenuItem onClick={() => formatHeading('h2')}>Heading 2</MenuItem>
-          <MenuItem onClick={() => formatHeading('h3')}>Heading 3</MenuItem>
-          <MenuItem onClick={() => formatQuote()}>Quote</MenuItem>
-          <MenuItem onClick={() => formatCode()}>Code Block</MenuItem>
-        </MenuList>
-      </Menu>
+      <div style={{ position: 'relative' }}>
+        <button
+          className="btn btn-sm"
+          onClick={() => setShowFormatMenu(!showFormatMenu)}
+        >
+          Format
+        </button>
+        {showFormatMenu && (
+          <div
+            style={{
+              position: 'absolute',
+              top: '100%',
+              left: 0,
+              background: 'white',
+              border: '1px solid var(--border-light)',
+              borderRadius: 'var(--radius-md)',
+              boxShadow: 'var(--shadow-lg)',
+              zIndex: 10,
+              minWidth: '150px',
+              marginTop: '0.25rem',
+            }}
+          >
+            <button
+              className="btn-link"
+              onClick={() => formatParagraph()}
+              style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.5rem 1rem' }}
+            >
+              Paragraph
+            </button>
+            <button
+              className="btn-link"
+              onClick={() => formatHeading('h1')}
+              style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.5rem 1rem' }}
+            >
+              Heading 1
+            </button>
+            <button
+              className="btn-link"
+              onClick={() => formatHeading('h2')}
+              style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.5rem 1rem' }}
+            >
+              Heading 2
+            </button>
+            <button
+              className="btn-link"
+              onClick={() => formatHeading('h3')}
+              style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.5rem 1rem' }}
+            >
+              Heading 3
+            </button>
+            <button
+              className="btn-link"
+              onClick={() => formatQuote()}
+              style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.5rem 1rem' }}
+            >
+              Quote
+            </button>
+            <button
+              className="btn-link"
+              onClick={() => formatCode()}
+              style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.5rem 1rem' }}
+            >
+              Code Block
+            </button>
+          </div>
+        )}
+      </div>
 
-      <Divider orientation="vertical" />
+      <div style={{ height: '24px', width: '1px', backgroundColor: 'var(--border-light)', alignSelf: 'center' }} />
 
-      <ButtonGroup size="sm" isAttached>
-        <IconButton
-          icon={<MdFormatBold />}
-          aria-label="Bold"
+      <div style={{ display: 'flex', gap: '0.25rem' }}>
+        <button
+          className={`btn btn-sm ${isBold ? 'btn-primary' : 'btn-outline'}`}
           onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold')}
-          colorScheme={isBold ? 'blue' : 'gray'}
-          variant={isBold ? 'solid' : 'ghost'}
-        />
-        <IconButton
-          icon={<MdFormatItalic />}
-          aria-label="Italic"
+          aria-label="Bold"
+        >
+          <MdFormatBold />
+        </button>
+        <button
+          className={`btn btn-sm ${isItalic ? 'btn-primary' : 'btn-outline'}`}
           onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'italic')}
-          colorScheme={isItalic ? 'blue' : 'gray'}
-          variant={isItalic ? 'solid' : 'ghost'}
-        />
-        <IconButton
-          icon={<MdFormatUnderlined />}
-          aria-label="Underline"
+          aria-label="Italic"
+        >
+          <MdFormatItalic />
+        </button>
+        <button
+          className={`btn btn-sm ${isUnderline ? 'btn-primary' : 'btn-outline'}`}
           onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'underline')}
-          colorScheme={isUnderline ? 'blue' : 'gray'}
-          variant={isUnderline ? 'solid' : 'ghost'}
-        />
-      </ButtonGroup>
+          aria-label="Underline"
+        >
+          <MdFormatUnderlined />
+        </button>
+      </div>
 
-      <Divider orientation="vertical" />
+      <div style={{ height: '24px', width: '1px', backgroundColor: 'var(--border-light)', alignSelf: 'center' }} />
 
-      <ButtonGroup size="sm" isAttached>
-        <IconButton
-          icon={<MdFormatQuote />}
-          aria-label="Quote"
+      <div style={{ display: 'flex', gap: '0.25rem' }}>
+        <button
+          className="btn btn-sm btn-outline"
           onClick={formatQuote}
-          variant="ghost"
-        />
-        <IconButton
-          icon={<MdCode />}
-          aria-label="Code Block"
+          aria-label="Quote"
+        >
+          <MdFormatQuote />
+        </button>
+        <button
+          className="btn btn-sm btn-outline"
           onClick={formatCode}
-          variant="ghost"
-        />
-      </ButtonGroup>
+          aria-label="Code Block"
+        >
+          <MdCode />
+        </button>
+      </div>
 
-      <Divider orientation="vertical" />
+      <div style={{ height: '24px', width: '1px', backgroundColor: 'var(--border-light)', alignSelf: 'center' }} />
 
-      <ButtonGroup size="sm" isAttached>
-        <IconButton
-          icon={<MdFormatListBulleted />}
-          aria-label="Bullet List"
+      <div style={{ display: 'flex', gap: '0.25rem' }}>
+        <button
+          className="btn btn-sm btn-outline"
           onClick={() => insertList('unordered')}
-          variant="ghost"
-        />
-        <IconButton
-          icon={<MdFormatListNumbered />}
-          aria-label="Numbered List"
+          aria-label="Bullet List"
+        >
+          <MdFormatListBulleted />
+        </button>
+        <button
+          className="btn btn-sm btn-outline"
           onClick={() => insertList('ordered')}
-          variant="ghost"
-        />
-      </ButtonGroup>
-    </Box>
+          aria-label="Numbered List"
+        >
+          <MdFormatListNumbered />
+        </button>
+      </div>
+    </div>
   );
 }

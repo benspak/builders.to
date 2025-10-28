@@ -1,42 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import {
-  Container,
-  Box,
-  Heading,
-  SimpleGrid,
-  Card,
-  CardBody,
-  CardHeader,
-  Text,
-  Badge,
-  Button,
-  Select,
-  Input,
-  Flex,
-  VStack,
-  HStack
-} from '@chakra-ui/react';
 import Link from 'next/link';
 import axios from '../src/lib/axios';
 import { stripHtml } from '../src/components/RichTextEditor';
 
 export default function Home() {
   const [listings, setListings] = useState([]);
-  const [filteredListings, setFilteredListings] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [selectedLocation, setSelectedLocation] = useState('all');
   const [locations, setLocations] = useState([]);
 
   useEffect(() => {
     fetchListings();
   }, []);
-
-  useEffect(() => {
-    filterListings();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [listings, selectedCategory, selectedLocation]);
 
   const fetchListings = async () => {
     try {
@@ -49,104 +24,90 @@ export default function Home() {
     }
   };
 
-  const filterListings = () => {
-    let filtered = listings;
+  // Segment listings by category
+  const featuredListings = listings.filter(l => l.is_featured);
+  const servicesListings = listings.filter(l => l.category === 'Services' && !l.is_featured);
+  const jobsListings = listings.filter(l => l.category === 'Jobs' && !l.is_featured);
+  const forSaleListings = listings.filter(l => l.category === 'For Sale' && !l.is_featured);
 
-    if (selectedCategory !== 'all') {
-      filtered = filtered.filter(l => l.category === selectedCategory);
-    }
+  // Render a listing card
+  const renderListing = (listing) => (
+    <div key={listing.id} className="card">
+      <div className="card-header">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.5rem' }}>
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            {listing.is_featured && <span className="badge badge-primary">Featured</span>}
+            <span className={`badge ${listing.category === 'Jobs' ? 'badge-primary' : listing.category === 'Services' ? 'badge-success' : 'badge-warning'}`}>
+              {listing.category}
+            </span>
+          </div>
+        </div>
+        <h2 className="heading heading-sm" style={{ marginTop: '1rem' }}>
+          <Link href={`/listing/${listing.slug}`}>{listing.title}</Link>
+        </h2>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem' }}>
+          {listing.location && (
+            <span className="text text-sm text-secondary">📍 {listing.location}</span>
+          )}
+          {listing.profile_username && (
+            <Link href={`/user/${listing.profile_username}`} className="btn-link text-sm">
+              Profile →
+            </Link>
+          )}
+        </div>
+      </div>
+      <div className="card-body">
+        <p className="text text-sm" style={{
+          display: '-webkit-box',
+          WebkitLineClamp: 3,
+          WebkitBoxOrient: 'vertical',
+          overflow: 'hidden'
+        }}>
+          {stripHtml(listing.description)}
+        </p>
+        <p className="text text-xs text-secondary" style={{ marginTop: '0.5rem' }}>
+          {new Date(listing.created_at).toLocaleDateString()}
+        </p>
+      </div>
+    </div>
+  );
 
-    if (selectedLocation !== 'all') {
-      filtered = filtered.filter(l => l.location === selectedLocation);
-    }
+  // Render a category section
+  const renderCategorySection = (title, items, icon = '📋') => {
+    if (items.length === 0) return null;
 
-    setFilteredListings(filtered);
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <h2 className="heading heading-md category-section-header">
+          <span>{icon}</span>
+          {title}
+        </h2>
+        <div className="grid grid-responsive">
+          {items.map(renderListing)}
+        </div>
+      </div>
+    );
   };
 
   return (
-    <Container maxW="1200px" py={{ base: 4, md: 8 }} px={{ base: 4, md: 6 }}>
-      <VStack spacing={{ base: 4, md: 6 }} align="stretch">
-        <Heading size={{ base: "lg", md: "xl" }}>List Jobs, Offer Services, Sell Businesses</Heading>
-        <Heading size={{ base: "sm", md: "md" }} color="gray.600">Cost: $5 per listing</Heading>
-        <Flex
-          gap={4}
-          flexWrap="wrap"
-          direction={{ base: "column", sm: "row" }}
-        >
-          <Select
-            placeholder="All Categories"
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            size={{ base: "md", md: "sm" }}
-            width={{ base: "100%", sm: "200px" }}
-          >
-            <option value="all">All Categories</option>
-            <option value="Jobs">Jobs</option>
-            <option value="Services">Services</option>
-            <option value="For Sale">For Sale</option>
-          </Select>
+    <div className="container" style={{ paddingTop: '2rem', paddingBottom: '2rem' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
+        <div>
+          <h1 className="heading heading-lg">List Jobs, Offer Services, Sell Businesses</h1>
+          <p className="text text-base text-secondary" style={{ marginTop: '0.5rem' }}>Cost: $5 per listing</p>
+        </div>
 
-          <Select
-            placeholder="All Locations"
-            value={selectedLocation}
-            onChange={(e) => setSelectedLocation(e.target.value)}
-            size={{ base: "md", md: "sm" }}
-            width={{ base: "100%", sm: "200px" }}
-          >
-            <option value="all">All Locations</option>
-            {locations.map(loc => (
-              <option key={loc} value={loc}>{loc}</option>
-            ))}
-          </Select>
-        </Flex>
+        {renderCategorySection('Featured', featuredListings, '⭐')}
+        {renderCategorySection('Jobs', jobsListings, '💼')}
+        {renderCategorySection('Services', servicesListings, '🔧')}
+        {renderCategorySection('For Sale', forSaleListings, '💰')}
 
-        <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={{ base: 4, md: 6 }}>
-          {filteredListings.map(listing => (
-            <Card key={listing.id} variant="outline" _hover={{ shadow: 'md' }}>
-              <CardHeader>
-                <Flex justify="space-between" align="start" wrap="wrap" gap={2}>
-                  <VStack align="start" spacing={2}>
-                    {listing.is_featured && <Badge colorScheme="purple" fontSize={{ base: "xs", md: "sm" }}>Featured</Badge>}
-                    <Badge
-                      colorScheme={listing.category === 'Jobs' ? 'blue' : listing.category === 'Services' ? 'green' : 'orange'}
-                      fontSize={{ base: "xs", md: "sm" }}
-                    >
-                      {listing.category}
-                    </Badge>
-                  </VStack>
-                </Flex>
-                <Heading size={{ base: "xs", md: "sm" }} mt={2}>
-                  <Link href={`/listing/${listing.slug}`}>{listing.title}</Link>
-                </Heading>
-                <HStack justify="space-between" align="center" mt={2} width="100%" spacing={2}>
-                  {listing.location && (
-                    <Text fontSize={{ base: "xs", md: "sm" }} color="gray.600" noOfLines={1}>{listing.location}</Text>
-                  )}
-                  {listing.profile_username && (
-                    <Link href={`/user/${listing.profile_username}`}>
-                      <Button size="xs" variant="link" colorScheme="blue">
-                        Profile →
-                      </Button>
-                    </Link>
-                  )}
-                </HStack>
-              </CardHeader>
-              <CardBody>
-                <Text noOfLines={3} fontSize={{ base: "xs", md: "sm" }}>{stripHtml(listing.description)}</Text>
-                <Text fontSize="xs" color="gray.500" mt={2}>
-                  {new Date(listing.created_at).toLocaleDateString()}
-                </Text>
-              </CardBody>
-            </Card>
-          ))}
-        </SimpleGrid>
-
-        {filteredListings.length === 0 && (
-          <Box textAlign="center" py={{ base: 8, md: 12 }}>
-            <Text color="gray.500" fontSize={{ base: "sm", md: "md" }}>No listings found. Be the first to create one!</Text>
-          </Box>
+        {listings.length === 0 && (
+          <div style={{ textAlign: 'center', padding: '3rem 0' }}>
+            <p className="text text-base text-secondary">No listings found. Be the first to create one!</p>
+          </div>
         )}
-      </VStack>
-    </Container>
+      </div>
+    </div>
   );
 }

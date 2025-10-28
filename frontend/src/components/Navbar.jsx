@@ -1,23 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import {
-  Box,
-  Flex,
-  Button,
-  Link,
-  IconButton,
-  Drawer,
-  DrawerBody,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerOverlay,
-  DrawerContent,
-  DrawerCloseButton,
-  VStack,
-  useDisclosure,
-  useBreakpointValue
-} from '@chakra-ui/react';
 import { HiMenuAlt3 } from 'react-icons/hi';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
@@ -25,9 +8,9 @@ import NextLink from 'next/link';
 
 const Navbar = () => {
   const [mounted, setMounted] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, logout } = useAuth();
   const router = useRouter();
-  const { isOpen, onOpen, onClose } = useDisclosure();
 
   useEffect(() => {
     setMounted(true);
@@ -36,183 +19,144 @@ const Navbar = () => {
   const handleLogout = () => {
     logout();
     router.push('/');
-    onClose();
+    setIsMenuOpen(false);
   };
 
   // Return a simple skeleton while not mounted to avoid hydration mismatch
   if (!mounted) {
     return (
-      <Box borderBottom="1px" borderColor="chakra-border-color">
-        <Flex maxW="1200px" mx="auto" px={{ base: 4, md: 6 }} py={4} justify="space-between" align="center">
-          <Box fontSize={{ base: "xl", md: "2xl" }} fontWeight="bold">
-            builders.to
-          </Box>
-          <Box width="40px" height="40px" bg="gray.200" borderRadius="md" />
-        </Flex>
-      </Box>
+      <nav className="navbar">
+        <div className="navbar-content">
+          <div className="navbar-brand">builders.to</div>
+          <div className="navbar-links">
+            <button className="mobile-menu-btn">
+              <HiMenuAlt3 />
+            </button>
+          </div>
+        </div>
+      </nav>
     );
   }
 
   const navLinks = (
     <>
-      <Link href="/" color="chakra-body-text" fontWeight="medium" _hover={{ opacity: 0.7 }}>
-        Browse
-      </Link>
+      <NextLink href="/" className="navbar-link">Browse</NextLink>
       {user ? (
         <>
-          <Link href="/create-listing" color="chakra-body-text" fontWeight="medium" _hover={{ opacity: 0.7 }}>
-            Create Listing
-          </Link>
-          <Link href="/dashboard" color="chakra-body-text" fontWeight="medium" _hover={{ opacity: 0.7 }}>
-            Dashboard
-          </Link>
-          <Link href="/profile" color="chakra-body-text" fontWeight="medium" _hover={{ opacity: 0.7 }}>
-            Profile
-          </Link>
-          <Button size="sm" onClick={handleLogout}>
+          <NextLink href="/create-listing" className="navbar-link">Create Listing</NextLink>
+          <NextLink href="/dashboard" className="navbar-link">Dashboard</NextLink>
+          <NextLink href="/profile" className="navbar-link">Profile</NextLink>
+          <button className="btn btn-sm btn-error" onClick={handleLogout}>
             Logout
-          </Button>
+          </button>
         </>
       ) : (
         <>
-          <Link href="/login">
-            <Button size="sm" variant="outline">Login</Button>
-          </Link>
-          <Link href="/register">
-            <Button size="sm" colorScheme="blue">Sign Up</Button>
-          </Link>
+          <NextLink href="/login" className="btn btn-sm btn-outline">Login</NextLink>
+          <NextLink href="/register" className="btn btn-sm btn-primary">Sign Up</NextLink>
         </>
       )}
     </>
   );
 
   return (
-    <Box
-      bg="chakra-body-bg"
-      borderBottom="1px"
-      borderColor="chakra-border-color"
-      mb={8}
-      position="sticky"
-      top={0}
-      zIndex={1000}
-      boxShadow="sm"
-    >
-      <Flex maxW="1200px" mx="auto" px={{ base: 4, md: 6 }} py={{ base: 3, md: 4 }} justify="space-between" align="center">
-        <Link
-          href="/"
-          as={NextLink}
-          fontSize={{ base: "xl", md: "2xl" }}
-          fontWeight="bold"
-          color="blue.500"
-          _dark={{ color: "blue.400" }}
-          _hover={{ opacity: 0.8 }}
-        >
-          builders.to
-        </Link>
+    <nav className="navbar">
+      <div className="navbar-content">
+        <NextLink href="/" className="navbar-brand">builders.to</NextLink>
 
         {/* Desktop Navigation */}
-        <Flex gap={{ base: 2, md: 4 }} align="center" display={{ base: 'none', md: 'flex' }}>
+        <div className="navbar-links">
           {navLinks}
-        </Flex>
+        </div>
 
         {/* Mobile Hamburger Menu */}
-        <IconButton
+        <button
+          className="mobile-menu-btn"
+          onClick={() => setIsMenuOpen(true)}
           aria-label="Open menu"
-          icon={<HiMenuAlt3 />}
-          onClick={onOpen}
-          variant="ghost"
-          display={{ base: 'flex', md: 'none' }}
-          size="lg"
-        />
-      </Flex>
+        >
+          <HiMenuAlt3 />
+        </button>
+      </div>
 
       {/* Mobile Drawer */}
-      <Drawer isOpen={isOpen} placement="right" onClose={onClose} size="xs">
-        <DrawerOverlay />
-        <DrawerContent>
-          <DrawerCloseButton size="lg" />
-          <DrawerHeader fontSize="xl">Menu</DrawerHeader>
-
-          <DrawerBody py={6}>
-            <VStack spacing={2} align="stretch">
-              <Link
+      {isMenuOpen && (
+        <>
+          <div className="mobile-menu-overlay" onClick={() => setIsMenuOpen(false)} />
+          <div className="mobile-menu open">
+            <button className="mobile-menu-close" onClick={() => setIsMenuOpen(false)}>
+              ×
+            </button>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '2rem' }}>
+              <NextLink
                 href="/"
-                as={NextLink}
-                onClick={onClose}
-                color="chakra-body-text"
-                fontWeight="medium"
-                py={3}
-                px={4}
-                borderRadius="md"
-                _hover={{ bg: "chakra-subtle-bg" }}
+                className="navbar-link"
+                onClick={() => setIsMenuOpen(false)}
+                style={{ display: 'block', padding: '0.75rem', borderRadius: '0.5rem' }}
               >
                 Browse
-              </Link>
+              </NextLink>
               {user ? (
                 <>
-                  <Link
+                  <NextLink
                     href="/create-listing"
-                    as={NextLink}
-                    onClick={onClose}
-                    color="chakra-body-text"
-                    fontWeight="medium"
-                    py={3}
-                    px={4}
-                    borderRadius="md"
-                    _hover={{ bg: "chakra-subtle-bg" }}
+                    className="navbar-link"
+                    onClick={() => setIsMenuOpen(false)}
+                    style={{ display: 'block', padding: '0.75rem', borderRadius: '0.5rem' }}
                   >
                     Create Listing
-                  </Link>
-                  <Link
+                  </NextLink>
+                  <NextLink
                     href="/dashboard"
-                    as={NextLink}
-                    onClick={onClose}
-                    color="chakra-body-text"
-                    fontWeight="medium"
-                    py={3}
-                    px={4}
-                    borderRadius="md"
-                    _hover={{ bg: "chakra-subtle-bg" }}
+                    className="navbar-link"
+                    onClick={() => setIsMenuOpen(false)}
+                    style={{ display: 'block', padding: '0.75rem', borderRadius: '0.5rem' }}
                   >
                     Dashboard
-                  </Link>
-                  <Link
+                  </NextLink>
+                  <NextLink
                     href="/profile"
-                    as={NextLink}
-                    onClick={onClose}
-                    color="chakra-body-text"
-                    fontWeight="medium"
-                    py={3}
-                    px={4}
-                    borderRadius="md"
-                    _hover={{ bg: "chakra-subtle-bg" }}
+                    className="navbar-link"
+                    onClick={() => setIsMenuOpen(false)}
+                    style={{ display: 'block', padding: '0.75rem', borderRadius: '0.5rem' }}
                   >
                     Profile
-                  </Link>
+                  </NextLink>
                 </>
               ) : (
                 <>
-                  <Link href="/login" as={NextLink} onClick={onClose}>
-                    <Button size="md" variant="outline" width="100%" py={6}>Login</Button>
-                  </Link>
-                  <Link href="/register" as={NextLink} onClick={onClose}>
-                    <Button size="md" colorScheme="blue" width="100%" py={6}>Sign Up</Button>
-                  </Link>
+                  <NextLink
+                    href="/login"
+                    className="btn btn-outline btn-full"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Login
+                  </NextLink>
+                  <NextLink
+                    href="/register"
+                    className="btn btn-primary btn-full"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Sign Up
+                  </NextLink>
                 </>
               )}
-            </VStack>
-          </DrawerBody>
+            </div>
 
-          {user && (
-            <DrawerFooter borderTopWidth="1px" pt={4}>
-              <Button variant="ghost" colorScheme="red" onClick={handleLogout} width="100%" size="md" py={6}>
-                Logout
-              </Button>
-            </DrawerFooter>
-          )}
-        </DrawerContent>
-      </Drawer>
-    </Box>
+            {user && (
+              <div style={{ marginTop: '2rem', borderTop: '1px solid', paddingTop: '1rem' }}>
+                <button
+                  className="btn btn-error btn-full"
+                  onClick={handleLogout}
+                >
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
+        </>
+      )}
+    </nav>
   );
 };
 

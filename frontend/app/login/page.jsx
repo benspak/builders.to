@@ -2,20 +2,6 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  Container,
-  Box,
-  FormControl,
-  FormLabel,
-  Input,
-  Button,
-  Heading,
-  Text,
-  Alert,
-  AlertIcon,
-  VStack,
-  useColorModeValue
-} from '@chakra-ui/react';
 import Link from 'next/link';
 import { useAuth } from '../../src/context/AuthContext';
 
@@ -26,8 +12,6 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const router = useRouter();
-
-  const bgColor = useColorModeValue('white', 'gray.800');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -45,55 +29,59 @@ export default function Login() {
   };
 
   return (
-    <Container maxW="md" py={20}>
-      <Box bg={bgColor} p={8} borderRadius="lg" shadow="md">
-        <VStack spacing={6}>
-          <Heading size="lg">Welcome Back</Heading>
+    <div className="container" style={{ maxWidth: '28rem', paddingTop: '5rem', paddingBottom: '5rem' }}>
+      <div className="card" style={{ padding: '2rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          <h1 className="heading heading-lg">Welcome Back</h1>
 
           {error && (
-            <Alert status="error">
-              <AlertIcon />
+            <div className="alert alert-error">
+              <span style={{ fontSize: '1.25rem' }}>⚠️</span>
               {error}
-            </Alert>
+            </div>
           )}
 
           <form onSubmit={handleSubmit} style={{ width: '100%' }}>
-            <VStack spacing={4}>
-              <FormControl isRequired>
-                <FormLabel>Email</FormLabel>
-                <Input
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div className="form-control">
+                <label className="form-label">Email</label>
+                <input
                   type="email"
+                  className="form-input"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  required
                 />
-              </FormControl>
+              </div>
 
-              <FormControl isRequired>
-                <FormLabel>Password</FormLabel>
-                <Input
+              <div className="form-control">
+                <label className="form-label">Password</label>
+                <input
                   type="password"
+                  className="form-input"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  required
                 />
-              </FormControl>
+              </div>
 
-              <Button
+              <button
                 type="submit"
-                colorScheme="blue"
-                width="full"
-                isLoading={loading}
+                className="btn btn-primary btn-full"
+                disabled={loading}
+                style={loading ? { position: 'relative' } : {}}
               >
-                Login
-              </Button>
-            </VStack>
+                {loading ? 'Logging in...' : 'Login'}
+              </button>
+            </div>
           </form>
 
-          <Text>
+          <p className="text text-sm" style={{ textAlign: 'center' }}>
             Don&apos;t have an account?{' '}
-            <Link href="/register" style={{ color: 'blue' }}>Sign up</Link>
-          </Text>
-        </VStack>
-      </Box>
-    </Container>
+            <Link href="/register" style={{ color: 'var(--primary)', fontWeight: '600' }}>Sign up</Link>
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }

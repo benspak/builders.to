@@ -3,26 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import {
-  Container,
-  Box,
-  Heading,
-  Text,
-  Badge,
-  Button,
-  VStack,
-  Card,
-  CardBody,
-  Avatar,
-  Divider,
-  Link as ChakraLink,
-  HStack,
-  Alert,
-  AlertIcon,
-  Skeleton,
-  SkeletonText,
-  Flex
-} from '@chakra-ui/react';
 import axios from '../../../src/lib/axios';
 
 export default function PublicProfile() {
@@ -58,153 +38,153 @@ export default function PublicProfile() {
 
   if (loading) {
     return (
-      <Container maxW="4xl" py={8}>
-        <Skeleton height="200px" mb={4} />
-        <SkeletonText mt="4" noOfLines={6} spacing="4" />
-      </Container>
+      <div className="container" style={{ maxWidth: '56rem', paddingTop: '2rem', paddingBottom: '2rem' }}>
+        <div style={{ height: '200px', background: 'var(--bg-secondary-light)', borderRadius: 'var(--radius-md)', marginBottom: '1rem' }} />
+        <div style={{ height: '20px', background: 'var(--bg-secondary-light)', borderRadius: 'var(--radius-md)', marginBottom: '0.5rem' }} />
+        <div style={{ height: '20px', background: 'var(--bg-secondary-light)', borderRadius: 'var(--radius-md)', marginBottom: '0.5rem' }} />
+        <div style={{ height: '20px', background: 'var(--bg-secondary-light)', borderRadius: 'var(--radius-md)', marginBottom: '0.5rem' }} />
+      </div>
     );
   }
 
   if (error || !profile) {
     return (
-      <Container maxW="4xl" py={8}>
-        <Alert status="error">
-          <AlertIcon />
+      <div className="container" style={{ maxWidth: '56rem', paddingTop: '2rem', paddingBottom: '2rem' }}>
+        <div className="alert alert-error">
+          <span style={{ fontSize: '1.25rem' }}>⚠️</span>
           {error || 'Profile not found'}
-        </Alert>
-      </Container>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Container maxW="4xl" py={8}>
-      <VStack spacing={6} align="stretch">
+    <div className="container" style={{ maxWidth: '56rem', paddingTop: '2rem', paddingBottom: '2rem' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
         {/* Profile Header */}
-        <Card>
-          <CardBody>
-            <HStack spacing={6}>
-              <Avatar size="2xl" name={profile.name} />
-              <VStack align="start" spacing={2} flex={1}>
-                <Heading size="lg">{profile.name || 'Builder'}</Heading>
+        <div className="card">
+          <div className="card-body">
+            <div style={{ display: 'flex', gap: '1.5rem' }}>
+              <div className="avatar avatar-xl">{profile.name ? profile.name.charAt(0).toUpperCase() : 'U'}</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', flex: 1 }}>
+                <h2 className="heading heading-lg">{profile.name || 'Builder'}</h2>
                 {profile.username && (
-                  <Text color="gray.500">@{profile.username}</Text>
+                  <p className="text text-sm text-secondary">@{profile.username}</p>
                 )}
                 {profile.sub_heading && (
-                  <Text color="gray.600">{profile.sub_heading}</Text>
+                  <p className="text text-base text-secondary">{profile.sub_heading}</p>
                 )}
-                <HStack spacing={4}>
+                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center', marginTop: '0.5rem' }}>
                   {profile.current_role && (
-                    <Badge colorScheme="blue">{profile.current_role}</Badge>
+                    <span className="badge badge-primary">{profile.current_role}</span>
                   )}
                   {profile.location && (
-                    <Text color="gray.500">📍 {profile.location}</Text>
+                    <span className="text text-sm text-secondary">📍 {profile.location}</span>
                   )}
-                </HStack>
-              </VStack>
-            </HStack>
-          </CardBody>
-        </Card>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
         {/* About Section */}
         {profile.about && (
-          <Card>
-            <CardBody>
-              <Heading size="md" mb={4}>About</Heading>
-              <Text>{profile.about}</Text>
-            </CardBody>
-          </Card>
+          <div className="card">
+            <div className="card-body">
+              <h3 className="heading heading-md" style={{ marginBottom: '1rem' }}>About</h3>
+              <p className="text">{profile.about}</p>
+            </div>
+          </div>
         )}
 
         {/* Key Achievements */}
         {profile.key_achievements && (
-          <Card>
-            <CardBody>
-              <Heading size="md" mb={4}>Key Achievements</Heading>
-              <Text whiteSpace="pre-wrap">{profile.key_achievements}</Text>
-            </CardBody>
-          </Card>
+          <div className="card">
+            <div className="card-body">
+              <h3 className="heading heading-md" style={{ marginBottom: '1rem' }}>Key Achievements</h3>
+              <p className="text" style={{ whiteSpace: 'pre-wrap' }}>{profile.key_achievements}</p>
+            </div>
+          </div>
         )}
 
         {/* Philosophy */}
         {profile.philosophy && (
-          <Card>
-            <CardBody>
-              <Heading size="md" mb={4}>Philosophy</Heading>
-              <Text whiteSpace="pre-wrap">{profile.philosophy}</Text>
-            </CardBody>
-          </Card>
+          <div className="card">
+            <div className="card-body">
+              <h3 className="heading heading-md" style={{ marginBottom: '1rem' }}>Philosophy</h3>
+              <p className="text" style={{ whiteSpace: 'pre-wrap' }}>{profile.philosophy}</p>
+            </div>
+          </div>
         )}
 
         {/* Skills */}
         {profile.skills && (
-          <Card>
-            <CardBody>
-              <Heading size="md" mb={4}>Skills</Heading>
-              <Flex gap={2} flexWrap="wrap">
+          <div className="card">
+            <div className="card-body">
+              <h3 className="heading heading-md" style={{ marginBottom: '1rem' }}>Skills</h3>
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                 {profile.skills.split(',').map((skill, index) => (
-                  <Badge key={index} colorScheme="green" p={2}>
+                  <span key={index} className="badge badge-success" style={{ padding: '0.5rem' }}>
                     {skill.trim()}
-                  </Badge>
+                  </span>
                 ))}
-              </Flex>
-            </CardBody>
-          </Card>
+              </div>
+            </div>
+          </div>
         )}
 
         {/* Additional Details */}
         {profile.additional_details && (
-          <Card>
-            <CardBody>
-              <Heading size="md" mb={4}>Additional Details</Heading>
-              <Text whiteSpace="pre-wrap">{profile.additional_details}</Text>
-            </CardBody>
-          </Card>
+          <div className="card">
+            <div className="card-body">
+              <h3 className="heading heading-md" style={{ marginBottom: '1rem' }}>Additional Details</h3>
+              <p className="text" style={{ whiteSpace: 'pre-wrap' }}>{profile.additional_details}</p>
+            </div>
+          </div>
         )}
 
         {/* Links */}
         {profile.links && (
-          <Card>
-            <CardBody>
-              <Heading size="md" mb={4}>Links</Heading>
-              <VStack align="start" spacing={2}>
+          <div className="card">
+            <div className="card-body">
+              <h3 className="heading heading-md" style={{ marginBottom: '1rem' }}>Links</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-start' }}>
                 {profile.links.split(',').map((link, index) => (
-                  <ChakraLink key={index} href={link.trim()} isExternal color="blue.500">
+                  <a key={index} href={link.trim()} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)', textDecoration: 'underline' }}>
                     {link.trim()}
-                  </ChakraLink>
+                  </a>
                 ))}
-              </VStack>
-            </CardBody>
-          </Card>
+              </div>
+            </div>
+          </div>
         )}
 
         {/* Listings Section */}
         {listings.length > 0 && (
-          <Card>
-            <CardBody>
-              <Heading size="md" mb={4}>Active Listings ({listings.length})</Heading>
-              <VStack spacing={3} align="stretch">
+          <div className="card">
+            <div className="card-body">
+              <h3 className="heading heading-md" style={{ marginBottom: '1rem' }}>Active Listings ({listings.length})</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 {listings.map(listing => (
-                  <Box key={listing.id} p={3} border="1px" borderColor="gray.200" borderRadius="md">
-                    <HStack justify="space-between">
-                      <Box flex={1}>
-                        <Text fontWeight="bold">{listing.title}</Text>
-                        <Text fontSize="sm" color="gray.600">
+                  <div key={listing.id} style={{ padding: '0.75rem', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-md)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ flex: 1 }}>
+                        <p className="text" style={{ fontWeight: 600 }}>{listing.title}</p>
+                        <p className="text text-sm text-secondary">
                           {listing.category} • {listing.location}
-                        </Text>
-                      </Box>
+                        </p>
+                      </div>
                       <Link href={`/listing/${listing.slug}`}>
-                        <Button size="sm">
-                          View
-                        </Button>
+                        <button className="btn btn-sm">View</button>
                       </Link>
-                    </HStack>
-                  </Box>
+                    </div>
+                  </div>
                 ))}
-              </VStack>
-            </CardBody>
-          </Card>
+              </div>
+            </div>
+          </div>
         )}
-      </VStack>
-    </Container>
+      </div>
+    </div>
   );
 }

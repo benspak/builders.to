@@ -2,21 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  Container,
-  Box,
-  FormControl,
-  FormLabel,
-  Input,
-  Textarea,
-  Button,
-  Heading,
-  VStack,
-  Alert,
-  AlertIcon,
-  Divider,
-  Text
-} from '@chakra-ui/react';
 import { useAuth } from '../../src/context/AuthContext';
 import axios from '../../src/lib/axios';
 
@@ -84,140 +69,159 @@ export default function Profile() {
   }
 
   return (
-    <Container maxW="3xl" py={8}>
-      <Box bg="white" _dark={{ bg: 'gray.800' }} p={8} borderRadius="lg" shadow="md">
-        <VStack spacing={6} align="stretch">
-          <Heading size="lg">Your Profile</Heading>
+    <div className="container" style={{ maxWidth: '48rem', paddingTop: '2rem', paddingBottom: '2rem' }}>
+      <div className="card" style={{ padding: '2rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          <h1 className="heading heading-lg">Your Profile</h1>
 
           {success && (
-            <Alert status="success">
-              <AlertIcon />
+            <div className="alert alert-success">
+              <span style={{ fontSize: '1.25rem' }}>✓</span>
               {success}
-            </Alert>
+            </div>
           )}
 
           {error && (
-            <Alert status="error">
-              <AlertIcon />
+            <div className="alert alert-error">
+              <span style={{ fontSize: '1.25rem' }}>⚠️</span>
               {error}
-            </Alert>
+            </div>
           )}
 
           <form onSubmit={handleSubmit}>
-            <VStack spacing={4} align="stretch">
-              <FormControl>
-                <FormLabel>Name</FormLabel>
-                <Input
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div className="form-control">
+                <label className="form-label">Name</label>
+                <input
+                  type="text"
+                  className="form-input"
                   value={profile.name}
                   onChange={(e) => setProfile({ ...profile, name: e.target.value })}
                   placeholder="Your name"
                 />
-              </FormControl>
+              </div>
 
-              <FormControl isRequired>
-                <FormLabel>Username</FormLabel>
-                <Input
+              <div className="form-control">
+                <label className="form-label">Username</label>
+                <input
+                  type="text"
+                  className="form-input"
                   value={profile.username}
                   onChange={(e) => setProfile({ ...profile, username: e.target.value })}
                   placeholder="Your username (used in your profile URL)"
+                  required
                 />
-                <Text fontSize="sm" color="gray.500" mt={1}>
+                <p className="text text-sm text-secondary" style={{ marginTop: '0.25rem' }}>
                   Your profile will be at /user/{profile.username || 'username'}
-                </Text>
-              </FormControl>
+                </p>
+              </div>
 
-              <FormControl>
-                <FormLabel>Sub heading</FormLabel>
-                <Input
+              <div className="form-control">
+                <label className="form-label">Sub heading</label>
+                <input
+                  type="text"
+                  className="form-input"
                   value={profile.sub_heading}
                   onChange={(e) => setProfile({ ...profile, sub_heading: e.target.value })}
                   placeholder="Brief tagline or headline"
                 />
-              </FormControl>
+              </div>
 
-              <FormControl>
-                <FormLabel>Location</FormLabel>
-                <Input
+              <div className="form-control">
+                <label className="form-label">Location</label>
+                <input
+                  type="text"
+                  className="form-input"
                   value={profile.location}
                   onChange={(e) => setProfile({ ...profile, location: e.target.value })}
                   placeholder="City, State"
                 />
-              </FormControl>
+              </div>
 
-              <FormControl>
-                <FormLabel>Current Role</FormLabel>
-                <Input
+              <div className="form-control">
+                <label className="form-label">Current Role</label>
+                <input
+                  type="text"
+                  className="form-input"
                   value={profile.current_role}
                   onChange={(e) => setProfile({ ...profile, current_role: e.target.value })}
                   placeholder="Your current position"
                 />
-              </FormControl>
+              </div>
 
-              <FormControl>
-                <FormLabel>About</FormLabel>
-                <Textarea
+              <div className="form-control">
+                <label className="form-label">About</label>
+                <textarea
+                  className="form-textarea"
                   value={profile.about}
                   onChange={(e) => setProfile({ ...profile, about: e.target.value })}
                   placeholder="Tell us about yourself"
                   rows={4}
                 />
-              </FormControl>
+              </div>
 
-              <FormControl>
-                <FormLabel>Key Achievements</FormLabel>
-                <Textarea
+              <div className="form-control">
+                <label className="form-label">Key Achievements</label>
+                <textarea
+                  className="form-textarea"
                   value={profile.key_achievements}
                   onChange={(e) => setProfile({ ...profile, key_achievements: e.target.value })}
                   placeholder="What you've accomplished"
                   rows={3}
                 />
-              </FormControl>
+              </div>
 
-              <FormControl>
-                <FormLabel>Philosophy</FormLabel>
-                <Textarea
+              <div className="form-control">
+                <label className="form-label">Philosophy</label>
+                <textarea
+                  className="form-textarea"
                   value={profile.philosophy}
                   onChange={(e) => setProfile({ ...profile, philosophy: e.target.value })}
                   placeholder="Your professional philosophy or approach"
                   rows={3}
                 />
-              </FormControl>
+              </div>
 
-              <FormControl>
-                <FormLabel>Skills</FormLabel>
-                <Input
+              <div className="form-control">
+                <label className="form-label">Skills</label>
+                <input
+                  type="text"
+                  className="form-input"
                   value={profile.skills}
                   onChange={(e) => setProfile({ ...profile, skills: e.target.value })}
                   placeholder="React, Node.js, Design, etc."
                 />
-              </FormControl>
+              </div>
 
-              <FormControl>
-                <FormLabel>Additional Details</FormLabel>
-                <Textarea
+              <div className="form-control">
+                <label className="form-label">Additional Details</label>
+                <textarea
+                  className="form-textarea"
                   value={profile.additional_details}
                   onChange={(e) => setProfile({ ...profile, additional_details: e.target.value })}
                   placeholder="Any additional information"
                   rows={3}
                 />
-              </FormControl>
+              </div>
 
-              <FormControl>
-                <FormLabel>Links</FormLabel>
-                <Input
+              <div className="form-control">
+                <label className="form-label">Links</label>
+                <input
+                  type="text"
+                  className="form-input"
                   value={profile.links}
                   onChange={(e) => setProfile({ ...profile, links: e.target.value })}
                   placeholder="https://portfolio.com, https://github.com"
                 />
-              </FormControl>
+              </div>
 
-              <Button type="submit" colorScheme="blue" isLoading={loading}>
-                Save Profile
-              </Button>
-            </VStack>
+              <button type="submit" className="btn btn-primary" disabled={loading}>
+                {loading ? 'Saving...' : 'Save Profile'}
+              </button>
+            </div>
           </form>
-        </VStack>
-      </Box>
-    </Container>
+        </div>
+      </div>
+    </div>
   );
 }

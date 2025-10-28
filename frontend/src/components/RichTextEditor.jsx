@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { Box } from '@chakra-ui/react';
 import DOMPurify from 'dompurify';
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
@@ -17,16 +16,15 @@ import { Toolbar } from './lexical/Toolbar';
 
 const EditorContent = ({ isDarkMode }) => {
   return (
-    <Box
+    <div
       className="editor-inner"
-      bg={isDarkMode ? 'gray.800' : 'white'}
-      color={isDarkMode ? 'gray.100' : 'gray.800'}
-      minH="150px"
-      p={4}
-      overflowY="auto"
       style={{
+        backgroundColor: isDarkMode ? 'var(--bg-secondary-dark)' : 'white',
+        color: isDarkMode ? 'var(--text-dark)' : 'var(--text-light)',
+        minHeight: '150px',
+        padding: '1rem',
+        overflowY: 'auto',
         outline: 'none',
-        caretColor: isDarkMode ? '#f7fafc' : '#1a202c',
       }}
     >
       <ContentEditable
@@ -34,22 +32,24 @@ const EditorContent = ({ isDarkMode }) => {
           minHeight: '150px',
         }}
       />
-    </Box>
+    </div>
   );
 };
 
 const Placeholder = ({ text, isDarkMode }) => {
   return (
-    <Box
-      position="absolute"
-      top={4}
-      left={4}
-      color={isDarkMode ? 'gray.500' : 'gray.400'}
-      pointerEvents="none"
-      userSelect="none"
+    <div
+      style={{
+        position: 'absolute',
+        top: '1rem',
+        left: '1rem',
+        color: isDarkMode ? 'var(--text-secondary-dark)' : 'var(--text-secondary-light)',
+        pointerEvents: 'none',
+        userSelect: 'none',
+      }}
     >
       {text}
-    </Box>
+    </div>
   );
 };
 
@@ -129,12 +129,9 @@ const RichTextEditor = ({ value, onChange, placeholder = 'Enter content here...'
   useEffect(() => {
     // Detect dark mode
     const checkDarkMode = () => {
-      const mode = localStorage.getItem('chakra-ui-color-mode');
       const htmlEl = document.documentElement;
       setIsDarkMode(
-        mode === 'dark' ||
-        htmlEl.classList.contains('chakra-ui-dark') ||
-        htmlEl.getAttribute('data-color-mode') === 'dark'
+        htmlEl.getAttribute('data-theme') === 'dark'
       );
     };
 
@@ -147,7 +144,7 @@ const RichTextEditor = ({ value, onChange, placeholder = 'Enter content here...'
 
     observer.observe(document.documentElement, {
       attributes: true,
-      attributeFilter: ['class', 'data-color-mode']
+      attributeFilter: ['data-theme']
     });
 
     return () => observer.disconnect();
@@ -160,15 +157,16 @@ const RichTextEditor = ({ value, onChange, placeholder = 'Enter content here...'
   } : undefined;
 
   return (
-    <Box
+    <div
       className="rich-text-editor-wrapper"
       data-dark={isDarkMode}
-      border="1px"
-      borderColor={isDarkMode ? "gray.600" : "gray.300"}
-      borderRadius="md"
-      overflow="hidden"
-      bg={isDarkMode ? "gray.900" : "white"}
-      position="relative"
+      style={{
+        border: `1px solid ${isDarkMode ? 'var(--border-dark)' : 'var(--border-light)'}`,
+        borderRadius: 'var(--radius-md)',
+        overflow: 'hidden',
+        backgroundColor: isDarkMode ? 'var(--bg-secondary-dark)' : 'white',
+        position: 'relative',
+      }}
     >
       <LexicalComposer
         initialConfig={{
@@ -182,16 +180,16 @@ const RichTextEditor = ({ value, onChange, placeholder = 'Enter content here...'
         }}
       >
         <Toolbar />
-        <Box position="relative">
+        <div style={{ position: 'relative' }}>
           <RichTextPlugin
             contentEditable={<EditorContent isDarkMode={isDarkMode} />}
           />
           <EmptyStatePlugin placeholder={placeholder} isDarkMode={isDarkMode} />
           <HistoryPlugin />
           <EditorUpdater value={value} onChange={onChange} />
-        </Box>
+        </div>
       </LexicalComposer>
-    </Box>
+    </div>
   );
 };
 
@@ -212,7 +210,7 @@ export const RichTextDisplay = ({ content }) => {
   }, [content]);
 
   return (
-    <Box
+    <div
       className="rich-text-display"
       dangerouslySetInnerHTML={{ __html: sanitizedContent }}
     />

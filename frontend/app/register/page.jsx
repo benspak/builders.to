@@ -2,20 +2,6 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  Container,
-  Box,
-  FormControl,
-  FormLabel,
-  Input,
-  Button,
-  Heading,
-  Text,
-  Alert,
-  AlertIcon,
-  VStack,
-  useColorModeValue
-} from '@chakra-ui/react';
 import Link from 'next/link';
 import { useAuth } from '../../src/context/AuthContext';
 
@@ -29,8 +15,6 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
   const router = useRouter();
-
-  const bgColor = useColorModeValue('white', 'gray.800');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -64,84 +48,96 @@ export default function Register() {
   };
 
   return (
-    <Container maxW="md" py={20}>
-      <Box bg={bgColor} p={8} borderRadius="lg" shadow="md">
-        <VStack spacing={6}>
-          <Heading size="lg">Join Builders.to</Heading>
+    <div className="container" style={{ maxWidth: '28rem', paddingTop: '5rem', paddingBottom: '5rem' }}>
+      <div className="card" style={{ padding: '2rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          <h1 className="heading heading-lg">Join Builders.to</h1>
 
           {error && (
-            <Alert status="error">
-              <AlertIcon />
+            <div className="alert alert-error">
+              <span style={{ fontSize: '1.25rem' }}>⚠️</span>
               {error}
-            </Alert>
+            </div>
           )}
 
           <form onSubmit={handleSubmit} style={{ width: '100%' }}>
-            <VStack spacing={4}>
-              <FormControl isRequired>
-                <FormLabel>Name</FormLabel>
-                <Input
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div className="form-control">
+                <label className="form-label">Name</label>
+                <input
                   type="text"
+                  className="form-input"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Your full name"
+                  required
                 />
-              </FormControl>
+              </div>
 
-              <FormControl isRequired>
-                <FormLabel>Username</FormLabel>
-                <Input
+              <div className="form-control">
+                <label className="form-label">Username</label>
+                <input
                   type="text"
+                  className="form-input"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="Choose a username"
+                  required
                 />
-              </FormControl>
+                <p className="text text-sm text-secondary" style={{ marginTop: '0.25rem' }}>
+                  Your profile will be at /user/{username || 'username'}
+                </p>
+              </div>
 
-              <FormControl isRequired>
-                <FormLabel>Email</FormLabel>
-                <Input
+              <div className="form-control">
+                <label className="form-label">Email</label>
+                <input
                   type="email"
+                  className="form-input"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  required
                 />
-              </FormControl>
+              </div>
 
-              <FormControl isRequired>
-                <FormLabel>Password</FormLabel>
-                <Input
+              <div className="form-control">
+                <label className="form-label">Password</label>
+                <input
                   type="password"
+                  className="form-input"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  required
                 />
-              </FormControl>
+              </div>
 
-              <FormControl isRequired>
-                <FormLabel>Confirm Password</FormLabel>
-                <Input
+              <div className="form-control">
+                <label className="form-label">Confirm Password</label>
+                <input
                   type="password"
+                  className="form-input"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
                 />
-              </FormControl>
+              </div>
 
-              <Button
+              <button
                 type="submit"
-                colorScheme="blue"
-                width="full"
-                isLoading={loading}
+                className="btn btn-primary btn-full"
+                disabled={loading}
               >
-                Sign Up
-              </Button>
-            </VStack>
+                {loading ? 'Creating account...' : 'Sign Up'}
+              </button>
+            </div>
           </form>
 
-          <Text>
+          <p className="text text-sm" style={{ textAlign: 'center' }}>
             Already have an account?{' '}
-            <Link href="/login" style={{ color: 'blue' }}>Login</Link>
-          </Text>
-        </VStack>
-      </Box>
-    </Container>
+            <Link href="/login" style={{ color: 'var(--primary)', fontWeight: '600' }}>Login</Link>
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }

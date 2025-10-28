@@ -3,25 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import {
-  Container,
-  Box,
-  Heading,
-  Text,
-  Badge,
-  Button,
-  VStack,
-  Card,
-  CardBody,
-  Alert,
-  AlertIcon,
-  Divider,
-  HStack,
-  Input,
-  Select,
-  FormControl,
-  FormLabel
-} from '@chakra-ui/react';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import axios from '../../../src/lib/axios';
@@ -139,19 +120,19 @@ export default function ListingDetail() {
   };
 
   if (loading) {
-    return <Container maxW="4xl" py={8}>Loading...</Container>;
+    return <div className="container" style={{ maxWidth: '56rem', paddingTop: '2rem', paddingBottom: '2rem' }}>Loading...</div>;
   }
 
   if (!listing) {
-    return <Container maxW="4xl" py={8}>Listing not found</Container>;
+    return <div className="container" style={{ maxWidth: '56rem', paddingTop: '2rem', paddingBottom: '2rem' }}>Listing not found</div>;
   }
 
   const isOwner = user && listing.user_id === user.id;
 
   return (
-    <Container maxW="4xl" py={8}>
+    <div className="container" style={{ maxWidth: '56rem', paddingTop: '2rem', paddingBottom: '2rem' }}>
       {showPayment && clientSecret ? (
-        <Box>
+        <div>
           <Elements stripe={stripePromise} options={{ clientSecret }}>
             <CheckoutForm
               clientSecret={clientSecret}
@@ -163,141 +144,144 @@ export default function ListingDetail() {
               onCancel={() => setShowPayment(false)}
             />
           </Elements>
-        </Box>
+        </div>
       ) : (
-        <VStack spacing={6} align="stretch">
-          <Card>
-            <CardBody>
-              <HStack justify="space-between" mb={4}>
-                <HStack spacing={3}>
-                  {listing.is_featured && <Badge colorScheme="purple">Featured</Badge>}
-                  <Badge colorScheme={listing.category === 'Jobs' ? 'blue' : listing.category === 'Services' ? 'green' : 'orange'}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          <div className="card">
+            <div className="card-body">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                  {listing.is_featured && <span className="badge badge-primary">Featured</span>}
+                  <span className={`badge ${listing.category === 'Jobs' ? 'badge-primary' : listing.category === 'Services' ? 'badge-success' : 'badge-warning'}`}>
                     {listing.category}
-                  </Badge>
-                </HStack>
-              </HStack>
+                  </span>
+                </div>
+              </div>
 
-              <Heading size="xl" mb={2}>{listing.title}</Heading>
-              {listing.location && <Text color="gray.600" mb={4}>📍 {listing.location}</Text>}
+              <h1 className="heading heading-xl" style={{ marginBottom: '0.5rem' }}>{listing.title}</h1>
+              {listing.location && <p className="text text-base text-secondary" style={{ marginBottom: '1rem' }}>📍 {listing.location}</p>}
 
-              <Box mb={4}>
+              <div style={{ marginBottom: '1rem' }}>
                 <RichTextDisplay content={listing.description} />
-              </Box>
+              </div>
 
-              <Divider my={4} />
+              <div className="divider" />
 
-              <HStack justify="space-between" fontSize="sm" color="gray.500">
-                <Text>Posted on {new Date(listing.created_at).toLocaleDateString()}</Text>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.875rem', color: 'var(--text-secondary-light)' }}>
+                <span>Posted on {new Date(listing.created_at).toLocaleDateString()}</span>
                 {listing.profile_username && (
                   <Link href={`/user/${listing.profile_username}`}>
-                    <Button size="sm" variant="link" colorScheme="blue">
+                    <button className="btn-link btn-sm">
                       View Profile
-                    </Button>
+                    </button>
                   </Link>
                 )}
-              </HStack>
+              </div>
 
               {isOwner && listing.payment_status === 'pending' && (
-                <VStack spacing={4} mt={4}>
-                  <Alert status="warning" width="100%">
-                    <AlertIcon />
-                    <Box flex="1">
-                      <Text>Payment required to publish this listing.</Text>
-                    </Box>
-                  </Alert>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
+                  <div className="alert alert-warning">
+                    <span style={{ fontSize: '1.25rem' }}>⚠️</span>
+                    <div>
+                      <span>Payment required to publish this listing.</span>
+                    </div>
+                  </div>
 
                   {editing ? (
-                    <Box width="100%" p={4} border="1px" borderColor="gray.200" borderRadius="md">
-                      <VStack spacing={4} align="stretch">
-                        <FormControl isRequired>
-                          <FormLabel>Category</FormLabel>
-                          <Select
+                    <div style={{ width: '100%', padding: '1rem', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-md)' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        <div className="form-control">
+                          <label className="form-label">Category</label>
+                          <select
+                            className="form-select"
                             value={editFormData.category}
                             onChange={(e) => setEditFormData({ ...editFormData, category: e.target.value })}
                           >
                             <option value="Jobs">Jobs</option>
                             <option value="Services">Services</option>
                             <option value="For Sale">For Sale</option>
-                          </Select>
-                        </FormControl>
+                          </select>
+                        </div>
 
-                        <FormControl isRequired>
-                          <FormLabel>Title</FormLabel>
-                          <Input
+                        <div className="form-control">
+                          <label className="form-label">Title</label>
+                          <input
+                            type="text"
+                            className="form-input"
                             value={editFormData.title}
                             onChange={(e) => setEditFormData({ ...editFormData, title: e.target.value })}
                             placeholder="Enter listing title"
                           />
-                        </FormControl>
+                        </div>
 
-                        <FormControl>
-                          <FormLabel>Location</FormLabel>
-                          <Input
+                        <div className="form-control">
+                          <label className="form-label">Location</label>
+                          <input
+                            type="text"
+                            className="form-input"
                             value={editFormData.location}
                             onChange={(e) => setEditFormData({ ...editFormData, location: e.target.value })}
                             placeholder="City, State"
                           />
-                        </FormControl>
+                        </div>
 
-                        <FormControl isRequired>
-                          <FormLabel>Description</FormLabel>
-                          <Box bg="white" borderWidth="1px" borderRadius="md">
-                            <RichTextEditor
-                              value={editFormData.description}
-                              onChange={(value) => setEditFormData({ ...editFormData, description: value })}
-                              placeholder="Provide details about your listing"
-                            />
-                          </Box>
-                        </FormControl>
+                        <div className="form-control">
+                          <label className="form-label">Description</label>
+                          <RichTextEditor
+                            value={editFormData.description}
+                            onChange={(value) => setEditFormData({ ...editFormData, description: value })}
+                            placeholder="Provide details about your listing"
+                          />
+                        </div>
 
-                        <HStack spacing={3}>
-                          <Button colorScheme="blue" onClick={handleSaveEdit}>
+                        <div style={{ display: 'flex', gap: '0.75rem' }}>
+                          <button className="btn btn-primary" onClick={handleSaveEdit}>
                             Save Changes
-                          </Button>
-                          <Button variant="outline" onClick={handleCancelEdit}>
+                          </button>
+                          <button className="btn btn-outline" onClick={handleCancelEdit}>
                             Cancel
-                          </Button>
-                        </HStack>
-                      </VStack>
-                    </Box>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   ) : (
-                    <HStack spacing={3} width="100%">
-                      <Button colorScheme="blue" onClick={() => handlePay('listing')} flex={1}>
+                    <div style={{ display: 'flex', gap: '0.75rem', width: '100%' }}>
+                      <button className="btn btn-primary" style={{ flex: 1 }} onClick={() => handlePay('listing')}>
                         Pay $5 to Publish
-                      </Button>
-                      <Button colorScheme="yellow" variant="outline" onClick={handleEdit}>
+                      </button>
+                      <button className="btn btn-outline" onClick={handleEdit}>
                         Edit
-                      </Button>
-                      <Button colorScheme="red" variant="outline" onClick={handleDelete}>
+                      </button>
+                      <button className="btn btn-error btn-outline" onClick={handleDelete}>
                         Delete
-                      </Button>
-                    </HStack>
+                      </button>
+                    </div>
                   )}
-                </VStack>
+                </div>
               )}
 
               {isOwner && listing.payment_status === 'paid' && !listing.is_featured && (
-                <HStack spacing={3} mt={4}>
-                  <Button colorScheme="purple" onClick={() => handlePay('feature')}>
+                <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem' }}>
+                  <button className="btn btn-secondary" onClick={() => handlePay('feature')}>
                     Feature This Listing ($50)
-                  </Button>
-                  <Button colorScheme="red" variant="outline" onClick={handleDelete}>
+                  </button>
+                  <button className="btn btn-error btn-outline" onClick={handleDelete}>
                     Delete Listing
-                  </Button>
-                </HStack>
+                  </button>
+                </div>
               )}
 
               {isOwner && listing.payment_status === 'featured' && (
-                <Box mt={4}>
-                  <Button colorScheme="red" variant="outline" onClick={handleDelete}>
+                <div style={{ marginTop: '1rem' }}>
+                  <button className="btn btn-error btn-outline" onClick={handleDelete}>
                     Delete Listing
-                  </Button>
-                </Box>
+                  </button>
+                </div>
               )}
-            </CardBody>
-          </Card>
-        </VStack>
+            </div>
+          </div>
+        </div>
       )}
-    </Container>
+    </div>
   );
 }

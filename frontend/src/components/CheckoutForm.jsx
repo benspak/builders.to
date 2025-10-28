@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useStripe, useElements, PaymentElement } from '@stripe/react-stripe-js';
-import { Button, Box, VStack, Heading, Alert, AlertIcon } from '@chakra-ui/react';
 
 const CheckoutForm = ({ clientSecret, onSuccess, onCancel }) => {
   const stripe = useStripe();
@@ -44,34 +43,34 @@ const CheckoutForm = ({ clientSecret, onSuccess, onCancel }) => {
   };
 
   return (
-    <Box maxW="600px" mx="auto" p={8} bg="white" borderRadius="lg" shadow="md">
-      <VStack spacing={6}>
-        <Heading size="lg">Complete Payment</Heading>
+    <div className="card" style={{ maxWidth: '600px', margin: '0 auto', padding: '2rem' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        <h1 className="heading heading-lg">Complete Payment</h1>
 
         {error && (
-          <Alert status="error">
-            <AlertIcon />
+          <div className="alert alert-error">
+            <span style={{ fontSize: '1.25rem' }}>⚠️</span>
             {error}
-          </Alert>
+          </div>
         )}
 
         <form onSubmit={handleSubmit} style={{ width: '100%' }}>
-          <VStack spacing={4}>
-            <Box width="100%">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ width: '100%' }}>
               <PaymentElement />
-            </Box>
+            </div>
 
-            <Button type="submit" colorScheme="blue" width="full" isLoading={loading}>
-              Pay Now
-            </Button>
+            <button type="submit" className="btn btn-primary btn-full" disabled={loading}>
+              {loading ? 'Processing...' : 'Pay Now'}
+            </button>
 
-            <Button variant="outline" width="full" onClick={onCancel}>
+            <button type="button" className="btn btn-outline btn-full" onClick={onCancel}>
               Cancel
-            </Button>
-          </VStack>
+            </button>
+          </div>
         </form>
-      </VStack>
-    </Box>
+      </div>
+    </div>
   );
 };
 

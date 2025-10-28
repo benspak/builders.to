@@ -3,28 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import {
-  Container,
-  Box,
-  Heading,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  Badge,
-  Button,
-  Tabs,
-  TabList,
-  TabPanels,
-  Tab,
-  TabPanel,
-  VStack,
-  Card,
-  CardBody,
-  Text
-} from '@chakra-ui/react';
 import { useAuth } from '../../src/context/AuthContext';
 import axios from '../../src/lib/axios';
 
@@ -33,6 +11,7 @@ export default function Dashboard() {
   const router = useRouter();
   const [listings, setListings] = useState([]);
   const [transactions, setTransactions] = useState([]);
+  const [activeTab, setActiveTab] = useState('listings');
 
   useEffect(() => {
     if (user) {
@@ -52,117 +31,132 @@ export default function Dashboard() {
 
   if (authLoading) {
     return (
-      <Container maxW="6xl" py={8}>
-        <Heading>Loading...</Heading>
-      </Container>
+      <div className="container" style={{ maxWidth: '72rem', paddingTop: '2rem', paddingBottom: '2rem' }}>
+        <h1 className="heading heading-xl">Loading...</h1>
+      </div>
     );
   }
 
   if (!user) {
     return (
-      <Container maxW="6xl" py={8}>
-        <Heading>Please login to view your dashboard</Heading>
-      </Container>
+      <div className="container" style={{ maxWidth: '72rem', paddingTop: '2rem', paddingBottom: '2rem' }}>
+        <h1 className="heading heading-xl">Please login to view your dashboard</h1>
+      </div>
     );
   }
 
   return (
-    <Container maxW="6xl" py={8}>
-      <VStack spacing={8} align="stretch">
-        <Heading size="xl">Dashboard</Heading>
+    <div className="container" style={{ maxWidth: '72rem', paddingTop: '2rem', paddingBottom: '2rem' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+        <h1 className="heading heading-xl">Dashboard</h1>
 
-        <Tabs>
-          <TabList>
-            <Tab>My Listings</Tab>
-            <Tab>Transactions</Tab>
-          </TabList>
+        <div className="tabs">
+          <div className="tab-list">
+            <button
+              className={`tab ${activeTab === 'listings' ? 'active' : ''}`}
+              onClick={() => setActiveTab('listings')}
+            >
+              My Listings
+            </button>
+            <button
+              className={`tab ${activeTab === 'transactions' ? 'active' : ''}`}
+              onClick={() => setActiveTab('transactions')}
+            >
+              Transactions
+            </button>
+          </div>
 
-          <TabPanels>
-            <TabPanel>
-              {listings.length === 0 ? (
-                <Box textAlign="center" py={12}>
-                  <Text color="gray.500">No listings yet.</Text>
-                  <Link href="/create-listing">
-                    <Button mt={4} colorScheme="blue">Create Your First Listing</Button>
-                  </Link>
-                </Box>
-              ) : (
-                <Table variant="simple">
-                  <Thead>
-                    <Tr>
-                      <Th>Title</Th>
-                      <Th>Category</Th>
-                      <Th>Status</Th>
-                      <Th>Featured</Th>
-                      <Th>Date</Th>
-                      <Th>Actions</Th>
-                    </Tr>
-                  </Thead>
-                  <Tbody>
-                    {listings.map(listing => (
-                      <Tr key={listing.id}>
-                        <Td>
-                          <Link href={`/listing/${listing.slug}`}>{listing.title}</Link>
-                        </Td>
-                        <Td>
-                          <Badge>{listing.category}</Badge>
-                        </Td>
-                        <Td>
-                          <Badge colorScheme={listing.payment_status === 'paid' || listing.payment_status === 'featured' ? 'green' : 'yellow'}>
-                            {listing.payment_status}
-                          </Badge>
-                        </Td>
-                        <Td>{listing.is_featured ? '⭐' : '-'}</Td>
-                        <Td>{new Date(listing.created_at).toLocaleDateString()}</Td>
-                        <Td>
-                          <Link href={`/listing/${listing.slug}`}>
-                            <Button size="sm">View</Button>
-                          </Link>
-                        </Td>
-                      </Tr>
-                    ))}
-                  </Tbody>
-                </Table>
-              )}
-            </TabPanel>
+          <div>
+            {activeTab === 'listings' && (
+              <div>
+                {listings.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '3rem 0' }}>
+                    <p className="text text-base text-secondary">No listings yet.</p>
+                    <Link href="/create-listing">
+                      <button className="btn btn-primary" style={{ marginTop: '1rem' }}>
+                        Create Your First Listing
+                      </button>
+                    </Link>
+                  </div>
+                ) : (
+                  <table className="table">
+                    <thead>
+                      <tr>
+                        <th>Title</th>
+                        <th>Category</th>
+                        <th>Status</th>
+                        <th>Featured</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {listings.map(listing => (
+                        <tr key={listing.id}>
+                          <td>
+                            <Link href={`/listing/${listing.slug}`}>{listing.title}</Link>
+                          </td>
+                          <td><span className="badge badge-primary">{listing.category}</span></td>
+                          <td>
+                            <span className={`badge ${listing.payment_status === 'paid' || listing.payment_status === 'featured' ? 'badge-success' : 'badge-warning'}`}>
+                              {listing.payment_status}
+                            </span>
+                          </td>
+                          <td>{listing.is_featured ? '⭐' : '-'}</td>
+                          <td>{new Date(listing.created_at).toLocaleDateString()}</td>
+                          <td>
+                            <Link href={`/listing/${listing.slug}`}>
+                              <button className="btn btn-sm">View</button>
+                            </Link>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            )}
 
-            <TabPanel>
-              {transactions.length === 0 ? (
-                <Box textAlign="center" py={12}>
-                  <Text color="gray.500">No transactions yet.</Text>
-                </Box>
-              ) : (
-                <Table variant="simple">
-                  <Thead>
-                    <Tr>
-                      <Th>Date</Th>
-                      <Th>Type</Th>
-                      <Th>Amount</Th>
-                      <Th>Status</Th>
-                    </Tr>
-                  </Thead>
-                  <Tbody>
-                    {transactions.map(transaction => (
-                      <Tr key={transaction.id}>
-                        <Td>{new Date(transaction.created_at).toLocaleDateString()}</Td>
-                        <Td>
-                          <Badge>{transaction.type}</Badge>
-                        </Td>
-                        <Td>${transaction.amount}</Td>
-                        <Td>
-                          <Badge colorScheme={transaction.status === 'completed' ? 'green' : transaction.status === 'failed' ? 'red' : 'yellow'}>
-                            {transaction.status}
-                          </Badge>
-                        </Td>
-                      </Tr>
-                    ))}
-                  </Tbody>
-                </Table>
-              )}
-            </TabPanel>
-          </TabPanels>
-        </Tabs>
-      </VStack>
-    </Container>
+            {activeTab === 'transactions' && (
+              <div>
+                {transactions.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '3rem 0' }}>
+                    <p className="text text-base text-secondary">No transactions yet.</p>
+                  </div>
+                ) : (
+                  <table className="table">
+                    <thead>
+                      <tr>
+                        <th>Date</th>
+                        <th>Type</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {transactions.map(transaction => (
+                        <tr key={transaction.id}>
+                          <td>{new Date(transaction.created_at).toLocaleDateString()}</td>
+                          <td><span className="badge badge-primary">{transaction.type}</span></td>
+                          <td>${transaction.amount}</td>
+                          <td>
+                            <span className={`badge ${
+                              transaction.status === 'completed' ? 'badge-success' :
+                              transaction.status === 'failed' ? 'badge-error' : 'badge-warning'
+                            }`}>
+                              {transaction.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
