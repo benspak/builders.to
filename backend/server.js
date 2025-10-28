@@ -121,18 +121,25 @@ app.get('/health/db', async (req, res) => {
   }
 });
 
-// Serve static files from frontend/build directory (production)
+// Serve static files from frontend/dist directory (production)
 const frontendPath = join(__dirname, '../frontend/dist');
 if (existsSync(frontendPath)) {
-  app.use(express.static(frontendPath));
+  // Serve static files first (CSS, JS, images, etc.)
+  // This will handle all requests for actual files
+  app.use(express.static(frontendPath, {
+    // Continue to next middleware if file not found
+    fallthrough: true
+  }));
 
   // Catch-all handler: serve index.html for any non-API routes
   // This allows React Router to handle client-side routing
+  // Must be last to catch all routes that don't match API endpoints or static files
   app.get('*', (req, res) => {
     // Don't serve index.html for API routes
     if (req.path.startsWith('/api') || req.path.startsWith('/health')) {
       return res.status(404).json({ error: 'Not found' });
     }
+    // Serve index.html for all other routes (React Router will handle routing)
     res.sendFile(join(frontendPath, 'index.html'));
   });
 
