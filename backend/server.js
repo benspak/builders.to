@@ -5,7 +5,7 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
-import { existsSync, statSync } from 'fs';
+import { existsSync, statSync, readdirSync } from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -98,7 +98,12 @@ const possiblePaths = [
 console.log('🔍 Checking for frontend dist...');
 console.log('   __dirname:', __dirname);
 console.log('   process.cwd():', process.cwd());
-console.log('   Checking paths:');
+
+// Log the full directory structure
+console.log('\n📂 Directory structure:');
+console.log('   Parent dir contents:', readdirSync(join(__dirname, '..')));
+console.log('   Current dir contents:', readdirSync(__dirname));
+console.log('\n   Checking paths:');
 
 let frontendPath = null;
 let hasFrontend = false;
