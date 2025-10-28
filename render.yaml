@@ -26,13 +26,16 @@ services:
       - key: STRIPE_WEBHOOK_SECRET
         sync: false
 
-  # Frontend Static Site
+  # Frontend Web Service (Serves React SPA)
   - type: web
     name: builders-frontend
-    env: static
+    env: node
+    plan: starter
     buildCommand: cd frontend && npm ci && npm run build
-    staticPublishPath: frontend/dist
+    startCommand: cd frontend && npm start
     envVars:
+      - key: NODE_ENV
+        value: production
       - key: VITE_API_URL
         fromService:
           name: builders-backend
@@ -40,10 +43,6 @@ services:
           property: host
       - key: VITE_STRIPE_PUBLISHABLE_KEY
         sync: false
-    headers:
-      - path: /*
-        name: Cache-Control
-        value: no-cache
 
 databases:
   - name: builders-db

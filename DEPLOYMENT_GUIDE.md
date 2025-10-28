@@ -180,11 +180,12 @@ Render will create 3 services:
 - Serves only the API endpoints
 - Auto-deploys from main branch
 
-**c) Frontend Static Site**:
+**c) Frontend Web Service**:
 - Name: `builders-frontend`
-- Type: Static Site
+- Type: Web Service (Node.js)
 - Build Command: `cd frontend && npm ci && npm run build`
-- Publishes: `frontend/dist` directory
+- Start Command: `cd frontend && npm start`
+- Serves React SPA with Express server for proper routing
 - Makes API calls to `builders-backend`
 - Auto-deploys from main branch
 
@@ -221,7 +222,7 @@ If you prefer manual setup or to update existing services:
    - **Start Command**: `cd backend && npm start`
    - **Node Version**: `18.20.8`
 
-**Note**: Frontend is now served from the backend service, so no separate frontend service is needed.
+**Note**: Frontend is served as a separate web service running a Node.js Express server that handles SPA routing.
 
 #### Database Setup
 
@@ -354,11 +355,11 @@ Expected response:
 - Click **Logs** tab
 - Look for "Server running on port" messages
 
-**Frontend Static Site**:
+**Frontend Web Service**:
 - Go to Render dashboard
 - Select `builders-frontend` service
 - Check build logs for successful Vite build
-- Verify static files are published
+- Check runtime logs for Express server running
 
 ## Troubleshooting
 

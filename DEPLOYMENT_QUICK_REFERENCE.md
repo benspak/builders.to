@@ -20,7 +20,7 @@ One-page deployment checklist for Builders.to
 That's it! Render will automatically:
 - Create PostgreSQL database
 - Deploy backend API service (separate service)
-- Deploy frontend static site (separate service)
+- Deploy frontend web service (separate service)
 - Set up connections between services
 
 ## Required Environment Variables
@@ -68,13 +68,14 @@ curl https://builders-backend.onrender.com/health/db
 |-------|----------|
 | Backend won't start | Check `DATABASE_URL` is set |
 | CORS errors | Verify frontend URL in backend CORS config |
+| Pages don't persist on reload | Frontend now uses Express server for SPA routing |
 | Payments fail | Check Stripe keys and webhook |
 | Build fails | Check Node version (18.20.8) |
 
 ## URLs After Deployment
 
-- **Frontend**: `https://builders-frontend.onrender.com` (Static Site)
-- **Backend API**: `https://builders-backend.onrender.com` (Web Service)
+- **Frontend**: `https://builders-frontend.onrender.com` (Web Service - Node.js)
+- **Backend API**: `https://builders-backend.onrender.com` (Web Service - Node.js)
 - **Database**: Internal connection (managed by Render)
 
 ## Support
