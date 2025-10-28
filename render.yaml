@@ -3,9 +3,8 @@ services:
     name: builders-backend
     env: node
     plan: starter
-    buildCommand: |
-      cd frontend && npm ci && npm run build && cd .. && cd backend && npm ci && cd ..
-    startCommand: cd backend && npm start
+    buildCommand: npm run build
+    startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production
