@@ -89,20 +89,39 @@ app.use('/api/', limiter);
 export const getDb = () => db;
 
 // Check if frontend dist exists to serve static files in production
-const frontendPath = join(__dirname, '../frontend/dist');
-const hasFrontend = existsSync(frontendPath);
+// Try multiple possible paths for the dist folder
+const possiblePaths = [
+  join(__dirname, '../frontend/dist'),           // From backend/ to ../frontend/dist
+  join(process.cwd(), 'frontend/dist'),           // From project root
+  join(process.cwd(), '../frontend/dist'),        // Alternative path
+  join(process.cwd(), '..', 'frontend/dist'),     // Another alternative
+];
 
 console.log('🔍 Checking for frontend dist...');
 console.log('   __dirname:', __dirname);
-console.log('   Looking for:', frontendPath);
-console.log('   Exists:', hasFrontend);
+console.log('   process.cwd():', process.cwd());
+console.log('   Checking paths:');
+
+let frontendPath = null;
+let hasFrontend = false;
+
+for (const path of possiblePaths) {
+  const exists = existsSync(path);
+  console.log(`   ${path}: ${exists ? '✓ EXISTS' : '✗ NOT FOUND'}`);
+  
+  if (exists && !hasFrontend) {
+    frontendPath = path;
+    hasFrontend = true;
+  }
+}
 
 if (hasFrontend) {
   const stats = statSync(frontendPath);
-  console.log('✅ Frontend dist found, will serve static files');
+  console.log('✅ Frontend dist found at:', frontendPath);
   console.log('   Stats:', stats.isDirectory() ? 'Directory' : 'Not directory');
 } else {
-  console.log('⚠️  Frontend dist not found, running as API-only');
+  console.log('⚠️  Frontend dist not found in any expected location');
+  console.log('   Running as API-only server');
 }
 
 // Routes - these need to come BEFORE static file serving
