@@ -5,7 +5,6 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 3000,
-    historyApiFallback: true,
     proxy: {
       '/api': {
         target: 'http://localhost:5555',
@@ -16,7 +15,7 @@ export default defineConfig({
   preview: {
     port: 3000,
     strictPort: true,
-    // Serve the built files correctly
+    // Serve the built files correctly for SPA routing
     headers: {
       'Cache-Control': 'no-cache'
     }
