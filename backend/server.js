@@ -125,22 +125,22 @@ app.get('/health/db', async (req, res) => {
 const frontendPath = join(__dirname, '../frontend/dist');
 if (existsSync(frontendPath)) {
   // Serve static files first (CSS, JS, images, etc.)
-  // This will handle all requests for actual files
-  app.use(express.static(frontendPath, {
-    // Continue to next middleware if file not found
-    fallthrough: true
-  }));
+  app.use(express.static(frontendPath));
 
   // Catch-all handler: serve index.html for any non-API routes
   // This allows React Router to handle client-side routing
-  // Must be last to catch all routes that don't match API endpoints or static files
-  app.get('*', (req, res) => {
+  app.get('*', (req, res, next) => {
     // Don't serve index.html for API routes
     if (req.path.startsWith('/api') || req.path.startsWith('/health')) {
       return res.status(404).json({ error: 'Not found' });
     }
-    // Serve index.html for all other routes (React Router will handle routing)
-    res.sendFile(join(frontendPath, 'index.html'));
+    // Don't serve index.html for actual static files (they should have been handled above)
+    // Only serve index.html for routes that don't exist
+    res.sendFile(join(frontendPath, 'index.html'), (err) => {
+      if (err) {
+        next(err);
+      }
+    });
   });
 
   console.log('✅ Serving frontend static files from:', frontendPath);
