@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import axios from '../../src/lib/axios';
 
-export default function ResetPassword() {
+function ResetPasswordForm() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
@@ -120,5 +120,22 @@ export default function ResetPassword() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ResetPassword() {
+  return (
+    <Suspense fallback={
+      <div className="container" style={{ maxWidth: '28rem', paddingTop: '5rem', paddingBottom: '5rem' }}>
+        <div className="card" style={{ padding: '2rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <h1 className="heading heading-lg">Set New Password</h1>
+            <p className="text text-base text-secondary">Loading...</p>
+          </div>
+        </div>
+      </div>
+    }>
+      <ResetPasswordForm />
+    </Suspense>
   );
 }
