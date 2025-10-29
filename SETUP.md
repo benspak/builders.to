@@ -41,11 +41,13 @@ RESEND_API_KEY=re_your_resend_api_key
 RESEND_FROM_EMAIL=noreply@builders.to
 ```
 
-**Frontend (.env):**
+**Frontend (.env.local):**
 ```env
-VITE_API_URL=http://localhost:5555
-VITE_STRIPE_PUBLISHABLE_KEY=pk_test_your_stripe_publishable_key
+NEXT_PUBLIC_API_URL=http://localhost:5555
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_your_stripe_publishable_key
 ```
+
+**Note**: Frontend now uses Next.js, so environment variables must be prefixed with `NEXT_PUBLIC_` to be accessible in the browser. Environment variables should be in `.env.local`, not `.env`.
 
 ### 3. Get API Keys
 
@@ -85,9 +87,20 @@ npm run dev
 
 1. Register a new account
 2. Create a profile
-3. Create a listing
-4. Pay $5 to publish the listing
-5. (Optional) Pay $50 to feature the listing
+3. **Test Token System**:
+   - Go to the Tokens page and purchase tokens (e.g., 25 tokens for $25)
+   - Create a listing using tokens (5 tokens per listing)
+   - Verify the "buy 5 get 1 free" promotion works
+4. **Test Direct Payment**:
+   - Create a listing
+   - Pay $5 directly to publish the listing
+5. **Test Referral System**:
+   - Go to the Referrals page and copy your referral code
+   - Register a new account using the referral link: `/register?ref=YOUR_CODE`
+   - Create and pay for a listing as the new user
+   - Verify the original user received 5 tokens as reward
+6. **Test Featured Listing** (Optional):
+   - Pay $50 to feature a listing
 
 ## Common Issues
 
@@ -95,9 +108,15 @@ npm run dev
 Run: `node backend/database/init.js` (automatically created on first run)
 
 ### Stripe payment not working
-- Ensure your Stripe keys are correctly configured
-- Check that webhook URL is configured in Stripe dashboard
-- Use Stripe CLI for local webhook testing: `stripe listen --forward-to localhost:5555/api/payments/webhook`
+- Ensure your Stripe keys are correctly configured (both secret and publishable keys)
+- Check that webhook URL is configured in Stripe dashboard for production: `https://your-backend-url/api/payments/webhook`
+- For local testing, use Stripe CLI: `stripe listen --forward-to localhost:5555/api/payments/webhook`
+- Copy the webhook secret from Stripe CLI output and add it to your backend `.env` as `STRIPE_WEBHOOK_SECRET`
+
+### Token purchase not working
+- Verify Stripe webhook is receiving events (check Stripe dashboard → Webhooks → Events)
+- Check backend logs for webhook processing errors
+- Ensure token purchase webhook events include `payment_intent.succeeded`
 
 ## Deployment
 
@@ -106,19 +125,26 @@ Run: `node backend/database/init.js` (automatically created on first run)
 1. Create new Web Service
 2. Connect your GitHub repository
 3. Set:
-   - Build Command: `cd backend && npm install`
+   - Build Command: `cd backend && npm ci`
    - Start Command: `cd backend && npm start`
+   - Node Version: `18.20.8` or higher
 4. Add environment variables from your `.env` file:
-   - PORT, JWT_SECRET, STRIPE_SECRET_KEY, DATABASE_URL, NODE_ENV
-   - RESEND_API_KEY, RESEND_FROM_EMAIL, FRONTEND_URL
+   - `PORT`, `JWT_SECRET`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `DATABASE_URL`, `NODE_ENV`
+   - `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `FRONTEND_URL`
+
+**Note**: Token system and referral program require no additional environment variables - they're automatically configured once Stripe is set up.
 
 ### Frontend Deployment (Render.com)
 
-1. Create new Static Site
+1. Create new Web Service (not Static Site - Next.js requires Node.js)
 2. Connect your GitHub repository
 3. Set:
-   - Build Command: `cd frontend && npm install && npm run build`
-   - Publish Directory: `frontend/dist`
+   - Build Command: `cd frontend && npm ci && npm run build`
+   - Start Command: `cd frontend && npm start`
+   - Node Version: `18.20.8` or higher
+4. Add environment variables:
+   - `NEXT_PUBLIC_API_URL` (should auto-set if using render.yaml)
+   - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
 
 ## Support
 

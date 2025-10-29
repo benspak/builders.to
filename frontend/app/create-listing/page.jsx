@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useAuth } from '../../src/context/AuthContext';
 import axios from '../../src/lib/axios';
 import RichTextEditor from '../../src/components/RichTextEditor';
@@ -51,13 +52,20 @@ export default function CreateListing() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           <h1 className="heading heading-lg">Create New Listing</h1>
           <p className="text text-base text-secondary">
-            Cost: $5 per listing. Featured listings (pinned to top) cost $50 extra.
+            Cost: 5 tokens per listing. 1 Token = $1. Buy 5 posts, get 1 free!
           </p>
 
           {error && (
             <div className="alert alert-error">
               <span style={{ fontSize: '1.25rem' }}>⚠️</span>
-              {error}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <span>{error}</span>
+                {error.includes('Insufficient tokens') && (
+                  <Link href="/tokens" style={{ color: 'inherit', textDecoration: 'underline', fontWeight: '500' }}>
+                    Buy tokens to create your listing →
+                  </Link>
+                )}
+              </div>
             </div>
           )}
 
@@ -111,7 +119,7 @@ export default function CreateListing() {
               </div>
 
               <button type="submit" className="btn btn-primary btn-lg btn-full" disabled={loading}>
-                {loading ? 'Creating...' : 'Create Listing ($5)'}
+                {loading ? 'Creating...' : 'Create Listing (5 Tokens)'}
               </button>
             </div>
           </form>

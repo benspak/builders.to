@@ -1,5 +1,6 @@
 import pg from 'pg';
 import dotenv from 'dotenv';
+import crypto from 'crypto';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
@@ -66,6 +67,32 @@ const initializeDatabase = async () => {
       await pool.query('CREATE UNIQUE INDEX IF NOT EXISTS username_unique_idx ON users(username) WHERE username IS NOT NULL');
     } catch (error) {
       // Columns might already exist, ignore error
+    }
+
+    // Add token system columns to users table
+    try {
+      await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS tokens INTEGER DEFAULT 0');
+      await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS referral_code TEXT');
+      await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS referred_by INTEGER REFERENCES users(id) ON DELETE SET NULL');
+      await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS posts_purchased INTEGER DEFAULT 0');
+      await pool.query('CREATE UNIQUE INDEX IF NOT EXISTS referral_code_unique_idx ON users(referral_code) WHERE referral_code IS NOT NULL');
+      console.log('✓ Token and referral columns added to users table');
+    } catch (error) {
+      // Columns might already exist, ignore error
+      console.log('Token/referral columns migration:', error.message);
+    }
+
+    // Generate referral codes for existing users who don't have one
+    try {
+      const usersWithoutCode = await pool.query(`
+        SELECT id FROM users WHERE referral_code IS NULL
+      `);
+      for (const user of usersWithoutCode.rows) {
+        const referralCode = crypto.randomBytes(8).toString('hex').toUpperCase();
+        await pool.query('UPDATE users SET referral_code = $1 WHERE id = $2', [referralCode, user.id]);
+      }
+    } catch (error) {
+      console.log('Referral code generation error:', error.message);
     }
 
     // Create profiles table
@@ -232,6 +259,33 @@ const initializeDatabase = async () => {
       )
     `);
     console.log('✓ Contact requests table ready');
+
+    // Create referrals table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS referrals (
+        id SERIAL PRIMARY KEY,
+        referrer_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        referred_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        reward_given BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(referred_id)
+      )
+    `);
+    console.log('✓ Referrals table ready');
+
+    // Create token_transactions table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS token_transactions (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        type TEXT NOT NULL CHECK(type IN ('purchase', 'spent', 'reward', 'refund')),
+        amount INTEGER NOT NULL,
+        description TEXT,
+        stripe_payment_intent_id TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    console.log('✓ Token transactions table ready');
     console.log('🎉 PostgreSQL database initialized successfully!');
   } catch (error) {
     console.error('❌ Error initializing database');

@@ -161,9 +161,19 @@ webhookRouter.post('/', async (req, res) => {
 const handleWebhookEvent = async (event) => {
   if (event.type === 'payment_intent.succeeded') {
     const paymentIntent = event.data.object;
-    const { listingId, userId, type } = paymentIntent.metadata;
+    const { listingId, userId, type, tokens } = paymentIntent.metadata;
 
-    if (type === 'listing') {
+    if (type === 'token_purchase') {
+      // Add tokens to user account
+      const tokensToAdd = parseInt(tokens) || 0;
+      await db.query('UPDATE users SET tokens = tokens + $1 WHERE id = $2', [tokensToAdd, userId]);
+
+      // Create token transaction record
+      await db.query(`
+        INSERT INTO token_transactions (user_id, type, amount, description, stripe_payment_intent_id)
+        VALUES ($1, $2, $3, $4, $5)
+      `, [userId, 'purchase', tokensToAdd, `Purchased ${tokensToAdd} tokens`, paymentIntent.id]);
+    } else if (type === 'listing') {
       // Mark listing as paid
       await db.query('UPDATE listings SET payment_status = $1 WHERE id = $2', ['paid', listingId]);
 

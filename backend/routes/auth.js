@@ -11,7 +11,7 @@ const router = express.Router();
 // Register
 router.post('/register', async (req, res) => {
   try {
-    const { email, password, name, username } = req.body;
+    const { email, password, name, username, referralCode } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({ error: 'Email and password are required' });
@@ -33,16 +33,36 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ error: 'Username is already taken' });
     }
 
+    // Handle referral code
+    let referredBy = null;
+    if (referralCode) {
+      const referrerResult = await db.query('SELECT id FROM users WHERE referral_code = $1', [referralCode]);
+      if (referrerResult.rows.length > 0) {
+        referredBy = referrerResult.rows[0].id;
+      }
+    }
+
     // Hash password
     const passwordHash = await bcrypt.hash(password, 10);
 
+    // Generate user's own referral code
+    const userReferralCode = crypto.randomBytes(8).toString('hex').toUpperCase();
+
     // Insert user
     const insertResult = await db.query(
-      'INSERT INTO users (email, password_hash, name, username) VALUES ($1, $2, $3, $4) RETURNING id',
-      [email, passwordHash, name, username]
+      'INSERT INTO users (email, password_hash, name, username, referral_code, referred_by) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
+      [email, passwordHash, name, username, userReferralCode, referredBy]
     );
 
     const userId = insertResult.rows[0].id;
+
+    // Create referral relationship if referred
+    if (referredBy) {
+      await db.query(
+        'INSERT INTO referrals (referrer_id, referred_id) VALUES ($1, $2)',
+        [referredBy, userId]
+      );
+    }
 
     // Auto-create profile with name and username from registration
     await db.query(

@@ -9,11 +9,19 @@ A marketplace for builders and founders to offer services, get hired, or sell bu
   - Jobs
   - Services
   - For Sale
-- **Payments**:
-  - $5 per listing
+- **Token System**:
+  - Purchase tokens (1 token = $1)
+  - Use tokens to create listings (5 tokens per listing)
+  - Get 1 free post for every 5 posts you purchase
+- **Payment Options**:
+  - Direct payment: $5 per listing (traditional payment)
+  - Token payment: Use 5 tokens per listing
   - $50 to feature/pin listings to the top
+- **Referral Program**:
+  - Generate your unique referral code
+  - Refer friends and earn 5 tokens (1 free post) when they make their first purchase
 - **Filtering**: Filter by location/city and category
-- **Dashboard**: View all your listings and transactions
+- **Dashboard**: View all your listings, transactions, and token balance
 
 ## Tech Stack
 
@@ -24,10 +32,10 @@ A marketplace for builders and founders to offer services, get hired, or sell bu
 - Stripe for payments
 
 ### Frontend
-- React + Vite
-- Chakra UI v2
+- Next.js 16 (App Router)
+- React 18
+- Lexical rich text editor
 - Stripe Elements for checkout
-- React Router for navigation
 
 ## Getting Started
 
@@ -47,8 +55,6 @@ A marketplace for builders and founders to offer services, get hired, or sell bu
    ```bash
    cd backend
    npm install
-   cp .env.example .env
-   # Edit .env with your Stripe keys
    ```
 
 3. **Set up the frontend**
@@ -59,11 +65,6 @@ A marketplace for builders and founders to offer services, get hired, or sell bu
 
 4. **Configure environment variables**
 
-   Backend: Ensure your backend .env has:
-   ```
-   PORT=5555
-   ```
-
    Backend `.env`:
    ```env
    PORT=5555
@@ -71,13 +72,17 @@ A marketplace for builders and founders to offer services, get hired, or sell bu
    STRIPE_SECRET_KEY=sk_test_...
    STRIPE_WEBHOOK_SECRET=whsec_...
    DATABASE_URL=postgresql://localhost:5432/builders_dev
+   POSTGRES_DATABASE_URL=postgresql://localhost:5432/builders_dev
    NODE_ENV=development
+   RESEND_API_KEY=re_...
+   RESEND_FROM_EMAIL=noreply@builders.to
+   FRONTEND_URL=http://localhost:3000
    ```
 
-   Frontend `.env`:
+   Frontend `.env.local`:
    ```env
-   VITE_API_URL=http://localhost:5555
-   VITE_STRIPE_PUBLISHABLE_KEY=pk_test_...
+   NEXT_PUBLIC_API_URL=http://localhost:5555
+   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
    ```
 
    **Note**: Create a local PostgreSQL database before starting:
@@ -116,14 +121,25 @@ The app will be available at http://localhost:3000. Make sure the backend is run
 ### Listings
 - `GET /api/listings` - Get all listings
 - `GET /api/listings/:id` - Get listing by ID
-- `POST /api/listings` - Create listing
+- `POST /api/listings` - Create listing (requires 5 tokens or direct payment)
 - `PUT /api/listings/:id` - Update listing
 - `DELETE /api/listings/:id` - Delete listing
 - `GET /api/listings/user/my-listings` - Get my listings
 
 ### Payments
-- `POST /api/payments/create-listing-payment` - Create payment for listing
-- `POST /api/payments/create-featured-payment` - Create payment for featured listing
+- `POST /api/payments/create-listing-payment` - Create payment intent for listing ($5)
+- `POST /api/payments/create-featured-payment` - Create payment intent for featured listing ($50)
+- `POST /api/payments/webhook` - Stripe webhook endpoint (handles token purchases, listing payments, and featured payments)
+
+### Tokens
+- `GET /api/tokens/balance` - Get user's current token balance
+- `GET /api/tokens/transactions` - Get token transaction history (purchases, spent, rewards, refunds)
+- `POST /api/tokens/purchase` - Create payment intent for token purchase (1 token = $1, accepts 1-1000 tokens)
+
+### Referrals
+- `GET /api/referrals/code` - Get or generate user's referral code (auto-generates if missing)
+- `GET /api/referrals/stats` - Get referral statistics (total referrals, rewarded referrals)
+- `GET /api/referrals/verify/:code` - Verify if a referral code is valid (public endpoint, no auth required)
 
 ### Dashboard
 - `GET /api/dashboard` - Get dashboard data (listings and transactions)
@@ -131,7 +147,7 @@ The app will be available at http://localhost:3000. Make sure the backend is run
 ## Database Schema
 
 ### Users
-- id, email, password_hash, created_at, updated_at
+- id, email, password_hash, name, username, referral_code, referred_by, tokens, posts_purchased, is_admin, created_at, updated_at
 
 ### Profiles
 - id, user_id, name, sub_heading, location, about, current_role, additional_details, key_achievements, philosophy, skills, links, created_at, updated_at
@@ -141,6 +157,15 @@ The app will be available at http://localhost:3000. Make sure the backend is run
 
 ### Transactions
 - id, user_id, listing_id, type, amount, stripe_payment_intent_id, status, created_at
+
+### Token Transactions
+- id, user_id, type, amount, description, stripe_payment_intent_id, created_at
+
+### Referrals
+- id, referrer_id, referred_id, reward_given, created_at
+
+### Password Reset Tokens
+- id, user_id, token, expires_at, used, created_at
 
 ## Deployment
 
@@ -155,6 +180,20 @@ The app will be available at http://localhost:3000. Make sure the backend is run
 
 ### Manual Configuration
 If needed, see detailed instructions in [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)
+
+## New Features
+
+### Token System
+Users can purchase tokens (1 token = $1) and use 5 tokens to create a listing. The system includes a "buy 5 get 1 free" promotion:
+- For every 5 posts you pay for (using tokens or direct payment), the 6th post is free
+- Tokens can be purchased in increments: 5, 10, 25, 50, or 100 tokens
+- View your token balance and transaction history on the Tokens page
+
+### Referral Program
+- Every user automatically gets a unique referral code
+- Share your referral link: `/register?ref=YOUR_CODE`
+- When someone signs up with your code and creates their first paid listing, you automatically receive 5 tokens (1 free post)
+- Track your referral statistics (total referrals, rewarded referrals) on the Referrals page
 
 ## Stripe Setup
 

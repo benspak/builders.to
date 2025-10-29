@@ -362,6 +362,30 @@ router.post('/', authenticateToken, createListingLimiter, async (req, res) => {
       });
     }
 
+    // Check user's token balance and posts_purchased
+    const userResult = await db.query(
+      'SELECT tokens, posts_purchased, referred_by FROM users WHERE id = $1',
+      [req.user.id]
+    );
+
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const user = userResult.rows[0];
+    const tokens = user.tokens || 0;
+    const postsPurchased = user.posts_purchased || 0;
+    const TOKENS_PER_POST = 5;
+
+    // Check if user has free post (buy 5 get 1 free)
+    const hasFreePost = (postsPurchased % 6) === 5; // After 5 paid posts, next one is free
+
+    if (!hasFreePost && tokens < TOKENS_PER_POST) {
+      return res.status(400).json({
+        error: `Insufficient tokens. You need ${TOKENS_PER_POST} tokens to create a listing (you have ${tokens}).`
+      });
+    }
+
     // Generate a unique slug from the title
     const baseSlug = generateSlug(title);
     let uniqueSlug = baseSlug;
@@ -375,13 +399,78 @@ router.post('/', authenticateToken, createListingLimiter, async (req, res) => {
       counter++;
     }
 
-    const result = await db.query(`
-      INSERT INTO listings (user_id, category, title, location, description, slug)
-      VALUES ($1, $2, $3, $4, $5, $6)
-      RETURNING id, slug
-    `, [req.user.id, category, title, location, description, uniqueSlug]);
+    // Use transaction for atomic operations
+    await db.query('BEGIN');
 
-    res.status(201).json({ message: 'Listing created successfully', id: result.rows[0].id, slug: result.rows[0].slug });
+    try {
+      // Create listing
+      const result = await db.query(`
+        INSERT INTO listings (user_id, category, title, location, description, slug, payment_status)
+        VALUES ($1, $2, $3, $4, $5, $6, 'paid')
+        RETURNING id, slug
+      `, [req.user.id, category, title, location, description, uniqueSlug]);
+
+      const listingId = result.rows[0].id;
+
+      if (hasFreePost) {
+        // Free post - don't deduct tokens, but increment posts_purchased
+        await db.query(
+          'UPDATE users SET posts_purchased = posts_purchased + 1 WHERE id = $1',
+          [req.user.id]
+        );
+
+        // Record as free post transaction
+        await db.query(`
+          INSERT INTO token_transactions (user_id, type, amount, description)
+          VALUES ($1, $2, $3, $4)
+        `, [req.user.id, 'refund', TOKENS_PER_POST, 'Free post (buy 5 get 1 free)']);
+      } else {
+        // Paid post - deduct tokens
+        await db.query(
+          'UPDATE users SET tokens = tokens - $1, posts_purchased = posts_purchased + 1 WHERE id = $2',
+          [TOKENS_PER_POST, req.user.id]
+        );
+
+        // Record token transaction
+        await db.query(`
+          INSERT INTO token_transactions (user_id, type, amount, description)
+          VALUES ($1, $2, $3, $4)
+        `, [req.user.id, 'spent', TOKENS_PER_POST, 'Post creation (5 tokens)']);
+
+        // Check if referred user made their first purchase
+        if (user.referred_by && postsPurchased === 0) {
+          // Give referrer reward: 1 free post (5 tokens)
+          await db.query(
+            'UPDATE users SET tokens = tokens + $1 WHERE id = $2',
+            [TOKENS_PER_POST, user.referred_by]
+          );
+
+          // Mark referral reward as given
+          await db.query(
+            'UPDATE referrals SET reward_given = TRUE WHERE referred_id = $1',
+            [req.user.id]
+          );
+
+          // Record reward transaction for referrer
+          await db.query(`
+            INSERT INTO token_transactions (user_id, type, amount, description)
+            VALUES ($1, $2, $3, $4)
+          `, [user.referred_by, 'reward', TOKENS_PER_POST, 'Referral reward: referred user made first purchase']);
+        }
+      }
+
+      await db.query('COMMIT');
+
+      res.status(201).json({
+        message: hasFreePost ? 'Listing created successfully (free post!)' : 'Listing created successfully',
+        id: result.rows[0].id,
+        slug: result.rows[0].slug,
+        wasFree: hasFreePost
+      });
+    } catch (error) {
+      await db.query('ROLLBACK');
+      throw error;
+    }
   } catch (error) {
     logError('POST /', error, { userId: req.user?.id });
     res.status(500).json({ error: 'Failed to create listing' });

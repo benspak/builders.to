@@ -22,6 +22,8 @@ import { authRoutes } from './routes/auth.js';
 import { profileRoutes } from './routes/profiles.js';
 import { listingRoutes } from './routes/listings.js';
 import { paymentRoutes, webhookRouter } from './routes/payments.js';
+import { tokenRoutes } from './routes/tokens.js';
+import { referralRoutes } from './routes/referrals.js';
 import { dashboardRoutes } from './routes/dashboard.js';
 import { adminRoutes } from './routes/admin.js';
 
@@ -92,6 +94,8 @@ app.use('/api/profiles', profileRoutes);
 app.use('/api/listings', listingRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/payments/webhook', webhookRouter);
+app.use('/api/tokens', tokenRoutes);
+app.use('/api/referrals', referralRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/admin', adminRoutes);
 

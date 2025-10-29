@@ -817,7 +817,7 @@ body {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -826,10 +826,108 @@ body {
   flex-shrink: 0;
 }
 
+.avatar-sm {
+  width: 36px;
+  height: 36px;
+  font-size: 0.875rem;
+}
+
 .avatar-xl {
   width: 80px;
   height: 80px;
   font-size: 2rem;
+}
+
+/* Avatar Menu */
+.avatar-menu-container {
+  position: relative;
+}
+
+.avatar-menu-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--transition-fast);
+}
+
+.avatar-menu-button:hover {
+  transform: scale(1.05);
+}
+
+.avatar-menu-button:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 50%;
+}
+
+.avatar-menu-dropdown {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  background: white;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  min-width: 200px;
+  z-index: 1200;
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+}
+
+[data-theme="dark"] .avatar-menu-dropdown {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+.avatar-menu-item {
+  display: block;
+  padding: var(--spacing-sm) var(--spacing-md);
+  color: #111827;
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all var(--transition-fast);
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+}
+
+[data-theme="dark"] .avatar-menu-item {
+  color: #f9fafb;
+}
+
+.avatar-menu-item:hover {
+  background: #f3f4f6;
+  color: var(--primary);
+}
+
+[data-theme="dark"] .avatar-menu-item:hover {
+  background: #374151;
+  color: #a855f7;
+}
+
+.avatar-menu-item-logout {
+  color: var(--error);
+}
+
+.avatar-menu-item-logout:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--error);
+}
+
+.avatar-menu-divider {
+  height: 1px;
+  background: #e5e7eb;
+  margin: var(--spacing-xs) 0;
+}
+
+[data-theme="dark"] .avatar-menu-divider {
+  background: #374151;
 }
 
 /* Rich Text Editor Styles */

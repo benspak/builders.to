@@ -26,9 +26,9 @@ Complete deployment guide for the Builders.to marketplace application.
 - Express rate limiting
 
 **Frontend**:
-- React 18 with Vite
-- Chakra UI v2
-- React Router for navigation
+- Next.js 16 (App Router)
+- React 18
+- Lexical rich text editor
 - Stripe Elements for checkout
 - Axios for API calls
 
@@ -105,14 +105,14 @@ cd ../frontend
 npm install
 ```
 
-Create a `.env` file in the `frontend` directory:
+Create a `.env.local` file in the `frontend` directory:
 
 ```env
 # API Configuration
-VITE_API_URL=http://localhost:5555
+NEXT_PUBLIC_API_URL=http://localhost:5555
 
 # Stripe Configuration
-VITE_STRIPE_PUBLISHABLE_KEY=pk_test_your_stripe_publishable_key
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_your_stripe_publishable_key
 ```
 
 ### 4. Run the Application
@@ -128,6 +128,8 @@ npm run dev
 cd frontend
 npm run dev
 ```
+
+The frontend uses Next.js and will start on port 3000 by default.
 
 The application will be available at:
 - Frontend: http://localhost:3000
@@ -185,7 +187,7 @@ Render will create 3 services:
 - Type: Web Service (Node.js)
 - Build Command: `cd frontend && npm ci && npm run build`
 - Start Command: `cd frontend && npm start`
-- Serves React SPA with Express server for proper routing
+- Serves Next.js application
 - Makes API calls to `builders-backend`
 - Auto-deploys from main branch
 
@@ -198,13 +200,27 @@ After deployment starts, add these environment variables in the Render dashboard
 # Already set by render.yaml:
 NODE_ENV=production
 DATABASE_URL=<auto-set from builders-db>
-VITE_API_URL=""  # Empty to use same-origin requests
+POSTGRES_DATABASE_URL=<auto-set from builders-db>
 
 # Add these manually:
 JWT_SECRET=<generate a secure random string>
 STRIPE_SECRET_KEY=<from your Stripe dashboard>
 STRIPE_WEBHOOK_SECRET=<from your Stripe dashboard>
-POSTGRES_DATABASE_URL=<auto-set from builders-db>
+RESEND_API_KEY=<from your Resend dashboard>
+RESEND_FROM_EMAIL=noreply@builders.to
+FRONTEND_URL=https://builders-frontend.onrender.com
+```
+
+**Note**: The token system and referral program are fully integrated and require no additional configuration. The Stripe webhook handles token purchases, and referral rewards are automatically processed when referred users create their first listing.
+
+**Frontend Service** (`builders-frontend`):
+```env
+# Already set by render.yaml:
+NODE_ENV=production
+NEXT_PUBLIC_API_URL=<auto-set from builders-backend host>
+
+# Add these manually:
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=<from your Stripe dashboard>
 ```
 
 ### 5. Manual Render Setup (If not using render.yaml)
@@ -245,15 +261,18 @@ If you prefer manual setup or to update existing services:
 | `JWT_SECRET` | JWT signing secret | Random string (32+ chars) | Yes |
 | `STRIPE_SECRET_KEY` | Stripe secret key | `sk_live_...` or `sk_test_...` | Yes |
 | `STRIPE_WEBHOOK_SECRET` | Stripe webhook secret | `whsec_...` | Yes |
+| `RESEND_API_KEY` | Resend API key for emails | `re_...` | Yes (for password reset) |
+| `RESEND_FROM_EMAIL` | Email sender address | `noreply@builders.to` | Yes |
+| `FRONTEND_URL` | Frontend URL for email links | `https://builders-frontend.onrender.com` | Yes |
 
 ### Frontend Environment Variables
 
 | Variable | Description | Example | Required |
 |----------|-------------|---------|----------|
-| `VITE_API_URL` | Backend API URL | Auto-set from backend service | Yes |
-| `VITE_STRIPE_PUBLISHABLE_KEY` | Stripe publishable key | `pk_test_...` or `pk_live_...` | Yes |
+| `NEXT_PUBLIC_API_URL` | Backend API URL | Auto-set from backend service | Yes |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Stripe publishable key | `pk_test_...` or `pk_live_...` | Yes |
 
-**Note**: `VITE_API_URL` is automatically set to the backend service host by `render.yaml`. You only need to set `VITE_STRIPE_PUBLISHABLE_KEY` manually.
+**Note**: `NEXT_PUBLIC_API_URL` is automatically set to the backend service host by `render.yaml`. You only need to set `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` manually.
 
 ## Stripe Configuration
 
@@ -338,14 +357,29 @@ Expected response:
    - Fill in listing details
    - Submit (should be in pending status)
 
-4. **Test payment**
-   - Click "Pay $5" on your listing
+4. **Test payment options**
+   - **Option A - Direct Payment**: Click "Pay $5" on your listing
+   - **Option B - Token Payment**:
+     - Purchase tokens from the Tokens page (e.g., 5 tokens for $5)
+     - Create a listing, which will automatically use 5 tokens
    - Use Stripe test card: `4242 4242 4242 4242`
    - Complete payment
 
 5. **Verify listing is published**
    - Listing should now appear in the main feed
    - Payment status should show as "paid"
+
+6. **Test referral system**
+   - Go to the Referrals page and copy your referral code
+   - Register a new user with the referral link: `/register?ref=YOUR_CODE`
+   - Create and pay for a listing as the new user
+   - Verify the original user received 5 tokens as a referral reward
+
+7. **Test token system**
+   - Go to the Tokens page
+   - Purchase 25 tokens ($25)
+   - Create 6 listings (5 tokens each = 30 tokens needed)
+   - Verify you get 1 free post after purchasing 5 posts (buy 5 get 1 free)
 
 ### 3. Check Logs
 
@@ -358,8 +392,8 @@ Expected response:
 **Frontend Web Service**:
 - Go to Render dashboard
 - Select `builders-frontend` service
-- Check build logs for successful Vite build
-- Check runtime logs for Express server running
+- Check build logs for successful Next.js build
+- Check runtime logs for Next.js server running
 
 ## Troubleshooting
 
@@ -392,8 +426,9 @@ Too many requests from this IP
 **Solution**:
 1. Check backend CORS configuration in `backend/server.js`
 2. Verify frontend URL (`https://builders-frontend.onrender.com`) is in allowed origins
-3. Check `VITE_API_URL` is automatically set by `render.yaml`
+3. Check `NEXT_PUBLIC_API_URL` is automatically set by `render.yaml`
 4. Ensure both services are deployed and running
+5. Verify Next.js rewrites are configured correctly in `next.config.js`
 
 **Issue**: Stripe payment fails
 
@@ -435,7 +470,7 @@ Too many requests from this IP
 1. Verify variables in Render dashboard
 2. Check for typos in variable names
 3. Redeploy after adding variables
-4. For frontend: restart service to apply VITE_ variables
+4. For frontend: restart service (frontend restarts automatically on redeploy)
 
 ## Scaling Considerations
 
@@ -525,9 +560,24 @@ GET    /api/listings/user/my-listings
 # Payments
 POST /api/payments/create-listing-payment
 POST /api/payments/create-featured-payment
+POST /api/payments/webhook
+
+# Tokens
+GET  /api/tokens/balance - Get user's token balance
+GET  /api/tokens/transactions - Get token transaction history
+POST /api/tokens/purchase - Create payment intent for token purchase (1 token = $1)
+
+# Referrals
+GET  /api/referrals/code - Get or generate user's referral code
+GET  /api/referrals/stats - Get referral statistics (total referrals, rewarded referrals)
+GET  /api/referrals/verify/:code - Verify if a referral code is valid (public endpoint)
 
 # Dashboard
 GET /api/dashboard
+
+# Admin
+GET /api/admin/users
+POST /api/admin/feature-profile
 
 # Health Checks
 GET /health
@@ -545,6 +595,7 @@ GET /health/db
 - [ ] Environment variables configured
 - [ ] Stripe account configured
 - [ ] Webhook endpoint configured
+- [ ] Resend API key configured (for password reset emails)
 - [ ] Health checks passing
 - [ ] Test user registration works
 - [ ] Test listing creation works
@@ -558,10 +609,12 @@ Your deployment is successful when:
 1. ✅ All health checks pass
 2. ✅ Users can register and login
 3. ✅ Users can create and publish listings
-4. ✅ Payments process successfully
-5. ✅ Listings appear in feed after payment
-6. ✅ Dashboard displays user data
-7. ✅ No errors in application logs
+4. ✅ Payments process successfully (both direct payments and token purchases)
+5. ✅ Token system works (purchase tokens, use tokens for listings, buy 5 get 1 free)
+6. ✅ Referral system works (generate referral codes, track referrals, receive rewards)
+7. ✅ Listings appear in feed after payment
+8. ✅ Dashboard displays user data (listings, transactions, token balance)
+9. ✅ No errors in application logs
 
 ---
 

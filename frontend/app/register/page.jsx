@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '../../src/context/AuthContext';
@@ -11,10 +11,20 @@ export default function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [referralCode, setReferralCode] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
   const router = useRouter();
+
+  // Get referral code from URL params
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get('ref');
+    if (ref) {
+      setReferralCode(ref);
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -37,7 +47,7 @@ export default function Register() {
 
     setLoading(true);
 
-    const result = await register(email, password, name, username);
+    const result = await register(email, password, name, username, referralCode || undefined);
     setLoading(false);
 
     if (result.success) {
@@ -120,6 +130,20 @@ export default function Register() {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
                 />
+              </div>
+
+              <div className="form-control">
+                <label className="form-label">Referral Code (Optional)</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={referralCode}
+                  onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+                  placeholder="Enter referral code"
+                />
+                <p className="text text-sm text-secondary" style={{ marginTop: '0.25rem' }}>
+                  Get 1 free post when you refer a paying customer
+                </p>
               </div>
 
               <button
