@@ -67,6 +67,58 @@ router.get('/featured', async (req, res) => {
   }
 });
 
+// Search profiles (must be before /:id to avoid route conflict)
+router.get('/search', async (req, res) => {
+  try {
+    const { q, location, skills } = req.query;
+
+    let query = `
+      SELECT
+        p.*,
+        (SELECT COUNT(*) FROM listings l WHERE l.user_id = p.user_id AND (l.payment_status = 'paid' OR l.payment_status = 'featured')) as listing_count
+      FROM profiles p
+      WHERE p.username IS NOT NULL
+    `;
+    const params = [];
+    let paramIndex = 1;
+
+    // Add search query
+    if (q && q.trim()) {
+      params.push(`%${q.trim()}%`);
+      query += ` AND (
+        p.name ILIKE $${paramIndex} OR
+        p.sub_heading ILIKE $${paramIndex} OR
+        p.about ILIKE $${paramIndex} OR
+        p.skills ILIKE $${paramIndex} OR
+        p."current_role" ILIKE $${paramIndex}
+      )`;
+      paramIndex++;
+    }
+
+    // Add location filter
+    if (location && location.trim()) {
+      params.push(`%${location.trim()}%`);
+      query += ` AND p.location ILIKE $${paramIndex}`;
+      paramIndex++;
+    }
+
+    // Add skills filter
+    if (skills && skills.trim()) {
+      params.push(`%${skills.trim()}%`);
+      query += ` AND p.skills ILIKE $${paramIndex}`;
+      paramIndex++;
+    }
+
+    query += ' ORDER BY listing_count DESC, p.created_at DESC LIMIT 50';
+
+    const result = await db.query(query, params);
+    res.json(result.rows);
+  } catch (error) {
+    logError('GET /search', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // Get profile by ID
 router.get('/:id', async (req, res) => {
   try {
@@ -138,7 +190,15 @@ router.post('/', authenticateToken, async (req, res) => {
 // Get all profiles
 router.get('/', async (req, res) => {
   try {
-    const result = await db.query('SELECT * FROM profiles ORDER BY created_at DESC');
+    const result = await db.query(`
+      SELECT
+        p.*,
+        (SELECT COUNT(*) FROM listings l WHERE l.user_id = p.user_id AND (l.payment_status = 'paid' OR l.payment_status = 'featured')) as listing_count
+      FROM profiles p
+      WHERE p.username IS NOT NULL
+      ORDER BY listing_count DESC, p.created_at DESC
+      LIMIT 100
+    `);
     res.json(result.rows);
   } catch (error) {
     logError('GET /', error);

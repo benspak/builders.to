@@ -31,6 +31,9 @@ export default function ListingDetail() {
   });
   const [reportReason, setReportReason] = useState('');
   const [showReportModal, setShowReportModal] = useState(false);
+  const [contactMessage, setContactMessage] = useState('');
+  const [showContactModal, setShowContactModal] = useState(false);
+  const [contactSubmitting, setContactSubmitting] = useState(false);
 
   useEffect(() => {
     fetchListing();
@@ -138,6 +141,31 @@ export default function ListingDetail() {
     }
   };
 
+  const handleContact = async () => {
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+
+    if (!contactMessage.trim()) {
+      alert('Please enter a message');
+      return;
+    }
+
+    setContactSubmitting(true);
+    try {
+      await axios.post(`/api/listings/${listing.id}/contact`, { message: contactMessage });
+      alert('Contact request sent successfully! The listing owner will receive your message.');
+      setShowContactModal(false);
+      setContactMessage('');
+    } catch (error) {
+      console.error('Failed to send contact request:', error);
+      alert(error.response?.data?.error || 'Failed to send contact request');
+    } finally {
+      setContactSubmitting(false);
+    }
+  };
+
   if (loading) {
     return <div className="container" style={{ maxWidth: '56rem', paddingTop: '2rem', paddingBottom: '2rem' }}>Loading...</div>;
   }
@@ -186,9 +214,14 @@ export default function ListingDetail() {
 
               <div className="divider" />
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.875rem', color: 'var(--text-secondary-light)' }}>
-                <span>Posted on {new Date(listing.created_at).toLocaleDateString()}</span>
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.875rem', color: 'var(--text-secondary-light)', flexWrap: 'wrap', gap: '0.5rem' }}>
+                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                  <span>Posted on {new Date(listing.created_at).toLocaleDateString()}</span>
+                  {listing.view_count !== undefined && (
+                    <span>👁️ {listing.view_count} {listing.view_count === 1 ? 'view' : 'views'}</span>
+                  )}
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                   {listing.profile_username && (
                     <Link href={`/user/${listing.profile_username}`}>
                       <button className="btn-link btn-sm">
@@ -197,9 +230,14 @@ export default function ListingDetail() {
                     </Link>
                   )}
                   {!isOwner && (
-                    <button className="btn btn-sm btn-error btn-outline" onClick={() => setShowReportModal(true)}>
-                      Report
-                    </button>
+                    <>
+                      <button className="btn btn-sm btn-primary" onClick={() => setShowContactModal(true)}>
+                        Contact
+                      </button>
+                      <button className="btn btn-sm btn-error btn-outline" onClick={() => setShowReportModal(true)}>
+                        Report
+                      </button>
+                    </>
                   )}
                 </div>
               </div>
@@ -339,6 +377,55 @@ export default function ListingDetail() {
                       Submit Report
                     </button>
                     <button className="btn btn-outline" onClick={() => { setShowReportModal(false); setReportReason(''); }}>
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {showContactModal && (
+            <div style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1000
+            }}>
+              <div className="card" style={{ maxWidth: '32rem', width: '90%' }}>
+                <div className="card-body">
+                  <h2 className="heading heading-lg">Contact Listing Owner</h2>
+                  <p className="text text-base text-secondary">Send a message to the listing owner. They will receive an email notification with your message and email address.</p>
+                  <div className="form-control" style={{ marginTop: '1rem' }}>
+                    <label className="form-label">Your Message</label>
+                    <textarea
+                      className="form-input"
+                      value={contactMessage}
+                      onChange={(e) => setContactMessage(e.target.value)}
+                      placeholder="I'm interested in your listing..."
+                      rows={6}
+                      disabled={contactSubmitting}
+                    />
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem' }}>
+                    <button
+                      className="btn btn-primary"
+                      onClick={handleContact}
+                      disabled={contactSubmitting}
+                    >
+                      {contactSubmitting ? 'Sending...' : 'Send Message'}
+                    </button>
+                    <button
+                      className="btn btn-outline"
+                      onClick={() => { setShowContactModal(false); setContactMessage(''); }}
+                      disabled={contactSubmitting}
+                    >
                       Cancel
                     </button>
                   </div>

@@ -58,6 +58,48 @@ const createListingLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+// Search listings
+router.get('/search', async (req, res) => {
+  try {
+    const { q, location, category, featured } = req.query;
+
+    let query = `
+      SELECT
+        l.*,
+        p.username as profile_username
+      FROM listings l
+      LEFT JOIN profiles p ON l.user_id = p.user_id
+      WHERE (l.payment_status = $1 OR l.payment_status = $2)
+    `;
+    const params = ['paid', 'featured'];
+
+    // Add search query
+    if (q && q.trim()) {
+      query += ' AND (l.title ILIKE $' + (params.length + 1) + ' OR l.description ILIKE $' + (params.length + 1) + ')';
+      params.push(`%${q.trim()}%`);
+    }
+
+    // Add filters
+    if (featured === 'true') {
+      query += ' AND l.is_featured = 1';
+    } else if (location) {
+      query += ' AND l.location = $' + (params.length + 1);
+      params.push(location);
+    } else if (category) {
+      query += ' AND l.category = $' + (params.length + 1);
+      params.push(category);
+    }
+
+    query += ' ORDER BY l.is_featured DESC, l.created_at DESC';
+
+    const result = await db.query(query, params);
+    res.json(result.rows);
+  } catch (error) {
+    logError('GET /search', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // Get all listings
 router.get('/', async (req, res) => {
   try {
@@ -93,7 +135,116 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Get listing by ID or slug
+// NOTE: Specific routes must come BEFORE the generic /:identifier route
+
+// Get user's saved listings
+router.get('/user/saved', authenticateToken, async (req, res) => {
+  try {
+    const result = await db.query(`
+      SELECT
+        l.*,
+        p.username as profile_username
+      FROM saved_listings sl
+      JOIN listings l ON sl.listing_id = l.id
+      LEFT JOIN profiles p ON l.user_id = p.user_id
+      WHERE sl.user_id = $1 AND (l.payment_status = 'paid' OR l.payment_status = 'featured')
+      ORDER BY sl.created_at DESC
+    `, [req.user.id]);
+
+    res.json(result.rows);
+  } catch (error) {
+    logError('GET /user/saved', error, { userId: req.user?.id });
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Get contact requests for user's listings
+router.get('/contacts/received', authenticateToken, async (req, res) => {
+  try {
+    const result = await db.query(`
+      SELECT
+        cr.id,
+        cr.listing_id,
+        cr.sender_id,
+        cr.sender_name,
+        cr.sender_email,
+        cr.message,
+        cr.status,
+        cr.created_at,
+        l.title as listing_title,
+        l.slug as listing_slug,
+        l.category as listing_category
+      FROM contact_requests cr
+      JOIN listings l ON cr.listing_id = l.id
+      WHERE l.user_id = $1 AND cr.status != 'archived'
+      ORDER BY cr.created_at DESC
+    `, [req.user.id]);
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching contact requests:', error);
+    logError('GET /contacts/received', error, { userId: req.user?.id });
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Dismiss (archive) a contact request - must come before :identifier route
+router.put('/contacts/:id/dismiss', authenticateToken, async (req, res) => {
+  try {
+    const contactId = req.params.id;
+
+    // Verify the contact request belongs to user's listing
+    const result = await db.query(`
+      SELECT cr.* FROM contact_requests cr
+      JOIN listings l ON cr.listing_id = l.id
+      WHERE cr.id = $1 AND l.user_id = $2
+    `, [contactId, req.user.id]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Contact request not found' });
+    }
+
+    await db.query(
+      "UPDATE contact_requests SET status = 'archived' WHERE id = $1",
+      [contactId]
+    );
+
+    res.json({ message: 'Contact request dismissed' });
+  } catch (error) {
+    logError('PUT /contacts/:id/dismiss', error, { id: req.params.id, userId: req.user?.id });
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Mark contact request as read - must come before :identifier route
+router.put('/contacts/:id/read', authenticateToken, async (req, res) => {
+  try {
+    const contactId = req.params.id;
+
+    // Verify the contact request belongs to user's listing
+    const result = await db.query(`
+      SELECT cr.* FROM contact_requests cr
+      JOIN listings l ON cr.listing_id = l.id
+      WHERE cr.id = $1 AND l.user_id = $2
+    `, [contactId, req.user.id]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Contact request not found' });
+    }
+
+    await db.query(
+      "UPDATE contact_requests SET status = 'read' WHERE id = $1",
+      [contactId]
+    );
+
+    res.json({ message: 'Contact request marked as read' });
+  } catch (error) {
+    logError('PUT /contacts/:id/read', error, { id: req.params.id, userId: req.user?.id });
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Get listing by ID or slug (must come last after all specific routes)
 router.get('/:identifier', optionalAuth, async (req, res) => {
   try {
     const { identifier } = req.params;
@@ -142,6 +293,28 @@ router.get('/:identifier', optionalAuth, async (req, res) => {
     if (!isOwner && !isVisible) {
       return res.status(403).json({ error: 'This listing is not yet published. Payment required.' });
     }
+
+    // Track view (don't track owner views)
+    if (!isOwner) {
+      try {
+        const ipAddress = req.ip || req.connection.remoteAddress;
+        const userId = req.user ? req.user.id : null;
+        await db.query(
+          'INSERT INTO listing_views (listing_id, ip_address, user_id) VALUES ($1, $2, $3)',
+          [listing.id, ipAddress, userId]
+        );
+      } catch (error) {
+        // Log but don't fail the request if view tracking fails
+        console.error('Failed to track view:', error.message);
+      }
+    }
+
+    // Get view count
+    const viewResult = await db.query(
+      'SELECT COUNT(*) as view_count FROM listing_views WHERE listing_id = $1',
+      [listing.id]
+    );
+    listing.view_count = parseInt(viewResult.rows[0].view_count) || 0;
 
     res.json(listing);
   } catch (error) {
@@ -326,5 +499,120 @@ router.get('/user/:userId', async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 });
+
+// Save/unsave a listing
+router.post('/:id/save', authenticateToken, async (req, res) => {
+  try {
+    const listingId = req.params.id;
+    const userId = req.user.id;
+
+    // Check if listing exists
+    const listingResult = await db.query('SELECT * FROM listings WHERE id = $1', [listingId]);
+    if (listingResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Listing not found' });
+    }
+
+    // Check if already saved
+    const existingResult = await db.query(
+      'SELECT * FROM saved_listings WHERE user_id = $1 AND listing_id = $2',
+      [userId, listingId]
+    );
+
+    if (existingResult.rows.length > 0) {
+      // Unsave the listing
+      await db.query(
+        'DELETE FROM saved_listings WHERE user_id = $1 AND listing_id = $2',
+        [userId, listingId]
+      );
+      res.json({ message: 'Listing unsaved', saved: false });
+    } else {
+      // Save the listing
+      await db.query(
+        'INSERT INTO saved_listings (user_id, listing_id) VALUES ($1, $2)',
+        [userId, listingId]
+      );
+      res.json({ message: 'Listing saved', saved: true });
+    }
+  } catch (error) {
+    logError('POST /:id/save', error, { id: req.params.id, userId: req.user?.id });
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Send a contact request for a listing
+router.post('/:id/contact', authenticateToken, async (req, res) => {
+  try {
+    const listingId = req.params.id;
+    const { message } = req.body;
+
+    if (!message || message.trim().length === 0) {
+      return res.status(400).json({ error: 'Message is required' });
+    }
+
+    // Check if listing exists
+    const listingResult = await db.query('SELECT * FROM listings WHERE id = $1', [listingId]);
+    if (listingResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Listing not found' });
+    }
+
+    const listing = listingResult.rows[0];
+
+    // Prevent users from contacting their own listings
+    if (listing.user_id === req.user.id) {
+      return res.status(400).json({ error: 'You cannot contact your own listing' });
+    }
+
+    // Get sender profile for name and email
+    const userResult = await db.query('SELECT email FROM users WHERE id = $1', [req.user.id]);
+    const profileResult = await db.query('SELECT name FROM profiles WHERE user_id = $1', [req.user.id]);
+
+    const senderEmail = userResult.rows[0]?.email || '';
+    const senderName = profileResult.rows[0]?.name || 'Anonymous';
+
+    // Check if already contacted
+    const existingResult = await db.query(
+      'SELECT * FROM contact_requests WHERE listing_id = $1 AND sender_id = $2',
+      [listingId, req.user.id]
+    );
+
+    if (existingResult.rows.length > 0) {
+      return res.status(400).json({ error: 'You have already contacted this listing' });
+    }
+
+    // Create contact request
+    await db.query(`
+      INSERT INTO contact_requests (listing_id, sender_id, sender_name, sender_email, message)
+      VALUES ($1, $2, $3, $4, $5)
+    `, [listingId, req.user.id, senderName, senderEmail, message]);
+
+    // Send email notification to listing owner
+    try {
+      // Get listing owner's email
+      const ownerUserResult = await db.query('SELECT email FROM users WHERE id = $1', [listing.user_id]);
+      const ownerEmail = ownerUserResult.rows[0]?.email;
+
+      if (ownerEmail) {
+        const { sendContactRequestEmail } = await import('../utils/email.js');
+        await sendContactRequestEmail(
+          ownerEmail,
+          listing.title,
+          listing.slug,
+          senderName,
+          senderEmail,
+          message
+        );
+      }
+    } catch (emailError) {
+      // Log email error but don't fail the contact request
+      console.error('Failed to send contact request email:', emailError);
+    }
+
+    res.json({ message: 'Contact request sent successfully' });
+  } catch (error) {
+    logError('POST /:id/contact', error, { id: req.params.id, userId: req.user?.id });
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 
 export { router as listingRoutes };

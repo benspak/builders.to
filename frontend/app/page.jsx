@@ -4,18 +4,43 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import axios from '../src/lib/axios';
 import { stripHtml } from '../src/components/RichTextEditor';
+import { useAuth } from '../src/context/AuthContext';
 
 export default function Home() {
+  const { user } = useAuth();
   const [listings, setListings] = useState([]);
   const [locations, setLocations] = useState([]);
   const [featuredUsers, setFeaturedUsers] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedLocation, setSelectedLocation] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
+  const [savedListings, setSavedListings] = useState(new Set());
 
   useEffect(() => {
     fetchListings();
     fetchFeaturedUsers();
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      fetchSavedListings();
+    }
+  }, [user]);
+
+  // Debounced search effect
+  useEffect(() => {
+    if (searchQuery.trim()) {
+      setIsSearching(true);
+      const timeoutId = setTimeout(() => {
+        performSearch();
+      }, 300);
+      return () => clearTimeout(timeoutId);
+    } else {
+      setIsSearching(false);
+      fetchListings();
+    }
+  }, [searchQuery]);
 
   const fetchFeaturedUsers = async () => {
     try {
@@ -23,6 +48,16 @@ export default function Home() {
       setFeaturedUsers(response.data);
     } catch (error) {
       console.error('Failed to fetch featured users:', error);
+    }
+  };
+
+  const fetchSavedListings = async () => {
+    try {
+      const response = await axios.get('/api/listings/user/saved');
+      const savedIds = response.data.map(listing => listing.id);
+      setSavedListings(new Set(savedIds));
+    } catch (error) {
+      console.error('Failed to fetch saved listings:', error);
     }
   };
 
@@ -34,6 +69,47 @@ export default function Home() {
       setLocations(uniqueLocations);
     } catch (error) {
       console.error('Failed to fetch listings:', error);
+    }
+  };
+
+  const performSearch = async () => {
+    try {
+      const params = new URLSearchParams();
+      if (searchQuery.trim()) params.append('q', searchQuery.trim());
+      if (selectedCategory !== 'all') params.append('category', selectedCategory);
+      if (selectedLocation !== 'all') params.append('location', selectedLocation);
+
+      const response = await axios.get(`/api/listings/search?${params.toString()}`);
+      setListings(response.data);
+      setIsSearching(false);
+    } catch (error) {
+      console.error('Search failed:', error);
+      setIsSearching(false);
+    }
+  };
+
+  const toggleSaveListing = async (listingId) => {
+    if (!user) {
+      alert('Please login to save listings');
+      return;
+    }
+
+    try {
+      const response = await axios.post(`/api/listings/${listingId}/save`);
+      const { saved } = response.data;
+
+      if (saved) {
+        setSavedListings(prev => new Set([...prev, listingId]));
+      } else {
+        setSavedListings(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(listingId);
+          return newSet;
+        });
+      }
+    } catch (error) {
+      console.error('Failed to save listing:', error);
+      alert('Failed to save listing');
     }
   };
 
@@ -75,6 +151,22 @@ export default function Home() {
               {listing.category}
             </span>
           </div>
+          {user && (
+            <button
+              onClick={() => toggleSaveListing(listing.id)}
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '0.833rem',
+                color: savedListings.has(listing.id) ? '#3b82f6' : '#9ca3af',
+                transition: 'color 0.15s'
+              }}
+              title={savedListings.has(listing.id) ? 'Remove from saved' : 'Save listing'}
+            >
+              {savedListings.has(listing.id) ? '✅' : '☑️'}
+            </button>
+          )}
         </div>
         <h2 className="heading heading-sm" style={{ marginTop: '1rem' }}>
           <Link href={`/listing/${listing.slug}`}>{listing.title}</Link>
@@ -395,6 +487,50 @@ export default function Home() {
         <div>
           <h1 className="heading heading-lg">List Jobs, Offer Services, Sell Businesses</h1>
           <p className="text text-base text-secondary" style={{ marginTop: '0.5rem' }}>Cost: $5 per listing</p>
+
+          {/* Search Bar */}
+          <div style={{ marginTop: '1.5rem' }}>
+            <div style={{ position: 'relative' }}>
+              <input
+                type="text"
+                className="form-input"
+                placeholder="Search listings..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                style={{
+                  paddingRight: isSearching ? '3rem' : '2.5rem',
+                  fontSize: '1rem',
+                  borderRadius: 'var(--radius-md)',
+                  border: '2px solid #e5e7eb',
+                  width: '100%',
+                  padding: '0.75rem 2.5rem 0.75rem 1rem'
+                }}
+              />
+              <div style={{
+                position: 'absolute',
+                right: '0.75rem',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                color: '#6b7280',
+                fontSize: '1.25rem'
+              }}>
+                {isSearching ? '⏳' : '🔍'}
+              </div>
+            </div>
+            {searchQuery && (
+              <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span className="text text-sm text-secondary">
+                  Searching for "{searchQuery}"
+                </span>
+                <button
+                  className="btn-link text-xs"
+                  onClick={() => setSearchQuery('')}
+                >
+                  Clear
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {selectedCategory === 'all' && (

@@ -13,7 +13,7 @@ if (API_URL && !API_URL.startsWith('http://') && !API_URL.startsWith('https://')
 // Configure axios to use the API URL when provided
 // In production with separate services: Use full backend URL
 // In development: Use relative paths which work with Next.js rewrites
-if (API_URL && typeof window !== 'undefined') {
+if (API_URL && process.env.NODE_ENV === 'production') {
   axios.defaults.baseURL = API_URL;
 } else {
   // No baseURL means requests will be relative to current origin

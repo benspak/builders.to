@@ -41,6 +41,7 @@ const Navbar = () => {
   const navLinks = (
     <>
       <NextLink href="/" className="navbar-link">Browse</NextLink>
+      <NextLink href="/profiles" className="navbar-link">Builders</NextLink>
       {user ? (
         <>
           <NextLink href="/create-listing" className="navbar-link">Create Listing</NextLink>
@@ -98,6 +99,14 @@ const Navbar = () => {
                 style={{ display: 'block', padding: '0.75rem', borderRadius: '0.5rem' }}
               >
                 Browse
+              </NextLink>
+              <NextLink
+                href="/profiles"
+                className="navbar-link"
+                onClick={() => setIsMenuOpen(false)}
+                style={{ display: 'block', padding: '0.75rem', borderRadius: '0.5rem' }}
+              >
+                Builders
               </NextLink>
               {user ? (
                 <>

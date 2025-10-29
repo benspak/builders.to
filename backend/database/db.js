@@ -192,6 +192,46 @@ const initializeDatabase = async () => {
       )
     `);
     console.log('✓ Password reset tokens table ready');
+
+    // Create saved_listings table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS saved_listings (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        listing_id INTEGER NOT NULL REFERENCES listings(id) ON DELETE CASCADE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(user_id, listing_id)
+      )
+    `);
+    console.log('✓ Saved listings table ready');
+
+    // Create listing_views table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS listing_views (
+        id SERIAL PRIMARY KEY,
+        listing_id INTEGER NOT NULL REFERENCES listings(id) ON DELETE CASCADE,
+        ip_address TEXT,
+        user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        viewed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    console.log('✓ Listing views table ready');
+
+    // Create contact_requests table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS contact_requests (
+        id SERIAL PRIMARY KEY,
+        listing_id INTEGER NOT NULL REFERENCES listings(id) ON DELETE CASCADE,
+        sender_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        sender_name TEXT NOT NULL,
+        sender_email TEXT NOT NULL,
+        message TEXT NOT NULL,
+        status TEXT DEFAULT 'pending' CHECK(status IN ('pending', 'read', 'archived')),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(listing_id, sender_id)
+      )
+    `);
+    console.log('✓ Contact requests table ready');
     console.log('🎉 PostgreSQL database initialized successfully!');
   } catch (error) {
     console.error('❌ Error initializing database');
