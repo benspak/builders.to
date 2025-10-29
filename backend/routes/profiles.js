@@ -44,6 +44,29 @@ router.get('/user/:userId', async (req, res) => {
   }
 });
 
+// Get featured users (must be before /:id to avoid route conflict)
+router.get('/featured', async (req, res) => {
+  try {
+    const result = await db.query(`
+      SELECT
+        p.*,
+        (SELECT COUNT(*) FROM listings l WHERE l.user_id = p.user_id) as listing_count
+      FROM profiles p
+      WHERE p.username IS NOT NULL AND p.name IS NOT NULL
+        AND EXISTS (SELECT 1 FROM listings l WHERE l.user_id = p.user_id)
+      ORDER BY listing_count DESC, p.created_at DESC
+      LIMIT 3
+    `);
+    console.log('✓ Featured users query successful:', result.rows.length, 'users');
+    res.json(result.rows);
+  } catch (error) {
+    console.error('❌ Featured users error:', error.message);
+    console.error('Stack:', error.stack);
+    logError('GET /featured', error);
+    res.status(500).json({ error: 'Server error', details: error.message });
+  }
+});
+
 // Get profile by ID
 router.get('/:id', async (req, res) => {
   try {
