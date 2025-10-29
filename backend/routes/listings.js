@@ -7,6 +7,48 @@ import { generateSlug } from '../utils/slug.js';
 
 const router = express.Router();
 
+// Report a listing
+router.post('/:id/report', authenticateToken, async (req, res) => {
+  try {
+    const { reason } = req.body;
+    const listingId = req.params.id;
+
+    // Check if listing exists
+    const listingResult = await db.query('SELECT * FROM listings WHERE id = $1', [listingId]);
+    if (listingResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Listing not found' });
+    }
+
+    const listing = listingResult.rows[0];
+
+    // Prevent users from reporting their own listings
+    if (listing.user_id === req.user.id) {
+      return res.status(400).json({ error: 'You cannot report your own listing' });
+    }
+
+    // Check if user has already reported this listing
+    const existingReport = await db.query(
+      'SELECT * FROM listing_reports WHERE listing_id = $1 AND reporter_id = $2',
+      [listingId, req.user.id]
+    );
+
+    if (existingReport.rows.length > 0) {
+      return res.status(400).json({ error: 'You have already reported this listing' });
+    }
+
+    // Create report
+    await db.query(
+      'INSERT INTO listing_reports (listing_id, reporter_id, reason) VALUES ($1, $2, $3)',
+      [listingId, req.user.id, reason || 'No reason provided']
+    );
+
+    res.json({ message: 'Listing reported successfully' });
+  } catch (error) {
+    logError('POST /:id/report', error, { id: req.params.id, userId: req.user?.id });
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // Stricter rate limiting for listing creation to prevent spam
 const createListingLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes

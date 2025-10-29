@@ -65,6 +65,10 @@ export default function Login() {
                 />
               </div>
 
+              <Link href="/forgot-password" style={{ color: 'var(--primary)', fontSize: '0.875rem', textAlign: 'right' }}>
+                Forgot password?
+              </Link>
+
               <button
                 type="submit"
                 className="btn btn-primary btn-full"

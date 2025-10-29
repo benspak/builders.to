@@ -51,16 +51,18 @@ const initializeDatabase = async () => {
         password_hash TEXT NOT NULL,
         name TEXT,
         username TEXT UNIQUE,
+        is_admin BOOLEAN DEFAULT FALSE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
     console.log('✓ Users table ready');
 
-    // Add name and username columns if they don't exist (for existing databases)
+    // Add name, username, and is_admin columns if they don't exist (for existing databases)
     try {
       await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS name TEXT');
       await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS username TEXT');
+      await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS is_admin BOOLEAN DEFAULT FALSE');
       await pool.query('CREATE UNIQUE INDEX IF NOT EXISTS username_unique_idx ON users(username) WHERE username IS NOT NULL');
     } catch (error) {
       // Columns might already exist, ignore error
@@ -161,6 +163,35 @@ const initializeDatabase = async () => {
       )
     `);
     console.log('✓ Transactions table ready');
+
+    // Create listing_reports table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS listing_reports (
+        id SERIAL PRIMARY KEY,
+        listing_id INTEGER NOT NULL REFERENCES listings(id) ON DELETE CASCADE,
+        reporter_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        reason TEXT,
+        status TEXT DEFAULT 'pending' CHECK(status IN ('pending', 'reviewed', 'dismissed')),
+        reviewed_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        reviewed_at TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(listing_id, reporter_id)
+      )
+    `);
+    console.log('✓ Listing reports table ready');
+
+    // Create password_reset_tokens table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS password_reset_tokens (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        token TEXT NOT NULL UNIQUE,
+        expires_at TIMESTAMP NOT NULL,
+        used BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    console.log('✓ Password reset tokens table ready');
     console.log('🎉 PostgreSQL database initialized successfully!');
   } catch (error) {
     console.error('❌ Error initializing database');

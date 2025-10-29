@@ -7,6 +7,7 @@ This guide will help you set up and run the Builders.to marketplace locally.
 - Node.js 18 or higher
 - npm or yarn
 - A Stripe account (for payments)
+- A Resend account (for password reset emails)
 
 ## Quick Start
 
@@ -33,8 +34,11 @@ JWT_SECRET=your_super_secret_jwt_key_change_this
 STRIPE_SECRET_KEY=sk_test_your_stripe_secret_key
 STRIPE_PUBLISHABLE_KEY=pk_test_your_stripe_publishable_key
 STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
-DATABASE_PATH=./builders.db
+DATABASE_URL=your_postgres_database_url
 NODE_ENV=development
+FRONTEND_URL=http://localhost:3000
+RESEND_API_KEY=re_your_resend_api_key
+RESEND_FROM_EMAIL=noreply@builders.to
 ```
 
 **Frontend (.env):**
@@ -43,12 +47,20 @@ VITE_API_URL=http://localhost:5555
 VITE_STRIPE_PUBLISHABLE_KEY=pk_test_your_stripe_publishable_key
 ```
 
-### 3. Get Stripe Keys
+### 3. Get API Keys
 
+**Stripe Keys:**
 1. Go to https://stripe.com and create an account
 2. Navigate to Developers > API keys
 3. Copy your test keys
 4. Add them to your `.env` files
+
+**Resend API Key (for password reset emails):**
+1. Go to https://resend.com and create an account
+2. Navigate to API Keys
+3. Create a new API key
+4. Add it to your `.env` file as `RESEND_API_KEY`
+5. Verify your domain or use a verified domain for `RESEND_FROM_EMAIL`
 
 ### 4. Run the Application
 
@@ -96,7 +108,9 @@ Run: `node backend/database/init.js` (automatically created on first run)
 3. Set:
    - Build Command: `cd backend && npm install`
    - Start Command: `cd backend && npm start`
-4. Add environment variables from your `.env` file
+4. Add environment variables from your `.env` file:
+   - PORT, JWT_SECRET, STRIPE_SECRET_KEY, DATABASE_URL, NODE_ENV
+   - RESEND_API_KEY, RESEND_FROM_EMAIL, FRONTEND_URL
 
 ### Frontend Deployment (Render.com)
 

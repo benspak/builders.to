@@ -23,6 +23,7 @@ import { profileRoutes } from './routes/profiles.js';
 import { listingRoutes } from './routes/listings.js';
 import { paymentRoutes, webhookRouter } from './routes/payments.js';
 import { dashboardRoutes } from './routes/dashboard.js';
+import { adminRoutes } from './routes/admin.js';
 
 const app = express();
 const PORT = process.env.PORT || 5555;
@@ -92,6 +93,7 @@ app.use('/api/listings', listingRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/payments/webhook', webhookRouter);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Health check routes
 app.get('/health', (req, res) => {
@@ -134,5 +136,6 @@ app.listen(PORT, () => {
   if (process.env.NODE_ENV === 'development') {
     console.log(`💳 Stripe: ${process.env.STRIPE_SECRET_KEY ? '✓ Configured' : '⚠️  Not configured'}`);
     console.log(`🔐 JWT: ${process.env.JWT_SECRET ? '✓ Configured' : '⚠️  Not configured'}`);
+    console.log(`📧 Resend: ${process.env.RESEND_API_KEY ? '✓ Configured' : '⚠️  Not configured'}`);
   }
 });

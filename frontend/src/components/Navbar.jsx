@@ -46,6 +46,9 @@ const Navbar = () => {
           <NextLink href="/create-listing" className="navbar-link">Create Listing</NextLink>
           <NextLink href="/dashboard" className="navbar-link">Dashboard</NextLink>
           <NextLink href="/profile" className="navbar-link">Profile</NextLink>
+          {user.is_admin && (
+            <NextLink href="/admin" className="navbar-link">Admin</NextLink>
+          )}
           <button className="btn btn-sm btn-error" onClick={handleLogout}>
             Logout
           </button>
@@ -122,6 +125,16 @@ const Navbar = () => {
                   >
                     Profile
                   </NextLink>
+                  {user.is_admin && (
+                    <NextLink
+                      href="/admin"
+                      className="navbar-link"
+                      onClick={() => setIsMenuOpen(false)}
+                      style={{ display: 'block', padding: '0.75rem', borderRadius: '0.5rem' }}
+                    >
+                      Admin
+                    </NextLink>
+                  )}
                 </>
               ) : (
                 <>

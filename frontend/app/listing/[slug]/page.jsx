@@ -29,6 +29,8 @@ export default function ListingDetail() {
     location: '',
     description: ''
   });
+  const [reportReason, setReportReason] = useState('');
+  const [showReportModal, setShowReportModal] = useState(false);
 
   useEffect(() => {
     fetchListing();
@@ -119,6 +121,23 @@ export default function ListingDetail() {
     }
   };
 
+  const handleReport = async () => {
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+
+    try {
+      await axios.post(`/api/listings/${listing.id}/report`, { reason: reportReason });
+      alert('Listing reported successfully');
+      setShowReportModal(false);
+      setReportReason('');
+    } catch (error) {
+      console.error('Failed to report listing:', error);
+      alert(error.response?.data?.error || 'Failed to report listing');
+    }
+  };
+
   if (loading) {
     return <div className="container" style={{ maxWidth: '56rem', paddingTop: '2rem', paddingBottom: '2rem' }}>Loading...</div>;
   }
@@ -169,13 +188,20 @@ export default function ListingDetail() {
 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.875rem', color: 'var(--text-secondary-light)' }}>
                 <span>Posted on {new Date(listing.created_at).toLocaleDateString()}</span>
-                {listing.profile_username && (
-                  <Link href={`/user/${listing.profile_username}`}>
-                    <button className="btn-link btn-sm">
-                      View Profile
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  {listing.profile_username && (
+                    <Link href={`/user/${listing.profile_username}`}>
+                      <button className="btn-link btn-sm">
+                        View Profile
+                      </button>
+                    </Link>
+                  )}
+                  {!isOwner && (
+                    <button className="btn btn-sm btn-error btn-outline" onClick={() => setShowReportModal(true)}>
+                      Report
                     </button>
-                  </Link>
-                )}
+                  )}
+                </div>
               </div>
 
               {isOwner && listing.payment_status === 'pending' && (
@@ -280,6 +306,46 @@ export default function ListingDetail() {
               )}
             </div>
           </div>
+
+          {showReportModal && (
+            <div style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1000
+            }}>
+              <div className="card" style={{ maxWidth: '28rem', width: '90%' }}>
+                <div className="card-body">
+                  <h2 className="heading heading-lg">Report Listing</h2>
+                  <p className="text text-base text-secondary">Please provide a reason for reporting this listing.</p>
+                  <div className="form-control" style={{ marginTop: '1rem' }}>
+                    <label className="form-label">Reason</label>
+                    <textarea
+                      className="form-input"
+                      value={reportReason}
+                      onChange={(e) => setReportReason(e.target.value)}
+                      placeholder="Enter the reason for reporting..."
+                      rows={4}
+                    />
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem' }}>
+                    <button className="btn btn-primary" onClick={handleReport}>
+                      Submit Report
+                    </button>
+                    <button className="btn btn-outline" onClick={() => { setShowReportModal(false); setReportReason(''); }}>
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
