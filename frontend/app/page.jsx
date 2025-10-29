@@ -124,7 +124,7 @@ export default function Home() {
   };
 
   return (
-    <div style={{
+    <div className="homepage-container" style={{
       display: 'grid',
       gridTemplateColumns: '1fr 3fr 1fr',
       gap: '2rem',
@@ -143,7 +143,7 @@ export default function Home() {
         position: 'sticky',
         top: '1rem',
         height: 'fit-content'
-      }}>
+      }} className="homepage-sidebar-left">
         <div style={{ padding: '1rem', backgroundColor: 'var(--background-secondary)', borderRadius: '8px' }}>
           <h3 className="heading heading-sm">Filter by Category</h3>
           <div style={{ marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -391,7 +391,7 @@ export default function Home() {
       </div>
 
       {/* Middle Column - All Listings */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }} className="homepage-main">
         <div>
           <h1 className="heading heading-lg">List Jobs, Offer Services, Sell Businesses</h1>
           <p className="text text-base text-secondary" style={{ marginTop: '0.5rem' }}>Cost: $5 per listing</p>
@@ -445,7 +445,7 @@ export default function Home() {
         position: 'sticky',
         top: '1rem',
         height: 'fit-content'
-      }}>
+      }} className="homepage-sidebar-right">
         {featuredUsers.length > 0 && (
           <div style={{ padding: '1rem', backgroundColor: 'var(--background-secondary)', borderRadius: '8px' }}>
             <h3 className="heading heading-sm">⭐ Featured Users</h3>
