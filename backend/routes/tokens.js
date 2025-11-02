@@ -90,4 +90,84 @@ router.post('/purchase', authenticateToken, async (req, res) => {
   }
 });
 
+// Verify and fix missed token purchases
+router.post('/verify-payment', authenticateToken, async (req, res) => {
+  try {
+    const stripeInstance = getStripe();
+    if (!stripeInstance) {
+      return res.status(500).json({ error: 'Payment service not configured' });
+    }
+
+    const { paymentIntentId } = req.body;
+
+    if (!paymentIntentId) {
+      return res.status(400).json({ error: 'Payment intent ID is required' });
+    }
+
+    // Retrieve payment intent from Stripe
+    const paymentIntent = await stripeInstance.paymentIntents.retrieve(paymentIntentId);
+
+    // Verify payment belongs to this user
+    if (paymentIntent.metadata.userId !== req.user.id.toString()) {
+      return res.status(403).json({ error: 'Payment intent does not belong to this user' });
+    }
+
+    // Verify payment was successful
+    if (paymentIntent.status !== 'succeeded') {
+      return res.status(400).json({
+        error: 'Payment not completed',
+        status: paymentIntent.status
+      });
+    }
+
+    // Check if this is a token purchase
+    if (paymentIntent.metadata.type !== 'token_purchase') {
+      return res.status(400).json({ error: 'This payment is not a token purchase' });
+    }
+
+    // Check if tokens were already credited
+    const existingTx = await db.query(
+      'SELECT id FROM token_transactions WHERE stripe_payment_intent_id = $1',
+      [paymentIntentId]
+    );
+
+    if (existingTx.rows.length > 0) {
+      return res.json({
+        message: 'Tokens already credited for this payment',
+        tokens: parseInt(paymentIntent.metadata.tokens) || 0
+      });
+    }
+
+    // Credit the tokens
+    const tokensToAdd = parseInt(paymentIntent.metadata.tokens) || 0;
+    if (tokensToAdd <= 0) {
+      return res.status(400).json({ error: 'Invalid token amount in payment intent' });
+    }
+
+    await db.query('UPDATE users SET tokens = tokens + $1 WHERE id = $2', [tokensToAdd, req.user.id]);
+
+    // Create token transaction record
+    await db.query(`
+      INSERT INTO token_transactions (user_id, type, amount, description, stripe_payment_intent_id)
+      VALUES ($1, $2, $3, $4, $5)
+    `, [req.user.id, 'purchase', tokensToAdd, `Purchased ${tokensToAdd} tokens (manually verified)`, paymentIntentId]);
+
+    // Get updated balance
+    const balanceResult = await db.query('SELECT tokens FROM users WHERE id = $1', [req.user.id]);
+    const newBalance = balanceResult.rows[0].tokens || 0;
+
+    res.json({
+      message: `Successfully credited ${tokensToAdd} tokens`,
+      tokensCredited: tokensToAdd,
+      newBalance
+    });
+  } catch (error) {
+    if (error.type === 'StripeInvalidRequestError' && error.code === 'resource_missing') {
+      return res.status(404).json({ error: 'Payment intent not found' });
+    }
+    logError('POST /verify-payment', error, { userId: req.user?.id, paymentIntentId: req.body?.paymentIntentId });
+    res.status(500).json({ error: 'Failed to verify payment' });
+  }
+});
+
 export { router as tokenRoutes };

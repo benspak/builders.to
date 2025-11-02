@@ -150,11 +150,18 @@ webhookRouter.post('/', async (req, res) => {
       event = req.body;
     }
 
+    console.log(`[Webhook] Received event: ${event.type}, id: ${event.id}`);
     await handleWebhookEvent(event);
+    console.log(`[Webhook] Successfully processed event: ${event.type}`);
     res.json({ received: true });
   } catch (err) {
-    logError('POST /webhook', err);
-    return res.status(400).send('Webhook Error');
+    console.error(`[Webhook] Error processing event:`, err.message);
+    logError('POST /webhook', err, {
+      eventType: event?.type,
+      eventId: event?.id,
+      paymentIntentId: event?.data?.object?.id
+    });
+    return res.status(400).json({ error: 'Webhook Error', message: err.message });
   }
 });
 
@@ -163,17 +170,52 @@ const handleWebhookEvent = async (event) => {
     const paymentIntent = event.data.object;
     const { listingId, userId, type, tokens } = paymentIntent.metadata;
 
+    console.log(`[Webhook] Processing payment_intent.succeeded: ${paymentIntent.id}, type: ${type}`);
+
     if (type === 'token_purchase') {
+      if (!userId || !tokens) {
+        console.error(`[Webhook] Missing metadata for token purchase: userId=${userId}, tokens=${tokens}`);
+        throw new Error('Missing userId or tokens in payment intent metadata');
+      }
+
+      // Check if transaction already exists to prevent double crediting
+      const existingTx = await db.query(
+        'SELECT id FROM token_transactions WHERE stripe_payment_intent_id = $1',
+        [paymentIntent.id]
+      );
+
+      if (existingTx.rows.length > 0) {
+        console.log(`[Webhook] Payment intent ${paymentIntent.id} already processed, skipping`);
+        return;
+      }
+
       // Add tokens to user account
       const tokensToAdd = parseInt(tokens) || 0;
+      if (tokensToAdd <= 0) {
+        throw new Error(`Invalid token amount: ${tokensToAdd}`);
+      }
+
       await db.query('UPDATE users SET tokens = tokens + $1 WHERE id = $2', [tokensToAdd, userId]);
+      console.log(`[Webhook] Added ${tokensToAdd} tokens to user ${userId}`);
 
       // Create token transaction record
       await db.query(`
         INSERT INTO token_transactions (user_id, type, amount, description, stripe_payment_intent_id)
         VALUES ($1, $2, $3, $4, $5)
       `, [userId, 'purchase', tokensToAdd, `Purchased ${tokensToAdd} tokens`, paymentIntent.id]);
+      console.log(`[Webhook] Created transaction record for payment ${paymentIntent.id}`);
     } else if (type === 'listing') {
+      // Check if transaction already exists
+      const existingTx = await db.query(
+        'SELECT id FROM transactions WHERE stripe_payment_intent_id = $1',
+        [paymentIntent.id]
+      );
+
+      if (existingTx.rows.length > 0) {
+        console.log(`[Webhook] Payment intent ${paymentIntent.id} already processed, skipping`);
+        return;
+      }
+
       // Mark listing as paid
       await db.query('UPDATE listings SET payment_status = $1 WHERE id = $2', ['paid', listingId]);
 
@@ -183,6 +225,17 @@ const handleWebhookEvent = async (event) => {
         VALUES ($1, $2, $3, $4, $5, $6)
       `, [userId, listingId, 'listing', 5.00, paymentIntent.id, 'completed']);
     } else if (type === 'feature') {
+      // Check if transaction already exists
+      const existingTx = await db.query(
+        'SELECT id FROM transactions WHERE stripe_payment_intent_id = $1',
+        [paymentIntent.id]
+      );
+
+      if (existingTx.rows.length > 0) {
+        console.log(`[Webhook] Payment intent ${paymentIntent.id} already processed, skipping`);
+        return;
+      }
+
       // Mark listing as featured
       await db.query(
         'UPDATE listings SET is_featured = 1, payment_status = $1 WHERE id = $2',
@@ -194,6 +247,8 @@ const handleWebhookEvent = async (event) => {
         INSERT INTO transactions (user_id, listing_id, type, amount, stripe_payment_intent_id, status)
         VALUES ($1, $2, $3, $4, $5, $6)
       `, [userId, listingId, 'feature', 50.00, paymentIntent.id, 'completed']);
+    } else {
+      console.log(`[Webhook] Unknown payment type: ${type}, skipping`);
     }
   }
 };

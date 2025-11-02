@@ -22,6 +22,9 @@ export default function Tokens() {
   const [success, setSuccess] = useState('');
   const [showPaymentForm, setShowPaymentForm] = useState(false);
   const [clientSecret, setClientSecret] = useState('');
+  const [lastPaymentIntentId, setLastPaymentIntentId] = useState('');
+  const [verifyingPayment, setVerifyingPayment] = useState(false);
+  const [verifyPaymentIntentId, setVerifyPaymentIntentId] = useState('');
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -33,6 +36,12 @@ export default function Tokens() {
     if (user) {
       fetchBalance();
       fetchTransactions();
+      // Check for stored payment intent ID
+      const stored = localStorage.getItem('lastPaymentIntentId');
+      if (stored) {
+        setVerifyPaymentIntentId(stored);
+        setLastPaymentIntentId(stored);
+      }
     }
   }, [user]);
 
@@ -68,6 +77,10 @@ export default function Tokens() {
       });
 
       setClientSecret(response.data.clientSecret);
+      setLastPaymentIntentId(response.data.paymentIntentId);
+      setVerifyPaymentIntentId(response.data.paymentIntentId);
+      // Store payment intent ID for later verification if needed
+      localStorage.setItem('lastPaymentIntentId', response.data.paymentIntentId);
       setShowPaymentForm(true);
       setPurchasing(false);
     } catch (error) {
@@ -90,6 +103,35 @@ export default function Tokens() {
   const handlePaymentCancel = () => {
     setShowPaymentForm(false);
     setClientSecret('');
+  };
+
+  const handleVerifyPayment = async (e) => {
+    e.preventDefault();
+    if (!verifyPaymentIntentId) {
+      setError('Please enter a payment intent ID');
+      return;
+    }
+
+    setVerifyingPayment(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      const response = await axios.post('/api/tokens/verify-payment', {
+        paymentIntentId: verifyPaymentIntentId
+      });
+
+      setSuccess(response.data.message || `Successfully credited ${response.data.tokensCredited} tokens!`);
+      setVerifyPaymentIntentId('');
+      localStorage.removeItem('lastPaymentIntentId');
+      fetchBalance();
+      fetchTransactions();
+      setTimeout(() => setSuccess(''), 5000);
+    } catch (error) {
+      setError(error.response?.data?.error || 'Failed to verify payment');
+    } finally {
+      setVerifyingPayment(false);
+    }
   };
 
   if (authLoading || !user) {
@@ -171,6 +213,43 @@ export default function Tokens() {
                 disabled={purchasing || showPaymentForm}
               >
                 {purchasing ? 'Processing...' : `Purchase ${purchaseAmount} Tokens ($${purchaseAmount})`}
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div className="card" style={{ padding: '2rem' }}>
+          <h2 className="heading heading-md">Verify Payment</h2>
+          <p className="text text-base text-secondary" style={{ marginTop: '0.5rem', marginBottom: '1.5rem' }}>
+            If your payment was successful but tokens weren't credited, enter your Payment Intent ID below to verify and credit your tokens.
+          </p>
+
+          <form onSubmit={handleVerifyPayment}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div className="form-control">
+                <label className="form-label">Payment Intent ID</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={verifyPaymentIntentId}
+                  onChange={(e) => setVerifyPaymentIntentId(e.target.value)}
+                  placeholder="pi_..."
+                  disabled={verifyingPayment}
+                  required
+                />
+                {lastPaymentIntentId && (
+                  <p className="text text-sm text-secondary" style={{ marginTop: '0.5rem' }}>
+                    Last payment ID: {lastPaymentIntentId}
+                  </p>
+                )}
+              </div>
+
+              <button
+                type="submit"
+                className="btn btn-outline btn-full"
+                disabled={verifyingPayment || !verifyPaymentIntentId}
+              >
+                {verifyingPayment ? 'Verifying...' : 'Verify Payment'}
               </button>
             </div>
           </form>
