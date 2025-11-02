@@ -183,6 +183,7 @@ export default function ListingDetail() {
           <Elements stripe={stripePromise} options={{ clientSecret }}>
             <CheckoutForm
               clientSecret={clientSecret}
+              returnUrl={`${typeof window !== 'undefined' ? window.location.origin : ''}/dashboard`}
               onSuccess={() => {
                 setShowPayment(false);
                 fetchListing();

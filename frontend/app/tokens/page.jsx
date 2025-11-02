@@ -93,9 +93,6 @@ export default function Tokens() {
     setShowPaymentForm(false);
     setClientSecret('');
 
-    // Show immediate success message
-    setSuccess('Payment successful! Crediting tokens...');
-
     // Automatically verify and credit tokens after payment succeeds
     if (lastPaymentIntentId) {
       // Small delay to ensure Stripe has processed the payment
@@ -106,35 +103,24 @@ export default function Tokens() {
           paymentIntentId: lastPaymentIntentId
         });
 
-        // If tokens were already credited (by webhook), that's fine too
-        if (response.data.tokensCredited) {
-          setSuccess(`Successfully purchased and credited ${response.data.tokensCredited} tokens! Your new balance is ${response.data.newBalance} tokens.`);
-        } else if (response.data.message) {
-          // Already credited via webhook
-          setSuccess(`Payment successful! ${response.data.message} Your balance has been updated.`);
-        } else {
-          setSuccess(`Payment successful! Tokens have been credited.`);
-        }
-
         // Clear stored payment intent ID
         localStorage.removeItem('lastPaymentIntentId');
         setLastPaymentIntentId('');
         setVerifyPaymentIntentId('');
+
+        // Redirect to tokens page after successful payment
+        router.push('/tokens');
       } catch (error) {
         // If verification fails, show a message but don't block the success flow
         console.error('Auto-verification failed:', error);
-        setSuccess(`Payment successful! If tokens weren't credited automatically, please use the Verify Payment section below. Your payment intent ID is: ${lastPaymentIntentId}`);
         // Keep the payment intent ID so user can verify manually
+        // Still redirect to tokens page
+        router.push('/tokens');
       }
     } else {
-      setSuccess(`Payment successful! Please verify your payment using the form below if tokens weren't credited.`);
+      // Redirect to tokens page even if no payment intent ID
+      router.push('/tokens');
     }
-
-    setPurchaseAmount(25);
-    fetchBalance();
-    fetchTransactions();
-    // Clear success message after 8 seconds (longer since we might have verification message)
-    setTimeout(() => setSuccess(''), 8000);
   };
 
   const handlePaymentCancel = () => {
@@ -182,6 +168,7 @@ export default function Tokens() {
         <Elements stripe={stripePromise} options={{ clientSecret }}>
           <CheckoutForm
             clientSecret={clientSecret}
+            returnUrl={`${typeof window !== 'undefined' ? window.location.origin : ''}/tokens`}
             onSuccess={handlePaymentSuccess}
             onCancel={handlePaymentCancel}
           />
@@ -256,7 +243,7 @@ export default function Tokens() {
         </div>
 
         <div className="card" style={{ padding: '2rem' }}>
-          <h2 className="heading heading-md">Verify Payment</h2>
+          <h2 className="heading heading-md">Verify Payment & Add Tokens</h2>
           <p className="text text-base text-secondary" style={{ marginTop: '0.5rem', marginBottom: '1.5rem' }}>
             If your payment was successful but tokens weren't credited, enter your Payment Intent ID below to verify and credit your tokens.
           </p>

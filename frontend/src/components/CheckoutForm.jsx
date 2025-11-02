@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useStripe, useElements, PaymentElement } from '@stripe/react-stripe-js';
 
-const CheckoutForm = ({ clientSecret, onSuccess, onCancel }) => {
+const CheckoutForm = ({ clientSecret, onSuccess, onCancel, returnUrl }) => {
   const stripe = useStripe();
   const elements = useElements();
   const [loading, setLoading] = useState(false);
@@ -30,7 +30,7 @@ const CheckoutForm = ({ clientSecret, onSuccess, onCancel }) => {
       elements,
       clientSecret,
       confirmParams: {
-        return_url: window.location.origin,
+        return_url: returnUrl || `${window.location.origin}/tokens`,
       },
     });
 
