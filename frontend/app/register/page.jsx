@@ -142,7 +142,7 @@ export default function Register() {
                   placeholder="Enter referral code"
                 />
                 <p className="text text-sm text-secondary" style={{ marginTop: '0.25rem' }}>
-                  Get 1 free post when you refer a paying customer
+                  Get 1 free post when you refer a new user
                 </p>
               </div>
 

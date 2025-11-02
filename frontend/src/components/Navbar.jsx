@@ -88,11 +88,9 @@ const Navbar = () => {
     <>
       <NextLink href="/" className="navbar-link">Browse</NextLink>
       <NextLink href="/profiles" className="navbar-link">Builders</NextLink>
+      <NextLink href="/create-listing" className="navbar-link">Create Listing</NextLink>
       {user && (
-        <>
-          <NextLink href="/dashboard" className="navbar-link">Dashboard</NextLink>
-          <NextLink href="/create-listing" className="navbar-link">Create Listing</NextLink>
-        </>
+        <NextLink href="/dashboard" className="navbar-link">Dashboard</NextLink>
       )}
       {user ? (
         <div className="avatar-menu-container" ref={avatarMenuRef}>
@@ -208,16 +206,16 @@ const Navbar = () => {
               >
                 Builders
               </NextLink>
+              <NextLink
+                href="/create-listing"
+                className="navbar-link"
+                onClick={() => setIsMenuOpen(false)}
+                style={{ display: 'block', padding: '0.75rem', borderRadius: '0.5rem' }}
+              >
+                Create Listing
+              </NextLink>
               {user ? (
                 <>
-                  <NextLink
-                    href="/create-listing"
-                    className="navbar-link"
-                    onClick={() => setIsMenuOpen(false)}
-                    style={{ display: 'block', padding: '0.75rem', borderRadius: '0.5rem' }}
-                  >
-                    Create Listing
-                  </NextLink>
                   <NextLink
                     href="/tokens"
                     className="navbar-link"
