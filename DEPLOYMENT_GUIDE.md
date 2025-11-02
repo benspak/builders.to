@@ -211,7 +211,7 @@ RESEND_FROM_EMAIL=noreply@builders.to
 FRONTEND_URL=https://builders-frontend.onrender.com
 ```
 
-**Note**: The token system and referral program are fully integrated and require no additional configuration. The Stripe webhook handles token purchases, and referral rewards are automatically processed when referred users create their first listing.
+**Note**: The token system and referral program are fully integrated and require no additional configuration. The Stripe webhook handles token purchases, and referral rewards are automatically processed when referred users set their username.
 
 **Frontend Service** (`builders-frontend`):
 ```env
@@ -372,8 +372,7 @@ Expected response:
 6. **Test referral system**
    - Go to the Referrals page and copy your referral code
    - Register a new user with the referral link: `/register?ref=YOUR_CODE`
-   - Create and pay for a listing as the new user
-   - Verify the original user received 5 tokens as a referral reward
+   - Verify the original user received 5 tokens as a referral reward when the new user sets their username
 
 7. **Test token system**
    - Go to the Tokens page

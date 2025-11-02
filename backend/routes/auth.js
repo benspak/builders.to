@@ -70,6 +70,29 @@ router.post('/register', async (req, res) => {
       [userId, name, username]
     );
 
+    // Award referral tokens when referred user sets their username
+    if (referredBy) {
+      const TOKENS_PER_POST = 5;
+
+      // Give referrer reward: 1 free post (5 tokens)
+      await db.query(
+        'UPDATE users SET tokens = tokens + $1 WHERE id = $2',
+        [TOKENS_PER_POST, referredBy]
+      );
+
+      // Mark referral reward as given
+      await db.query(
+        'UPDATE referrals SET reward_given = TRUE WHERE referred_id = $1',
+        [userId]
+      );
+
+      // Record reward transaction for referrer
+      await db.query(`
+        INSERT INTO token_transactions (user_id, type, amount, description)
+        VALUES ($1, $2, $3, $4)
+      `, [referredBy, 'reward', TOKENS_PER_POST, 'Referral reward: referred user set their username']);
+    }
+
     // Get user with admin status
     const userResult = await db.query('SELECT id, email, name, username, is_admin FROM users WHERE id = $1', [userId]);
     const newUser = userResult.rows[0];

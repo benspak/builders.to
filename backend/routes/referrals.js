@@ -38,7 +38,7 @@ router.get('/stats', authenticateToken, async (req, res) => {
       [req.user.id]
     );
 
-    // Get number of rewarded referrals (those who made purchases)
+    // Get number of rewarded referrals (those who set their username)
     const rewardedResult = await db.query(
       'SELECT COUNT(*) as count FROM referrals WHERE referrer_id = $1 AND reward_given = TRUE',
       [req.user.id]

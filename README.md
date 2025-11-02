@@ -19,7 +19,7 @@ A marketplace for builders and founders to offer services, get hired, or sell bu
   - $50 to feature/pin listings to the top
 - **Referral Program**:
   - Generate your unique referral code
-  - Refer friends and earn 5 tokens (1 free post) when they make their first purchase
+  - Refer friends and earn 5 tokens (1 free post) when they set their username
 - **Filtering**: Filter by location/city and category
 - **Dashboard**: View all your listings, transactions, and token balance
 
@@ -192,7 +192,7 @@ Users can purchase tokens (1 token = $1) and use 5 tokens to create a listing. T
 ### Referral Program
 - Every user automatically gets a unique referral code
 - Share your referral link: `/register?ref=YOUR_CODE`
-- When someone signs up with your code and creates their first paid listing, you automatically receive 5 tokens (1 free post)
+- When someone signs up with your code and sets their username, you automatically receive 5 tokens (1 free post)
 - Track your referral statistics (total referrals, rewarded referrals) on the Referrals page
 
 ## Stripe Setup

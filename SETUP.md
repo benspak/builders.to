@@ -97,8 +97,7 @@ npm run dev
 5. **Test Referral System**:
    - Go to the Referrals page and copy your referral code
    - Register a new account using the referral link: `/register?ref=YOUR_CODE`
-   - Create and pay for a listing as the new user
-   - Verify the original user received 5 tokens as reward
+   - Verify the original user received 5 tokens as reward when the new user sets their username
 6. **Test Featured Listing** (Optional):
    - Pay $50 to feature a listing
 

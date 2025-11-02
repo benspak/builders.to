@@ -63,7 +63,7 @@ export default function Referrals() {
         <div className="card" style={{ padding: '2rem' }}>
           <h1 className="heading heading-lg">Referral Program</h1>
           <p className="text text-base text-secondary" style={{ marginTop: '0.5rem' }}>
-            Refer a paying customer and get 1 free post (5 tokens)!
+            Refer friends and get 1 free post (5 tokens) when they set their username!
           </p>
         </div>
 
@@ -131,7 +131,7 @@ export default function Referrals() {
               Share your referral link with friends and colleagues
             </li>
             <li className="text text-base" style={{ marginBottom: '0.5rem' }}>
-              When someone signs up with your referral code and makes their first purchase, you get 5 tokens (1 free post)
+              When someone signs up with your referral code and sets their username, you get 5 tokens (1 free post)
             </li>
             <li className="text text-base" style={{ marginBottom: '0.5rem' }}>
               No limit on referrals - refer as many people as you want!

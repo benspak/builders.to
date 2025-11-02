@@ -436,27 +436,6 @@ router.post('/', authenticateToken, createListingLimiter, async (req, res) => {
           INSERT INTO token_transactions (user_id, type, amount, description)
           VALUES ($1, $2, $3, $4)
         `, [req.user.id, 'spent', TOKENS_PER_POST, 'Post creation (5 tokens)']);
-
-        // Check if referred user made their first purchase
-        if (user.referred_by && postsPurchased === 0) {
-          // Give referrer reward: 1 free post (5 tokens)
-          await db.query(
-            'UPDATE users SET tokens = tokens + $1 WHERE id = $2',
-            [TOKENS_PER_POST, user.referred_by]
-          );
-
-          // Mark referral reward as given
-          await db.query(
-            'UPDATE referrals SET reward_given = TRUE WHERE referred_id = $1',
-            [req.user.id]
-          );
-
-          // Record reward transaction for referrer
-          await db.query(`
-            INSERT INTO token_transactions (user_id, type, amount, description)
-            VALUES ($1, $2, $3, $4)
-          `, [user.referred_by, 'reward', TOKENS_PER_POST, 'Referral reward: referred user made first purchase']);
-        }
       }
 
       await db.query('COMMIT');
