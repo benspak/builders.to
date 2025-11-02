@@ -89,15 +89,52 @@ export default function Tokens() {
     }
   };
 
-  const handlePaymentSuccess = () => {
+  const handlePaymentSuccess = async () => {
     setShowPaymentForm(false);
     setClientSecret('');
-    setSuccess(`Successfully purchased ${purchaseAmount} tokens!`);
+
+    // Show immediate success message
+    setSuccess('Payment successful! Crediting tokens...');
+
+    // Automatically verify and credit tokens after payment succeeds
+    if (lastPaymentIntentId) {
+      // Small delay to ensure Stripe has processed the payment
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      try {
+        const response = await axios.post('/api/tokens/verify-payment', {
+          paymentIntentId: lastPaymentIntentId
+        });
+
+        // If tokens were already credited (by webhook), that's fine too
+        if (response.data.tokensCredited) {
+          setSuccess(`Successfully purchased and credited ${response.data.tokensCredited} tokens! Your new balance is ${response.data.newBalance} tokens.`);
+        } else if (response.data.message) {
+          // Already credited via webhook
+          setSuccess(`Payment successful! ${response.data.message} Your balance has been updated.`);
+        } else {
+          setSuccess(`Payment successful! Tokens have been credited.`);
+        }
+
+        // Clear stored payment intent ID
+        localStorage.removeItem('lastPaymentIntentId');
+        setLastPaymentIntentId('');
+        setVerifyPaymentIntentId('');
+      } catch (error) {
+        // If verification fails, show a message but don't block the success flow
+        console.error('Auto-verification failed:', error);
+        setSuccess(`Payment successful! If tokens weren't credited automatically, please use the Verify Payment section below. Your payment intent ID is: ${lastPaymentIntentId}`);
+        // Keep the payment intent ID so user can verify manually
+      }
+    } else {
+      setSuccess(`Payment successful! Please verify your payment using the form below if tokens weren't credited.`);
+    }
+
     setPurchaseAmount(25);
     fetchBalance();
     fetchTransactions();
-    // Clear success message after 5 seconds
-    setTimeout(() => setSuccess(''), 5000);
+    // Clear success message after 8 seconds (longer since we might have verification message)
+    setTimeout(() => setSuccess(''), 8000);
   };
 
   const handlePaymentCancel = () => {
