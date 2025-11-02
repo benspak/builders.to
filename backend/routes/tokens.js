@@ -156,6 +156,23 @@ router.post('/verify-payment', authenticateToken, async (req, res) => {
     const balanceResult = await db.query('SELECT tokens FROM users WHERE id = $1', [req.user.id]);
     const newBalance = balanceResult.rows[0].tokens || 0;
 
+    // Send purchase confirmation email
+    try {
+      const userResult = await db.query('SELECT email FROM users WHERE id = $1', [req.user.id]);
+      const userEmail = userResult.rows[0]?.email;
+
+      if (userEmail) {
+        const { sendPurchaseConfirmationEmail } = await import('../utils/email.js');
+        const amountInDollars = tokensToAdd; // 1 token = $1
+        await sendPurchaseConfirmationEmail(userEmail, tokensToAdd, amountInDollars, paymentIntentId);
+        console.log(`✓ Purchase confirmation email sent to ${userEmail}`);
+      }
+    } catch (emailError) {
+      // Log email error but don't fail the token credit
+      console.error('Failed to send purchase confirmation email:', emailError);
+      logError('Purchase confirmation email failed', emailError, { userId: req.user?.id });
+    }
+
     res.json({
       message: `Successfully credited ${tokensToAdd} tokens`,
       tokensCredited: tokensToAdd,

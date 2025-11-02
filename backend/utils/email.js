@@ -206,3 +206,148 @@ export const sendContactRequestEmail = async (ownerEmail, listingTitle, listingS
     return { success: false, error: error.message };
   }
 };
+
+/**
+ * Send a purchase confirmation email to user after successful token purchase
+ * @param {string} email - User's email address
+ * @param {number} tokens - Number of tokens purchased
+ * @param {number} amount - Amount paid in dollars
+ * @param {string} paymentIntentId - Stripe payment intent ID
+ * @returns {Promise<object>} - Result from Resend
+ */
+export const sendPurchaseConfirmationEmail = async (email, tokens, amount, paymentIntentId) => {
+  // Check if Resend is configured
+  if (!resend) {
+    // In development, log to console instead
+    console.log('⚠️  Resend not configured. Purchase confirmation for', email, ':', {
+      tokens,
+      amount,
+      paymentIntentId
+    });
+    // Don't throw error, just log it since email is optional
+    return { success: false, message: 'Email service not configured' };
+  }
+
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+  const tokensUrl = `${frontendUrl}/tokens`;
+  const dashboardUrl = `${frontendUrl}/dashboard`;
+  const formattedDate = new Date().toLocaleString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+
+  try {
+    const data = await resend.emails.send({
+      from: process.env.RESEND_FROM_EMAIL || 'noreply@builders.to',
+      to: [email],
+      subject: `Token Purchase Confirmation - ${tokens} tokens - builders.to`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Purchase Confirmation</title>
+          </head>
+          <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="background: #f4f4f4; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+              <h1 style="color: #2c3e50; margin: 0;">builders.to</h1>
+            </div>
+
+            <div style="background: white; padding: 30px; border-radius: 8px; border: 1px solid #ddd;">
+              <h2 style="color: #2c3e50; margin-top: 0;">Thank You For Your Purchase! 🎉</h2>
+
+              <p>Your token purchase has been successfully processed and your account has been credited.</p>
+
+              <div style="background: #f9f9f9; padding: 20px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #27ae60;">
+                <h3 style="color: #2c3e50; margin-top: 0;">Purchase Details</h3>
+                <table style="width: 100%; border-collapse: collapse;">
+                  <tr>
+                    <td style="padding: 8px 0; color: #666;"><strong>Tokens Purchased:</strong></td>
+                    <td style="padding: 8px 0; text-align: right; font-size: 1.2em; color: #27ae60; font-weight: bold;">${tokens} tokens</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 8px 0; color: #666;"><strong>Amount Paid:</strong></td>
+                    <td style="padding: 8px 0; text-align: right; font-size: 1.2em; font-weight: bold;">$${amount.toFixed(2)}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 8px 0; color: #666;"><strong>Date:</strong></td>
+                    <td style="padding: 8px 0; text-align: right;">${formattedDate}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 8px 0; color: #666;"><strong>Transaction ID:</strong></td>
+                    <td style="padding: 8px 0; text-align: right; font-size: 0.9em; font-family: monospace; word-break: break-all;">${paymentIntentId}</td>
+                  </tr>
+                </table>
+              </div>
+
+              <div style="background: #e8f5e9; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #27ae60;">
+                <p style="margin: 0; color: #2c3e50;">
+                  <strong>💡 Did you know?</strong> You can create ${Math.floor(tokens / 5)} post${Math.floor(tokens / 5) !== 1 ? 's' : ''} with ${tokens} tokens. Plus, you'll get 1 free post for every 5 posts you purchase!
+                </p>
+              </div>
+
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${tokensUrl}"
+                   style="display: inline-block; background: #27ae60; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; margin-right: 10px;">
+                  View My Tokens
+                </a>
+                <a href="${dashboardUrl}"
+                   style="display: inline-block; background: #3498db; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                  Go to Dashboard
+                </a>
+              </div>
+
+              <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
+
+              <div style="background: #fff3cd; padding: 15px; border-radius: 5px; border-left: 4px solid #ffc107;">
+                <p style="margin: 0; color: #856404; font-size: 14px;">
+                  <strong>Receipt:</strong> This email serves as your receipt for this transaction. Please save this email for your records.
+                </p>
+              </div>
+
+              <p style="font-size: 14px; color: #666; margin-top: 20px;">
+                If you have any questions about this purchase, please contact our support team or visit your <a href="${tokensUrl}" style="color: #3498db;">token transactions page</a>.
+              </p>
+            </div>
+
+            <div style="text-align: center; padding: 20px; color: #999; font-size: 12px;">
+              <p>© ${new Date().getFullYear()} builders.to. All rights reserved.</p>
+            </div>
+          </body>
+        </html>
+      `,
+      text: `
+        Thank You For Your Purchase! - builders.to
+
+        Your token purchase has been successfully processed and your account has been credited.
+
+        Purchase Details:
+        - Tokens Purchased: ${tokens} tokens
+        - Amount Paid: $${amount.toFixed(2)}
+        - Date: ${formattedDate}
+        - Transaction ID: ${paymentIntentId}
+
+        You can create ${Math.floor(tokens / 5)} post${Math.floor(tokens / 5) !== 1 ? 's' : ''} with ${tokens} tokens. Plus, you'll get 1 free post for every 5 posts you purchase!
+
+        View your tokens: ${tokensUrl}
+        Go to dashboard: ${dashboardUrl}
+
+        This email serves as your receipt for this transaction. Please save this email for your records.
+
+        If you have any questions about this purchase, please contact our support team.
+
+        © ${new Date().getFullYear()} builders.to. All rights reserved.
+      `
+    });
+
+    return { success: true, data };
+  } catch (error) {
+    console.error('Error sending purchase confirmation email:', error);
+    // Don't throw error, just log it since email is optional
+    return { success: false, error: error.message };
+  }
+};

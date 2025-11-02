@@ -204,6 +204,23 @@ const handleWebhookEvent = async (event) => {
         VALUES ($1, $2, $3, $4, $5)
       `, [userId, 'purchase', tokensToAdd, `Purchased ${tokensToAdd} tokens`, paymentIntent.id]);
       console.log(`[Webhook] Created transaction record for payment ${paymentIntent.id}`);
+
+      // Send purchase confirmation email
+      try {
+        const userResult = await db.query('SELECT email FROM users WHERE id = $1', [userId]);
+        const userEmail = userResult.rows[0]?.email;
+
+        if (userEmail) {
+          const { sendPurchaseConfirmationEmail } = await import('../utils/email.js');
+          const amountInDollars = tokensToAdd; // 1 token = $1
+          await sendPurchaseConfirmationEmail(userEmail, tokensToAdd, amountInDollars, paymentIntent.id);
+          console.log(`[Webhook] Purchase confirmation email sent to ${userEmail}`);
+        }
+      } catch (emailError) {
+        // Log email error but don't fail the token credit
+        console.error('[Webhook] Failed to send purchase confirmation email:', emailError);
+        logError('Webhook purchase confirmation email failed', emailError, { userId, paymentIntentId: paymentIntent.id });
+      }
     } else if (type === 'listing') {
       // Check if transaction already exists
       const existingTx = await db.query(
