@@ -62,15 +62,15 @@ export async function GET(request: NextRequest) {
       const upvotes = await prisma.upvote.findMany({
         where: {
           userId: session.user.id,
-          projectId: { in: projects.map((p) => p.id) },
+          projectId: { in: projects.map((p: { id: string }) => p.id) },
         },
         select: { projectId: true },
       });
-      userUpvotes = upvotes.map((u) => u.projectId);
+      userUpvotes = upvotes.map((u: { projectId: string }) => u.projectId);
     }
 
     return NextResponse.json({
-      projects: projects.map((project) => ({
+      projects: projects.map((project: (typeof projects)[number]) => ({
         ...project,
         hasUpvoted: userUpvotes.includes(project.id),
       })),
