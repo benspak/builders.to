@@ -12,8 +12,8 @@ ls -la src/lib/
 ls -la src/components/auth/
 ls -la src/components/projects/
 
-echo "📦 Installing dependencies..."
-npm ci
+echo "📦 Installing ALL dependencies (including devDependencies for build)..."
+npm ci --include=dev
 
 echo "🔧 Generating Prisma client..."
 npx prisma generate
