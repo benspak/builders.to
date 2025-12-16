@@ -120,6 +120,44 @@ src/
     └── utils.ts          # Utilities
 ```
 
+## Deployment on Render.com
+
+This project includes a `render.yaml` blueprint for easy deployment.
+
+### One-Click Deploy
+
+1. Push your code to GitHub
+2. Go to [Render Dashboard](https://dashboard.render.com)
+3. Click **New** → **Blueprint**
+4. Connect your GitHub repository
+5. Render will automatically detect `render.yaml` and create:
+   - A **Web Service** for the Next.js app
+   - A **PostgreSQL Database**
+
+### Post-Deployment Setup
+
+After deployment, configure these environment variables in the Render dashboard:
+
+1. **NEXTAUTH_URL**: Set to your Render app URL (e.g., `https://builders-to.onrender.com`)
+2. **DISCORD_CLIENT_ID** & **DISCORD_CLIENT_SECRET**: From Discord Developer Portal
+3. **TWITTER_CLIENT_ID** & **TWITTER_CLIENT_SECRET**: From Twitter Developer Portal
+
+**Important**: Update your OAuth callback URLs to use your production domain:
+- Discord: `https://your-app.onrender.com/api/auth/callback/discord`
+- Twitter: `https://your-app.onrender.com/api/auth/callback/twitter`
+
+### Manual Deployment
+
+If you prefer manual setup:
+
+```bash
+# Install Render CLI
+npm install -g render-cli
+
+# Deploy
+render blueprint launch
+```
+
 ## Community
 
 - 🐦 [X Community](https://x.com/i/communities/1943895831322439993)
