@@ -1,207 +1,134 @@
-# builders.to
+# Builders.to 🚀
 
-A marketplace for builders and founders to offer services, get hired, or sell businesses.
+A members-only project launchpad for builders. Share your work in progress, get feedback from the community, and find your first users.
+
+**Part of the [Builder community on X](https://x.com/i/communities/1943895831322439993)**
 
 ## Features
 
-- **User Profiles**: Complete profiles with name, location, about, achievements, skills, and more
-- **Listings**: Post in three categories:
-  - Jobs
-  - Services
-  - For Sale
-- **Token System**:
-  - Purchase tokens (1 token = $1)
-  - Use tokens to create listings (5 tokens per listing)
-  - Get 1 free post for every 5 posts you purchase
-- **Payment Options**:
-  - Direct payment: $5 per listing (traditional payment)
-  - Token payment: Use 5 tokens per listing
-  - $50 to feature/pin listings to the top
-- **Referral Program**:
-  - Generate your unique referral code
-  - Refer friends and earn 5 tokens (1 free post) when they set their username
-- **Filtering**: Filter by location/city and category
-- **Dashboard**: View all your listings, transactions, and token balance
+- 🔐 **Members-Only Access** - Sign in with Discord or X/Twitter
+- 📝 **Project Sharing** - Post your work at any stage (Idea → Building → Beta → Launched)
+- ⬆️ **Upvoting** - Support projects you love
+- 💬 **Comments** - Give and receive feedback
+- 🔍 **Discovery** - Browse, search, and filter projects
+- 📱 **Responsive** - Works beautifully on all devices
 
 ## Tech Stack
 
-### Backend
-- Node.js + Express
-- PostgreSQL database
-- JWT authentication
-- Stripe for payments
-
-### Frontend
-- Next.js 16 (App Router)
-- React 18
-- Lexical rich text editor
-- Stripe Elements for checkout
+- **Framework**: Next.js 14 (App Router)
+- **Language**: TypeScript
+- **Database**: PostgreSQL + Prisma ORM
+- **Authentication**: NextAuth.js v5 (Discord & Twitter OAuth)
+- **Styling**: Tailwind CSS
+- **Icons**: Lucide React
 
 ## Getting Started
 
 ### Prerequisites
+
 - Node.js 18+
-- Stripe account (for payments)
+- PostgreSQL database
+- Discord Developer Application
+- Twitter/X Developer Application
 
-### Installation
+### 1. Clone and Install
 
-1. **Clone the repository**
-   ```bash
-   git clone <your-repo-url>
-   cd builders.to
-   ```
-
-2. **Set up the backend**
-   ```bash
-   cd backend
-   npm install
-   ```
-
-3. **Set up the frontend**
-   ```bash
-   cd ../frontend
-   npm install
-   ```
-
-4. **Configure environment variables**
-
-   Backend `.env`:
-   ```env
-   PORT=5555
-   JWT_SECRET=your_super_secret_jwt_key
-   STRIPE_SECRET_KEY=sk_test_...
-   STRIPE_WEBHOOK_SECRET=whsec_...
-   DATABASE_URL=postgresql://localhost:5432/builders_dev
-   POSTGRES_DATABASE_URL=postgresql://localhost:5432/builders_dev
-   NODE_ENV=development
-   RESEND_API_KEY=re_...
-   RESEND_FROM_EMAIL=noreply@builders.to
-   FRONTEND_URL=http://localhost:3000
-   ```
-
-   Frontend `.env.local`:
-   ```env
-   NEXT_PUBLIC_API_URL=http://localhost:5555
-   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
-   ```
-
-   **Note**: Create a local PostgreSQL database before starting:
-   ```bash
-   createdb builders_dev
-   ```
-
-### Running the Application
-
-**Terminal 1 - Backend:**
 ```bash
-cd backend
+git clone <your-repo>
+cd builders.to
+npm install
+```
+
+### 2. Configure Environment Variables
+
+Copy the example environment file:
+
+```bash
+cp .env.example .env
+```
+
+Then fill in your values:
+
+```env
+# Database
+DATABASE_URL="postgresql://user:password@localhost:5432/builders_to?schema=public"
+
+# NextAuth
+NEXTAUTH_SECRET="generate-with-openssl-rand-base64-32"
+NEXTAUTH_URL="http://localhost:3000"
+
+# Discord OAuth (https://discord.com/developers/applications)
+DISCORD_CLIENT_ID=""
+DISCORD_CLIENT_SECRET=""
+
+# Twitter/X OAuth (https://developer.twitter.com/en/portal/dashboard)
+TWITTER_CLIENT_ID=""
+TWITTER_CLIENT_SECRET=""
+```
+
+### 3. Set Up Database
+
+```bash
+npx prisma db push
+```
+
+### 4. Run Development Server
+
+```bash
 npm run dev
 ```
 
-**Terminal 2 - Frontend:**
-```bash
-cd frontend
-npm run dev
+Open [http://localhost:3000](http://localhost:3000) to see the app.
+
+## OAuth Setup
+
+### Discord
+
+1. Go to [Discord Developer Portal](https://discord.com/developers/applications)
+2. Create a new application
+3. Go to OAuth2 → General
+4. Add redirect URL: `http://localhost:3000/api/auth/callback/discord`
+5. Copy Client ID and Client Secret to `.env`
+
+### Twitter/X
+
+1. Go to [Twitter Developer Portal](https://developer.twitter.com/en/portal/dashboard)
+2. Create a project and app
+3. Enable OAuth 2.0 with:
+   - Type: Web App
+   - Callback URL: `http://localhost:3000/api/auth/callback/twitter`
+4. Copy Client ID and Client Secret to `.env`
+
+## Project Structure
+
+```
+src/
+├── app/
+│   ├── (auth)/           # Auth pages (signin)
+│   ├── (protected)/      # Protected routes (dashboard, new project)
+│   ├── api/              # API routes
+│   ├── projects/         # Public project pages
+│   └── page.tsx          # Landing page
+├── components/
+│   ├── auth/             # Auth components
+│   ├── comments/         # Comment components
+│   ├── projects/         # Project components
+│   └── ui/               # UI components
+└── lib/
+    ├── auth.ts           # NextAuth config
+    ├── prisma.ts         # Prisma client
+    └── utils.ts          # Utilities
 ```
 
-The app will be available at http://localhost:3000. Make sure the backend is running on port 5555.
+## Community
 
-## API Endpoints
-
-### Authentication
-- `POST /api/auth/register` - Register new user
-- `POST /api/auth/login` - Login user
-
-### Profiles
-- `GET /api/profiles` - Get all profiles
-- `GET /api/profiles/me` - Get my profile
-- `GET /api/profiles/:id` - Get profile by ID
-- `POST /api/profiles` - Create or update profile
-
-### Listings
-- `GET /api/listings` - Get all listings
-- `GET /api/listings/:id` - Get listing by ID
-- `POST /api/listings` - Create listing (requires 5 tokens or direct payment)
-- `PUT /api/listings/:id` - Update listing
-- `DELETE /api/listings/:id` - Delete listing
-- `GET /api/listings/user/my-listings` - Get my listings
-
-### Payments
-- `POST /api/payments/create-listing-payment` - Create payment intent for listing ($5)
-- `POST /api/payments/create-featured-payment` - Create payment intent for featured listing ($50)
-- `POST /api/payments/webhook` - Stripe webhook endpoint (handles token purchases, listing payments, and featured payments)
-
-### Tokens
-- `GET /api/tokens/balance` - Get user's current token balance
-- `GET /api/tokens/transactions` - Get token transaction history (purchases, spent, rewards, refunds)
-- `POST /api/tokens/purchase` - Create payment intent for token purchase (1 token = $1, accepts 1-1000 tokens)
-
-### Referrals
-- `GET /api/referrals/code` - Get or generate user's referral code (auto-generates if missing)
-- `GET /api/referrals/stats` - Get referral statistics (total referrals, rewarded referrals)
-- `GET /api/referrals/verify/:code` - Verify if a referral code is valid (public endpoint, no auth required)
-
-### Dashboard
-- `GET /api/dashboard` - Get dashboard data (listings and transactions)
-
-## Database Schema
-
-### Users
-- id, email, password_hash, name, username, referral_code, referred_by, tokens, posts_purchased, is_admin, created_at, updated_at
-
-### Profiles
-- id, user_id, name, sub_heading, location, about, current_role, additional_details, key_achievements, philosophy, skills, links, created_at, updated_at
-
-### Listings
-- id, user_id, category, title, location, description, is_featured, payment_status, created_at, updated_at
-
-### Transactions
-- id, user_id, listing_id, type, amount, stripe_payment_intent_id, status, created_at
-
-### Token Transactions
-- id, user_id, type, amount, description, stripe_payment_intent_id, created_at
-
-### Referrals
-- id, referrer_id, referred_id, reward_given, created_at
-
-### Password Reset Tokens
-- id, user_id, token, expires_at, used, created_at
-
-## Deployment
-
-**Quick Deploy to Render**: The application includes `render.yaml` for automated deployment. See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) for complete instructions.
-
-### Automatic Deployment
-1. Push code to GitHub
-2. Connect repository to Render
-3. Render automatically provisions:
-   - PostgreSQL database
-   - Backend web service (serves both API and frontend)
-
-### Manual Configuration
-If needed, see detailed instructions in [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)
-
-## New Features
-
-### Token System
-Users can purchase tokens (1 token = $1) and use 5 tokens to create a listing. The system includes a "buy 5 get 1 free" promotion:
-- For every 5 posts you pay for (using tokens or direct payment), the 6th post is free
-- Tokens can be purchased in increments: 5, 10, 25, 50, or 100 tokens
-- View your token balance and transaction history on the Tokens page
-
-### Referral Program
-- Every user automatically gets a unique referral code
-- Share your referral link: `/register?ref=YOUR_CODE`
-- When someone signs up with your code and sets their username, you automatically receive 5 tokens (1 free post)
-- Track your referral statistics (total referrals, rewarded referrals) on the Referrals page
-
-## Stripe Setup
-
-1. Create a Stripe account at https://stripe.com
-2. Get your API keys from the dashboard
-3. Set up webhook endpoint at `https://your-backend-url/api/payments/webhook`
-4. Add the webhook secret to your environment variables
+- 🐦 [X Community](https://x.com/i/communities/1943895831322439993)
+- 💬 [Discord](https://discord.com/invite/G7nmswWkbn)
 
 ## License
 
 MIT
+
+---
+
+Built with ❤️ by the Builder community

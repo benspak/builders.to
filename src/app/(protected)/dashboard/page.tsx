@@ -1,0 +1,57 @@
+import { Suspense } from "react";
+import Link from "next/link";
+import { Plus, Loader2 } from "lucide-react";
+import { ProjectFilters } from "@/components/projects/project-filters";
+import { ProjectGrid } from "@/components/projects/project-grid";
+
+interface DashboardPageProps {
+  searchParams: Promise<{
+    sort?: string;
+    status?: string;
+    search?: string;
+  }>;
+}
+
+export default async function DashboardPage({ searchParams }: DashboardPageProps) {
+  const params = await searchParams;
+
+  return (
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-white">Projects</h1>
+          <p className="text-zinc-400 mt-1">
+            Discover what builders are working on
+          </p>
+        </div>
+        <Link href="/projects/new" className="btn-primary">
+          <Plus className="h-4 w-4" />
+          Share Project
+        </Link>
+      </div>
+
+      {/* Filters */}
+      <div className="mb-8">
+        <Suspense fallback={<div className="h-[88px]" />}>
+          <ProjectFilters />
+        </Suspense>
+      </div>
+
+      {/* Projects Grid */}
+      <Suspense
+        fallback={
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
+          </div>
+        }
+      >
+        <ProjectGrid
+          sort={params.sort}
+          status={params.status}
+          search={params.search}
+        />
+      </Suspense>
+    </div>
+  );
+}

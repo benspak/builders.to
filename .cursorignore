@@ -1,7 +1,0 @@
-node_modules/
-dist/
-build/
-*.db
-*.db-journal
-.DS_Store
-Thumbs.db
