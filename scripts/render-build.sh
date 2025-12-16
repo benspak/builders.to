@@ -4,8 +4,16 @@
 
 set -e
 
+echo "🧹 Clearing build cache..."
+rm -rf .next node_modules/.cache
+
+echo "📂 Verifying source files exist..."
+ls -la src/lib/
+ls -la src/components/auth/
+ls -la src/components/projects/
+
 echo "📦 Installing dependencies..."
-npm install
+npm ci
 
 echo "🔧 Generating Prisma client..."
 npx prisma generate
