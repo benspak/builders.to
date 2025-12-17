@@ -100,7 +100,22 @@ export async function PATCH(
     }
 
     const body = await request.json();
-    const { title, tagline, description, url, githubUrl, imageUrl, status } = body;
+    const { title, tagline, description, url, githubUrl, imageUrl, status, companyId } = body;
+
+    // Verify company ownership if companyId is provided
+    if (companyId) {
+      const company = await prisma.company.findUnique({
+        where: { id: companyId },
+        select: { userId: true },
+      });
+
+      if (!company || company.userId !== session.user.id) {
+        return NextResponse.json(
+          { error: "Invalid company selection" },
+          { status: 400 }
+        );
+      }
+    }
 
     const project = await prisma.project.update({
       where: { id },
@@ -112,6 +127,7 @@ export async function PATCH(
         ...(githubUrl !== undefined && { githubUrl }),
         ...(imageUrl !== undefined && { imageUrl }),
         ...(status && { status }),
+        ...(companyId !== undefined && { companyId: companyId || null }),
       },
       include: {
         user: {

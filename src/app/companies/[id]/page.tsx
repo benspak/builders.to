@@ -1,0 +1,250 @@
+import { notFound } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
+import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { ProjectCard } from "@/components/projects/project-card";
+import { DeleteCompanyButton } from "@/components/companies/delete-company-button";
+import {
+  cn,
+  formatRelativeTime,
+  getCategoryLabel,
+  getCategoryColor,
+  getSizeLabel,
+} from "@/lib/utils";
+import {
+  ArrowLeft,
+  ExternalLink,
+  Building2,
+  MapPin,
+  Users,
+  Calendar,
+  Pencil,
+  Briefcase,
+} from "lucide-react";
+
+interface CompanyPageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default async function CompanyPage({ params }: CompanyPageProps) {
+  const { id } = await params;
+  const session = await auth();
+
+  const company = await prisma.company.findUnique({
+    where: { id },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          image: true,
+        },
+      },
+      projects: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+            },
+          },
+          _count: {
+            select: {
+              upvotes: true,
+              comments: true,
+            },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+      },
+      _count: {
+        select: {
+          projects: true,
+        },
+      },
+    },
+  });
+
+  if (!company) {
+    notFound();
+  }
+
+  // Get user upvotes for projects
+  let userUpvotes: string[] = [];
+  if (session?.user?.id) {
+    const upvotes = await prisma.upvote.findMany({
+      where: {
+        userId: session.user.id,
+        projectId: { in: company.projects.map((p) => p.id) },
+      },
+      select: { projectId: true },
+    });
+    userUpvotes = upvotes.map((u) => u.projectId);
+  }
+
+  const isOwner = session?.user?.id === company.userId;
+
+  return (
+    <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
+      <Link
+        href="/companies"
+        className="inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors mb-8"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Back to companies
+      </Link>
+
+      <article className="space-y-8">
+        {/* Header */}
+        <header className="card p-8">
+          <div className="flex flex-col sm:flex-row gap-6">
+            {/* Logo */}
+            <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-2xl bg-zinc-800/50 border border-white/10">
+              {company.logo ? (
+                <Image
+                  src={company.logo}
+                  alt={company.name}
+                  fill
+                  className="object-cover"
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center">
+                  <Building2 className="h-12 w-12 text-zinc-600" />
+                </div>
+              )}
+            </div>
+
+            {/* Info */}
+            <div className="flex-1">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h1 className="text-3xl font-bold text-white">{company.name}</h1>
+                  {company.location && (
+                    <div className="mt-2 flex items-center gap-2 text-zinc-400">
+                      <MapPin className="h-4 w-4" />
+                      <span>{company.location}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Owner Actions */}
+                {isOwner && (
+                  <div className="flex items-center gap-2">
+                    <Link
+                      href={`/companies/${company.id}/edit`}
+                      className="p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-white/5 transition-colors"
+                      title="Edit company"
+                    >
+                      <Pencil className="h-5 w-5" />
+                    </Link>
+                    <DeleteCompanyButton companyId={company.id} />
+                  </div>
+                )}
+              </div>
+
+              {/* Category badge */}
+              <div className="mt-4">
+                <span
+                  className={cn(
+                    "inline-flex items-center rounded-full px-3 py-1 text-sm font-medium border",
+                    getCategoryColor(company.category)
+                  )}
+                >
+                  {getCategoryLabel(company.category)}
+                </span>
+              </div>
+
+              {/* Meta info */}
+              <div className="mt-4 flex flex-wrap gap-4 text-sm text-zinc-400">
+                {company.size && (
+                  <div className="flex items-center gap-2">
+                    <Users className="h-4 w-4" />
+                    <span>{getSizeLabel(company.size)}</span>
+                  </div>
+                )}
+                {company.yearFounded && (
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
+                    <span>Founded {company.yearFounded}</span>
+                  </div>
+                )}
+                <div className="flex items-center gap-2">
+                  <Briefcase className="h-4 w-4" />
+                  <span>{company._count.projects} project{company._count.projects !== 1 ? "s" : ""}</span>
+                </div>
+              </div>
+
+              {/* Website link */}
+              {company.website && (
+                <div className="mt-6">
+                  <a
+                    href={company.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-lg bg-orange-500 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-600 transition-colors"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    Visit Website
+                  </a>
+                </div>
+              )}
+            </div>
+          </div>
+        </header>
+
+        {/* About */}
+        {company.about && (
+          <section className="card p-8">
+            <h2 className="text-xl font-semibold text-white mb-4">About</h2>
+            <div className="prose prose-invert prose-zinc max-w-none">
+              <p className="text-zinc-300 whitespace-pre-wrap">{company.about}</p>
+            </div>
+          </section>
+        )}
+
+        {/* Projects */}
+        <section className="card p-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold text-white">
+              Projects ({company._count.projects})
+            </h2>
+            {isOwner && (
+              <Link
+                href={`/projects/new?company=${company.id}`}
+                className="btn-secondary text-sm"
+              >
+                Add Project
+              </Link>
+            )}
+          </div>
+
+          {company.projects.length > 0 ? (
+            <div className="grid gap-6 sm:grid-cols-2">
+              {company.projects.map((project) => (
+                <ProjectCard
+                  key={project.id}
+                  project={{
+                    ...project,
+                    createdAt: project.createdAt.toISOString(),
+                    hasUpvoted: userUpvotes.includes(project.id),
+                  }}
+                />
+              ))}
+            </div>
+          ) : (
+            <p className="text-zinc-500 text-center py-8">
+              No projects yet. {isOwner && "Add your first project!"}
+            </p>
+          )}
+        </section>
+
+        {/* Footer info */}
+        <div className="text-sm text-zinc-500 text-center">
+          Added {formatRelativeTime(company.createdAt)}
+        </div>
+      </article>
+    </div>
+  );
+}

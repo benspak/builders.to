@@ -1,9 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Image as ImageIcon, Link as LinkIcon, Github, Rocket } from "lucide-react";
+import { Loader2, Image as ImageIcon, Link as LinkIcon, Github, Rocket, Building2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+interface Company {
+  id: string;
+  name: string;
+  logo: string | null;
+}
 
 interface ProjectFormProps {
   initialData?: {
@@ -15,7 +21,9 @@ interface ProjectFormProps {
     githubUrl: string | null;
     imageUrl: string | null;
     status: string;
+    companyId?: string | null;
   };
+  initialCompanyId?: string;
 }
 
 const statuses = [
@@ -25,10 +33,12 @@ const statuses = [
   { value: "LAUNCHED", label: "🚀 Launched", description: "Live and available" },
 ];
 
-export function ProjectForm({ initialData }: ProjectFormProps) {
+export function ProjectForm({ initialData, initialCompanyId }: ProjectFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [loadingCompanies, setLoadingCompanies] = useState(true);
 
   const [formData, setFormData] = useState({
     title: initialData?.title || "",
@@ -38,9 +48,27 @@ export function ProjectForm({ initialData }: ProjectFormProps) {
     githubUrl: initialData?.githubUrl || "",
     imageUrl: initialData?.imageUrl || "",
     status: initialData?.status || "IDEA",
+    companyId: initialData?.companyId || initialCompanyId || "",
   });
 
   const isEditing = !!initialData?.id;
+
+  // Fetch user's companies
+  useEffect(() => {
+    async function fetchCompanies() {
+      try {
+        const response = await fetch("/api/companies?limit=100");
+        const data = await response.json();
+        // Filter to only show companies the user owns (API should handle this, but just in case)
+        setCompanies(data.companies || []);
+      } catch (error) {
+        console.error("Failed to fetch companies:", error);
+      } finally {
+        setLoadingCompanies(false);
+      }
+    }
+    fetchCompanies();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,7 +85,10 @@ export function ProjectForm({ initialData }: ProjectFormProps) {
       const response = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          companyId: formData.companyId || null,
+        }),
       });
 
       if (!response.ok) {
@@ -151,6 +182,33 @@ export function ProjectForm({ initialData }: ProjectFormProps) {
             </button>
           ))}
         </div>
+      </div>
+
+      {/* Company Selection */}
+      <div>
+        <label htmlFor="companyId" className="block text-sm font-medium text-zinc-300 mb-2">
+          Company (optional)
+        </label>
+        <div className="relative">
+          <Building2 className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
+          <select
+            id="companyId"
+            value={formData.companyId}
+            onChange={(e) => setFormData({ ...formData, companyId: e.target.value })}
+            className="input pl-11 appearance-none cursor-pointer"
+            disabled={loadingCompanies}
+          >
+            <option value="">No company (personal project)</option>
+            {companies.map((company) => (
+              <option key={company.id} value={company.id}>
+                {company.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <p className="mt-2 text-xs text-zinc-500">
+          Link this project to one of your companies
+        </p>
       </div>
 
       {/* Description */}

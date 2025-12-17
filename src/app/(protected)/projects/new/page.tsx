@@ -2,7 +2,16 @@ import { ProjectForm } from "@/components/projects/project-form";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
-export default function NewProjectPage() {
+interface NewProjectPageProps {
+  searchParams: Promise<{
+    company?: string;
+  }>;
+}
+
+export default async function NewProjectPage({ searchParams }: NewProjectPageProps) {
+  const params = await searchParams;
+  const companyId = params.company;
+
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6 lg:px-8">
       <Link
@@ -21,7 +30,7 @@ export default function NewProjectPage() {
           </p>
         </div>
 
-        <ProjectForm />
+        <ProjectForm initialCompanyId={companyId} />
       </div>
     </div>
   );

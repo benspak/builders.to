@@ -21,12 +21,18 @@ export function Navbar() {
         </Link>
 
         <div className="flex items-center gap-4">
-          {/* Dashboard link is always visible since it's public */}
+          {/* Navigation links */}
           <Link
             href="/dashboard"
             className="hidden text-sm font-medium text-zinc-400 hover:text-white transition-colors sm:block"
           >
             Projects
+          </Link>
+          <Link
+            href="/companies"
+            className="hidden text-sm font-medium text-zinc-400 hover:text-white transition-colors sm:block"
+          >
+            Companies
           </Link>
 
           {session ? (

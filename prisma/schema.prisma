@@ -57,11 +57,12 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  accounts Account[]
-  sessions Session[]
-  projects Project[]
-  upvotes  Upvote[]
-  comments Comment[]
+  accounts  Account[]
+  sessions  Session[]
+  projects  Project[]
+  upvotes   Upvote[]
+  comments  Comment[]
+  companies Company[]
 }
 
 model Project {
@@ -76,14 +77,17 @@ model Project {
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyId String?
+  company   Company? @relation(fields: [companyId], references: [id], onDelete: SetNull)
 
   upvotes  Upvote[]
   comments Comment[]
 
   @@index([userId])
   @@index([createdAt])
+  @@index([companyId])
 }
 
 model Upvote {
@@ -121,4 +125,47 @@ enum ProjectStatus {
   BUILDING
   BETA
   LAUNCHED
+}
+
+enum CompanyCategory {
+  SAAS
+  AGENCY
+  FINTECH
+  ECOMMERCE
+  HEALTHTECH
+  EDTECH
+  AI_ML
+  DEVTOOLS
+  MEDIA
+  MARKETPLACE
+  OTHER
+}
+
+enum CompanySize {
+  SIZE_1_10
+  SIZE_11_50
+  SIZE_51_200
+  SIZE_201_500
+  SIZE_500_PLUS
+}
+
+model Company {
+  id          String          @id @default(cuid())
+  name        String
+  logo        String?
+  location    String?
+  category    CompanyCategory @default(OTHER)
+  about       String?         @db.Text
+  website     String?
+  size        CompanySize?
+  yearFounded Int?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  userId   String
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projects Project[]
+
+  @@index([userId])
+  @@index([category])
 }

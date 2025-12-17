@@ -42,7 +42,8 @@ export function Footer() {
         </div>
 
         <div className="mt-8 text-center text-sm text-zinc-600">
-          © {new Date().getFullYear()} Builders.to — Built with ❤️ by the community
+          © {new Date().getFullYear()} Builders.to — Built with ❤️ by the {""}
+          <Link href="https://popvia.com" target="_blank" rel="noopener noreferrer" className="text-orange-500 hover:text-orange-400">PopVia</Link>
         </div>
       </div>
     </footer>

@@ -169,4 +169,4 @@ MIT
 
 ---
 
-Built with ❤️ by the Builder community
+Built with ❤️ by the PopVia community
