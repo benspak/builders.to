@@ -3,7 +3,9 @@ import { NextResponse } from "next/server";
 
 export default auth((req) => {
   const isLoggedIn = !!req.auth;
-  const isProtectedRoute = req.nextUrl.pathname.startsWith("/dashboard") ||
+  // Only protect project creation and editing routes
+  // Dashboard is now public for viewing
+  const isProtectedRoute =
     req.nextUrl.pathname.startsWith("/projects/new") ||
     req.nextUrl.pathname.match(/^\/projects\/[^/]+\/edit$/);
 

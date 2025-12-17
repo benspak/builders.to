@@ -58,7 +58,7 @@ export default async function SignInPage() {
                 rel="noopener noreferrer"
                 className="text-orange-400 hover:text-orange-300"
               >
-                Builder community on X
+                Builders.to community on X
               </a>
             </p>
           </div>

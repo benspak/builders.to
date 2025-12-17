@@ -20,7 +20,7 @@ export default async function HomePage() {
             {/* Badge */}
             <div className="inline-flex items-center gap-2 rounded-full bg-orange-500/10 border border-orange-500/20 px-4 py-2 text-sm text-orange-400 mb-8 animate-slide-up opacity-0">
               <Zap className="h-4 w-4" />
-              <span>Part of the Builder community on X</span>
+              <span>Part of the Builders.to community on X</span>
             </div>
 
             {/* Headline */}
@@ -37,42 +37,39 @@ export default async function HomePage() {
 
             {/* CTA Buttons */}
             <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row animate-slide-up opacity-0 stagger-3">
+              <Link
+                href="/dashboard"
+                className="btn-primary text-lg"
+              >
+                Browse Projects
+                <ArrowRight className="h-5 w-5" />
+              </Link>
               {session ? (
                 <Link
-                  href="/dashboard"
-                  className="btn-primary text-lg"
+                  href="/projects/new"
+                  className="btn-secondary text-lg"
                 >
-                  Go to Dashboard
-                  <ArrowRight className="h-5 w-5" />
+                  Share Project
                 </Link>
               ) : (
                 <Link
                   href="/signin"
-                  className="btn-primary text-lg"
+                  className="btn-secondary text-lg"
                 >
-                  Join the Builders
-                  <ArrowRight className="h-5 w-5" />
+                  Sign in to Share
                 </Link>
               )}
-              <a
-                href="https://discord.com/invite/G7nmswWkbn"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-secondary text-lg"
-              >
-                Join Discord
-              </a>
             </div>
 
             {/* Social proof */}
             <div className="mt-16 flex items-center justify-center gap-8 text-zinc-500 animate-slide-up opacity-0 stagger-4">
               <div className="flex items-center gap-2">
                 <Users className="h-5 w-5 text-orange-500" />
-                <span>100+ Builders</span>
+                <span>Builders</span>
               </div>
               <div className="flex items-center gap-2">
                 <Rocket className="h-5 w-5 text-orange-500" />
-                <span>50+ Projects</span>
+                <span>Projects</span>
               </div>
               <div className="flex items-center gap-2">
                 <Star className="h-5 w-5 text-orange-500" />
@@ -195,17 +192,21 @@ export default async function HomePage() {
             <p className="text-lg text-zinc-400 mb-8">
               Join hundreds of builders shipping products and growing together.
             </p>
-            {session ? (
-              <Link href="/projects/new" className="btn-primary text-lg">
-                Share Your Project
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Link href="/dashboard" className="btn-primary text-lg">
+                Browse Projects
                 <ArrowRight className="h-5 w-5" />
               </Link>
-            ) : (
-              <Link href="/signin" className="btn-primary text-lg">
-                Get Started
-                <ArrowRight className="h-5 w-5" />
-              </Link>
-            )}
+              {session ? (
+                <Link href="/projects/new" className="btn-secondary text-lg">
+                  Share Your Project
+                </Link>
+              ) : (
+                <Link href="/signin" className="btn-secondary text-lg">
+                  Sign in to Share
+                </Link>
+              )}
+            </div>
           </div>
         </div>
       </section>

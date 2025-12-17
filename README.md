@@ -2,7 +2,7 @@
 
 A members-only project launchpad for builders. Share your work in progress, get feedback from the community, and find your first users.
 
-**Part of the [Builder community on X](https://x.com/i/communities/1943895831322439993)**
+**Part of the [Builders.to community on X](https://x.com/i/communities/1943895831322439993)**
 
 ## Features
 

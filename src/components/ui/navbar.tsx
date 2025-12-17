@@ -21,14 +21,16 @@ export function Navbar() {
         </Link>
 
         <div className="flex items-center gap-4">
+          {/* Dashboard link is always visible since it's public */}
+          <Link
+            href="/dashboard"
+            className="hidden text-sm font-medium text-zinc-400 hover:text-white transition-colors sm:block"
+          >
+            Projects
+          </Link>
+
           {session ? (
             <>
-              <Link
-                href="/dashboard"
-                className="hidden text-sm font-medium text-zinc-400 hover:text-white transition-colors sm:block"
-              >
-                Dashboard
-              </Link>
               <Link
                 href="/projects/new"
                 className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 px-4 py-2 text-sm font-semibold text-white transition-all hover:from-orange-600 hover:to-orange-700 hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-orange-500/25"

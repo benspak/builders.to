@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Plus, Loader2 } from "lucide-react";
 import { ProjectFilters } from "@/components/projects/project-filters";
 import { ProjectGrid } from "@/components/projects/project-grid";
+import { auth } from "@/lib/auth";
 
 interface DashboardPageProps {
   searchParams: Promise<{
@@ -14,6 +15,7 @@ interface DashboardPageProps {
 
 export default async function DashboardPage({ searchParams }: DashboardPageProps) {
   const params = await searchParams;
+  const session = await auth();
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -25,10 +27,17 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             Discover what builders are working on
           </p>
         </div>
-        <Link href="/projects/new" className="btn-primary">
-          <Plus className="h-4 w-4" />
-          Share Project
-        </Link>
+        {session ? (
+          <Link href="/projects/new" className="btn-primary">
+            <Plus className="h-4 w-4" />
+            Share Project
+          </Link>
+        ) : (
+          <Link href="/signin?callbackUrl=/projects/new" className="btn-primary">
+            <Plus className="h-4 w-4" />
+            Sign in to Share
+          </Link>
+        )}
       </div>
 
       {/* Filters */}
