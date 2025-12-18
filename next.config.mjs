@@ -24,6 +24,15 @@ const nextConfig = {
       },
     ],
   },
+  // Rewrite legacy /uploads/* paths to the new API file serving route
+  async rewrites() {
+    return [
+      {
+        source: '/uploads/:path*',
+        destination: '/api/files/:path*',
+      },
+    ];
+  },
 };
 
 export default nextConfig;

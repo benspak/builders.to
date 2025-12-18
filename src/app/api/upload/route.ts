@@ -13,7 +13,14 @@ const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
 
 // Valid upload types
 const VALID_TYPES = ["projects", "companies"] as const;
-type UploadType = typeof VALID_TYPES[number];
+type UploadType = (typeof VALID_TYPES)[number];
+
+// Get the upload directory - uses env var in production, falls back to public/uploads locally
+function getUploadDir(): string {
+  return (
+    process.env.UPLOAD_DIR || path.join(process.cwd(), "public", "uploads")
+  );
+}
 
 // POST /api/upload - Upload an image
 export async function POST(request: NextRequest) {
@@ -21,10 +28,7 @@ export async function POST(request: NextRequest) {
     const session = await auth();
 
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const formData = await request.formData();
@@ -32,10 +36,7 @@ export async function POST(request: NextRequest) {
     const type = (formData.get("type") as UploadType) || "projects";
 
     if (!file) {
-      return NextResponse.json(
-        { error: "No file provided" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
     // Validate upload type
@@ -66,12 +67,18 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    const hash = crypto.createHash("md5").update(buffer).digest("hex").slice(0, 8);
+    const hash = crypto
+      .createHash("md5")
+      .update(buffer)
+      .digest("hex")
+      .slice(0, 8);
     const ext = file.name.split(".").pop() || "jpg";
     const filename = `${Date.now()}-${hash}.${ext}`;
 
-    // Ensure upload directory exists
-    const uploadDir = path.join(process.cwd(), "public", "uploads", type);
+    // Ensure upload directory exists (use persistent storage in production)
+    const baseUploadDir = getUploadDir();
+    const uploadDir = path.join(baseUploadDir, type);
+
     if (!existsSync(uploadDir)) {
       await mkdir(uploadDir, { recursive: true });
     }
@@ -80,8 +87,9 @@ export async function POST(request: NextRequest) {
     const filePath = path.join(uploadDir, filename);
     await writeFile(filePath, buffer);
 
-    // Return the public URL
-    const url = `/uploads/${type}/${filename}`;
+    // Return the API URL for serving the file
+    // This works both locally and in production with persistent storage
+    const url = `/api/files/${type}/${filename}`;
 
     return NextResponse.json({ url }, { status: 201 });
   } catch (error) {
