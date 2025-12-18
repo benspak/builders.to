@@ -21,6 +21,9 @@ npx prisma generate
 echo "🗄️ Running database migrations..."
 npx prisma db push --accept-data-loss
 
+echo "🔄 Running slug migration for existing projects..."
+node scripts/migrate-slugs.mjs
+
 echo "🏗️ Building Next.js application..."
 npm run build
 
