@@ -9,7 +9,7 @@ import { UpvoteButton } from "./upvote-button";
 interface ProjectCardProps {
   project: {
     id: string;
-    slug: string;
+    slug: string | null;
     title: string;
     tagline: string;
     url?: string | null;
@@ -31,6 +31,8 @@ interface ProjectCardProps {
 }
 
 export function ProjectCard({ project }: ProjectCardProps) {
+  const projectUrl = `/projects/${project.slug || project.id}`;
+
   return (
     <div className="card card-hover group relative flex flex-col overflow-hidden">
       {/* Image */}
@@ -51,7 +53,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
             <Link
-              href={`/projects/${project.slug}`}
+              href={projectUrl}
               className="block group/title"
             >
               <h3 className="text-lg font-semibold text-white truncate group-hover/title:text-orange-400 transition-colors">
@@ -85,7 +87,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
         <div className="mt-auto pt-4 flex items-center justify-between border-t border-white/5">
           {/* Author */}
           <Link
-            href={`/projects/${project.slug}`}
+            href={projectUrl}
             className="flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors"
           >
             {project.user.image ? (
@@ -107,7 +109,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
           {/* Stats & Links */}
           <div className="flex items-center gap-3">
             <Link
-              href={`/projects/${project.slug}#comments`}
+              href={`${projectUrl}#comments`}
               className="flex items-center gap-1 text-sm text-zinc-500 hover:text-white transition-colors"
             >
               <MessageSquare className="h-4 w-4" />

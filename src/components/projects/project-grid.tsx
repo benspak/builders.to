@@ -6,7 +6,7 @@ import { Loader2 } from "lucide-react";
 
 interface Project {
   id: string;
-  slug: string;
+  slug: string | null;
   title: string;
   tagline: string;
   url: string | null;
