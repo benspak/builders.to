@@ -9,7 +9,7 @@ services:
     region: oregon # or: ohio, frankfurt, singapore
     plan: starter # free, starter, standard, pro
     buildCommand: chmod +x ./scripts/render-build.sh && ./scripts/render-build.sh
-    startCommand: npm run start
+    startCommand: chmod +x ./scripts/render-start.sh && ./scripts/render-start.sh
     healthCheckPath: /
     # Persistent disk for user uploads
     disk:

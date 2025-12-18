@@ -24,15 +24,6 @@ npx prisma db push --accept-data-loss
 echo "🔄 Running slug migration for existing projects..."
 node scripts/migrate-slugs.mjs
 
-echo "📁 Ensuring upload directories exist on persistent disk..."
-if [ -n "$UPLOAD_DIR" ]; then
-  mkdir -p "$UPLOAD_DIR/projects"
-  mkdir -p "$UPLOAD_DIR/companies"
-  echo "  Created directories under $UPLOAD_DIR"
-else
-  echo "  UPLOAD_DIR not set, skipping persistent storage setup"
-fi
-
 echo "🏗️ Building Next.js application..."
 npm run build
 
