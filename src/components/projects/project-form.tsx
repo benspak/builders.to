@@ -21,7 +21,7 @@ interface GalleryImage {
 interface ProjectFormProps {
   initialData?: {
     id: string;
-    slug: string;
+    slug: string | null;
     title: string;
     tagline: string;
     description: string | null;
