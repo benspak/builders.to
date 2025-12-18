@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Loader2,
-  Image as ImageIcon,
   Link as LinkIcon,
   Building2,
   MapPin,
@@ -12,6 +11,7 @@ import {
   Calendar,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ImageUpload } from "@/components/ui/image-upload";
 
 interface CompanyFormProps {
   initialData?: {
@@ -137,20 +137,18 @@ export function CompanyForm({ initialData }: CompanyFormProps) {
         </p>
       </div>
 
-      {/* Logo URL */}
+      {/* Logo Upload */}
       <div>
-        <label htmlFor="logo" className="block text-sm font-medium text-zinc-300 mb-2">
-          Logo URL
+        <label className="block text-sm font-medium text-zinc-300 mb-3">
+          Company Logo
         </label>
-        <div className="relative">
-          <ImageIcon className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
-          <input
-            id="logo"
-            type="url"
-            placeholder="https://example.com/logo.png"
+        <div className="max-w-[200px]">
+          <ImageUpload
             value={formData.logo}
-            onChange={(e) => setFormData({ ...formData, logo: e.target.value })}
-            className="input pl-11"
+            onChange={(url) => setFormData({ ...formData, logo: url })}
+            placeholder="Upload logo"
+            aspectRatio="square"
+            uploadType="companies"
           />
         </div>
         <p className="mt-2 text-xs text-zinc-500">

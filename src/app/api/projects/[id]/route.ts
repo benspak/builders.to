@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { generateSlug } from "@/lib/utils";
 
 // GET /api/projects/[id] - Get a single project
 export async function GET(
@@ -100,7 +101,25 @@ export async function PATCH(
     }
 
     const body = await request.json();
-    const { title, tagline, description, url, githubUrl, imageUrl, status, companyId } = body;
+    const { title, tagline, description, url, githubUrl, imageUrl, status, companyId, slug } = body;
+
+    // Validate slug if provided
+    if (slug !== undefined && slug !== "") {
+      const normalizedSlug = generateSlug(slug);
+      const existingProject = await prisma.project.findFirst({
+        where: {
+          slug: normalizedSlug,
+          NOT: { id },
+        },
+      });
+
+      if (existingProject) {
+        return NextResponse.json(
+          { error: "This URL slug is already taken. Please choose a different one." },
+          { status: 400 }
+        );
+      }
+    }
 
     // Verify company ownership if companyId is provided
     if (companyId) {
@@ -122,6 +141,7 @@ export async function PATCH(
       data: {
         ...(title && { title }),
         ...(tagline && { tagline }),
+        ...(slug && { slug: generateSlug(slug) }),
         ...(description !== undefined && { description }),
         ...(url !== undefined && { url }),
         ...(githubUrl !== undefined && { githubUrl }),

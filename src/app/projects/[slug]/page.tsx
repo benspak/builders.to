@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { CommentList } from "@/components/comments/comment-list";
 import { UpvoteButton } from "@/components/projects/upvote-button";
+import { ImageGallery } from "@/components/ui/image-gallery";
 import { cn, formatRelativeTime, getStatusColor, getStatusLabel } from "@/lib/utils";
 import {
   ArrowLeft,
@@ -12,20 +13,22 @@ import {
   Github,
   User,
   Calendar,
-  Pencil
+  Pencil,
+  Images
 } from "lucide-react";
 import { DeleteProjectButton } from "@/components/projects/delete-project-button";
+import ReactMarkdown from "react-markdown";
 
 interface ProjectPageProps {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
 }
 
 export default async function ProjectPage({ params }: ProjectPageProps) {
-  const { id } = await params;
+  const { slug } = await params;
   const session = await auth();
 
   const project = await prisma.project.findUnique({
-    where: { id },
+    where: { slug },
     include: {
       user: {
         select: {
@@ -33,6 +36,9 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
           name: true,
           image: true,
         },
+      },
+      images: {
+        orderBy: { order: "asc" },
       },
       _count: {
         select: {
@@ -54,7 +60,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
       where: {
         userId_projectId: {
           userId: session.user.id,
-          projectId: id,
+          projectId: project.id,
         },
       },
     });
@@ -112,7 +118,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                 {isOwner && (
                   <div className="flex items-center gap-2">
                     <Link
-                      href={`/projects/${project.id}/edit`}
+                      href={`/projects/${project.slug}/edit`}
                       className="p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-white/5 transition-colors"
                       title="Edit project"
                     >
@@ -192,9 +198,20 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
         {project.description && (
           <section className="card p-8">
             <h2 className="text-xl font-semibold text-white mb-4">About</h2>
-            <div className="prose prose-invert prose-zinc max-w-none">
-              <p className="text-zinc-300 whitespace-pre-wrap">{project.description}</p>
+            <div className="prose prose-invert prose-zinc max-w-none prose-headings:text-white prose-p:text-zinc-300 prose-strong:text-white prose-a:text-orange-400 hover:prose-a:text-orange-300 prose-code:text-orange-300 prose-code:bg-zinc-800 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-zinc-800/50 prose-pre:border prose-pre:border-zinc-700/50 prose-ul:text-zinc-300 prose-ol:text-zinc-300 prose-li:marker:text-zinc-500">
+              <ReactMarkdown>{project.description}</ReactMarkdown>
             </div>
+          </section>
+        )}
+
+        {/* Gallery */}
+        {project.images && project.images.length > 0 && (
+          <section className="card p-8">
+            <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
+              <Images className="h-5 w-5 text-zinc-400" />
+              Screenshots
+            </h2>
+            <ImageGallery images={project.images} />
           </section>
         )}
 

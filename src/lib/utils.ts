@@ -5,6 +5,28 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/**
+ * Generates a URL-friendly slug from a title string
+ */
+export function generateSlug(title: string): string {
+  return title
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, "") // Remove special characters
+    .replace(/\s+/g, "-") // Replace spaces with hyphens
+    .replace(/-+/g, "-") // Replace multiple hyphens with single
+    .replace(/^-|-$/g, ""); // Remove leading/trailing hyphens
+}
+
+/**
+ * Generates a unique slug by appending a random suffix if needed
+ */
+export function generateUniqueSlug(title: string): string {
+  const baseSlug = generateSlug(title);
+  const randomSuffix = Math.random().toString(36).substring(2, 6);
+  return `${baseSlug}-${randomSuffix}`;
+}
+
 export function formatRelativeTime(date: Date | string): string {
   const now = new Date();
   const then = new Date(date);

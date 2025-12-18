@@ -6,11 +6,11 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
 interface EditProjectPageProps {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
 }
 
 export default async function EditProjectPage({ params }: EditProjectPageProps) {
-  const { id } = await params;
+  const { slug } = await params;
   const session = await auth();
 
   if (!session?.user?.id) {
@@ -18,7 +18,12 @@ export default async function EditProjectPage({ params }: EditProjectPageProps) 
   }
 
   const project = await prisma.project.findUnique({
-    where: { id },
+    where: { slug },
+    include: {
+      images: {
+        orderBy: { order: "asc" },
+      },
+    },
   });
 
   if (!project) {
@@ -32,7 +37,7 @@ export default async function EditProjectPage({ params }: EditProjectPageProps) 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6 lg:px-8">
       <Link
-        href={`/projects/${id}`}
+        href={`/projects/${slug}`}
         className="inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors mb-8"
       >
         <ArrowLeft className="h-4 w-4" />

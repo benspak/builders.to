@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ProjectStatus } from "@prisma/client";
+import { generateSlug, generateUniqueSlug } from "@/lib/utils";
 
 // GET /api/projects - List all projects
 export async function GET(request: NextRequest) {
@@ -103,13 +104,33 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { title, tagline, description, url, githubUrl, imageUrl, status, companyId } = body;
+    const { title, tagline, description, url, githubUrl, imageUrl, status, companyId, slug } = body;
 
     if (!title || !tagline) {
       return NextResponse.json(
         { error: "Title and tagline are required" },
         { status: 400 }
       );
+    }
+
+    // Generate or validate slug
+    let finalSlug = slug ? generateSlug(slug) : generateSlug(title);
+
+    // Check if slug already exists
+    const existingProject = await prisma.project.findUnique({
+      where: { slug: finalSlug },
+    });
+
+    if (existingProject) {
+      // If user provided a custom slug that exists, return error
+      if (slug) {
+        return NextResponse.json(
+          { error: "This URL slug is already taken. Please choose a different one." },
+          { status: 400 }
+        );
+      }
+      // If auto-generated slug exists, add a random suffix
+      finalSlug = generateUniqueSlug(title);
     }
 
     // Verify company ownership if companyId is provided
@@ -130,6 +151,7 @@ export async function POST(request: NextRequest) {
     const project = await prisma.project.create({
       data: {
         title,
+        slug: finalSlug,
         tagline,
         description,
         url,

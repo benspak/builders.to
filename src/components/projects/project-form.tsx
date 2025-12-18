@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Image as ImageIcon, Link as LinkIcon, Github, Rocket, Building2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Loader2, Link as LinkIcon, Github, Rocket, Building2, Hash, Images } from "lucide-react";
+import { cn, generateSlug } from "@/lib/utils";
+import { ImageUpload, GalleryUpload } from "@/components/ui/image-upload";
 
 interface Company {
   id: string;
@@ -11,9 +12,16 @@ interface Company {
   logo: string | null;
 }
 
+interface GalleryImage {
+  id?: string;
+  url: string;
+  caption?: string | null;
+}
+
 interface ProjectFormProps {
   initialData?: {
     id: string;
+    slug: string;
     title: string;
     tagline: string;
     description: string | null;
@@ -22,6 +30,7 @@ interface ProjectFormProps {
     imageUrl: string | null;
     status: string;
     companyId?: string | null;
+    images?: GalleryImage[];
   };
   initialCompanyId?: string;
 }
@@ -42,6 +51,7 @@ export function ProjectForm({ initialData, initialCompanyId }: ProjectFormProps)
 
   const [formData, setFormData] = useState({
     title: initialData?.title || "",
+    slug: initialData?.slug || "",
     tagline: initialData?.tagline || "",
     description: initialData?.description || "",
     url: initialData?.url || "",
@@ -50,6 +60,26 @@ export function ProjectForm({ initialData, initialCompanyId }: ProjectFormProps)
     status: initialData?.status || "IDEA",
     companyId: initialData?.companyId || initialCompanyId || "",
   });
+  const [galleryImages, setGalleryImages] = useState<GalleryImage[]>(
+    initialData?.images || []
+  );
+  const [deletedImageIds, setDeletedImageIds] = useState<string[]>([]);
+  const [slugTouched, setSlugTouched] = useState(!!initialData?.slug);
+
+  // Handle gallery image changes with deletion tracking
+  const handleGalleryChange = (newImages: GalleryImage[]) => {
+    // Find deleted images (ones that had ids but are no longer in the array)
+    const currentIds = new Set(newImages.filter(img => img.id).map(img => img.id));
+    const deletedIds = galleryImages
+      .filter(img => img.id && !currentIds.has(img.id))
+      .map(img => img.id as string);
+
+    if (deletedIds.length > 0) {
+      setDeletedImageIds(prev => [...prev, ...deletedIds]);
+    }
+
+    setGalleryImages(newImages);
+  };
 
   const isEditing = !!initialData?.id;
 
@@ -88,6 +118,7 @@ export function ProjectForm({ initialData, initialCompanyId }: ProjectFormProps)
         body: JSON.stringify({
           ...formData,
           companyId: formData.companyId || null,
+          slug: formData.slug || undefined,
         }),
       });
 
@@ -97,7 +128,25 @@ export function ProjectForm({ initialData, initialCompanyId }: ProjectFormProps)
       }
 
       const project = await response.json();
-      router.push(`/projects/${project.id}`);
+
+      // Delete removed gallery images
+      for (const imageId of deletedImageIds) {
+        await fetch(`/api/projects/${project.id}/images?imageId=${imageId}`, {
+          method: "DELETE",
+        });
+      }
+
+      // Save gallery images if there are new ones (without id)
+      const newImages = galleryImages.filter((img) => !img.id);
+      if (newImages.length > 0) {
+        await fetch(`/api/projects/${project.id}/images`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ images: newImages }),
+        });
+      }
+
+      router.push(`/projects/${project.slug}`);
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
@@ -126,11 +175,46 @@ export function ProjectForm({ initialData, initialCompanyId }: ProjectFormProps)
           maxLength={100}
           placeholder="My Awesome Project"
           value={formData.title}
-          onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+          onChange={(e) => {
+            const newTitle = e.target.value;
+            setFormData({
+              ...formData,
+              title: newTitle,
+              // Auto-generate slug from title if user hasn't manually edited it
+              ...((!slugTouched && !isEditing) && { slug: generateSlug(newTitle) })
+            });
+          }}
           className="input"
         />
         <p className="mt-2 text-xs text-zinc-500">
           {formData.title.length}/100 characters
+        </p>
+      </div>
+
+      {/* Slug */}
+      <div>
+        <label htmlFor="slug" className="block text-sm font-medium text-zinc-300 mb-2">
+          URL Slug {!isEditing && <span className="text-red-400">*</span>}
+        </label>
+        <div className="relative">
+          <Hash className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
+          <input
+            id="slug"
+            type="text"
+            required={!isEditing}
+            maxLength={100}
+            placeholder="my-awesome-project"
+            value={formData.slug}
+            onChange={(e) => {
+              const newSlug = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "");
+              setSlugTouched(true);
+              setFormData({ ...formData, slug: newSlug });
+            }}
+            className="input pl-11"
+          />
+        </div>
+        <p className="mt-2 text-xs text-zinc-500">
+          Your project will be available at: /projects/{formData.slug || "your-slug"}
         </p>
       </div>
 
@@ -229,6 +313,40 @@ export function ProjectForm({ initialData, initialCompanyId }: ProjectFormProps)
         </p>
       </div>
 
+      {/* Cover Image */}
+      <div>
+        <label className="block text-sm font-medium text-zinc-300 mb-3">
+          Cover Screenshot
+        </label>
+        <ImageUpload
+          value={formData.imageUrl}
+          onChange={(url) => setFormData({ ...formData, imageUrl: url })}
+          placeholder="Upload a cover screenshot"
+          aspectRatio="video"
+        />
+        <p className="mt-2 text-xs text-zinc-500">
+          Recommended: 1200x630px (16:9 aspect ratio)
+        </p>
+      </div>
+
+      {/* Gallery Images */}
+      <div>
+        <label className="block text-sm font-medium text-zinc-300 mb-3">
+          <span className="flex items-center gap-2">
+            <Images className="h-4 w-4" />
+            Image Gallery
+          </span>
+        </label>
+        <GalleryUpload
+          images={galleryImages}
+          onChange={handleGalleryChange}
+          maxImages={10}
+        />
+        <p className="mt-2 text-xs text-zinc-500">
+          Add up to 10 additional screenshots to showcase your project
+        </p>
+      </div>
+
       {/* URLs Section */}
       <div className="space-y-4">
         <h3 className="text-sm font-medium text-zinc-300">Links (optional)</h3>
@@ -254,20 +372,6 @@ export function ProjectForm({ initialData, initialCompanyId }: ProjectFormProps)
             className="input pl-11"
           />
         </div>
-
-        <div className="relative">
-          <ImageIcon className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
-          <input
-            type="url"
-            placeholder="https://example.com/screenshot.png"
-            value={formData.imageUrl}
-            onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-            className="input pl-11"
-          />
-          <p className="mt-2 text-xs text-zinc-500">
-            Add a cover image URL (recommended: 1200x630px)
-          </p>
-        </div>
       </div>
 
       {/* Submit */}
@@ -281,7 +385,7 @@ export function ProjectForm({ initialData, initialCompanyId }: ProjectFormProps)
         </button>
         <button
           type="submit"
-          disabled={loading || !formData.title || !formData.tagline}
+          disabled={loading || !formData.title || !formData.tagline || (!isEditing && !formData.slug)}
           className="btn-primary"
         >
           {loading ? (
