@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { validateImageUrl } from "@/lib/utils";
 
 // GET /api/projects/[id]/images - Get all gallery images
 export async function GET(
@@ -70,6 +71,17 @@ export async function POST(
         { error: "Images array is required" },
         { status: 400 }
       );
+    }
+
+    // Validate all image URLs
+    for (const img of images) {
+      const urlError = validateImageUrl(img.url);
+      if (urlError) {
+        return NextResponse.json(
+          { error: urlError },
+          { status: 400 }
+        );
+      }
     }
 
     // Get current max order

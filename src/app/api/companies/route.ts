@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { CompanyCategory, CompanySize } from "@prisma/client";
+import { validateImageUrl } from "@/lib/utils";
 
 // GET /api/companies - List all companies
 export async function GET(request: NextRequest) {
@@ -86,6 +87,15 @@ export async function POST(request: NextRequest) {
     if (!name) {
       return NextResponse.json(
         { error: "Company name is required" },
+        { status: 400 }
+      );
+    }
+
+    // Validate logo URL
+    const logoError = validateImageUrl(logo);
+    if (logoError) {
+      return NextResponse.json(
+        { error: logoError },
         { status: 400 }
       );
     }

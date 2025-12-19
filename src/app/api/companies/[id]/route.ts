@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { validateImageUrl } from "@/lib/utils";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -104,6 +105,15 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     if (!name) {
       return NextResponse.json(
         { error: "Company name is required" },
+        { status: 400 }
+      );
+    }
+
+    // Validate logo URL
+    const logoError = validateImageUrl(logo);
+    if (logoError) {
+      return NextResponse.json(
+        { error: logoError },
         { status: 400 }
       );
     }

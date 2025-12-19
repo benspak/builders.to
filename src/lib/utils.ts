@@ -154,3 +154,52 @@ export function getSizeShortLabel(size: string | null): string {
   };
   return labels[size] || size;
 }
+
+// Domains that serve HTML pages instead of direct images
+const INVALID_IMAGE_DOMAINS = [
+  "drive.google.com",
+  "docs.google.com",
+  "dropbox.com",
+  "www.dropbox.com",
+  "onedrive.live.com",
+  "1drv.ms",
+  "icloud.com",
+  "box.com",
+  "app.box.com",
+];
+
+/**
+ * Validates that an image URL is a direct image link, not a sharing page.
+ * Returns an error message if invalid, or null if valid.
+ */
+export function validateImageUrl(url: string | null | undefined): string | null {
+  if (!url || url === "") {
+    return null; // Empty URLs are allowed (optional field)
+  }
+
+  // Allow internal upload paths
+  if (url.startsWith("/api/files/") || url.startsWith("/uploads/")) {
+    return null;
+  }
+
+  try {
+    const parsed = new URL(url);
+
+    // Check for known problematic domains
+    const hostname = parsed.hostname.toLowerCase();
+    for (const domain of INVALID_IMAGE_DOMAINS) {
+      if (hostname === domain || hostname.endsWith(`.${domain}`)) {
+        return `Please use a direct image URL. ${hostname} sharing links are not supported. Upload the image directly or use a direct image hosting service.`;
+      }
+    }
+
+    // Must be http or https
+    if (!["http:", "https:"].includes(parsed.protocol)) {
+      return "Image URL must use HTTP or HTTPS protocol.";
+    }
+
+    return null;
+  } catch {
+    return "Invalid image URL format.";
+  }
+}
