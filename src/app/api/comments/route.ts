@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { rateLimit, RATE_LIMITS, rateLimitResponse } from "@/lib/rate-limit";
 
 // GET /api/comments - Get comments for a project
 export async function GET(request: NextRequest) {
@@ -42,6 +43,12 @@ export async function GET(request: NextRequest) {
 // POST /api/comments - Create a new comment
 export async function POST(request: NextRequest) {
   try {
+    // Rate limit check
+    const { success, reset } = rateLimit(request, RATE_LIMITS.comment);
+    if (!success) {
+      return rateLimitResponse(reset);
+    }
+
     const session = await auth();
 
     if (!session?.user?.id) {
