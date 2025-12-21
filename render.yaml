@@ -31,10 +31,6 @@ services:
         sync: false # Set this manually after deployment
       - key: NEXTAUTH_SECRET
         generateValue: true
-      - key: DISCORD_CLIENT_ID
-        sync: false
-      - key: DISCORD_CLIENT_SECRET
-        sync: false
       - key: TWITTER_CLIENT_ID
         sync: false
       - key: TWITTER_CLIENT_SECRET

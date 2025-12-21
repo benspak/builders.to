@@ -39,11 +39,11 @@ export default async function SignInPage() {
 
             <p className="mt-8 text-center text-xs text-zinc-500">
               By signing in, you agree to our{" "}
-              <Link href="#" className="text-orange-400 hover:text-orange-300">
+              <Link href="/terms" className="text-orange-400 hover:text-orange-300">
                 Terms of Service
               </Link>{" "}
               and{" "}
-              <Link href="#" className="text-orange-400 hover:text-orange-300">
+              <Link href="/privacy" className="text-orange-400 hover:text-orange-300">
                 Privacy Policy
               </Link>
             </p>

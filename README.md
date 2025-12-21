@@ -6,7 +6,7 @@ A members-only project launchpad for builders. Share your work in progress, get 
 
 ## Features
 
-- 🔐 **Members-Only Access** - Sign in with Discord or X/Twitter
+- 🔐 **Members-Only Access** - Sign in with X/Twitter
 - 📝 **Project Sharing** - Post your work at any stage (Idea → Building → Beta → Launched)
 - ⬆️ **Upvoting** - Support projects you love
 - 💬 **Comments** - Give and receive feedback
@@ -18,7 +18,7 @@ A members-only project launchpad for builders. Share your work in progress, get 
 - **Framework**: Next.js 14 (App Router)
 - **Language**: TypeScript
 - **Database**: PostgreSQL + Prisma ORM
-- **Authentication**: NextAuth.js v5 (Discord & Twitter OAuth)
+- **Authentication**: NextAuth.js v5 (Twitter OAuth)
 - **Styling**: Tailwind CSS
 - **Icons**: Lucide React
 
@@ -28,7 +28,6 @@ A members-only project launchpad for builders. Share your work in progress, get 
 
 - Node.js 18+
 - PostgreSQL database
-- Discord Developer Application
 - Twitter/X Developer Application
 
 ### 1. Clone and Install
@@ -57,10 +56,6 @@ DATABASE_URL="postgresql://user:password@localhost:5432/builders_to?schema=publi
 NEXTAUTH_SECRET="generate-with-openssl-rand-base64-32"
 NEXTAUTH_URL="http://localhost:3000"
 
-# Discord OAuth (https://discord.com/developers/applications)
-DISCORD_CLIENT_ID=""
-DISCORD_CLIENT_SECRET=""
-
 # Twitter/X OAuth (https://developer.twitter.com/en/portal/dashboard)
 TWITTER_CLIENT_ID=""
 TWITTER_CLIENT_SECRET=""
@@ -81,14 +76,6 @@ npm run dev
 Open [http://localhost:3000](http://localhost:3000) to see the app.
 
 ## OAuth Setup
-
-### Discord
-
-1. Go to [Discord Developer Portal](https://discord.com/developers/applications)
-2. Create a new application
-3. Go to OAuth2 → General
-4. Add redirect URL: `http://localhost:3000/api/auth/callback/discord`
-5. Copy Client ID and Client Secret to `.env`
 
 ### Twitter/X
 
@@ -139,11 +126,9 @@ This project includes a `render.yaml` blueprint for easy deployment.
 After deployment, configure these environment variables in the Render dashboard:
 
 1. **NEXTAUTH_URL**: Set to your Render app URL (e.g., `https://builders-to.onrender.com`)
-2. **DISCORD_CLIENT_ID** & **DISCORD_CLIENT_SECRET**: From Discord Developer Portal
-3. **TWITTER_CLIENT_ID** & **TWITTER_CLIENT_SECRET**: From Twitter Developer Portal
+2. **TWITTER_CLIENT_ID** & **TWITTER_CLIENT_SECRET**: From Twitter Developer Portal
 
-**Important**: Update your OAuth callback URLs to use your production domain:
-- Discord: `https://your-app.onrender.com/api/auth/callback/discord`
+**Important**: Update your OAuth callback URL to use your production domain:
 - Twitter: `https://your-app.onrender.com/api/auth/callback/twitter`
 
 ### Manual Deployment
@@ -161,7 +146,6 @@ render blueprint launch
 ## Community
 
 - 🐦 [X Community](https://x.com/i/communities/1943895831322439993)
-- 💬 [Discord](https://discord.com/invite/G7nmswWkbn)
 
 ## Future Improvements
 

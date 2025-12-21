@@ -153,7 +153,7 @@ export default async function HomePage() {
               </div>
               <h3 className="text-xl font-semibold text-white mb-3">Sign in</h3>
               <p className="text-zinc-400">
-                Join using your Discord or X account. Members only — keeps the community focused.
+                Join using your X account. Members only — keeps the community focused.
               </p>
             </div>
 
