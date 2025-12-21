@@ -59,6 +59,8 @@ model User {
   firstName     String?
   lastName      String?
   zipCode       String?
+  city          String?   // Derived from zipCode
+  state         String?   // Derived from zipCode
   headline      String?
   bio           String?   @db.Text
   websiteUrl    String?

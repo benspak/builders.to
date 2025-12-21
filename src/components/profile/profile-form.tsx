@@ -39,6 +39,8 @@ interface ProfileFormProps {
     firstName: string | null;
     lastName: string | null;
     zipCode: string | null;
+    city: string | null;
+    state: string | null;
     headline: string | null;
     bio: string | null;
     websiteUrl: string | null;
@@ -173,25 +175,36 @@ export function ProfileForm({ user }: ProfileFormProps) {
         </div>
       </div>
 
-      {/* Zip Code */}
+      {/* Zip Code & Location */}
       <div>
         <label htmlFor="zipCode" className="block text-sm font-medium text-zinc-300 mb-2">
-          Zip Code
+          Location
         </label>
-        <div className="relative max-w-xs">
-          <MapPin className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
-          <input
-            id="zipCode"
-            type="text"
-            maxLength={20}
-            placeholder="12345"
-            value={formData.zipCode}
-            onChange={(e) => setFormData({ ...formData, zipCode: e.target.value })}
-            className="input pl-11"
-          />
+        <div className="flex items-start gap-4">
+          <div className="relative max-w-[140px]">
+            <MapPin className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
+            <input
+              id="zipCode"
+              type="text"
+              maxLength={5}
+              placeholder="12345"
+              value={formData.zipCode}
+              onChange={(e) => {
+                const value = e.target.value.replace(/\D/g, "").slice(0, 5);
+                setFormData({ ...formData, zipCode: value });
+              }}
+              className="input pl-11"
+            />
+          </div>
+          {user.city && user.state && (
+            <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-zinc-800/30 border border-zinc-700/50">
+              <MapPin className="h-4 w-4 text-orange-500" />
+              <span className="text-zinc-300 font-medium">{user.city}, {user.state}</span>
+            </div>
+          )}
         </div>
         <p className="mt-2 text-xs text-zinc-500">
-          Used to help connect with builders in your area
+          Enter your zip code to display your city and state on your profile
         </p>
       </div>
 

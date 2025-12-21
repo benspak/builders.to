@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { lookupZipCode } from "@/lib/zipcode";
 
 function generateSlug(name: string): string {
   return name
@@ -43,6 +44,8 @@ export async function GET(
         firstName: true,
         lastName: true,
         zipCode: true,
+        city: true,
+        state: true,
         headline: true,
         bio: true,
         websiteUrl: true,
@@ -127,13 +130,28 @@ export async function PATCH(
       }
     }
 
+    // Lookup city/state from zip code if provided
+    let city: string | null = null;
+    let state: string | null = null;
+    const trimmedZip = zipCode?.trim() || null;
+
+    if (trimmedZip) {
+      const locationData = await lookupZipCode(trimmedZip);
+      if (locationData) {
+        city = locationData.city;
+        state = locationData.stateAbbreviation;
+      }
+    }
+
     const user = await prisma.user.update({
       where: { id },
       data: {
         slug,
         firstName: firstName?.trim() || null,
         lastName: lastName?.trim() || null,
-        zipCode: zipCode?.trim() || null,
+        zipCode: trimmedZip,
+        city,
+        state,
         headline: headline?.trim() || null,
         bio: bio?.trim() || null,
         websiteUrl: websiteUrl?.trim() || null,
@@ -148,6 +166,8 @@ export async function PATCH(
         firstName: true,
         lastName: true,
         zipCode: true,
+        city: true,
+        state: true,
         headline: true,
         bio: true,
         websiteUrl: true,

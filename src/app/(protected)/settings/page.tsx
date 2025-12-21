@@ -26,6 +26,8 @@ export default async function SettingsPage() {
       firstName: true,
       lastName: true,
       zipCode: true,
+      city: true,
+      state: true,
       headline: true,
       bio: true,
       websiteUrl: true,

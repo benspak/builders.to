@@ -73,6 +73,8 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
       firstName: true,
       lastName: true,
       zipCode: true,
+      city: true,
+      state: true,
       headline: true,
       bio: true,
       websiteUrl: true,
@@ -215,10 +217,14 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                 </div>
 
                 {/* Location */}
-                {user.zipCode && (
+                {(user.city || user.state) && (
                   <div className="flex items-center gap-3 text-sm">
                     <MapPin className="h-4 w-4 text-zinc-500" />
-                    <span className="text-zinc-300">{user.zipCode}</span>
+                    <span className="text-zinc-300">
+                      {user.city && user.state
+                        ? `${user.city}, ${user.state}`
+                        : user.city || user.state}
+                    </span>
                   </div>
                 )}
 
