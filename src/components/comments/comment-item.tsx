@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
+import Link from "next/link";
 import { User, MoreHorizontal, Pencil, Trash2, Loader2, X, Check } from "lucide-react";
 import { formatRelativeTime, cn } from "@/lib/utils";
 
@@ -14,6 +15,7 @@ interface Comment {
     id: string;
     name: string | null;
     image: string | null;
+    slug: string | null;
   };
 }
 
@@ -84,27 +86,56 @@ export function CommentItem({ comment, onDeleted, onUpdated }: CommentItemProps)
     )}>
       <div className="flex gap-4">
         {/* Avatar */}
-        {comment.user.image ? (
-          <Image
-            src={comment.user.image}
-            alt={comment.user.name || "User"}
-            width={40}
-            height={40}
-            className="rounded-full h-10 w-10 shrink-0"
-          />
+        {comment.user.slug ? (
+          <Link href={`/profile/${comment.user.slug}`} className="shrink-0">
+            {comment.user.image ? (
+              <Image
+                src={comment.user.image}
+                alt={comment.user.name || "User"}
+                width={40}
+                height={40}
+                className="rounded-full h-10 w-10 hover:ring-2 hover:ring-orange-500/50 transition-all"
+              />
+            ) : (
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-700 hover:ring-2 hover:ring-orange-500/50 transition-all">
+                <User className="h-5 w-5 text-zinc-400" />
+              </div>
+            )}
+          </Link>
         ) : (
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-zinc-700">
-            <User className="h-5 w-5 text-zinc-400" />
-          </div>
+          <>
+            {comment.user.image ? (
+              <Image
+                src={comment.user.image}
+                alt={comment.user.name || "User"}
+                width={40}
+                height={40}
+                className="rounded-full h-10 w-10 shrink-0"
+              />
+            ) : (
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-zinc-700">
+                <User className="h-5 w-5 text-zinc-400" />
+              </div>
+            )}
+          </>
         )}
 
         {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <span className="font-medium text-white truncate">
-                {comment.user.name}
-              </span>
+              {comment.user.slug ? (
+                <Link
+                  href={`/profile/${comment.user.slug}`}
+                  className="font-medium text-white truncate hover:text-orange-400 transition-colors"
+                >
+                  {comment.user.name}
+                </Link>
+              ) : (
+                <span className="font-medium text-white truncate">
+                  {comment.user.name}
+                </span>
+              )}
               <span className="text-xs text-zinc-500">
                 {formatRelativeTime(comment.createdAt)}
               </span>

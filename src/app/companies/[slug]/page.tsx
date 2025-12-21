@@ -21,6 +21,7 @@ import {
   Calendar,
   Pencil,
   Briefcase,
+  User,
 } from "lucide-react";
 
 interface CompanyPageProps {
@@ -39,6 +40,7 @@ export default async function CompanyPage({ params }: CompanyPageProps) {
           id: true,
           name: true,
           image: true,
+          slug: true,
         },
       },
       projects: {
@@ -174,6 +176,49 @@ export default async function CompanyPage({ params }: CompanyPageProps) {
                   <Briefcase className="h-4 w-4" />
                   <span>{company._count.projects} project{company._count.projects !== 1 ? "s" : ""}</span>
                 </div>
+              </div>
+
+              {/* Created by */}
+              <div className="mt-4 pt-4 border-t border-white/5">
+                <span className="text-sm text-zinc-500">Created by </span>
+                {company.user.slug ? (
+                  <Link
+                    href={`/profile/${company.user.slug}`}
+                    className="inline-flex items-center gap-2 text-sm text-zinc-300 hover:text-white transition-colors"
+                  >
+                    {company.user.image ? (
+                      <Image
+                        src={company.user.image}
+                        alt={company.user.name || "User"}
+                        width={20}
+                        height={20}
+                        className="rounded-full"
+                      />
+                    ) : (
+                      <div className="flex h-5 w-5 items-center justify-center rounded-full bg-zinc-700">
+                        <User className="h-2.5 w-2.5 text-zinc-400" />
+                      </div>
+                    )}
+                    <span className="font-medium">{company.user.name}</span>
+                  </Link>
+                ) : (
+                  <span className="inline-flex items-center gap-2 text-sm text-zinc-300">
+                    {company.user.image ? (
+                      <Image
+                        src={company.user.image}
+                        alt={company.user.name || "User"}
+                        width={20}
+                        height={20}
+                        className="rounded-full"
+                      />
+                    ) : (
+                      <div className="flex h-5 w-5 items-center justify-center rounded-full bg-zinc-700">
+                        <User className="h-2.5 w-2.5 text-zinc-400" />
+                      </div>
+                    )}
+                    <span className="font-medium">{company.user.name}</span>
+                  </span>
+                )}
               </div>
 
               {/* Website link */}

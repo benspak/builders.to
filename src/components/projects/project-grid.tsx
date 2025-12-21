@@ -18,6 +18,7 @@ interface Project {
     id: string;
     name: string | null;
     image: string | null;
+    slug: string | null;
   };
   _count: {
     upvotes: number;

@@ -43,6 +43,7 @@ export async function GET(request: NextRequest) {
               id: true,
               name: true,
               image: true,
+              slug: true,
             },
           },
           _count: {
@@ -183,6 +184,7 @@ export async function POST(request: NextRequest) {
             id: true,
             name: true,
             image: true,
+            slug: true,
           },
         },
         _count: {

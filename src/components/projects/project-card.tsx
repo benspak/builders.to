@@ -21,6 +21,7 @@ interface ProjectCardProps {
       id: string;
       name: string | null;
       image: string | null;
+      slug?: string | null;
     };
     _count: {
       upvotes: number;
@@ -86,25 +87,44 @@ export function ProjectCard({ project }: ProjectCardProps) {
         {/* Footer */}
         <div className="mt-auto pt-4 flex items-center justify-between border-t border-white/5">
           {/* Author */}
-          <Link
-            href={projectUrl}
-            className="flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors"
-          >
-            {project.user.image ? (
-              <Image
-                src={project.user.image}
-                alt={project.user.name || "User"}
-                width={24}
-                height={24}
-                className="rounded-full"
-              />
-            ) : (
-              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-700">
-                <User className="h-3 w-3 text-zinc-400" />
-              </div>
-            )}
-            <span className="truncate max-w-[100px]">{project.user.name}</span>
-          </Link>
+          {project.user.slug ? (
+            <Link
+              href={`/profile/${project.user.slug}`}
+              className="flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors"
+            >
+              {project.user.image ? (
+                <Image
+                  src={project.user.image}
+                  alt={project.user.name || "User"}
+                  width={24}
+                  height={24}
+                  className="rounded-full"
+                />
+              ) : (
+                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-700">
+                  <User className="h-3 w-3 text-zinc-400" />
+                </div>
+              )}
+              <span className="truncate max-w-[100px]">{project.user.name}</span>
+            </Link>
+          ) : (
+            <div className="flex items-center gap-2 text-sm text-zinc-400">
+              {project.user.image ? (
+                <Image
+                  src={project.user.image}
+                  alt={project.user.name || "User"}
+                  width={24}
+                  height={24}
+                  className="rounded-full"
+                />
+              ) : (
+                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-700">
+                  <User className="h-3 w-3 text-zinc-400" />
+                </div>
+              )}
+              <span className="truncate max-w-[100px]">{project.user.name}</span>
+            </div>
+          )}
 
           {/* Stats & Links */}
           <div className="flex items-center gap-3">

@@ -35,6 +35,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
           id: true,
           name: true,
           image: true,
+          slug: true,
         },
       },
       images: {
@@ -141,22 +142,44 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                 </span>
 
                 {/* Author */}
-                <div className="flex items-center gap-2 text-sm text-zinc-400">
-                  {project.user.image ? (
-                    <Image
-                      src={project.user.image}
-                      alt={project.user.name || "User"}
-                      width={24}
-                      height={24}
-                      className="rounded-full"
-                    />
-                  ) : (
-                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-700">
-                      <User className="h-3 w-3 text-zinc-400" />
-                    </div>
-                  )}
-                  <span>{project.user.name}</span>
-                </div>
+                {project.user.slug ? (
+                  <Link
+                    href={`/profile/${project.user.slug}`}
+                    className="flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors"
+                  >
+                    {project.user.image ? (
+                      <Image
+                        src={project.user.image}
+                        alt={project.user.name || "User"}
+                        width={24}
+                        height={24}
+                        className="rounded-full"
+                      />
+                    ) : (
+                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-700">
+                        <User className="h-3 w-3 text-zinc-400" />
+                      </div>
+                    )}
+                    <span>{project.user.name}</span>
+                  </Link>
+                ) : (
+                  <div className="flex items-center gap-2 text-sm text-zinc-400">
+                    {project.user.image ? (
+                      <Image
+                        src={project.user.image}
+                        alt={project.user.name || "User"}
+                        width={24}
+                        height={24}
+                        className="rounded-full"
+                      />
+                    ) : (
+                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-700">
+                        <User className="h-3 w-3 text-zinc-400" />
+                      </div>
+                    )}
+                    <span>{project.user.name}</span>
+                  </div>
+                )}
 
                 {/* Date */}
                 <div className="flex items-center gap-2 text-sm text-zinc-500">
