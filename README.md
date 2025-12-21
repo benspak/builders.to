@@ -163,6 +163,10 @@ render blueprint launch
 - 🐦 [X Community](https://x.com/i/communities/1943895831322439993)
 - 💬 [Discord](https://discord.com/invite/G7nmswWkbn)
 
+## Future Improvements
+
+- [ ] **Restrict Image Domains**: Remove the wildcard `hostname: '**'` pattern in `next.config.mjs` and replace with specific allowed domains. The current permissive configuration accepts images from any domain, which can cause issues with non-image URLs being passed to the image optimizer.
+
 ## License
 
 MIT

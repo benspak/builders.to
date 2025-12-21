@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { generateSlug } from "@/lib/utils";
+import { generateSlug, validateImageUrl } from "@/lib/utils";
 
 // GET /api/projects/[id] - Get a single project
 export async function GET(
@@ -102,6 +102,15 @@ export async function PATCH(
 
     const body = await request.json();
     const { title, tagline, description, url, githubUrl, imageUrl, status, companyId, slug } = body;
+
+    // Validate image URL
+    const imageUrlError = validateImageUrl(imageUrl);
+    if (imageUrlError) {
+      return NextResponse.json(
+        { error: imageUrlError },
+        { status: 400 }
+      );
+    }
 
     // Validate slug if provided
     if (slug !== undefined && slug !== "") {

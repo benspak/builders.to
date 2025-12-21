@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ProjectStatus } from "@prisma/client";
-import { generateSlug, generateUniqueSlug } from "@/lib/utils";
+import { generateSlug, generateUniqueSlug, validateImageUrl } from "@/lib/utils";
 
 // GET /api/projects - List all projects
 export async function GET(request: NextRequest) {
@@ -109,6 +109,15 @@ export async function POST(request: NextRequest) {
     if (!title || !tagline) {
       return NextResponse.json(
         { error: "Title and tagline are required" },
+        { status: 400 }
+      );
+    }
+
+    // Validate image URL
+    const imageUrlError = validateImageUrl(imageUrl);
+    if (imageUrlError) {
+      return NextResponse.json(
+        { error: imageUrlError },
         { status: 400 }
       );
     }
