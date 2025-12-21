@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { validateImageUrl } from "@/lib/utils";
+import { generateSlug, generateUniqueSlug, validateImageUrl } from "@/lib/utils";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -82,7 +82,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     // Check ownership
     const existingCompany = await prisma.company.findUnique({
       where: { id },
-      select: { userId: true },
+      select: { userId: true, slug: true },
     });
 
     if (!existingCompany) {
@@ -100,7 +100,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     }
 
     const body = await request.json();
-    const { name, logo, location, category, about, website, size, yearFounded } = body;
+    const { name, logo, location, category, about, website, size, yearFounded, slug } = body;
 
     if (!name) {
       return NextResponse.json(
@@ -118,10 +118,44 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       );
     }
 
+    // Handle slug update
+    let finalSlug = existingCompany.slug;
+    if (slug !== undefined) {
+      const newSlug = generateSlug(slug || name);
+
+      // Only check for conflicts if slug is actually changing
+      if (newSlug !== existingCompany.slug) {
+        const slugConflict = await prisma.company.findFirst({
+          where: {
+            slug: newSlug,
+            id: { not: id },
+          },
+        });
+
+        if (slugConflict) {
+          return NextResponse.json(
+            { error: "This URL slug is already taken. Please choose a different one." },
+            { status: 400 }
+          );
+        }
+        finalSlug = newSlug;
+      }
+    } else if (!existingCompany.slug) {
+      // Generate slug if company doesn't have one yet (migration case)
+      finalSlug = generateSlug(name);
+      const slugConflict = await prisma.company.findFirst({
+        where: { slug: finalSlug },
+      });
+      if (slugConflict) {
+        finalSlug = generateUniqueSlug(name);
+      }
+    }
+
     const company = await prisma.company.update({
       where: { id },
       data: {
         name,
+        slug: finalSlug,
         logo,
         location,
         category,

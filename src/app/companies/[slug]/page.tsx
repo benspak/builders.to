@@ -24,15 +24,15 @@ import {
 } from "lucide-react";
 
 interface CompanyPageProps {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
 }
 
 export default async function CompanyPage({ params }: CompanyPageProps) {
-  const { id } = await params;
+  const { slug } = await params;
   const session = await auth();
 
   const company = await prisma.company.findUnique({
-    where: { id },
+    where: { slug },
     include: {
       user: {
         select: {
@@ -133,7 +133,7 @@ export default async function CompanyPage({ params }: CompanyPageProps) {
                 {isOwner && (
                   <div className="flex items-center gap-2">
                     <Link
-                      href={`/companies/${company.id}/edit`}
+                      href={`/companies/${company.slug}/edit`}
                       className="p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-white/5 transition-colors"
                       title="Edit company"
                     >

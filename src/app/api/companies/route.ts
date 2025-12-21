@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { CompanyCategory, CompanySize } from "@prisma/client";
-import { validateImageUrl } from "@/lib/utils";
+import { generateSlug, generateUniqueSlug, validateImageUrl } from "@/lib/utils";
 
 // GET /api/companies - List all companies
 export async function GET(request: NextRequest) {
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, logo, location, category, about, website, size, yearFounded } = body;
+    const { name, logo, location, category, about, website, size, yearFounded, slug } = body;
 
     if (!name) {
       return NextResponse.json(
@@ -100,9 +100,30 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Generate or validate slug
+    let finalSlug = slug ? generateSlug(slug) : generateSlug(name);
+
+    // Check if slug already exists
+    const existingCompany = await prisma.company.findUnique({
+      where: { slug: finalSlug },
+    });
+
+    if (existingCompany) {
+      // If user provided a custom slug that exists, return error
+      if (slug) {
+        return NextResponse.json(
+          { error: "This URL slug is already taken. Please choose a different one." },
+          { status: 400 }
+        );
+      }
+      // If auto-generated slug exists, add a random suffix
+      finalSlug = generateUniqueSlug(name);
+    }
+
     const company = await prisma.company.create({
       data: {
         name,
+        slug: finalSlug,
         logo,
         location,
         category: category || "OTHER",

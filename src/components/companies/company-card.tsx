@@ -8,6 +8,7 @@ import { cn, formatRelativeTime, getCategoryLabel, getCategoryColor, getSizeShor
 interface CompanyCardProps {
   company: {
     id: string;
+    slug?: string | null;
     name: string;
     logo?: string | null;
     location?: string | null;
@@ -53,7 +54,7 @@ export function CompanyCard({ company }: CompanyCardProps) {
           {/* Name and location */}
           <div className="flex-1 min-w-0">
             <Link
-              href={`/companies/${company.id}`}
+              href={`/companies/${company.slug || company.id}`}
               className="block group/title"
             >
               <h3 className="text-lg font-semibold text-white truncate group-hover/title:text-orange-400 transition-colors">

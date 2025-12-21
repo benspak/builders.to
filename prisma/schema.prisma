@@ -167,6 +167,7 @@ enum CompanySize {
 
 model Company {
   id          String          @id @default(cuid())
+  slug        String?         @unique  // Temporarily optional for migration
   name        String
   logo        String?
   location    String?

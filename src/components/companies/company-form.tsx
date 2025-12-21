@@ -16,6 +16,7 @@ import { ImageUpload } from "@/components/ui/image-upload";
 interface CompanyFormProps {
   initialData?: {
     id: string;
+    slug?: string | null;
     name: string;
     logo: string | null;
     location: string | null;
@@ -95,7 +96,7 @@ export function CompanyForm({ initialData }: CompanyFormProps) {
       }
 
       const company = await response.json();
-      router.push(`/companies/${company.id}`);
+      router.push(`/companies/${company.slug}`);
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");

@@ -6,17 +6,18 @@ import { ArrowLeft, Building2 } from "lucide-react";
 import Link from "next/link";
 
 interface EditCompanyPageProps {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
 }
 
 export default async function EditCompanyPage({ params }: EditCompanyPageProps) {
-  const { id } = await params;
+  const { slug } = await params;
   const session = await auth();
 
   const company = await prisma.company.findUnique({
-    where: { id },
+    where: { slug },
     select: {
       id: true,
+      slug: true,
       name: true,
       logo: true,
       location: true,
@@ -41,7 +42,7 @@ export default async function EditCompanyPage({ params }: EditCompanyPageProps) 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6 lg:px-8">
       <Link
-        href={`/companies/${company.id}`}
+        href={`/companies/${company.slug}`}
         className="inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors mb-8"
       >
         <ArrowLeft className="h-4 w-4" />
