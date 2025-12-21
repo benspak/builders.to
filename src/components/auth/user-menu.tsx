@@ -1,15 +1,37 @@
 "use client";
 
 import { signOut, useSession } from "next-auth/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { LogOut, User, ChevronDown } from "lucide-react";
+import { LogOut, User, ChevronDown, Settings, Rocket } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+interface UserProfile {
+  slug: string | null;
+}
 
 export function UserMenu() {
   const { data: session } = useSession();
   const [isOpen, setIsOpen] = useState(false);
+  const [userSlug, setUserSlug] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchUserSlug() {
+      if (session?.user?.id) {
+        try {
+          const response = await fetch(`/api/users/${session.user.id}`);
+          if (response.ok) {
+            const data: UserProfile = await response.json();
+            setUserSlug(data.slug);
+          }
+        } catch (error) {
+          console.error("Failed to fetch user slug:", error);
+        }
+      }
+    }
+    fetchUserSlug();
+  }, [session?.user?.id]);
 
   if (!session?.user) return null;
 
@@ -52,21 +74,45 @@ export function UserMenu() {
               <p className="text-sm font-medium text-white">{session.user.name}</p>
               <p className="text-xs text-zinc-400">{session.user.email}</p>
             </div>
+
+            {userSlug && (
+              <Link
+                href={`/profile/${userSlug}`}
+                onClick={() => setIsOpen(false)}
+                className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-zinc-300 transition-colors hover:bg-white/5 hover:text-white"
+              >
+                <User className="h-4 w-4" />
+                My Profile
+              </Link>
+            )}
+
             <Link
               href="/dashboard"
               onClick={() => setIsOpen(false)}
               className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-zinc-300 transition-colors hover:bg-white/5 hover:text-white"
             >
-              <User className="h-4 w-4" />
-              Dashboard
+              <Rocket className="h-4 w-4" />
+              Projects
             </Link>
-            <button
-              onClick={() => signOut({ callbackUrl: "/" })}
-              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-zinc-300 transition-colors hover:bg-white/5 hover:text-white"
+
+            <Link
+              href="/settings"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-zinc-300 transition-colors hover:bg-white/5 hover:text-white"
             >
-              <LogOut className="h-4 w-4" />
-              Sign out
-            </button>
+              <Settings className="h-4 w-4" />
+              Settings
+            </Link>
+
+            <div className="border-t border-white/10 mt-2 pt-2">
+              <button
+                onClick={() => signOut({ callbackUrl: "/" })}
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-zinc-300 transition-colors hover:bg-white/5 hover:text-white"
+              >
+                <LogOut className="h-4 w-4" />
+                Sign out
+              </button>
+            </div>
           </div>
         </>
       )}

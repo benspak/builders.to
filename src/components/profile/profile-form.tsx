@@ -1,0 +1,345 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import {
+  Loader2,
+  Link as LinkIcon,
+  User,
+  MapPin,
+  FileText,
+  Save,
+} from "lucide-react";
+import Image from "next/image";
+
+// Social icons as SVG
+const XIcon = () => (
+  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+  </svg>
+);
+
+const YouTubeIcon = () => (
+  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+  </svg>
+);
+
+const LinkedInIcon = () => (
+  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+  </svg>
+);
+
+interface ProfileFormProps {
+  user: {
+    id: string;
+    name: string | null;
+    slug: string | null;
+    firstName: string | null;
+    lastName: string | null;
+    zipCode: string | null;
+    headline: string | null;
+    bio: string | null;
+    websiteUrl: string | null;
+    twitterUrl: string | null;
+    youtubeUrl: string | null;
+    linkedinUrl: string | null;
+    image: string | null;
+  };
+}
+
+export function ProfileForm({ user }: ProfileFormProps) {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+
+  const [formData, setFormData] = useState({
+    firstName: user.firstName || "",
+    lastName: user.lastName || "",
+    zipCode: user.zipCode || "",
+    headline: user.headline || "",
+    bio: user.bio || "",
+    websiteUrl: user.websiteUrl || "",
+    twitterUrl: user.twitterUrl || "",
+    youtubeUrl: user.youtubeUrl || "",
+    linkedinUrl: user.linkedinUrl || "",
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    setSuccess(false);
+
+    try {
+      const response = await fetch(`/api/users/${user.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Something went wrong");
+      }
+
+      setSuccess(true);
+      router.refresh();
+
+      // Clear success message after 3 seconds
+      setTimeout(() => setSuccess(false), 3000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-8">
+      {error && (
+        <div className="rounded-xl bg-red-500/10 border border-red-500/20 px-4 py-3 text-sm text-red-400">
+          {error}
+        </div>
+      )}
+
+      {success && (
+        <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/20 px-4 py-3 text-sm text-emerald-400">
+          Profile updated successfully!
+        </div>
+      )}
+
+      {/* Profile Preview */}
+      <div className="flex items-center gap-4 p-4 rounded-xl bg-zinc-800/30 border border-zinc-700/50">
+        {user.image ? (
+          <Image
+            src={user.image}
+            alt={user.name || "Profile"}
+            width={64}
+            height={64}
+            className="rounded-full ring-2 ring-orange-500/20"
+          />
+        ) : (
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-pink-500">
+            <User className="h-8 w-8 text-white" />
+          </div>
+        )}
+        <div>
+          <p className="text-lg font-semibold text-white">{user.name}</p>
+          <p className="text-sm text-zinc-400">
+            Profile photo is synced from your sign-in provider
+          </p>
+        </div>
+      </div>
+
+      {/* Name Fields */}
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+        <div>
+          <label htmlFor="firstName" className="block text-sm font-medium text-zinc-300 mb-2">
+            First Name
+          </label>
+          <div className="relative">
+            <User className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
+            <input
+              id="firstName"
+              type="text"
+              maxLength={50}
+              placeholder="John"
+              value={formData.firstName}
+              onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+              className="input pl-11"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label htmlFor="lastName" className="block text-sm font-medium text-zinc-300 mb-2">
+            Last Name
+          </label>
+          <div className="relative">
+            <User className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
+            <input
+              id="lastName"
+              type="text"
+              maxLength={50}
+              placeholder="Doe"
+              value={formData.lastName}
+              onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+              className="input pl-11"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Zip Code */}
+      <div>
+        <label htmlFor="zipCode" className="block text-sm font-medium text-zinc-300 mb-2">
+          Zip Code
+        </label>
+        <div className="relative max-w-xs">
+          <MapPin className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
+          <input
+            id="zipCode"
+            type="text"
+            maxLength={20}
+            placeholder="12345"
+            value={formData.zipCode}
+            onChange={(e) => setFormData({ ...formData, zipCode: e.target.value })}
+            className="input pl-11"
+          />
+        </div>
+        <p className="mt-2 text-xs text-zinc-500">
+          Used to help connect with builders in your area
+        </p>
+      </div>
+
+      {/* Headline */}
+      <div>
+        <label htmlFor="headline" className="block text-sm font-medium text-zinc-300 mb-2">
+          Headline
+        </label>
+        <div className="relative">
+          <FileText className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
+          <input
+            id="headline"
+            type="text"
+            maxLength={120}
+            placeholder="Founder & Builder | Creating awesome products"
+            value={formData.headline}
+            onChange={(e) => setFormData({ ...formData, headline: e.target.value })}
+            className="input pl-11"
+          />
+        </div>
+        <p className="mt-2 text-xs text-zinc-500">
+          {formData.headline.length}/120 characters - A short tagline about yourself
+        </p>
+      </div>
+
+      {/* Bio */}
+      <div>
+        <label htmlFor="bio" className="block text-sm font-medium text-zinc-300 mb-2">
+          Bio
+        </label>
+        <textarea
+          id="bio"
+          rows={5}
+          maxLength={2000}
+          placeholder="Tell the community about yourself. What are you building? What are your interests?"
+          value={formData.bio}
+          onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+          className="textarea"
+        />
+        <p className="mt-2 text-xs text-zinc-500">
+          {formData.bio.length}/2000 characters
+        </p>
+      </div>
+
+      {/* Website */}
+      <div>
+        <label htmlFor="websiteUrl" className="block text-sm font-medium text-zinc-300 mb-2">
+          Website
+        </label>
+        <div className="relative">
+          <LinkIcon className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
+          <input
+            id="websiteUrl"
+            type="url"
+            placeholder="https://your-website.com"
+            value={formData.websiteUrl}
+            onChange={(e) => setFormData({ ...formData, websiteUrl: e.target.value })}
+            className="input pl-11"
+          />
+        </div>
+      </div>
+
+      {/* Social Links Section */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold text-white">Social Profiles</h3>
+        <p className="text-sm text-zinc-400">Connect your social media profiles</p>
+
+        {/* X (Twitter) */}
+        <div>
+          <label htmlFor="twitterUrl" className="block text-sm font-medium text-zinc-300 mb-2">
+            X (Twitter)
+          </label>
+          <div className="relative">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500">
+              <XIcon />
+            </div>
+            <input
+              id="twitterUrl"
+              type="url"
+              placeholder="https://x.com/username"
+              value={formData.twitterUrl}
+              onChange={(e) => setFormData({ ...formData, twitterUrl: e.target.value })}
+              className="input pl-11"
+            />
+          </div>
+        </div>
+
+        {/* YouTube */}
+        <div>
+          <label htmlFor="youtubeUrl" className="block text-sm font-medium text-zinc-300 mb-2">
+            YouTube
+          </label>
+          <div className="relative">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500">
+              <YouTubeIcon />
+            </div>
+            <input
+              id="youtubeUrl"
+              type="url"
+              placeholder="https://youtube.com/@channel"
+              value={formData.youtubeUrl}
+              onChange={(e) => setFormData({ ...formData, youtubeUrl: e.target.value })}
+              className="input pl-11"
+            />
+          </div>
+        </div>
+
+        {/* LinkedIn */}
+        <div>
+          <label htmlFor="linkedinUrl" className="block text-sm font-medium text-zinc-300 mb-2">
+            LinkedIn
+          </label>
+          <div className="relative">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500">
+              <LinkedInIcon />
+            </div>
+            <input
+              id="linkedinUrl"
+              type="url"
+              placeholder="https://linkedin.com/in/username"
+              value={formData.linkedinUrl}
+              onChange={(e) => setFormData({ ...formData, linkedinUrl: e.target.value })}
+              className="input pl-11"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Submit */}
+      <div className="flex items-center justify-end gap-4 pt-4 border-t border-white/5">
+        <button
+          type="submit"
+          disabled={loading}
+          className="btn-primary"
+        >
+          {loading ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Saving...
+            </>
+          ) : (
+            <>
+              <Save className="h-4 w-4" />
+              Save Changes
+            </>
+          )}
+        </button>
+      </div>
+    </form>
+  );
+}
