@@ -4,12 +4,19 @@ import { writeFile, mkdir } from "fs/promises";
 import { existsSync } from "fs";
 import path from "path";
 import crypto from "crypto";
+import { rateLimit, RATE_LIMITS, rateLimitResponse } from "@/lib/rate-limit";
 
 // Maximum file size: 5MB
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
-// Allowed image types
-const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+// Allowed image types and their extensions
+const MIME_TO_EXT: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/gif": "gif",
+  "image/webp": "webp",
+};
+const ALLOWED_TYPES = Object.keys(MIME_TO_EXT);
 
 // Valid upload types
 const VALID_TYPES = ["projects", "companies"] as const;
@@ -25,6 +32,12 @@ function getUploadDir(): string {
 // POST /api/upload - Upload an image
 export async function POST(request: NextRequest) {
   try {
+    // Rate limit check
+    const { success, reset } = rateLimit(request, RATE_LIMITS.upload);
+    if (!success) {
+      return rateLimitResponse(reset);
+    }
+
     const session = await auth();
 
     if (!session?.user?.id) {
@@ -72,7 +85,7 @@ export async function POST(request: NextRequest) {
       .update(buffer)
       .digest("hex")
       .slice(0, 8);
-    const ext = file.name.split(".").pop() || "jpg";
+    const ext = MIME_TO_EXT[file.type]; // Derive from validated MIME type, not user input
     const filename = `${Date.now()}-${hash}.${ext}`;
 
     // Ensure upload directory exists (use persistent storage in production)

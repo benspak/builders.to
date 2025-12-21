@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { rateLimit, RATE_LIMITS, rateLimitResponse } from "@/lib/rate-limit";
 
 // POST /api/upvotes - Toggle upvote on a project
 export async function POST(request: NextRequest) {
   try {
+    // Rate limit check
+    const { success, reset } = rateLimit(request, RATE_LIMITS.upvote);
+    if (!success) {
+      return rateLimitResponse(reset);
+    }
+
     const session = await auth();
 
     if (!session?.user?.id) {

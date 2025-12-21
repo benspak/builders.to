@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ProjectStatus } from "@prisma/client";
 import { generateSlug, generateUniqueSlug, validateImageUrl } from "@/lib/utils";
+import { rateLimit, RATE_LIMITS, rateLimitResponse } from "@/lib/rate-limit";
 
 // GET /api/projects - List all projects
 export async function GET(request: NextRequest) {
@@ -94,6 +95,12 @@ export async function GET(request: NextRequest) {
 // POST /api/projects - Create a new project
 export async function POST(request: NextRequest) {
   try {
+    // Rate limit check
+    const { success, reset } = rateLimit(request, RATE_LIMITS.createProject);
+    if (!success) {
+      return rateLimitResponse(reset);
+    }
+
     const session = await auth();
 
     if (!session?.user?.id) {

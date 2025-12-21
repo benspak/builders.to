@@ -2,7 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { CompanyCategory, CompanySize } from "@prisma/client";
+<<<<<<< HEAD
 import { generateSlug, generateUniqueSlug, validateImageUrl } from "@/lib/utils";
+=======
+import { validateImageUrl } from "@/lib/utils";
+import { rateLimit, RATE_LIMITS, rateLimitResponse } from "@/lib/rate-limit";
+>>>>>>> d2eb3af2d34f22c0368cf3fafa44ad8a7947250b
 
 // GET /api/companies - List all companies
 export async function GET(request: NextRequest) {
@@ -72,6 +77,12 @@ export async function GET(request: NextRequest) {
 // POST /api/companies - Create a new company
 export async function POST(request: NextRequest) {
   try {
+    // Rate limit check
+    const { success, reset } = rateLimit(request, RATE_LIMITS.createCompany);
+    if (!success) {
+      return rateLimitResponse(reset);
+    }
+
     const session = await auth();
 
     if (!session?.user?.id) {
