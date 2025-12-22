@@ -115,7 +115,7 @@ export function RoastMVPSection({ isAuthenticated, userProjects = [] }: RoastMVP
   const projectUrl = featured ? `/projects/${featured.project.slug || featured.project.id}` : "";
 
   return (
-    <section className="relative py-24 sm:py-32 overflow-hidden">
+    <section id="roast-mvp" className="relative py-24 sm:py-32 overflow-hidden">
       {/* Fiery background effects */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-red-900/20 via-orange-900/10 to-transparent" />
       <div className="absolute inset-0 bg-grid opacity-30" />
