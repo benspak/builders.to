@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { ArrowRight, Rocket, MessageSquare, TrendingUp, Users, Zap, Star } from "lucide-react";
+import { RoastMVPWrapper } from "@/components/roast-mvp/roast-mvp-wrapper";
 
 export default async function HomePage() {
   const session = await auth();
@@ -181,6 +182,9 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Roast my MVP Section */}
+      <RoastMVPWrapper />
 
       {/* CTA Section */}
       <section className="relative py-24 sm:py-32">
