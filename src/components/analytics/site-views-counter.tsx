@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Eye, TrendingUp, Calendar, BarChart3 } from "lucide-react";
+import { Eye, TrendingUp, Calendar } from "lucide-react";
 
 interface ViewStats {
   monthly: number;
@@ -45,14 +45,11 @@ export function SiteViewsCounter() {
 
   if (loading) {
     return (
-      <div className="rounded-2xl border border-white/10 bg-zinc-900/50 backdrop-blur-sm p-6 animate-pulse">
-        <div className="flex items-center gap-2 mb-4">
-          <div className="h-5 w-5 bg-zinc-700 rounded" />
-          <div className="h-5 w-24 bg-zinc-700 rounded" />
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="h-20 bg-zinc-800 rounded-xl" />
-          <div className="h-20 bg-zinc-800 rounded-xl" />
+      <div className="rounded-xl border border-white/10 bg-zinc-900/50 backdrop-blur-sm px-4 py-3 animate-pulse">
+        <div className="flex items-center justify-center gap-6">
+          <div className="h-4 w-24 bg-zinc-700 rounded" />
+          <div className="h-4 w-24 bg-zinc-700 rounded" />
+          <div className="h-4 w-24 bg-zinc-700 rounded" />
         </div>
       </div>
     );
@@ -63,60 +60,35 @@ export function SiteViewsCounter() {
   }
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-zinc-900/50 backdrop-blur-sm overflow-hidden">
-      {/* Header */}
-      <div className="px-6 py-4 border-b border-white/5 bg-gradient-to-r from-cyan-500/10 to-transparent">
+    <div className="rounded-xl border border-white/10 bg-zinc-900/50 backdrop-blur-sm px-4 py-3">
+      <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 text-sm">
+        {/* Monthly Views */}
         <div className="flex items-center gap-2">
-          <BarChart3 className="h-5 w-5 text-cyan-400" />
-          <h3 className="font-semibold text-white">Site Views</h3>
-        </div>
-      </div>
-
-      {/* Stats Grid */}
-      <div className="p-6">
-        <div className="grid grid-cols-2 gap-4">
-          {/* Monthly Views */}
-          <div className="relative group">
-            <div className="absolute inset-0 bg-gradient-to-br from-orange-500/20 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity" />
-            <div className="relative p-4 rounded-xl bg-zinc-800/50 border border-zinc-700/50 group-hover:border-orange-500/30 transition-colors">
-              <div className="flex items-center gap-2 text-zinc-400 text-sm mb-2">
-                <Calendar className="h-4 w-4" />
-                <span>{stats.month}</span>
-              </div>
-              <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-bold text-white font-mono">
-                  {formatNumber(stats.monthly)}
-                </span>
-                <span className="text-xs text-zinc-500">views</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Yearly Views */}
-          <div className="relative group">
-            <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/20 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity" />
-            <div className="relative p-4 rounded-xl bg-zinc-800/50 border border-zinc-700/50 group-hover:border-cyan-500/30 transition-colors">
-              <div className="flex items-center gap-2 text-zinc-400 text-sm mb-2">
-                <TrendingUp className="h-4 w-4" />
-                <span>{stats.year}</span>
-              </div>
-              <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-bold text-white font-mono">
-                  {formatNumber(stats.yearly)}
-                </span>
-                <span className="text-xs text-zinc-500">views</span>
-              </div>
-            </div>
-          </div>
+          <Calendar className="h-3.5 w-3.5 text-orange-400" />
+          <span className="text-zinc-400">{stats.month}:</span>
+          <span className="font-semibold text-white font-mono">
+            {formatNumber(stats.monthly)}
+          </span>
         </div>
 
-        {/* Total Views Footer */}
-        <div className="mt-4 pt-4 border-t border-zinc-800 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-zinc-500 text-sm">
-            <Eye className="h-4 w-4" />
-            <span>All time</span>
-          </div>
-          <span className="text-lg font-semibold text-zinc-300 font-mono">
+        <div className="hidden sm:block w-px h-4 bg-zinc-700" />
+
+        {/* Yearly Views */}
+        <div className="flex items-center gap-2">
+          <TrendingUp className="h-3.5 w-3.5 text-cyan-400" />
+          <span className="text-zinc-400">{stats.year}:</span>
+          <span className="font-semibold text-white font-mono">
+            {formatNumber(stats.yearly)}
+          </span>
+        </div>
+
+        <div className="hidden sm:block w-px h-4 bg-zinc-700" />
+
+        {/* Total Views */}
+        <div className="flex items-center gap-2">
+          <Eye className="h-3.5 w-3.5 text-zinc-400" />
+          <span className="text-zinc-400">All time:</span>
+          <span className="font-semibold text-white font-mono">
             {formatNumber(stats.total)}
           </span>
         </div>
