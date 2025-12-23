@@ -3,6 +3,7 @@ import "./globals.css";
 import { AuthProvider } from "@/components/auth/auth-provider";
 import { Navbar } from "@/components/ui/navbar";
 import { Footer } from "@/components/ui/footer";
+import { ViewTracker } from "@/components/analytics/view-tracker";
 
 export const metadata: Metadata = {
   title: "Builders.to - Share your project, get feedback, find your first users",
@@ -24,6 +25,7 @@ export default function RootLayout({
     <html lang="en">
       <body className="min-h-screen bg-zinc-950 antialiased">
         <AuthProvider>
+          <ViewTracker />
           <div className="flex min-h-screen flex-col">
             <Navbar />
             <main className="flex-1">{children}</main>

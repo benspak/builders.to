@@ -4,6 +4,7 @@ import { Plus, Loader2 } from "lucide-react";
 import { ProjectFilters } from "@/components/projects/project-filters";
 import { ProjectGrid } from "@/components/projects/project-grid";
 import { RoastMVPCard } from "@/components/roast-mvp/roast-mvp-card";
+import { SiteViewsCounter } from "@/components/analytics/site-views-counter";
 import { auth } from "@/lib/auth";
 
 interface DashboardPageProps {
@@ -58,6 +59,11 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             Sign in to Share
           </Link>
         )}
+      </div>
+
+      {/* Site Views Counter */}
+      <div className="mb-8">
+        <SiteViewsCounter />
       </div>
 
       {/* Filters */}

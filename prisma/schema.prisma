@@ -243,3 +243,17 @@ enum RoastMVPStatus {
   COMPLETED         // Feature period is over
   CANCELLED         // Payment was refunded or cancelled
 }
+
+// Site analytics - page views tracking
+model SiteView {
+  id        String   @id @default(cuid())
+  path      String   // The page path visited
+  createdAt DateTime @default(now())
+
+  // Optional: track visitor info (anonymized)
+  visitorId String?  // Anonymous session identifier
+  userAgent String?
+
+  @@index([createdAt])
+  @@index([path])
+}
