@@ -21,7 +21,7 @@ export default async function HomePage() {
             {/* Badge */}
             <div className="inline-flex items-center gap-2 rounded-full bg-orange-500/10 border border-orange-500/20 px-4 py-2 text-sm text-orange-400 mb-8 animate-slide-up opacity-0">
               <Zap className="h-4 w-4" />
-              <span>Part of the Builders.to community on X</span>
+              <a href="https://x.com/i/communities/1943895831322439993" target="_blank" rel="noopener noreferrer" className="hover:underline">Part of the Builders.to community on X</a>
             </div>
 
             {/* Headline */}

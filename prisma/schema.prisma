@@ -71,13 +71,14 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  accounts  Account[]
-  sessions  Session[]
-  projects  Project[]
-  upvotes   Upvote[]
-  comments  Comment[]
-  companies Company[]
-  roastMVPs RoastMVP[]
+  accounts     Account[]
+  sessions     Session[]
+  projects     Project[]
+  upvotes      Upvote[]
+  comments     Comment[]
+  companies    Company[]
+  roastMVPs    RoastMVP[]
+  dailyUpdates DailyUpdate[]
 
   @@index([slug])
 }
@@ -256,4 +257,18 @@ model SiteView {
 
   @@index([createdAt])
   @@index([path])
+}
+
+// Daily updates - builder progress updates
+model DailyUpdate {
+  id        String   @id @default(cuid())
+  content   String   @db.Text  // The update content
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
 }

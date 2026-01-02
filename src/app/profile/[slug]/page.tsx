@@ -12,9 +12,11 @@ import {
   Building2,
   Rocket,
   Settings,
+  Sparkles,
 } from "lucide-react";
 import { formatRelativeTime, getStatusColor, getStatusLabel, getCategoryColor, getCategoryLabel } from "@/lib/utils";
 import { cn } from "@/lib/utils";
+import { UpdateForm, UpdateTimeline } from "@/components/updates";
 
 // Social icons
 const XIcon = ({ className }: { className?: string }) => (
@@ -112,6 +114,15 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
           _count: {
             select: { projects: true },
           },
+        },
+      },
+      dailyUpdates: {
+        orderBy: { createdAt: "desc" },
+        take: 20,
+        select: {
+          id: true,
+          content: true,
+          createdAt: true,
         },
       },
     },
@@ -430,6 +441,42 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                   <p className="text-zinc-500">No companies yet</p>
                 </div>
               )}
+            </section>
+
+            {/* Daily Updates */}
+            <section>
+              <div className="flex items-center gap-3 mb-4">
+                <Sparkles className="h-5 w-5 text-amber-500" />
+                <h2 className="text-xl font-semibold text-white">Daily Updates</h2>
+                <span className="text-sm text-zinc-500">({user.dailyUpdates.length})</span>
+              </div>
+
+              {/* Post new update form - only for profile owner */}
+              {isOwnProfile && (
+                <div className="mb-6 rounded-2xl border border-white/10 bg-zinc-900/50 backdrop-blur-sm p-4">
+                  <h3 className="text-sm font-medium text-zinc-400 mb-3">Share what you&apos;re working on</h3>
+                  <UpdateForm />
+                </div>
+              )}
+
+              {/* Updates timeline */}
+              <UpdateTimeline
+                updates={user.dailyUpdates.map(update => ({
+                  ...update,
+                  user: {
+                    id: user.id,
+                    name: user.name,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    image: user.image,
+                    slug: user.slug,
+                    headline: user.headline,
+                  },
+                }))}
+                currentUserId={session?.user?.id}
+                showAuthor={false}
+                emptyMessage={isOwnProfile ? "Share your first update!" : "No updates yet"}
+              />
             </section>
           </div>
         </div>

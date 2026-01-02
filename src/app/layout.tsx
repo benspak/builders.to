@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import "./globals.css";
 import { AuthProvider } from "@/components/auth/auth-provider";
 import { Navbar } from "@/components/ui/navbar";
@@ -24,6 +25,28 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="min-h-screen bg-zinc-950 antialiased">
+        {/* LinkedIn Insight Tag */}
+        <Script id="linkedin-partner-id" strategy="afterInteractive">
+          {`
+            _linkedin_partner_id = "8477220";
+            window._linkedin_data_partner_ids = window._linkedin_data_partner_ids || [];
+            window._linkedin_data_partner_ids.push(_linkedin_partner_id);
+          `}
+        </Script>
+        <Script
+          id="linkedin-insight"
+          strategy="afterInteractive"
+          src="https://snap.licdn.com/li.lms-analytics/insight.min.js"
+        />
+        <noscript>
+          <img
+            height="1"
+            width="1"
+            style={{ display: "none" }}
+            alt=""
+            src="https://px.ads.linkedin.com/collect/?pid=8477220&fmt=gif"
+          />
+        </noscript>
         <AuthProvider>
           <ViewTracker />
           <div className="flex min-h-screen flex-col">
