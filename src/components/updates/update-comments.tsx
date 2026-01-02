@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { User, Send, Loader2, MoreHorizontal, Trash2, Pencil, X, Check } from "lucide-react";
-import { formatRelativeTime, cn } from "@/lib/utils";
+import { formatRelativeTime } from "@/lib/utils";
 
 interface Comment {
   id: string;
@@ -41,6 +41,7 @@ export function UpdateComments({ updateId, currentUserId, initialCommentsCount =
     if (isExpanded && comments.length === 0) {
       fetchComments();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isExpanded]);
 
   async function fetchComments() {
