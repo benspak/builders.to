@@ -79,6 +79,7 @@ model User {
   companies    Company[]
   roastMVPs    RoastMVP[]
   dailyUpdates DailyUpdate[]
+  updateLikes  UpdateLike[]
 
   @@index([slug])
 }
@@ -263,12 +264,29 @@ model SiteView {
 model DailyUpdate {
   id        String   @id @default(cuid())
   content   String   @db.Text  // The update content
+  imageUrl  String?  // Optional image attachment
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  likes     UpdateLike[]
 
   @@index([userId])
   @@index([createdAt])
+}
+
+// Likes on daily updates
+model UpdateLike {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  userId    String
+  updateId  String
+
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  update    DailyUpdate @relation(fields: [updateId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, updateId])
+  @@index([updateId])
 }

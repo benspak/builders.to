@@ -6,7 +6,10 @@ import { Sparkles } from "lucide-react";
 interface Update {
   id: string;
   content: string;
+  imageUrl?: string | null;
   createdAt: string | Date;
+  likesCount?: number;
+  isLiked?: boolean;
   user: {
     id: string;
     name: string | null;

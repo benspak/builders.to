@@ -23,6 +23,12 @@ export function Navbar() {
         <div className="flex items-center gap-4">
           {/* Navigation links */}
           <Link
+            href="/feed"
+            className="hidden text-sm font-medium text-zinc-400 hover:text-white transition-colors sm:block"
+          >
+            Feed
+          </Link>
+          <Link
             href="/dashboard"
             className="hidden text-sm font-medium text-zinc-400 hover:text-white transition-colors sm:block"
           >

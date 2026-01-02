@@ -122,7 +122,18 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
         select: {
           id: true,
           content: true,
+          imageUrl: true,
           createdAt: true,
+          likes: {
+            select: {
+              userId: true,
+            },
+          },
+          _count: {
+            select: {
+              likes: true,
+            },
+          },
         },
       },
     },
@@ -463,6 +474,10 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
               <UpdateTimeline
                 updates={user.dailyUpdates.map(update => ({
                   ...update,
+                  likesCount: update._count.likes,
+                  isLiked: session?.user?.id
+                    ? update.likes.some(like => like.userId === session.user.id)
+                    : false,
                   user: {
                     id: user.id,
                     name: user.name,

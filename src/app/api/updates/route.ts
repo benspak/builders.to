@@ -19,7 +19,11 @@ export async function GET(request: NextRequest) {
         skip: 1,
         cursor: { id: cursor },
       }),
-      include: {
+      select: {
+        id: true,
+        content: true,
+        imageUrl: true,
+        createdAt: true,
         user: {
           select: {
             id: true,
@@ -68,7 +72,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { content } = body;
+    const { content, imageUrl } = body;
 
     if (!content || content.trim().length === 0) {
       return NextResponse.json(
@@ -87,6 +91,7 @@ export async function POST(request: NextRequest) {
     const update = await prisma.dailyUpdate.create({
       data: {
         content: content.trim(),
+        imageUrl: imageUrl || null,
         userId: session.user.id,
       },
       include: {

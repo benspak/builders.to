@@ -4,14 +4,24 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { User, Trash2, Loader2, MoreHorizontal } from "lucide-react";
-import { formatRelativeTime } from "@/lib/utils";
+import { User, Trash2, Loader2, MoreHorizontal, Heart } from "lucide-react";
+import { formatRelativeTime, cn } from "@/lib/utils";
+
+// X/Twitter icon
+const XIcon = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+  </svg>
+);
 
 interface UpdateItemProps {
   update: {
     id: string;
     content: string;
+    imageUrl?: string | null;
     createdAt: string | Date;
+    likesCount?: number;
+    isLiked?: boolean;
     user: {
       id: string;
       name: string | null;
@@ -30,6 +40,9 @@ export function UpdateItem({ update, currentUserId, showAuthor = true }: UpdateI
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const [isLiked, setIsLiked] = useState(update.isLiked ?? false);
+  const [likesCount, setLikesCount] = useState(update.likesCount ?? 0);
+  const [isLiking, setIsLiking] = useState(false);
 
   const isOwner = currentUserId === update.user.id;
   const displayName = update.user.firstName && update.user.lastName
@@ -57,6 +70,58 @@ export function UpdateItem({ update, currentUserId, showAuthor = true }: UpdateI
       setIsDeleting(false);
       setShowMenu(false);
     }
+  }
+
+  async function handleLike() {
+    if (!currentUserId) {
+      // Redirect to sign in
+      router.push("/signin");
+      return;
+    }
+
+    if (isLiking) return;
+
+    setIsLiking(true);
+    // Optimistic update
+    const wasLiked = isLiked;
+    setIsLiked(!isLiked);
+    setLikesCount(prev => wasLiked ? prev - 1 : prev + 1);
+
+    try {
+      const response = await fetch(`/api/updates/${update.id}/like`, {
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        // Revert on error
+        setIsLiked(wasLiked);
+        setLikesCount(prev => wasLiked ? prev + 1 : prev - 1);
+        throw new Error("Failed to like update");
+      }
+
+      const data = await response.json();
+      setIsLiked(data.liked);
+      setLikesCount(data.likesCount);
+    } catch (error) {
+      console.error("Error liking update:", error);
+    } finally {
+      setIsLiking(false);
+    }
+  }
+
+  function handleShareToX() {
+    // Build the share URL
+    const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+    const profileUrl = update.user.slug ? `${baseUrl}/profile/${update.user.slug}` : baseUrl;
+
+    // Construct the tweet text
+    const tweetText = `${update.content.slice(0, 200)}${update.content.length > 200 ? "..." : ""}\n\n${profileUrl}`;
+
+    // Create the X share URL
+    const shareUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
+
+    // Open in new window
+    window.open(shareUrl, "_blank", "width=550,height=420");
   }
 
   return (
@@ -101,49 +166,102 @@ export function UpdateItem({ update, currentUserId, showAuthor = true }: UpdateI
             </div>
           )}
 
-          <div className="rounded-xl border border-white/5 bg-zinc-800/30 p-4 hover:border-white/10 transition-colors">
-            <p className="text-zinc-300 whitespace-pre-wrap text-sm leading-relaxed">
-              {update.content}
-            </p>
-            <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/5">
-              <time className="text-xs text-zinc-500">
-                {formatRelativeTime(update.createdAt)}
-              </time>
+          <div className="rounded-xl border border-white/5 bg-zinc-800/30 overflow-hidden hover:border-white/10 transition-colors">
+            {/* Image attachment */}
+            {update.imageUrl && (
+              <div className="relative aspect-video max-h-80 bg-zinc-900">
+                <Image
+                  src={update.imageUrl}
+                  alt="Update image"
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            )}
 
-              {/* Actions menu for owner */}
-              {isOwner && (
-                <div className="relative">
+            <div className="p-4">
+              <p className="text-zinc-300 whitespace-pre-wrap text-sm leading-relaxed">
+                {update.content}
+              </p>
+              <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/5">
+                <div className="flex items-center gap-4">
+                  {/* Like button */}
                   <button
-                    onClick={() => setShowMenu(!showMenu)}
-                    className="p-1.5 rounded-lg text-zinc-500 hover:text-zinc-300 hover:bg-zinc-700/50 transition-colors opacity-0 group-hover:opacity-100"
+                    onClick={handleLike}
+                    disabled={isLiking}
+                    className={cn(
+                      "inline-flex items-center gap-1.5 text-xs transition-colors",
+                      isLiked
+                        ? "text-pink-400 hover:text-pink-300"
+                        : "text-zinc-500 hover:text-pink-400"
+                    )}
                   >
-                    <MoreHorizontal className="h-4 w-4" />
+                    <Heart
+                      className={cn(
+                        "h-4 w-4 transition-all",
+                        isLiked && "fill-current scale-110"
+                      )}
+                    />
+                    <span className={cn(
+                      "tabular-nums",
+                      likesCount > 0 && "font-medium"
+                    )}>
+                      {likesCount > 0 ? likesCount : ""}
+                    </span>
                   </button>
 
-                  {showMenu && (
-                    <>
-                      <div
-                        className="fixed inset-0 z-10"
-                        onClick={() => setShowMenu(false)}
-                      />
-                      <div className="absolute right-0 bottom-full mb-1 z-20 w-32 rounded-lg border border-white/10 bg-zinc-800 shadow-xl py-1">
-                        <button
-                          onClick={handleDelete}
-                          disabled={isDeleting}
-                          className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-400 hover:bg-zinc-700/50 disabled:opacity-50"
-                        >
-                          {isDeleting ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <Trash2 className="h-4 w-4" />
-                          )}
-                          Delete
-                        </button>
-                      </div>
-                    </>
+                  <time className="text-xs text-zinc-500">
+                    {formatRelativeTime(update.createdAt)}
+                  </time>
+                </div>
+
+                <div className="flex items-center gap-1">
+                  {/* Share to X button */}
+                  <button
+                    onClick={handleShareToX}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs text-zinc-400 hover:text-white hover:bg-zinc-700/50 transition-colors"
+                    title="Share to X"
+                  >
+                    <XIcon className="h-3.5 w-3.5" />
+                    <span className="hidden sm:inline">Share</span>
+                  </button>
+
+                  {/* Actions menu for owner */}
+                  {isOwner && (
+                    <div className="relative">
+                      <button
+                        onClick={() => setShowMenu(!showMenu)}
+                        className="p-1.5 rounded-lg text-zinc-500 hover:text-zinc-300 hover:bg-zinc-700/50 transition-colors opacity-0 group-hover:opacity-100"
+                      >
+                        <MoreHorizontal className="h-4 w-4" />
+                      </button>
+
+                      {showMenu && (
+                        <>
+                          <div
+                            className="fixed inset-0 z-10"
+                            onClick={() => setShowMenu(false)}
+                          />
+                          <div className="absolute right-0 bottom-full mb-1 z-20 w-32 rounded-lg border border-white/10 bg-zinc-800 shadow-xl py-1">
+                            <button
+                              onClick={handleDelete}
+                              disabled={isDeleting}
+                              className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-400 hover:bg-zinc-700/50 disabled:opacity-50"
+                            >
+                              {isDeleting ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Trash2 className="h-4 w-4" />
+                              )}
+                              Delete
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
                   )}
                 </div>
-              )}
+              </div>
             </div>
           </div>
         </div>
