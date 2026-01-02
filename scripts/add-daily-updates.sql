@@ -1,4 +1,4 @@
--- Migration: Add DailyUpdate and UpdateLike tables for user daily updates feature
+-- Migration: Add DailyUpdate, UpdateLike, and UpdateComment tables for user daily updates feature
 -- Run this migration to enable the daily updates feature
 
 -- Create DailyUpdate table
@@ -49,5 +49,32 @@ ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE "UpdateLike"
 ADD CONSTRAINT "UpdateLike_updateId_fkey"
+FOREIGN KEY ("updateId") REFERENCES "DailyUpdate"("id")
+ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- Create UpdateComment table for comments on updates
+CREATE TABLE IF NOT EXISTS "UpdateComment" (
+    "id" TEXT NOT NULL,
+    "content" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "userId" TEXT NOT NULL,
+    "updateId" TEXT NOT NULL,
+
+    CONSTRAINT "UpdateComment_pkey" PRIMARY KEY ("id")
+);
+
+-- Create indexes for better query performance
+CREATE INDEX IF NOT EXISTS "UpdateComment_updateId_idx" ON "UpdateComment"("updateId");
+CREATE INDEX IF NOT EXISTS "UpdateComment_userId_idx" ON "UpdateComment"("userId");
+
+-- Add foreign key constraints for UpdateComment
+ALTER TABLE "UpdateComment"
+ADD CONSTRAINT "UpdateComment_userId_fkey"
+FOREIGN KEY ("userId") REFERENCES "User"("id")
+ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE "UpdateComment"
+ADD CONSTRAINT "UpdateComment_updateId_fkey"
 FOREIGN KEY ("updateId") REFERENCES "DailyUpdate"("id")
 ON DELETE CASCADE ON UPDATE CASCADE;

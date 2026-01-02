@@ -71,15 +71,16 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  accounts     Account[]
-  sessions     Session[]
-  projects     Project[]
-  upvotes      Upvote[]
-  comments     Comment[]
-  companies    Company[]
-  roastMVPs    RoastMVP[]
-  dailyUpdates DailyUpdate[]
-  updateLikes  UpdateLike[]
+  accounts       Account[]
+  sessions       Session[]
+  projects       Project[]
+  upvotes        Upvote[]
+  comments       Comment[]
+  companies      Company[]
+  roastMVPs      RoastMVP[]
+  dailyUpdates   DailyUpdate[]
+  updateLikes    UpdateLike[]
+  updateComments UpdateComment[]
 
   @@index([slug])
 }
@@ -271,6 +272,7 @@ model DailyUpdate {
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   likes     UpdateLike[]
+  comments  UpdateComment[]
 
   @@index([userId])
   @@index([createdAt])
@@ -289,4 +291,21 @@ model UpdateLike {
 
   @@unique([userId, updateId])
   @@index([updateId])
+}
+
+// Comments on daily updates
+model UpdateComment {
+  id        String   @id @default(cuid())
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId    String
+  updateId  String
+
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  update    DailyUpdate @relation(fields: [updateId], references: [id], onDelete: Cascade)
+
+  @@index([updateId])
+  @@index([userId])
 }

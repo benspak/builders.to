@@ -132,6 +132,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
           _count: {
             select: {
               likes: true,
+              comments: true,
             },
           },
         },
@@ -475,6 +476,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                 updates={user.dailyUpdates.map(update => ({
                   ...update,
                   likesCount: update._count.likes,
+                  commentsCount: update._count.comments,
                   isLiked: session?.user?.id
                     ? update.likes.some(like => like.userId === session.user.id)
                     : false,

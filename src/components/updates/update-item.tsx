@@ -4,8 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { User, Trash2, Loader2, MoreHorizontal, Heart } from "lucide-react";
+import { User, Trash2, Loader2, MoreHorizontal, Heart, MessageCircle } from "lucide-react";
 import { formatRelativeTime, cn } from "@/lib/utils";
+import { UpdateComments } from "./update-comments";
 
 // X/Twitter icon
 const XIcon = ({ className }: { className?: string }) => (
@@ -22,6 +23,7 @@ interface UpdateItemProps {
     createdAt: string | Date;
     likesCount?: number;
     isLiked?: boolean;
+    commentsCount?: number;
     user: {
       id: string;
       name: string | null;
@@ -210,6 +212,14 @@ export function UpdateItem({ update, currentUserId, showAuthor = true }: UpdateI
                     </span>
                   </button>
 
+                  {/* Comment count indicator */}
+                  <span className="inline-flex items-center gap-1.5 text-xs text-zinc-500">
+                    <MessageCircle className="h-4 w-4" />
+                    {(update.commentsCount ?? 0) > 0 && (
+                      <span className="tabular-nums">{update.commentsCount}</span>
+                    )}
+                  </span>
+
                   <time className="text-xs text-zinc-500">
                     {formatRelativeTime(update.createdAt)}
                   </time>
@@ -262,6 +272,13 @@ export function UpdateItem({ update, currentUserId, showAuthor = true }: UpdateI
                   )}
                 </div>
               </div>
+
+              {/* Comments section */}
+              <UpdateComments
+                updateId={update.id}
+                currentUserId={currentUserId}
+                initialCommentsCount={update.commentsCount ?? 0}
+              />
             </div>
           </div>
         </div>

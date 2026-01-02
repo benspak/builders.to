@@ -39,15 +39,17 @@ async function FeedContent() {
       _count: {
         select: {
           likes: true,
+          comments: true,
         },
       },
     },
   });
 
-  // Transform updates to include like info
+  // Transform updates to include like and comment info
   const updatesWithLikes = updates.map(update => ({
     ...update,
     likesCount: update._count.likes,
+    commentsCount: update._count.comments,
     isLiked: session?.user?.id
       ? update.likes.some(like => like.userId === session.user.id)
       : false,

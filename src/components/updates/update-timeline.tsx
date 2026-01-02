@@ -10,6 +10,7 @@ interface Update {
   createdAt: string | Date;
   likesCount?: number;
   isLiked?: boolean;
+  commentsCount?: number;
   user: {
     id: string;
     name: string | null;
