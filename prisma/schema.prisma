@@ -333,6 +333,7 @@ model DailyUpdate {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   likes     UpdateLike[]
   comments  UpdateComment[]
+  notifications Notification[]
 
   @@index([userId])
   @@index([createdAt])
@@ -441,6 +442,7 @@ model FeedEventLike {
 enum NotificationType {
   MILESTONE_LIKED      // Someone liked your milestone
   MILESTONE_CELEBRATED // Multiple people celebrated (batched)
+  UPDATE_LIKED         // Someone liked your daily update
   WEEKLY_DIGEST        // Weekly summary notification
 }
 
@@ -460,6 +462,10 @@ model Notification {
   // Optional link to related feed event
   feedEventId String?
   feedEvent   FeedEvent?       @relation(fields: [feedEventId], references: [id], onDelete: Cascade)
+
+  // Optional link to related daily update
+  updateId    String?
+  update      DailyUpdate?     @relation(fields: [updateId], references: [id], onDelete: Cascade)
 
   // Actor who triggered the notification (if applicable)
   actorId     String?

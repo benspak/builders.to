@@ -9,6 +9,7 @@ import {
   PartyPopper,
   Trophy,
   Mail,
+  Heart,
   Loader2
 } from "lucide-react";
 import { cn, formatRelativeTime } from "@/lib/utils";
@@ -30,6 +31,12 @@ interface Notification {
       project?: {
         slug?: string | null;
       } | null;
+    } | null;
+  } | null;
+  update?: {
+    id: string;
+    user?: {
+      slug?: string | null;
     } | null;
   } | null;
 }
@@ -121,6 +128,8 @@ export function NotificationDropdown() {
         return <PartyPopper className="h-4 w-4 text-amber-400" />;
       case "MILESTONE_CELEBRATED":
         return <Trophy className="h-4 w-4 text-amber-400" />;
+      case "UPDATE_LIKED":
+        return <Heart className="h-4 w-4 text-rose-400" />;
       case "WEEKLY_DIGEST":
         return <Mail className="h-4 w-4 text-blue-400" />;
       default:
@@ -130,8 +139,16 @@ export function NotificationDropdown() {
 
   // Get notification link
   const getNotificationLink = (notification: Notification): string | null => {
+    // Link to project for milestone notifications
     if (notification.feedEvent?.milestone?.project?.slug) {
       return `/projects/${notification.feedEvent.milestone.project.slug}`;
+    }
+    // Link to feed page for update notifications (updates are shown in the feed)
+    if (notification.update?.user?.slug) {
+      return `/profile/${notification.update.user.slug}`;
+    }
+    if (notification.type === "UPDATE_LIKED") {
+      return `/feed`;
     }
     return null;
   };

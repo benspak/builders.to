@@ -19,9 +19,19 @@ export async function POST(
 
     const { id: updateId } = await params;
 
-    // Check if update exists
+    // Check if update exists and get owner info
     const update = await prisma.dailyUpdate.findUnique({
       where: { id: updateId },
+      select: {
+        id: true,
+        content: true,
+        userId: true,
+        user: {
+          select: {
+            slug: true,
+          },
+        },
+      },
     });
 
     if (!update) {
@@ -69,6 +79,37 @@ export async function POST(
       const likesCount = await prisma.updateLike.count({
         where: { updateId },
       });
+
+      // Create notification for the update owner (if not liking own update)
+      if (update.userId !== session.user.id) {
+        // Get liker's info for notification
+        const liker = await prisma.user.findUnique({
+          where: { id: session.user.id },
+          select: { name: true, firstName: true, lastName: true, image: true },
+        });
+
+        const likerName = liker?.firstName && liker?.lastName
+          ? `${liker.firstName} ${liker.lastName}`
+          : liker?.name || "Someone";
+
+        // Truncate update content for notification message
+        const contentPreview = update.content.length > 50
+          ? update.content.substring(0, 50) + "..."
+          : update.content;
+
+        await prisma.notification.create({
+          data: {
+            type: "UPDATE_LIKED",
+            title: "Someone liked your update! ❤️",
+            message: `${likerName} liked your update: "${contentPreview}"`,
+            userId: update.userId,
+            updateId: update.id,
+            actorId: session.user.id,
+            actorName: likerName,
+            actorImage: liker?.image,
+          },
+        });
+      }
 
       return NextResponse.json({
         liked: true,

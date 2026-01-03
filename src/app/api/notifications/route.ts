@@ -48,6 +48,16 @@ export async function GET(request: NextRequest) {
               },
             },
           },
+          update: {
+            select: {
+              id: true,
+              user: {
+                select: {
+                  slug: true,
+                },
+              },
+            },
+          },
         },
       }),
       prisma.notification.count({ where }),
