@@ -96,6 +96,11 @@ model User {
   endorsementsGiven    Endorsement[] @relation("EndorserRelation")
   endorsementsReceived Endorsement[] @relation("EndorseeRelation")
 
+  // Feed and notifications
+  feedEventLikes       FeedEventLike[]
+  notifications        Notification[]
+  emailPreferences     EmailPreferences?
+
   @@index([slug])
 }
 
@@ -211,6 +216,9 @@ model ProjectMilestone {
 
   projectId   String
   project     Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  // Link to feed event
+  feedEvent   FeedEvent?
 
   @@index([projectId])
   @@index([achievedAt])
@@ -378,4 +386,102 @@ model Endorsement {
   @@unique([endorserId, endorseeId])  // One endorsement per user pair
   @@index([endorseeId])
   @@index([endorserId])
+}
+
+// Feed event types
+enum FeedEventType {
+  MILESTONE_ACHIEVED   // Project hit a milestone
+  PROJECT_LAUNCHED     // Project status changed to LAUNCHED
+  PROJECT_ACQUIRED     // Project was acquired
+}
+
+// Feed events - aggregated activity feed
+model FeedEvent {
+  id          String        @id @default(cuid())
+  type        FeedEventType
+  createdAt   DateTime      @default(now())
+
+  // The user who triggered the event (project owner)
+  userId      String
+
+  // Related entities (polymorphic references)
+  projectId   String?
+  milestoneId String?       @unique  // For milestone events
+
+  // Denormalized data for fast feed rendering
+  title       String        // e.g., "shipped v1" or "hit $1k MRR"
+  description String?       @db.Text
+
+  // Relations
+  milestone   ProjectMilestone? @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
+  likes       FeedEventLike[]
+  notifications Notification[]
+
+  @@index([createdAt])
+  @@index([userId])
+  @@index([projectId])
+}
+
+// Likes on feed events
+model FeedEventLike {
+  id          String    @id @default(cuid())
+  createdAt   DateTime  @default(now())
+
+  userId      String
+  feedEventId String
+
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  feedEvent   FeedEvent @relation(fields: [feedEventId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, feedEventId])
+  @@index([feedEventId])
+}
+
+// Notification types
+enum NotificationType {
+  MILESTONE_LIKED      // Someone liked your milestone
+  MILESTONE_CELEBRATED // Multiple people celebrated (batched)
+  WEEKLY_DIGEST        // Weekly summary notification
+}
+
+// In-app notifications
+model Notification {
+  id          String           @id @default(cuid())
+  type        NotificationType
+  title       String
+  message     String?          @db.Text
+  read        Boolean          @default(false)
+  createdAt   DateTime         @default(now())
+
+  // Recipient
+  userId      String
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Optional link to related feed event
+  feedEventId String?
+  feedEvent   FeedEvent?       @relation(fields: [feedEventId], references: [id], onDelete: Cascade)
+
+  // Actor who triggered the notification (if applicable)
+  actorId     String?
+  actorName   String?          // Denormalized for deleted users
+  actorImage  String?
+
+  @@index([userId, read])
+  @@index([createdAt])
+}
+
+// Email preferences per user
+model EmailPreferences {
+  id                    String   @id @default(cuid())
+  userId                String   @unique
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  weeklyDigest          Boolean  @default(true)
+  milestoneNotifications Boolean @default(true)
+
+  // Track last digest sent
+  lastDigestSentAt      DateTime?
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
 }

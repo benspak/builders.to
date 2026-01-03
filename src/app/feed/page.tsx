@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { Loader2, Sparkles } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
-import { UpdateTimeline } from "@/components/updates";
+import { CombinedFeed } from "@/components/feed";
 
 export const metadata = {
   title: "Feed - Builders.to",
@@ -12,38 +12,80 @@ export const metadata = {
 async function FeedContent() {
   const session = await auth();
 
-  const updates = await prisma.dailyUpdate.findMany({
-    orderBy: { createdAt: "desc" },
-    take: 50,
-    select: {
-      id: true,
-      content: true,
-      imageUrl: true,
-      createdAt: true,
-      user: {
-        select: {
-          id: true,
-          name: true,
-          firstName: true,
-          lastName: true,
-          image: true,
-          slug: true,
-          headline: true,
+  // Fetch both daily updates and feed events (milestones)
+  const [updates, feedEvents] = await Promise.all([
+    prisma.dailyUpdate.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 30,
+      select: {
+        id: true,
+        content: true,
+        imageUrl: true,
+        createdAt: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            firstName: true,
+            lastName: true,
+            image: true,
+            slug: true,
+            headline: true,
+          },
+        },
+        likes: {
+          select: {
+            userId: true,
+          },
+        },
+        _count: {
+          select: {
+            likes: true,
+            comments: true,
+          },
         },
       },
-      likes: {
-        select: {
-          userId: true,
+    }),
+    prisma.feedEvent.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 20,
+      include: {
+        milestone: {
+          include: {
+            project: {
+              select: {
+                id: true,
+                slug: true,
+                title: true,
+                imageUrl: true,
+                status: true,
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    firstName: true,
+                    lastName: true,
+                    image: true,
+                    slug: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+        likes: {
+          select: {
+            userId: true,
+          },
+        },
+        _count: {
+          select: {
+            likes: true,
+          },
         },
       },
-      _count: {
-        select: {
-          likes: true,
-          comments: true,
-        },
-      },
-    },
-  });
+    }),
+  ]);
 
   // Transform updates to include like and comment info
   const updatesWithLikes = updates.map(update => ({
@@ -55,12 +97,21 @@ async function FeedContent() {
       : false,
   }));
 
+  // Transform feed events
+  const feedEventsWithLikes = feedEvents.map(event => ({
+    ...event,
+    likesCount: event._count.likes,
+    hasLiked: session?.user?.id
+      ? event.likes.some(like => like.userId === session.user.id)
+      : false,
+  }));
+
   return (
-    <UpdateTimeline
+    <CombinedFeed
       updates={updatesWithLikes}
+      feedEvents={feedEventsWithLikes}
       currentUserId={session?.user?.id}
       showAuthor={true}
-      emptyMessage="No updates yet. Be the first to share what you're working on!"
     />
   );
 }

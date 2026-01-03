@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { UserMenu } from "@/components/auth/user-menu";
+import { NotificationDropdown } from "@/components/notifications";
 import { Plus, Rocket } from "lucide-react";
 
 export function Navbar() {
@@ -50,6 +51,7 @@ export function Navbar() {
                 <Plus className="h-4 w-4" />
                 <span className="hidden sm:inline">Share Project</span>
               </Link>
+              <NotificationDropdown />
               <UserMenu />
             </>
           ) : (

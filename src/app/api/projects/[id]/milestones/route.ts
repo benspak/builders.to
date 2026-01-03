@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { MilestoneType } from "@prisma/client";
+import { getMilestoneLabel } from "@/lib/utils";
 
 // GET /api/projects/[id]/milestones - List all milestones for a project
 export async function GET(
@@ -43,10 +44,14 @@ export async function POST(
 
     const { id } = await params;
 
-    // Verify project ownership
+    // Verify project ownership and get project details
     const project = await prisma.project.findUnique({
       where: { id },
-      select: { userId: true },
+      select: {
+        userId: true,
+        title: true,
+        slug: true,
+      },
     });
 
     if (!project) {
@@ -112,17 +117,39 @@ export async function POST(
       );
     }
 
-    const milestone = await prisma.projectMilestone.create({
-      data: {
-        type,
-        title: type === "CUSTOM" ? title : null,
-        description: description || null,
-        achievedAt: achievedAt ? new Date(achievedAt) : new Date(),
-        projectId: id,
-      },
+    // Create milestone and feed event in a transaction
+    const milestoneTitle = type === "CUSTOM" && title
+      ? title
+      : getMilestoneLabel(type).split(" ").slice(1).join(" ");
+
+    const result = await prisma.$transaction(async (tx) => {
+      // Create the milestone
+      const milestone = await tx.projectMilestone.create({
+        data: {
+          type,
+          title: type === "CUSTOM" ? title : null,
+          description: description || null,
+          achievedAt: achievedAt ? new Date(achievedAt) : new Date(),
+          projectId: id,
+        },
+      });
+
+      // Create the feed event
+      const feedEvent = await tx.feedEvent.create({
+        data: {
+          type: "MILESTONE_ACHIEVED",
+          userId: session.user.id,
+          projectId: id,
+          milestoneId: milestone.id,
+          title: `${project.title} ${milestoneTitle}`,
+          description: description || null,
+        },
+      });
+
+      return { milestone, feedEvent };
     });
 
-    return NextResponse.json(milestone, { status: 201 });
+    return NextResponse.json(result.milestone, { status: 201 });
   } catch (error) {
     console.error("Error creating milestone:", error);
     return NextResponse.json(
