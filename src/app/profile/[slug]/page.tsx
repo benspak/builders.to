@@ -17,7 +17,6 @@ import {
   Users,
   Code,
   Flame,
-  Trophy,
   Award,
   Star,
 } from "lucide-react";

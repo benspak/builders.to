@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Award, User, Plus, Loader2, X, ThumbsUp } from "lucide-react";
+import { Award, User, Loader2, X, ThumbsUp } from "lucide-react";
 import { formatRelativeTime } from "@/lib/utils";
 
 interface Endorser {
