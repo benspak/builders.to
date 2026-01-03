@@ -10,10 +10,18 @@ export const metadata: Metadata = {
   title: "Builders.to - Share your project, get feedback, find your first users",
   description: "A members-only launchpad for builders. Share your work in progress, get feedback from the community, and find your first users. Part of the Builders.to community on X.",
   keywords: ["builders", "startup", "projects", "feedback", "community", "launch"],
+  metadataBase: new URL("https://builders.to"),
   openGraph: {
-    title: "Builders.to",
-    description: "Share your project, get feedback, find your first users",
+    title: "Builders.to - Ship faster. Together.",
+    description: "Share your project, get feedback, find your first users. A members-only launchpad for builders who ship.",
     type: "website",
+    siteName: "Builders.to",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Builders.to - Ship faster. Together.",
+    description: "Share your project, get feedback, find your first users. A members-only launchpad for builders who ship.",
+    creator: "@builderstoHQ",
   },
 };
 
