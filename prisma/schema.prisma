@@ -68,6 +68,16 @@ model User {
   youtubeUrl    String?
   linkedinUrl   String?
 
+  // Intent flags - Builder Operating System
+  openToWork          Boolean @default(false)
+  lookingForCofounder Boolean @default(false)
+  availableForContract Boolean @default(false)
+
+  // Streak tracking
+  currentStreak       Int     @default(0)  // Current consecutive days with updates
+  longestStreak       Int     @default(0)  // Longest streak ever
+  lastActivityDate    DateTime? // Last date of activity for streak calculation
+
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -81,6 +91,10 @@ model User {
   dailyUpdates   DailyUpdate[]
   updateLikes    UpdateLike[]
   updateComments UpdateComment[]
+
+  // Endorsements
+  endorsementsGiven    Endorsement[] @relation("EndorserRelation")
+  endorsementsReceived Endorsement[] @relation("EndorseeRelation")
 
   @@index([slug])
 }
@@ -308,4 +322,22 @@ model UpdateComment {
 
   @@index([updateId])
   @@index([userId])
+}
+
+// Builder endorsements - credibility signals
+model Endorsement {
+  id        String   @id @default(cuid())
+  message   String?  @db.Text  // Optional endorsement message
+  skill     String?            // Optional skill being endorsed (e.g., "Frontend", "Product")
+  createdAt DateTime @default(now())
+
+  endorserId String  // User giving the endorsement
+  endorseeId String  // User receiving the endorsement
+
+  endorser   User @relation("EndorserRelation", fields: [endorserId], references: [id], onDelete: Cascade)
+  endorsee   User @relation("EndorseeRelation", fields: [endorseeId], references: [id], onDelete: Cascade)
+
+  @@unique([endorserId, endorseeId])  // One endorsement per user pair
+  @@index([endorseeId])
+  @@index([endorserId])
 }

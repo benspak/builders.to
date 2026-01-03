@@ -54,6 +54,13 @@ export async function GET(
         linkedinUrl: true,
         image: true,
         createdAt: true,
+        // Intent flags
+        openToWork: true,
+        lookingForCofounder: true,
+        availableForContract: true,
+        // Streak data
+        currentStreak: true,
+        longestStreak: true,
       },
     });
 
@@ -99,6 +106,10 @@ export async function PATCH(
       twitterUrl,
       youtubeUrl,
       linkedinUrl,
+      // Intent flags
+      openToWork,
+      lookingForCofounder,
+      availableForContract,
     } = body;
 
     // Generate slug from name if not exists
@@ -158,6 +169,10 @@ export async function PATCH(
         twitterUrl: twitterUrl?.trim() || null,
         youtubeUrl: youtubeUrl?.trim() || null,
         linkedinUrl: linkedinUrl?.trim() || null,
+        // Intent flags - only update if explicitly provided
+        ...(typeof openToWork === 'boolean' && { openToWork }),
+        ...(typeof lookingForCofounder === 'boolean' && { lookingForCofounder }),
+        ...(typeof availableForContract === 'boolean' && { availableForContract }),
       },
       select: {
         id: true,
@@ -176,6 +191,11 @@ export async function PATCH(
         linkedinUrl: true,
         image: true,
         createdAt: true,
+        openToWork: true,
+        lookingForCofounder: true,
+        availableForContract: true,
+        currentStreak: true,
+        longestStreak: true,
       },
     });
 

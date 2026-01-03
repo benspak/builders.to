@@ -88,26 +88,69 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const update = await prisma.dailyUpdate.create({
-      data: {
-        content: content.trim(),
-        imageUrl: imageUrl || null,
-        userId: session.user.id,
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            firstName: true,
-            lastName: true,
-            image: true,
-            slug: true,
-            headline: true,
+    // Calculate and update streak
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { currentStreak: true, longestStreak: true, lastActivityDate: true },
+    });
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    let newStreak = 1;
+    let longestStreak = user?.longestStreak || 0;
+
+    if (user?.lastActivityDate) {
+      const lastActivity = new Date(user.lastActivityDate);
+      lastActivity.setHours(0, 0, 0, 0);
+
+      const daysDiff = Math.floor((today.getTime() - lastActivity.getTime()) / (1000 * 60 * 60 * 24));
+
+      if (daysDiff === 0) {
+        // Same day - keep current streak
+        newStreak = user.currentStreak || 1;
+      } else if (daysDiff === 1) {
+        // Consecutive day - increment streak
+        newStreak = (user.currentStreak || 0) + 1;
+      }
+      // daysDiff > 1 means streak is broken, starts at 1
+    }
+
+    if (newStreak > longestStreak) {
+      longestStreak = newStreak;
+    }
+
+    // Create update and update user streak in a transaction
+    const [update] = await prisma.$transaction([
+      prisma.dailyUpdate.create({
+        data: {
+          content: content.trim(),
+          imageUrl: imageUrl || null,
+          userId: session.user.id,
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              firstName: true,
+              lastName: true,
+              image: true,
+              slug: true,
+              headline: true,
+            },
           },
         },
-      },
-    });
+      }),
+      prisma.user.update({
+        where: { id: session.user.id },
+        data: {
+          currentStreak: newStreak,
+          longestStreak: longestStreak,
+          lastActivityDate: today,
+        },
+      }),
+    ]);
 
     return NextResponse.json(update, { status: 201 });
   } catch (error) {

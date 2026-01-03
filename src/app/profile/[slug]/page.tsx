@@ -13,7 +13,15 @@ import {
   Rocket,
   Settings,
   Sparkles,
+  Briefcase,
+  Users,
+  Code,
+  Flame,
+  Trophy,
+  Award,
+  Star,
 } from "lucide-react";
+import { EndorsementSection } from "@/components/profile/endorsement-section";
 import { formatRelativeTime, getStatusColor, getStatusLabel, getCategoryColor, getCategoryLabel } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { UpdateForm, UpdateTimeline } from "@/components/updates";
@@ -85,6 +93,13 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
       linkedinUrl: true,
       image: true,
       createdAt: true,
+      // Intent flags
+      openToWork: true,
+      lookingForCofounder: true,
+      availableForContract: true,
+      // Streak tracking
+      currentStreak: true,
+      longestStreak: true,
       projects: {
         orderBy: { createdAt: "desc" },
         select: {
@@ -137,6 +152,27 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
           },
         },
       },
+      // Endorsements received
+      endorsementsReceived: {
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          message: true,
+          skill: true,
+          createdAt: true,
+          endorser: {
+            select: {
+              id: true,
+              name: true,
+              firstName: true,
+              lastName: true,
+              image: true,
+              slug: true,
+              headline: true,
+            },
+          },
+        },
+      },
     },
   });
 
@@ -159,6 +195,22 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
     { url: user.youtubeUrl, icon: YouTubeIcon, label: "YouTube" },
     { url: user.linkedinUrl, icon: LinkedInIcon, label: "LinkedIn" },
   ].filter(link => link.url);
+
+  // Compute credibility signals
+  const launchedProjects = user.projects.filter(p => p.status === "LAUNCHED").length;
+  const totalUpvotes = user.projects.reduce((sum, p) => sum + p._count.upvotes, 0);
+
+  // Check if current user has already endorsed this profile
+  const hasEndorsed = session?.user?.id
+    ? user.endorsementsReceived.some(e => e.endorser.id === session.user.id)
+    : false;
+
+  // Intent flags for display
+  const intentFlags = [
+    { active: user.openToWork, label: "Open to Work", icon: Briefcase, color: "emerald" },
+    { active: user.lookingForCofounder, label: "Looking for Co-founder", icon: Users, color: "violet" },
+    { active: user.availableForContract, label: "Available for Contract", icon: Code, color: "cyan" },
+  ].filter(flag => flag.active);
 
   return (
     <div className="min-h-screen bg-zinc-950">
@@ -196,7 +248,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
 
               {/* Name and info */}
               <div className="mt-4 sm:mt-0 sm:pb-2 flex-1">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                   <div>
                     <h1 className="text-2xl sm:text-3xl font-bold text-white">
                       {displayName}
@@ -206,12 +258,32 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                         {user.headline}
                       </p>
                     )}
+
+                    {/* Intent Badges */}
+                    {intentFlags.length > 0 && (
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {intentFlags.map(({ label, icon: Icon, color }) => (
+                          <span
+                            key={label}
+                            className={cn(
+                              "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium border",
+                              color === "emerald" && "bg-emerald-500/10 border-emerald-500/30 text-emerald-400",
+                              color === "violet" && "bg-violet-500/10 border-violet-500/30 text-violet-400",
+                              color === "cyan" && "bg-cyan-500/10 border-cyan-500/30 text-cyan-400"
+                            )}
+                          >
+                            <Icon className="h-3 w-3" />
+                            {label}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   {isOwnProfile && (
                     <Link
                       href="/settings"
-                      className="inline-flex items-center gap-2 rounded-xl bg-zinc-800/50 border border-zinc-700/50 px-4 py-2 text-sm font-medium text-zinc-300 hover:bg-zinc-800 hover:text-white transition-all"
+                      className="inline-flex items-center gap-2 rounded-xl bg-zinc-800/50 border border-zinc-700/50 px-4 py-2 text-sm font-medium text-zinc-300 hover:bg-zinc-800 hover:text-white transition-all shrink-0"
                     >
                       <Settings className="h-4 w-4" />
                       Edit Profile
@@ -268,7 +340,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
 
                 {/* Stats */}
                 <div className="pt-4 border-t border-white/5">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-3">
                     <div className="text-center p-3 rounded-xl bg-zinc-800/30">
                       <div className="text-2xl font-bold text-white">{user.projects.length}</div>
                       <div className="text-xs text-zinc-400">Projects</div>
@@ -278,6 +350,76 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                       <div className="text-xs text-zinc-400">Companies</div>
                     </div>
                   </div>
+                </div>
+
+                {/* Credibility Signals */}
+                <div className="pt-4 border-t border-white/5 space-y-3">
+                  <h4 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Builder Stats</h4>
+
+                  {/* Shipped Projects */}
+                  {launchedProjects > 0 && (
+                    <div className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-orange-500/10 to-transparent border border-orange-500/20">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500/20">
+                        <Rocket className="h-4 w-4 text-orange-400" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium text-white">
+                          Shipped {launchedProjects} project{launchedProjects !== 1 ? "s" : ""}
+                        </div>
+                        <div className="text-xs text-zinc-500">Launched & live</div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Streak */}
+                  {(user.currentStreak > 0 || user.longestStreak > 0) && (
+                    <div className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-amber-500/10 to-transparent border border-amber-500/20">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/20">
+                        <Flame className="h-4 w-4 text-amber-400" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium text-white">
+                          {user.currentStreak > 0 ? `${user.currentStreak} day streak` : `Best: ${user.longestStreak} days`}
+                        </div>
+                        <div className="text-xs text-zinc-500">
+                          {user.currentStreak > 0 && user.longestStreak > user.currentStreak
+                            ? `Best: ${user.longestStreak} days`
+                            : "Consecutive updates"
+                          }
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Upvotes */}
+                  {totalUpvotes > 0 && (
+                    <div className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-violet-500/10 to-transparent border border-violet-500/20">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-500/20">
+                        <Star className="h-4 w-4 text-violet-400" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium text-white">
+                          {totalUpvotes} upvote{totalUpvotes !== 1 ? "s" : ""}
+                        </div>
+                        <div className="text-xs text-zinc-500">Community support</div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Endorsements */}
+                  {user.endorsementsReceived.length > 0 && (
+                    <div className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-cyan-500/10 to-transparent border border-cyan-500/20">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-cyan-500/20">
+                        <Award className="h-4 w-4 text-cyan-400" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium text-white">
+                          {user.endorsementsReceived.length} endorsement{user.endorsementsReceived.length !== 1 ? "s" : ""}
+                        </div>
+                        <div className="text-xs text-zinc-500">From other builders</div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -316,6 +458,15 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
 
           {/* Main content */}
           <div className="lg:col-span-2 space-y-8">
+            {/* Endorsements Section */}
+            <EndorsementSection
+              userId={user.id}
+              endorsements={user.endorsementsReceived}
+              isOwnProfile={isOwnProfile}
+              hasEndorsed={hasEndorsed}
+              currentUserId={session?.user?.id}
+            />
+
             {/* Projects */}
             <section>
               <div className="flex items-center gap-3 mb-4">

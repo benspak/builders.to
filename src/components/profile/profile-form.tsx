@@ -9,6 +9,9 @@ import {
   MapPin,
   FileText,
   Save,
+  Briefcase,
+  Users,
+  Code,
 } from "lucide-react";
 import Image from "next/image";
 
@@ -48,6 +51,10 @@ interface ProfileFormProps {
     youtubeUrl: string | null;
     linkedinUrl: string | null;
     image: string | null;
+    // Intent flags
+    openToWork: boolean;
+    lookingForCofounder: boolean;
+    availableForContract: boolean;
   };
 }
 
@@ -67,6 +74,10 @@ export function ProfileForm({ user }: ProfileFormProps) {
     twitterUrl: user.twitterUrl || "",
     youtubeUrl: user.youtubeUrl || "",
     linkedinUrl: user.linkedinUrl || "",
+    // Intent flags
+    openToWork: user.openToWork ?? false,
+    lookingForCofounder: user.lookingForCofounder ?? false,
+    availableForContract: user.availableForContract ?? false,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -330,6 +341,106 @@ export function ProfileForm({ user }: ProfileFormProps) {
               className="input pl-11"
             />
           </div>
+        </div>
+      </div>
+
+      {/* Intent Flags Section */}
+      <div className="space-y-4">
+        <div>
+          <h3 className="text-lg font-semibold text-white">What are you looking for?</h3>
+          <p className="text-sm text-zinc-400">Let the community know what you&apos;re open to</p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {/* Open to Work */}
+          <label
+            className={`relative flex cursor-pointer flex-col items-center gap-3 rounded-xl border-2 p-4 transition-all ${
+              formData.openToWork
+                ? "border-emerald-500/50 bg-emerald-500/10"
+                : "border-zinc-700/50 bg-zinc-800/30 hover:border-zinc-600/50"
+            }`}
+          >
+            <input
+              type="checkbox"
+              checked={formData.openToWork}
+              onChange={(e) => setFormData({ ...formData, openToWork: e.target.checked })}
+              className="sr-only"
+            />
+            <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${
+              formData.openToWork ? "bg-emerald-500/20" : "bg-zinc-700/30"
+            }`}>
+              <Briefcase className={`h-6 w-6 ${formData.openToWork ? "text-emerald-400" : "text-zinc-500"}`} />
+            </div>
+            <div className="text-center">
+              <div className={`font-medium ${formData.openToWork ? "text-emerald-400" : "text-zinc-300"}`}>
+                Open to Work
+              </div>
+              <div className="text-xs text-zinc-500 mt-1">Looking for job opportunities</div>
+            </div>
+            {formData.openToWork && (
+              <div className="absolute top-2 right-2 h-2 w-2 rounded-full bg-emerald-500" />
+            )}
+          </label>
+
+          {/* Looking for Co-founder */}
+          <label
+            className={`relative flex cursor-pointer flex-col items-center gap-3 rounded-xl border-2 p-4 transition-all ${
+              formData.lookingForCofounder
+                ? "border-violet-500/50 bg-violet-500/10"
+                : "border-zinc-700/50 bg-zinc-800/30 hover:border-zinc-600/50"
+            }`}
+          >
+            <input
+              type="checkbox"
+              checked={formData.lookingForCofounder}
+              onChange={(e) => setFormData({ ...formData, lookingForCofounder: e.target.checked })}
+              className="sr-only"
+            />
+            <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${
+              formData.lookingForCofounder ? "bg-violet-500/20" : "bg-zinc-700/30"
+            }`}>
+              <Users className={`h-6 w-6 ${formData.lookingForCofounder ? "text-violet-400" : "text-zinc-500"}`} />
+            </div>
+            <div className="text-center">
+              <div className={`font-medium ${formData.lookingForCofounder ? "text-violet-400" : "text-zinc-300"}`}>
+                Looking for Co-founder
+              </div>
+              <div className="text-xs text-zinc-500 mt-1">Seeking a partner to build with</div>
+            </div>
+            {formData.lookingForCofounder && (
+              <div className="absolute top-2 right-2 h-2 w-2 rounded-full bg-violet-500" />
+            )}
+          </label>
+
+          {/* Available for Contract */}
+          <label
+            className={`relative flex cursor-pointer flex-col items-center gap-3 rounded-xl border-2 p-4 transition-all ${
+              formData.availableForContract
+                ? "border-cyan-500/50 bg-cyan-500/10"
+                : "border-zinc-700/50 bg-zinc-800/30 hover:border-zinc-600/50"
+            }`}
+          >
+            <input
+              type="checkbox"
+              checked={formData.availableForContract}
+              onChange={(e) => setFormData({ ...formData, availableForContract: e.target.checked })}
+              className="sr-only"
+            />
+            <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${
+              formData.availableForContract ? "bg-cyan-500/20" : "bg-zinc-700/30"
+            }`}>
+              <Code className={`h-6 w-6 ${formData.availableForContract ? "text-cyan-400" : "text-zinc-500"}`} />
+            </div>
+            <div className="text-center">
+              <div className={`font-medium ${formData.availableForContract ? "text-cyan-400" : "text-zinc-300"}`}>
+                Available for Contract
+              </div>
+              <div className="text-xs text-zinc-500 mt-1">Open to freelance/contract work</div>
+            </div>
+            {formData.availableForContract && (
+              <div className="absolute top-2 right-2 h-2 w-2 rounded-full bg-cyan-500" />
+            )}
+          </label>
         </div>
       </div>
 

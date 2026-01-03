@@ -18,10 +18,20 @@ export default async function HomePage() {
 
         <div className="relative mx-auto max-w-7xl px-4 py-24 sm:px-6 sm:py-32 lg:px-8 lg:py-40">
           <div className="text-center">
-            {/* Badge */}
-            <div className="inline-flex items-center gap-2 rounded-full bg-orange-500/10 border border-orange-500/20 px-4 py-2 text-sm text-orange-400 mb-8 animate-slide-up opacity-0">
-              <Zap className="h-4 w-4" />
-              <a href="https://x.com/i/communities/1943895831322439993" target="_blank" rel="noopener noreferrer" className="hover:underline">Part of the Builders.to community on X</a>
+            {/* Badges */}
+            <div className="flex flex-col items-center gap-4 mb-8 animate-slide-up opacity-0">
+              <div className="inline-flex items-center gap-2 rounded-full bg-orange-500/10 border border-orange-500/20 px-4 py-2 text-sm text-orange-400">
+                <Zap className="h-4 w-4" />
+                <a href="https://x.com/i/communities/1943895831322439993" target="_blank" rel="noopener noreferrer" className="hover:underline">Part of the Builders.to community on X</a>
+              </div>
+              <a href="https://www.producthunt.com/products/builders-to?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-builders-to" target="_blank" rel="noopener noreferrer" className="hover:opacity-90 transition-opacity">
+                <img
+                  src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1057424&theme=light&t=1767474862338"
+                  alt="Builders.to - Ship faster. Together. | Product Hunt"
+                  width="250"
+                  height="54"
+                />
+              </a>
             </div>
 
             {/* Headline */}

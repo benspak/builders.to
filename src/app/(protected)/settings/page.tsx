@@ -35,6 +35,10 @@ export default async function SettingsPage() {
       youtubeUrl: true,
       linkedinUrl: true,
       image: true,
+      // Intent flags
+      openToWork: true,
+      lookingForCofounder: true,
+      availableForContract: true,
     },
   });
 
