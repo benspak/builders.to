@@ -112,15 +112,21 @@ model Project {
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
+  // Artifact links - make projects compound value
+  demoUrl      String?      // Live demo link
+  docsUrl      String?      // Documentation link
+  changelogUrl String?      // Changelog/release notes link
+
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   companyId String?
   company   Company? @relation(fields: [companyId], references: [id], onDelete: SetNull)
 
-  upvotes  Upvote[]
-  comments Comment[]
-  images   ProjectImage[]
-  roastMVP RoastMVP?
+  upvotes    Upvote[]
+  comments   Comment[]
+  images     ProjectImage[]
+  roastMVP   RoastMVP?
+  milestones ProjectMilestone[]
 
   @@index([userId])
   @@index([createdAt])
@@ -176,6 +182,38 @@ enum ProjectStatus {
   BUILDING
   BETA
   LAUNCHED
+  PAUSED
+  ACQUIRED
+}
+
+// Predefined milestone types for project lifecycle tracking
+enum MilestoneType {
+  V1_SHIPPED        // v1 shipped
+  FIRST_USER        // First user/signup
+  FIRST_CUSTOMER    // First paying customer
+  MRR_1K            // $1k MRR
+  MRR_10K           // $10k MRR
+  PROFITABLE        // Reached profitability
+  TEAM_HIRE         // First hire
+  FUNDING           // Received funding
+  PIVOT             // Major pivot
+  CUSTOM            // Custom milestone
+}
+
+// Project milestones - longitudinal record of execution
+model ProjectMilestone {
+  id          String        @id @default(cuid())
+  type        MilestoneType
+  title       String?       // Custom title (optional, used for CUSTOM type)
+  description String?       @db.Text
+  achievedAt  DateTime      @default(now())  // When milestone was achieved
+  createdAt   DateTime      @default(now())
+
+  projectId   String
+  project     Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([achievedAt])
 }
 
 enum CompanyCategory {

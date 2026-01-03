@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { CommentList } from "@/components/comments/comment-list";
 import { UpvoteButton } from "@/components/projects/upvote-button";
 import { ImageGallery } from "@/components/ui/image-gallery";
+import { MilestoneSectionWrapper } from "@/components/projects/milestone-section-wrapper";
 import { cn, formatRelativeTime, getStatusColor, getStatusLabel } from "@/lib/utils";
 import {
   ArrowLeft,
@@ -14,7 +15,10 @@ import {
   User,
   Calendar,
   Pencil,
-  Images
+  Images,
+  Play,
+  FileText,
+  ScrollText
 } from "lucide-react";
 import { DeleteProjectButton } from "@/components/projects/delete-project-button";
 import ReactMarkdown from "react-markdown";
@@ -41,10 +45,14 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
       images: {
         orderBy: { order: "asc" },
       },
+      milestones: {
+        orderBy: { achievedAt: "desc" },
+      },
       _count: {
         select: {
           upvotes: true,
           comments: true,
+          milestones: true,
         },
       },
     },
@@ -212,6 +220,39 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                     View Source
                   </a>
                 )}
+                {project.demoUrl && (
+                  <a
+                    href={project.demoUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-lg bg-cyan-600 px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-500 transition-colors"
+                  >
+                    <Play className="h-4 w-4" />
+                    Live Demo
+                  </a>
+                )}
+                {project.docsUrl && (
+                  <a
+                    href={project.docsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500 transition-colors"
+                  >
+                    <FileText className="h-4 w-4" />
+                    Documentation
+                  </a>
+                )}
+                {project.changelogUrl && (
+                  <a
+                    href={project.changelogUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-lg bg-zinc-700 px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-600 transition-colors"
+                  >
+                    <ScrollText className="h-4 w-4" />
+                    Changelog
+                  </a>
+                )}
               </div>
             </div>
           </div>
@@ -237,6 +278,15 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
             <ImageGallery images={project.images} />
           </section>
         )}
+
+        {/* Milestones - Longitudinal Record of Execution */}
+        <section className="card p-8">
+          <MilestoneSectionWrapper
+            projectId={project.id}
+            initialMilestones={project.milestones}
+            isOwner={isOwner}
+          />
+        </section>
 
         {/* Comments */}
         <section className="card p-8">

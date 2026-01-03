@@ -2,9 +2,15 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { MessageSquare, ExternalLink, Github, User } from "lucide-react";
-import { cn, formatRelativeTime, getStatusColor, getStatusLabel } from "@/lib/utils";
+import { MessageSquare, ExternalLink, Github, User, Play, FileText } from "lucide-react";
+import { cn, formatRelativeTime, getStatusColor, getStatusLabel, getMilestoneLabel, getMilestoneColor } from "@/lib/utils";
 import { UpvoteButton } from "./upvote-button";
+
+interface Milestone {
+  id: string;
+  type: string;
+  title?: string | null;
+}
 
 interface ProjectCardProps {
   project: {
@@ -17,6 +23,10 @@ interface ProjectCardProps {
     imageUrl?: string | null;
     status: string;
     createdAt: string | Date;
+    // Artifact fields
+    demoUrl?: string | null;
+    docsUrl?: string | null;
+    changelogUrl?: string | null;
     user: {
       id: string;
       name: string | null;
@@ -26,7 +36,9 @@ interface ProjectCardProps {
     _count: {
       upvotes: number;
       comments: number;
+      milestones?: number;
     };
+    milestones?: Milestone[];
     hasUpvoted?: boolean;
   };
 }
@@ -72,8 +84,8 @@ export function ProjectCard({ project }: ProjectCardProps) {
           />
         </div>
 
-        {/* Status badge */}
-        <div className="mt-4">
+        {/* Status badge and Milestones */}
+        <div className="mt-4 flex flex-wrap items-center gap-2">
           <span
             className={cn(
               "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium border",
@@ -82,6 +94,31 @@ export function ProjectCard({ project }: ProjectCardProps) {
           >
             {getStatusLabel(project.status)}
           </span>
+
+          {/* Milestone badges - show up to 2 */}
+          {project.milestones && project.milestones.length > 0 && (
+            <>
+              {project.milestones.slice(0, 2).map((milestone) => (
+                <span
+                  key={milestone.id}
+                  className={cn(
+                    "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium border",
+                    getMilestoneColor(milestone.type)
+                  )}
+                  title={milestone.type === "CUSTOM" && milestone.title
+                    ? milestone.title
+                    : getMilestoneLabel(milestone.type)}
+                >
+                  {getMilestoneLabel(milestone.type).split(" ")[0]}
+                </span>
+              ))}
+              {project.milestones.length > 2 && (
+                <span className="text-xs text-zinc-500">
+                  +{project.milestones.length - 2}
+                </span>
+              )}
+            </>
+          )}
         </div>
 
         {/* Footer */}
@@ -127,7 +164,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
           )}
 
           {/* Stats & Links */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <Link
               href={`${projectUrl}#comments`}
               className="flex items-center gap-1 text-sm text-zinc-500 hover:text-white transition-colors"
@@ -136,12 +173,37 @@ export function ProjectCard({ project }: ProjectCardProps) {
               <span>{project._count.comments}</span>
             </Link>
 
+            {project.demoUrl && (
+              <a
+                href={project.demoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-zinc-500 hover:text-cyan-400 transition-colors"
+                title="Live Demo"
+              >
+                <Play className="h-4 w-4" />
+              </a>
+            )}
+
+            {project.docsUrl && (
+              <a
+                href={project.docsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-zinc-500 hover:text-blue-400 transition-colors"
+                title="Documentation"
+              >
+                <FileText className="h-4 w-4" />
+              </a>
+            )}
+
             {project.url && (
               <a
                 href={project.url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-zinc-500 hover:text-white transition-colors"
+                title="Visit Project"
               >
                 <ExternalLink className="h-4 w-4" />
               </a>
@@ -153,6 +215,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-zinc-500 hover:text-white transition-colors"
+                title="Source Code"
               >
                 <Github className="h-4 w-4" />
               </a>

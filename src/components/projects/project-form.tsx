@@ -2,7 +2,18 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Link as LinkIcon, Github, Rocket, Building2, Hash, Images } from "lucide-react";
+import {
+  Loader2,
+  Link as LinkIcon,
+  Github,
+  Rocket,
+  Building2,
+  Hash,
+  Images,
+  Play,
+  FileText,
+  ScrollText
+} from "lucide-react";
 import { cn, generateSlug } from "@/lib/utils";
 import { ImageUpload, GalleryUpload } from "@/components/ui/image-upload";
 
@@ -31,15 +42,22 @@ interface ProjectFormProps {
     status: string;
     companyId?: string | null;
     images?: GalleryImage[];
+    // Artifact fields
+    demoUrl?: string | null;
+    docsUrl?: string | null;
+    changelogUrl?: string | null;
   };
   initialCompanyId?: string;
 }
 
+// Project lifecycle states - from idea to exit
 const statuses = [
   { value: "IDEA", label: "💡 Idea", description: "Just an idea, looking for feedback" },
   { value: "BUILDING", label: "🔨 Building", description: "Actively working on it" },
   { value: "BETA", label: "🧪 Beta", description: "Ready for early users" },
   { value: "LAUNCHED", label: "🚀 Launched", description: "Live and available" },
+  { value: "PAUSED", label: "⏸️ Paused", description: "On hold or hibernating" },
+  { value: "ACQUIRED", label: "🏆 Acquired", description: "Successfully exited" },
 ];
 
 export function ProjectForm({ initialData, initialCompanyId }: ProjectFormProps) {
@@ -59,6 +77,10 @@ export function ProjectForm({ initialData, initialCompanyId }: ProjectFormProps)
     imageUrl: initialData?.imageUrl || "",
     status: initialData?.status || "IDEA",
     companyId: initialData?.companyId || initialCompanyId || "",
+    // Artifact fields
+    demoUrl: initialData?.demoUrl || "",
+    docsUrl: initialData?.docsUrl || "",
+    changelogUrl: initialData?.changelogUrl || "",
   });
   const [galleryImages, setGalleryImages] = useState<GalleryImage[]>(
     initialData?.images || []
@@ -119,6 +141,10 @@ export function ProjectForm({ initialData, initialCompanyId }: ProjectFormProps)
           ...formData,
           companyId: formData.companyId || null,
           slug: formData.slug || undefined,
+          // Send artifact fields
+          demoUrl: formData.demoUrl || null,
+          docsUrl: formData.docsUrl || null,
+          changelogUrl: formData.changelogUrl || null,
         }),
       });
 
@@ -238,12 +264,15 @@ export function ProjectForm({ initialData, initialCompanyId }: ProjectFormProps)
         </p>
       </div>
 
-      {/* Status */}
+      {/* Status - Lifecycle States */}
       <div>
         <label className="block text-sm font-medium text-zinc-300 mb-3">
-          Project Status <span className="text-red-400">*</span>
+          Lifecycle Status <span className="text-red-400">*</span>
         </label>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <p className="text-xs text-zinc-500 mb-3">
+          Track your project&apos;s journey from idea to exit
+        </p>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {statuses.map((status) => (
             <button
               key={status.value}
@@ -258,7 +287,7 @@ export function ProjectForm({ initialData, initialCompanyId }: ProjectFormProps)
             >
               <span className="text-2xl mb-1">{status.label.split(" ")[0]}</span>
               <span className="text-sm font-medium text-white">
-                {status.label.split(" ")[1]}
+                {status.label.split(" ").slice(1).join(" ")}
               </span>
               <span className="text-xs text-zinc-500 mt-1 line-clamp-2">
                 {status.description}
@@ -349,7 +378,7 @@ export function ProjectForm({ initialData, initialCompanyId }: ProjectFormProps)
 
       {/* URLs Section */}
       <div className="space-y-4">
-        <h3 className="text-sm font-medium text-zinc-300">Links (optional)</h3>
+        <h3 className="text-sm font-medium text-zinc-300">Primary Links (optional)</h3>
 
         <div className="relative">
           <LinkIcon className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
@@ -371,6 +400,58 @@ export function ProjectForm({ initialData, initialCompanyId }: ProjectFormProps)
             onChange={(e) => setFormData({ ...formData, githubUrl: e.target.value })}
             className="input pl-11"
           />
+        </div>
+      </div>
+
+      {/* Artifacts Section - compound value */}
+      <div className="space-y-4">
+        <div>
+          <h3 className="text-sm font-medium text-zinc-300">Artifacts (optional)</h3>
+          <p className="text-xs text-zinc-500 mt-1">
+            Add links to resources that showcase your project&apos;s progress
+          </p>
+        </div>
+
+        <div className="relative">
+          <Play className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
+          <input
+            type="url"
+            placeholder="https://demo.your-project.com"
+            value={formData.demoUrl}
+            onChange={(e) => setFormData({ ...formData, demoUrl: e.target.value })}
+            className="input pl-11"
+          />
+          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-zinc-600">
+            Live Demo
+          </span>
+        </div>
+
+        <div className="relative">
+          <FileText className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
+          <input
+            type="url"
+            placeholder="https://docs.your-project.com"
+            value={formData.docsUrl}
+            onChange={(e) => setFormData({ ...formData, docsUrl: e.target.value })}
+            className="input pl-11"
+          />
+          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-zinc-600">
+            Documentation
+          </span>
+        </div>
+
+        <div className="relative">
+          <ScrollText className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
+          <input
+            type="url"
+            placeholder="https://your-project.com/changelog"
+            value={formData.changelogUrl}
+            onChange={(e) => setFormData({ ...formData, changelogUrl: e.target.value })}
+            className="input pl-11"
+          />
+          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-zinc-600">
+            Changelog
+          </span>
         </div>
       </div>
 

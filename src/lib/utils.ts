@@ -75,6 +75,10 @@ export function getStatusColor(status: string): string {
       return "bg-cyan-500/20 text-cyan-300 border-cyan-500/30";
     case "LAUNCHED":
       return "bg-emerald-500/20 text-emerald-300 border-emerald-500/30";
+    case "PAUSED":
+      return "bg-zinc-500/20 text-zinc-300 border-zinc-500/30";
+    case "ACQUIRED":
+      return "bg-fuchsia-500/20 text-fuchsia-300 border-fuchsia-500/30";
     default:
       return "bg-zinc-500/20 text-zinc-300 border-zinc-500/30";
   }
@@ -90,9 +94,62 @@ export function getStatusLabel(status: string): string {
       return "🧪 Beta";
     case "LAUNCHED":
       return "🚀 Launched";
+    case "PAUSED":
+      return "⏸️ Paused";
+    case "ACQUIRED":
+      return "🏆 Acquired";
     default:
       return status;
   }
+}
+
+// Milestone helpers
+export function getMilestoneLabel(type: string): string {
+  const labels: Record<string, string> = {
+    V1_SHIPPED: "🎯 v1 Shipped",
+    FIRST_USER: "👤 First User",
+    FIRST_CUSTOMER: "💰 First Customer",
+    MRR_1K: "📈 $1k MRR",
+    MRR_10K: "🚀 $10k MRR",
+    PROFITABLE: "💵 Profitable",
+    TEAM_HIRE: "👥 First Hire",
+    FUNDING: "💼 Funding Received",
+    PIVOT: "🔄 Major Pivot",
+    CUSTOM: "⭐ Milestone",
+  };
+  return labels[type] || type;
+}
+
+export function getMilestoneColor(type: string): string {
+  const colors: Record<string, string> = {
+    V1_SHIPPED: "bg-blue-500/20 text-blue-300 border-blue-500/30",
+    FIRST_USER: "bg-cyan-500/20 text-cyan-300 border-cyan-500/30",
+    FIRST_CUSTOMER: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30",
+    MRR_1K: "bg-green-500/20 text-green-300 border-green-500/30",
+    MRR_10K: "bg-teal-500/20 text-teal-300 border-teal-500/30",
+    PROFITABLE: "bg-lime-500/20 text-lime-300 border-lime-500/30",
+    TEAM_HIRE: "bg-indigo-500/20 text-indigo-300 border-indigo-500/30",
+    FUNDING: "bg-violet-500/20 text-violet-300 border-violet-500/30",
+    PIVOT: "bg-amber-500/20 text-amber-300 border-amber-500/30",
+    CUSTOM: "bg-zinc-500/20 text-zinc-300 border-zinc-500/30",
+  };
+  return colors[type] || colors.CUSTOM;
+}
+
+export function getMilestoneIcon(type: string): string {
+  const icons: Record<string, string> = {
+    V1_SHIPPED: "🎯",
+    FIRST_USER: "👤",
+    FIRST_CUSTOMER: "💰",
+    MRR_1K: "📈",
+    MRR_10K: "🚀",
+    PROFITABLE: "💵",
+    TEAM_HIRE: "👥",
+    FUNDING: "💼",
+    PIVOT: "🔄",
+    CUSTOM: "⭐",
+  };
+  return icons[type] || "⭐";
 }
 
 // Company Category helpers

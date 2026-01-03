@@ -46,10 +46,20 @@ export async function GET(request: NextRequest) {
               slug: true,
             },
           },
+          milestones: {
+            orderBy: { achievedAt: "desc" },
+            take: 3,
+            select: {
+              id: true,
+              type: true,
+              title: true,
+            },
+          },
           _count: {
             select: {
               upvotes: true,
               comments: true,
+              milestones: true,
             },
           },
         },
@@ -112,7 +122,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { title, tagline, description, url, githubUrl, imageUrl, status, companyId, slug } = body;
+    const { title, tagline, description, url, githubUrl, imageUrl, status, companyId, slug, demoUrl, docsUrl, changelogUrl } = body;
 
     if (!title || !tagline) {
       return NextResponse.json(
@@ -177,6 +187,10 @@ export async function POST(request: NextRequest) {
         status: status || "IDEA",
         userId: session.user.id,
         companyId: companyId || null,
+        // Artifact fields
+        demoUrl: demoUrl || null,
+        docsUrl: docsUrl || null,
+        changelogUrl: changelogUrl || null,
       },
       include: {
         user: {
@@ -187,10 +201,20 @@ export async function POST(request: NextRequest) {
             slug: true,
           },
         },
+        milestones: {
+          orderBy: { achievedAt: "desc" },
+          take: 3,
+          select: {
+            id: true,
+            type: true,
+            title: true,
+          },
+        },
         _count: {
           select: {
             upvotes: true,
             comments: true,
+            milestones: true,
           },
         },
       },

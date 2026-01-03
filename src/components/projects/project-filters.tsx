@@ -11,6 +11,8 @@ const statuses = [
   { value: "BUILDING", label: "🔨 Building" },
   { value: "BETA", label: "🧪 Beta" },
   { value: "LAUNCHED", label: "🚀 Launched" },
+  { value: "PAUSED", label: "⏸️ Paused" },
+  { value: "ACQUIRED", label: "🏆 Acquired" },
 ];
 
 const sorts = [

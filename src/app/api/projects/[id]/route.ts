@@ -101,7 +101,7 @@ export async function PATCH(
     }
 
     const body = await request.json();
-    const { title, tagline, description, url, githubUrl, imageUrl, status, companyId, slug } = body;
+    const { title, tagline, description, url, githubUrl, imageUrl, status, companyId, slug, demoUrl, docsUrl, changelogUrl } = body;
 
     // Validate image URL
     const imageUrlError = validateImageUrl(imageUrl);
@@ -157,6 +157,10 @@ export async function PATCH(
         ...(imageUrl !== undefined && { imageUrl }),
         ...(status && { status }),
         ...(companyId !== undefined && { companyId: companyId || null }),
+        // Artifact fields
+        ...(demoUrl !== undefined && { demoUrl: demoUrl || null }),
+        ...(docsUrl !== undefined && { docsUrl: docsUrl || null }),
+        ...(changelogUrl !== undefined && { changelogUrl: changelogUrl || null }),
       },
       include: {
         user: {
@@ -166,10 +170,20 @@ export async function PATCH(
             image: true,
           },
         },
+        milestones: {
+          orderBy: { achievedAt: "desc" },
+          select: {
+            id: true,
+            type: true,
+            title: true,
+            achievedAt: true,
+          },
+        },
         _count: {
           select: {
             upvotes: true,
             comments: true,
+            milestones: true,
           },
         },
       },
