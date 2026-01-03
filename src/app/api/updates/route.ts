@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { rateLimit, RATE_LIMITS, rateLimitResponse } from "@/lib/rate-limit";
+import { extractMentions } from "@/lib/utils";
 
 // GET /api/updates - Get updates for a user or global feed
 export async function GET(request: NextRequest) {
@@ -151,6 +152,50 @@ export async function POST(request: NextRequest) {
         },
       }),
     ]);
+
+    // Extract mentions and create notifications
+    const mentionedSlugs = extractMentions(content);
+
+    if (mentionedSlugs.length > 0) {
+      // Get the current user's display name for notification
+      const currentUser = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { firstName: true, lastName: true, name: true, image: true },
+      });
+
+      const actorName = currentUser?.firstName && currentUser?.lastName
+        ? `${currentUser.firstName} ${currentUser.lastName}`
+        : currentUser?.name || "Someone";
+
+      // Find users by their slugs
+      const mentionedUsers = await prisma.user.findMany({
+        where: {
+          slug: { in: mentionedSlugs },
+          // Don't notify yourself
+          id: { not: session.user.id },
+        },
+        select: { id: true, slug: true },
+      });
+
+      // Create notifications for each mentioned user
+      // Note: USER_MENTIONED type added in schema - run `npx prisma generate` after migration
+      if (mentionedUsers.length > 0) {
+        await prisma.notification.createMany({
+          data: mentionedUsers.map((user) => ({
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            type: "USER_MENTIONED" as any,
+            title: `${actorName} mentioned you`,
+            message: content.length > 100 ? content.slice(0, 100) + "..." : content,
+            userId: user.id,
+            updateId: update.id,
+            actorId: session.user.id,
+            actorName,
+            actorImage: currentUser?.image || null,
+          })),
+          skipDuplicates: true,
+        });
+      }
+    }
 
     return NextResponse.json(update, { status: 201 });
   } catch (error) {

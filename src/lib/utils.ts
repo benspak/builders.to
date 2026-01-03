@@ -212,6 +212,40 @@ export function getSizeShortLabel(size: string | null): string {
   return labels[size] || size;
 }
 
+// ==========================================
+// User Mention Utilities
+// ==========================================
+
+/**
+ * Regex to match @mentions in text.
+ * Matches @username where username is alphanumeric with hyphens/underscores.
+ * The username must start with a letter or number.
+ */
+export const MENTION_REGEX = /@([a-zA-Z0-9][a-zA-Z0-9_-]*)/g;
+
+/**
+ * Extracts all @mentions from a text string.
+ * Returns an array of unique slugs (without the @ symbol).
+ */
+export function extractMentions(text: string): string[] {
+  const slugs = new Set<string>();
+  const regex = new RegExp(MENTION_REGEX.source, "g");
+  let match;
+
+  while ((match = regex.exec(text)) !== null) {
+    slugs.add(match[1].toLowerCase());
+  }
+
+  return Array.from(slugs);
+}
+
+/**
+ * Checks if a string contains any @mentions.
+ */
+export function hasMentions(text: string): boolean {
+  return MENTION_REGEX.test(text);
+}
+
 // Domains that serve HTML pages instead of direct images
 const INVALID_IMAGE_DOMAINS = [
   "drive.google.com",

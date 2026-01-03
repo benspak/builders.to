@@ -10,6 +10,7 @@ import {
   Trophy,
   Mail,
   Heart,
+  AtSign,
   Loader2
 } from "lucide-react";
 import { cn, formatRelativeTime } from "@/lib/utils";
@@ -130,6 +131,8 @@ export function NotificationDropdown() {
         return <Trophy className="h-4 w-4 text-amber-400" />;
       case "UPDATE_LIKED":
         return <Heart className="h-4 w-4 text-rose-400" />;
+      case "USER_MENTIONED":
+        return <AtSign className="h-4 w-4 text-orange-400" />;
       case "WEEKLY_DIGEST":
         return <Mail className="h-4 w-4 text-blue-400" />;
       default:
@@ -143,11 +146,12 @@ export function NotificationDropdown() {
     if (notification.feedEvent?.milestone?.project?.slug) {
       return `/projects/${notification.feedEvent.milestone.project.slug}`;
     }
-    // Link to feed page for update notifications (updates are shown in the feed)
+    // Link to profile for update notifications (updates are shown on profile)
     if (notification.update?.user?.slug) {
       return `/profile/${notification.update.user.slug}`;
     }
-    if (notification.type === "UPDATE_LIKED") {
+    // For mentions and likes, go to the feed
+    if (notification.type === "UPDATE_LIKED" || notification.type === "USER_MENTIONED") {
       return `/feed`;
     }
     return null;

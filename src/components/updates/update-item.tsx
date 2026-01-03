@@ -1,12 +1,72 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { User, Trash2, Loader2, MoreHorizontal, Heart, MessageCircle } from "lucide-react";
-import { formatRelativeTime, cn } from "@/lib/utils";
+import { formatRelativeTime, cn, MENTION_REGEX } from "@/lib/utils";
 import { UpdateComments } from "./update-comments";
+
+// Component to render content with clickable @mentions
+function ContentWithMentions({ content }: { content: string }) {
+  const parts = useMemo(() => {
+    const result: Array<{ type: "text" | "mention"; value: string }> = [];
+    let lastIndex = 0;
+
+    // Reset regex lastIndex to ensure fresh matching
+    const regex = new RegExp(MENTION_REGEX.source, "g");
+    let match;
+
+    while ((match = regex.exec(content)) !== null) {
+      // Add text before the mention
+      if (match.index > lastIndex) {
+        result.push({
+          type: "text",
+          value: content.slice(lastIndex, match.index),
+        });
+      }
+
+      // Add the mention
+      result.push({
+        type: "mention",
+        value: match[1], // The slug without @
+      });
+
+      lastIndex = match.index + match[0].length;
+    }
+
+    // Add remaining text after last mention
+    if (lastIndex < content.length) {
+      result.push({
+        type: "text",
+        value: content.slice(lastIndex),
+      });
+    }
+
+    return result;
+  }, [content]);
+
+  return (
+    <>
+      {parts.map((part, index) => {
+        if (part.type === "mention") {
+          return (
+            <Link
+              key={index}
+              href={`/profile/${part.value}`}
+              className="text-orange-400 hover:text-orange-300 hover:underline transition-colors font-medium"
+              onClick={(e) => e.stopPropagation()}
+            >
+              @{part.value}
+            </Link>
+          );
+        }
+        return <span key={index}>{part.value}</span>;
+      })}
+    </>
+  );
+}
 
 // X/Twitter icon
 const XIcon = ({ className }: { className?: string }) => (
@@ -183,7 +243,7 @@ export function UpdateItem({ update, currentUserId, showAuthor = true }: UpdateI
 
             <div className="p-4">
               <p className="text-zinc-300 whitespace-pre-wrap text-sm leading-relaxed">
-                {update.content}
+                <ContentWithMentions content={update.content} />
               </p>
               <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/5">
                 <div className="flex items-center gap-4">
