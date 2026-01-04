@@ -94,16 +94,6 @@ export default async function Image({ params }: { params: { slug: string } }) {
           overflow: 'hidden',
         }}
       >
-        {/* Grid background */}
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            backgroundImage:
-              'linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px)',
-            backgroundSize: '48px 48px',
-          }}
-        />
 
         {/* Cyan glow - top right */}
         <div

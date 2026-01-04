@@ -15,10 +15,29 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "12");
     const skip = (page - 1) * limit;
+    const mine = searchParams.get("mine") === "true";
+    const hiring = searchParams.get("hiring") === "true";
+    const contracts = searchParams.get("contracts") === "true";
+
+    // If filtering by "mine", get the current user's ID
+    let currentUserId: string | null = null;
+    if (mine) {
+      const session = await auth();
+      currentUserId = session?.user?.id || null;
+      if (!currentUserId) {
+        return NextResponse.json({
+          companies: [],
+          pagination: { page: 1, limit, total: 0, totalPages: 0 },
+        });
+      }
+    }
 
     const where = {
+      ...(mine && currentUserId && { userId: currentUserId }),
       ...(category && { category }),
       ...(size && { size }),
+      ...(hiring && { isHiring: true }),
+      ...(contracts && { acceptsContracts: true }),
       ...(search && {
         OR: [
           { name: { contains: search, mode: "insensitive" as const } },
@@ -45,6 +64,9 @@ export async function GET(request: NextRequest) {
           _count: {
             select: {
               projects: true,
+              roles: {
+                where: { isActive: true },
+              },
             },
           },
         },
@@ -89,7 +111,29 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, logo, location, category, about, website, size, yearFounded, slug } = body;
+    const {
+      name,
+      logo,
+      location,
+      category,
+      about,
+      website,
+      size,
+      yearFounded,
+      slug,
+      // New opportunity hub fields
+      techStack,
+      tools,
+      customerCount,
+      revenueRange,
+      userCount,
+      isBootstrapped,
+      isProfitable,
+      hasRaisedFunding,
+      fundingStage,
+      isHiring,
+      acceptsContracts,
+    } = body;
 
     if (!name) {
       return NextResponse.json(
@@ -139,6 +183,18 @@ export async function POST(request: NextRequest) {
         size,
         yearFounded: yearFounded ? parseInt(yearFounded) : null,
         userId: session.user.id,
+        // New opportunity hub fields
+        techStack: techStack || [],
+        tools: tools || [],
+        customerCount: customerCount || null,
+        revenueRange: revenueRange || null,
+        userCount: userCount || null,
+        isBootstrapped: isBootstrapped || false,
+        isProfitable: isProfitable || false,
+        hasRaisedFunding: hasRaisedFunding || false,
+        fundingStage: hasRaisedFunding ? (fundingStage || null) : null,
+        isHiring: isHiring || false,
+        acceptsContracts: acceptsContracts || false,
       },
       include: {
         user: {

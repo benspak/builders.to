@@ -272,6 +272,76 @@ enum CompanySize {
   SIZE_500_PLUS
 }
 
+// Traction badge enums
+enum CustomerRange {
+  RANGE_0         // No customers yet
+  RANGE_1_10      // 1-10 customers
+  RANGE_11_50     // 11-50 customers
+  RANGE_51_100    // 51-100 customers
+  RANGE_101_500   // 101-500 customers
+  RANGE_500_PLUS  // 500+ customers
+}
+
+enum UserRange {
+  RANGE_0            // No users yet
+  RANGE_1_100        // 1-100 users
+  RANGE_101_1K       // 101-1,000 users
+  RANGE_1K_10K       // 1,000-10,000 users
+  RANGE_10K_100K     // 10,000-100,000 users
+  RANGE_100K_PLUS    // 100,000+ users
+}
+
+enum RevenueRange {
+  RANGE_0            // Pre-revenue
+  RANGE_1_10K        // $1-$10K ARR
+  RANGE_10K_50K      // $10K-$50K ARR
+  RANGE_50K_100K     // $50K-$100K ARR
+  RANGE_100K_500K    // $100K-$500K ARR
+  RANGE_500K_1M      // $500K-$1M ARR
+  RANGE_1M_5M        // $1M-$5M ARR
+  RANGE_5M_PLUS      // $5M+ ARR
+}
+
+enum FundingStage {
+  PRE_SEED
+  SEED
+  SERIES_A
+  SERIES_B
+  SERIES_C_PLUS
+}
+
+// Role/Gig types
+enum RoleType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  FREELANCE
+  COFOUNDER
+  ADVISOR
+  INTERN
+}
+
+enum RoleCategory {
+  ENGINEERING
+  DESIGN
+  PRODUCT
+  MARKETING
+  SALES
+  OPERATIONS
+  FINANCE
+  LEGAL
+  SUPPORT
+  OTHER
+}
+
+enum CompensationType {
+  SALARY
+  HOURLY
+  PROJECT
+  EQUITY_ONLY
+  SALARY_PLUS_EQUITY
+}
+
 model Company {
   id          String          @id @default(cuid())
   slug        String?         @unique  // Temporarily optional for migration
@@ -286,12 +356,97 @@ model Company {
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
 
+  // Tech Stack / Tooling
+  techStack   String[]        // Array of technologies used (e.g., ["React", "PostgreSQL", "AWS"])
+  tools       String[]        // Tools and services used (e.g., ["Figma", "Linear", "Slack"])
+
+  // Traction Badges - proof of traction
+  customerCount      CustomerRange?  // Range of customers
+  revenueRange       RevenueRange?   // ARR/MRR range
+  userCount          UserRange?      // Range of users
+  isBootstrapped     Boolean         @default(false)
+  isProfitable       Boolean         @default(false)
+  hasRaisedFunding   Boolean         @default(false)
+  fundingStage       FundingStage?   // Pre-seed, Seed, Series A, etc.
+
+  // Opportunity Hub flags
+  isHiring           Boolean         @default(false)  // Quick filter for hiring companies
+  acceptsContracts   Boolean         @default(false)  // Open for contract work
+
   userId   String
   user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   projects Project[]
+  updates  CompanyUpdate[]
+  roles    CompanyRole[]
 
   @@index([userId])
   @@index([category])
+  @@index([isHiring])
+}
+
+// Company Updates - internal build logs / announcements
+model CompanyUpdate {
+  id        String   @id @default(cuid())
+  content   String   @db.Text  // The update content (supports markdown)
+  imageUrl  String?  // Optional image attachment
+  isPinned  Boolean  @default(false)  // Pin important updates to top
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  companyId String
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  // Author of the update (company owner or team member)
+  authorId  String
+
+  @@index([companyId])
+  @@index([createdAt])
+  @@index([isPinned])
+}
+
+// Company Roles - open positions and gigs
+model CompanyRole {
+  id              String            @id @default(cuid())
+  title           String            // Job title
+  description     String?           @db.Text  // Full job description
+  type            RoleType          @default(FULL_TIME)
+  category        RoleCategory      @default(ENGINEERING)
+
+  // Location
+  location        String?           // Location or "Remote"
+  isRemote        Boolean           @default(false)
+  timezone        String?           // Preferred timezone (e.g., "PST", "UTC±3")
+
+  // Compensation
+  compensationType CompensationType?
+  salaryMin        Int?             // Minimum salary (annual or hourly based on type)
+  salaryMax        Int?             // Maximum salary
+  currency         String?          @default("USD")
+  equityMin        Float?           // Minimum equity % (e.g., 0.1 for 0.1%)
+  equityMax        Float?           // Maximum equity %
+
+  // Requirements
+  skills          String[]          // Required skills
+  experienceMin   Int?              // Minimum years of experience
+  experienceMax   Int?              // Maximum years of experience
+
+  // Status
+  isActive        Boolean           @default(true)  // Is the role still open?
+  applicationUrl  String?           // External application link
+  applicationEmail String?          // Email to apply
+
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  expiresAt       DateTime?         // When the listing expires
+
+  companyId       String
+  company         Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+  @@index([isActive])
+  @@index([type])
+  @@index([category])
+  @@index([createdAt])
 }
 
 // Roast my MVP - Featured project section

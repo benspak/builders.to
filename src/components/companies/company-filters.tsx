@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { Search, SlidersHorizontal } from "lucide-react";
+import { Search, SlidersHorizontal, Briefcase, Code } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 
@@ -37,6 +37,8 @@ export function CompanyFilters() {
 
   const currentCategory = searchParams.get("category") || "";
   const currentSize = searchParams.get("size") || "";
+  const isHiring = searchParams.get("hiring") === "true";
+  const acceptsContracts = searchParams.get("contracts") === "true";
 
   useEffect(() => {
     setSearchValue(searchParams.get("search") || "");
@@ -48,6 +50,16 @@ export function CompanyFilters() {
       params.set(key, value);
     } else {
       params.delete(key);
+    }
+    router.push(`?${params.toString()}`);
+  };
+
+  const toggleBoolParam = (key: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (params.get(key) === "true") {
+      params.delete(key);
+    } else {
+      params.set(key, "true");
     }
     router.push(`?${params.toString()}`);
   };
@@ -83,6 +95,34 @@ export function CompanyFilters() {
         >
           <SlidersHorizontal className="h-4 w-4" />
           Filters
+        </button>
+      </div>
+
+      {/* Quick Opportunity Filters */}
+      <div className="flex flex-wrap gap-2">
+        <button
+          onClick={() => toggleBoolParam("hiring")}
+          className={cn(
+            "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all border",
+            isHiring
+              ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"
+              : "bg-zinc-800/50 text-zinc-400 border-zinc-700/50 hover:bg-zinc-800 hover:text-white"
+          )}
+        >
+          <Briefcase className="h-3.5 w-3.5" />
+          Hiring
+        </button>
+        <button
+          onClick={() => toggleBoolParam("contracts")}
+          className={cn(
+            "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all border",
+            acceptsContracts
+              ? "bg-purple-500/20 text-purple-300 border-purple-500/30"
+              : "bg-zinc-800/50 text-zinc-400 border-zinc-700/50 hover:bg-zinc-800 hover:text-white"
+          )}
+        >
+          <Code className="h-3.5 w-3.5" />
+          Open for Contracts
         </button>
       </div>
 

@@ -100,7 +100,29 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     }
 
     const body = await request.json();
-    const { name, logo, location, category, about, website, size, yearFounded, slug } = body;
+    const {
+      name,
+      logo,
+      location,
+      category,
+      about,
+      website,
+      size,
+      yearFounded,
+      slug,
+      // New opportunity hub fields
+      techStack,
+      tools,
+      customerCount,
+      revenueRange,
+      userCount,
+      isBootstrapped,
+      isProfitable,
+      hasRaisedFunding,
+      fundingStage,
+      isHiring,
+      acceptsContracts,
+    } = body;
 
     if (!name) {
       return NextResponse.json(
@@ -163,6 +185,18 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         website,
         size,
         yearFounded: yearFounded ? parseInt(yearFounded) : null,
+        // New opportunity hub fields
+        ...(techStack !== undefined && { techStack }),
+        ...(tools !== undefined && { tools }),
+        ...(customerCount !== undefined && { customerCount: customerCount || null }),
+        ...(revenueRange !== undefined && { revenueRange: revenueRange || null }),
+        ...(userCount !== undefined && { userCount: userCount || null }),
+        ...(isBootstrapped !== undefined && { isBootstrapped }),
+        ...(isProfitable !== undefined && { isProfitable }),
+        ...(hasRaisedFunding !== undefined && { hasRaisedFunding }),
+        ...(fundingStage !== undefined && { fundingStage: hasRaisedFunding ? (fundingStage || null) : null }),
+        ...(isHiring !== undefined && { isHiring }),
+        ...(acceptsContracts !== undefined && { acceptsContracts }),
       },
       include: {
         user: {

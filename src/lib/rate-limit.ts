@@ -148,6 +148,7 @@ export const RATE_LIMITS = {
   // Moderate limits
   comment: { limit: 30, windowMs: 60 * 60 * 1000, name: "comment" }, // 30 per hour
   upvote: { limit: 60, windowMs: 60 * 60 * 1000, name: "upvote" }, // 60 per hour
+  createUpdate: { limit: 20, windowMs: 60 * 60 * 1000, name: "createUpdate" }, // 20 per hour
 
   // Looser limits for reads
   api: { limit: 100, windowMs: 60 * 1000, name: "api" }, // 100 per minute

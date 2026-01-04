@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Building2, MapPin, Users, ExternalLink, Briefcase, Calendar } from "lucide-react";
+import { Building2, MapPin, Users, ExternalLink, Briefcase, Calendar, Zap, Code } from "lucide-react";
 import { cn, formatRelativeTime, getCategoryLabel, getCategoryColor, getSizeShortLabel } from "@/lib/utils";
+import { TractionBadgesMinimal } from "./traction-badges";
+import { TechStackDisplay } from "./tech-stack-display";
 
 interface CompanyCardProps {
   company: {
@@ -18,6 +20,16 @@ interface CompanyCardProps {
     size?: string | null;
     yearFounded?: number | null;
     createdAt: string | Date;
+    // New opportunity hub fields
+    techStack?: string[];
+    customerCount?: string | null;
+    revenueRange?: string | null;
+    userCount?: string | null;
+    isBootstrapped?: boolean;
+    isProfitable?: boolean;
+    hasRaisedFunding?: boolean;
+    isHiring?: boolean;
+    acceptsContracts?: boolean;
     user: {
       id: string;
       name: string | null;
@@ -25,11 +37,18 @@ interface CompanyCardProps {
     };
     _count: {
       projects: number;
+      roles?: number;
     };
   };
 }
 
 export function CompanyCard({ company }: CompanyCardProps) {
+  // Check if has any traction data
+  const hasTraction = company.customerCount || company.revenueRange || company.userCount ||
+    company.isBootstrapped || company.isProfitable || company.hasRaisedFunding;
+
+  const activeRolesCount = company._count.roles || 0;
+
   return (
     <div className="card card-hover group relative flex flex-col overflow-hidden">
       <div className="p-6">
@@ -70,6 +89,24 @@ export function CompanyCard({ company }: CompanyCardProps) {
           </div>
         </div>
 
+        {/* Status badges (Hiring, Contracts) */}
+        {(company.isHiring || company.acceptsContracts) && (
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {company.isHiring && (
+              <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                <Zap className="h-3 w-3" />
+                Hiring
+              </span>
+            )}
+            {company.acceptsContracts && (
+              <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                <Code className="h-3 w-3" />
+                Contracts
+              </span>
+            )}
+          </div>
+        )}
+
         {/* About (truncated) */}
         {company.about && (
           <p className="mt-4 text-sm text-zinc-400 line-clamp-2">
@@ -77,8 +114,8 @@ export function CompanyCard({ company }: CompanyCardProps) {
           </p>
         )}
 
-        {/* Category badge */}
-        <div className="mt-4">
+        {/* Category badge and traction */}
+        <div className="mt-4 flex items-center justify-between gap-2">
           <span
             className={cn(
               "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium border",
@@ -87,7 +124,30 @@ export function CompanyCard({ company }: CompanyCardProps) {
           >
             {getCategoryLabel(company.category)}
           </span>
+
+          {/* Traction icons */}
+          {hasTraction && (
+            <TractionBadgesMinimal
+              customerCount={company.customerCount}
+              revenueRange={company.revenueRange}
+              userCount={company.userCount}
+              isBootstrapped={company.isBootstrapped}
+              isProfitable={company.isProfitable}
+              hasRaisedFunding={company.hasRaisedFunding}
+            />
+          )}
         </div>
+
+        {/* Tech Stack preview */}
+        {company.techStack && company.techStack.length > 0 && (
+          <div className="mt-3">
+            <TechStackDisplay
+              techStack={company.techStack}
+              variant="minimal"
+              maxItems={4}
+            />
+          </div>
+        )}
 
         {/* Meta info */}
         <div className="mt-4 flex flex-wrap gap-4 text-sm text-zinc-500">
@@ -107,6 +167,12 @@ export function CompanyCard({ company }: CompanyCardProps) {
             <Briefcase className="h-3.5 w-3.5" />
             <span>{company._count.projects} project{company._count.projects !== 1 ? "s" : ""}</span>
           </div>
+          {activeRolesCount > 0 && (
+            <div className="flex items-center gap-1.5 text-emerald-400">
+              <Zap className="h-3.5 w-3.5" />
+              <span>{activeRolesCount} open</span>
+            </div>
+          )}
         </div>
 
         {/* Footer */}

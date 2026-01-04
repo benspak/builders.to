@@ -5,6 +5,11 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ProjectCard } from "@/components/projects/project-card";
 import { DeleteCompanyButton } from "@/components/companies/delete-company-button";
+import { CompanyUpdateForm } from "@/components/companies/company-update-form";
+import { CompanyUpdateList } from "@/components/companies/company-update-list";
+import { CompanyRoleList } from "@/components/companies/company-role-list";
+import { TractionBadges } from "@/components/companies/traction-badges";
+import { TechStackDisplay } from "@/components/companies/tech-stack-display";
 import {
   cn,
   formatRelativeTime,
@@ -22,6 +27,9 @@ import {
   Pencil,
   Briefcase,
   User,
+  MessageSquare,
+  Code,
+  Zap,
 } from "lucide-react";
 
 interface CompanyPageProps {
@@ -61,9 +69,22 @@ export default async function CompanyPage({ params }: CompanyPageProps) {
         },
         orderBy: { createdAt: "desc" },
       },
+      updates: {
+        orderBy: [
+          { isPinned: "desc" },
+          { createdAt: "desc" },
+        ],
+        take: 10,
+      },
+      roles: {
+        where: { isActive: true },
+        orderBy: { createdAt: "desc" },
+      },
       _count: {
         select: {
           projects: true,
+          updates: true,
+          roles: true,
         },
       },
     },
@@ -88,8 +109,19 @@ export default async function CompanyPage({ params }: CompanyPageProps) {
 
   const isOwner = session?.user?.id === company.userId;
 
+  // Check for traction data
+  const hasTraction = company.customerCount || company.revenueRange || company.userCount ||
+    company.isBootstrapped || company.isProfitable || company.hasRaisedFunding;
+
+  // Check for tech stack
+  const hasTechStack = (company.techStack && company.techStack.length > 0) ||
+    (company.tools && company.tools.length > 0);
+
+  // Active open roles count
+  const activeRolesCount = company.roles.filter(r => r.isActive).length;
+
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
       <Link
         href="/companies"
         className="inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors mb-8"
@@ -146,8 +178,8 @@ export default async function CompanyPage({ params }: CompanyPageProps) {
                 )}
               </div>
 
-              {/* Category badge */}
-              <div className="mt-4">
+              {/* Category & Status badges */}
+              <div className="mt-4 flex flex-wrap items-center gap-2">
                 <span
                   className={cn(
                     "inline-flex items-center rounded-full px-3 py-1 text-sm font-medium border",
@@ -156,6 +188,20 @@ export default async function CompanyPage({ params }: CompanyPageProps) {
                 >
                   {getCategoryLabel(company.category)}
                 </span>
+
+                {company.isHiring && (
+                  <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium border bg-emerald-500/20 text-emerald-300 border-emerald-500/30">
+                    <Briefcase className="h-3.5 w-3.5" />
+                    Hiring
+                  </span>
+                )}
+
+                {company.acceptsContracts && (
+                  <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium border bg-purple-500/20 text-purple-300 border-purple-500/30">
+                    <Code className="h-3.5 w-3.5" />
+                    Open for Contracts
+                  </span>
+                )}
               </div>
 
               {/* Meta info */}
@@ -176,7 +222,28 @@ export default async function CompanyPage({ params }: CompanyPageProps) {
                   <Briefcase className="h-4 w-4" />
                   <span>{company._count.projects} project{company._count.projects !== 1 ? "s" : ""}</span>
                 </div>
+                {activeRolesCount > 0 && (
+                  <div className="flex items-center gap-2">
+                    <Zap className="h-4 w-4 text-emerald-400" />
+                    <span className="text-emerald-400">{activeRolesCount} open role{activeRolesCount !== 1 ? "s" : ""}</span>
+                  </div>
+                )}
               </div>
+
+              {/* Traction Badges */}
+              {hasTraction && (
+                <div className="mt-4">
+                  <TractionBadges
+                    customerCount={company.customerCount}
+                    revenueRange={company.revenueRange}
+                    userCount={company.userCount}
+                    isBootstrapped={company.isBootstrapped}
+                    isProfitable={company.isProfitable}
+                    hasRaisedFunding={company.hasRaisedFunding}
+                    fundingStage={company.fundingStage}
+                  />
+                </div>
+              )}
 
               {/* Created by */}
               <div className="mt-4 pt-4 border-t border-white/5">
@@ -249,11 +316,73 @@ export default async function CompanyPage({ params }: CompanyPageProps) {
           </section>
         )}
 
-        {/* Projects */}
+        {/* Tech Stack & Tools */}
+        {hasTechStack && (
+          <section className="card p-8">
+            <h2 className="text-xl font-semibold text-white mb-6">Tech Stack & Tools</h2>
+            <TechStackDisplay
+              techStack={company.techStack || []}
+              tools={company.tools || []}
+            />
+          </section>
+        )}
+
+        {/* Open Roles */}
+        {(company.roles.length > 0 || isOwner) && (
+          <section className="card p-8">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+                <Briefcase className="h-5 w-5 text-emerald-400" />
+                Open Roles
+                {activeRolesCount > 0 && (
+                  <span className="ml-2 text-sm font-normal text-zinc-400">
+                    ({activeRolesCount} position{activeRolesCount !== 1 ? "s" : ""})
+                  </span>
+                )}
+              </h2>
+            </div>
+
+            <CompanyRoleList
+              roles={company.roles}
+              companyId={company.id}
+              isOwner={isOwner}
+              emptyMessage={isOwner ? "Post your first role to start hiring" : "No open positions right now"}
+            />
+          </section>
+        )}
+
+        {/* Company Updates */}
+        <section className="card p-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+              <MessageSquare className="h-5 w-5 text-orange-400" />
+              Company Updates
+              {company._count.updates > 0 && (
+                <span className="ml-2 text-sm font-normal text-zinc-400">
+                  ({company._count.updates})
+                </span>
+              )}
+            </h2>
+          </div>
+
+          {isOwner && (
+            <div className="mb-6">
+              <CompanyUpdateForm companyId={company.id} />
+            </div>
+          )}
+
+          <CompanyUpdateList
+            updates={company.updates}
+            isOwner={isOwner}
+            emptyMessage={isOwner ? "Share your first company update" : "No updates yet"}
+          />
+        </section>
+
+        {/* Active Projects */}
         <section className="card p-8">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-semibold text-white">
-              Projects ({company._count.projects})
+              Active Projects ({company._count.projects})
             </h2>
             {isOwner && (
               <Link

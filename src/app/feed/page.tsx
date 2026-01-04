@@ -275,9 +275,9 @@ export default function FeedPage() {
 
         {/* Two Column Layout */}
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Left Sidebar - Sticky on desktop */}
+          {/* Left Sidebar - Sticky and scrollable on desktop */}
           <aside className="lg:w-80 shrink-0 order-2 lg:order-1">
-            <div className="lg:sticky lg:top-24 space-y-6">
+            <div className="lg:sticky lg:top-24 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto space-y-6 lg:pb-4">
               {/* Roast my MVP Section */}
               <Suspense
                 fallback={

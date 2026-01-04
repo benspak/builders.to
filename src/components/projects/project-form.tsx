@@ -114,13 +114,12 @@ export function ProjectForm({ initialData, initialCompanyId }: ProjectFormProps)
 
   const isEditing = !!initialData?.id;
 
-  // Fetch user's companies
+  // Fetch user's companies (only companies they own)
   useEffect(() => {
     async function fetchCompanies() {
       try {
-        const response = await fetch("/api/companies?limit=100");
+        const response = await fetch("/api/companies?mine=true&limit=100");
         const data = await response.json();
-        // Filter to only show companies the user owns (API should handle this, but just in case)
         setCompanies(data.companies || []);
       } catch (error) {
         console.error("Failed to fetch companies:", error);
@@ -331,7 +330,7 @@ export function ProjectForm({ initialData, initialCompanyId }: ProjectFormProps)
           </select>
         </div>
         <p className="mt-2 text-xs text-zinc-500">
-          Link this project to one of your companies
+          Link this project to one of your companies. Only companies you own will appear here.
         </p>
       </div>
 
