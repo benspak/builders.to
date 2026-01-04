@@ -7,7 +7,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 // NextAuth.js required models
@@ -136,12 +135,13 @@ model Project {
   companyId String?
   company   Company? @relation(fields: [companyId], references: [id], onDelete: SetNull)
 
-  upvotes    Upvote[]
-  comments   Comment[]
-  images     ProjectImage[]
-  roastMVP   RoastMVP?
-  milestones ProjectMilestone[]
-  coBuilders ProjectCoBuilder[]
+  upvotes       Upvote[]
+  comments      Comment[]
+  images        ProjectImage[]
+  roastMVP      RoastMVP?
+  milestones    ProjectMilestone[]
+  coBuilders    ProjectCoBuilder[]
+  notifications Notification[]
 
   @@index([userId])
   @@index([createdAt])
@@ -652,6 +652,8 @@ enum NotificationType {
   UPDATE_LIKED         // Someone liked your daily update
   USER_MENTIONED       // Someone mentioned you in an update
   WEEKLY_DIGEST        // Weekly summary notification
+  PROJECT_UPVOTED      // Someone upvoted your project
+  PROJECT_COMMENTED    // Someone commented on your project
 }
 
 // In-app notifications
@@ -675,6 +677,10 @@ model Notification {
   updateId    String?
   update      DailyUpdate?     @relation(fields: [updateId], references: [id], onDelete: Cascade)
 
+  // Optional link to related project (for upvote notifications)
+  projectId   String?
+  project     Project?         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
   // Actor who triggered the notification (if applicable)
   actorId     String?
   actorName   String?          // Denormalized for deleted users
@@ -682,6 +688,7 @@ model Notification {
 
   @@index([userId, read])
   @@index([createdAt])
+  @@index([projectId])
 }
 
 // Email preferences per user

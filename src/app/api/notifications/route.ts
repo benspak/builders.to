@@ -58,6 +58,13 @@ export async function GET(request: NextRequest) {
               },
             },
           },
+          project: {
+            select: {
+              id: true,
+              slug: true,
+              title: true,
+            },
+          },
         },
       }),
       prisma.notification.count({ where }),

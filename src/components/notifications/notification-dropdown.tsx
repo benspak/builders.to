@@ -11,7 +11,9 @@ import {
   Mail,
   Heart,
   AtSign,
-  Loader2
+  Loader2,
+  ArrowUp,
+  MessageCircle
 } from "lucide-react";
 import { cn, formatRelativeTime } from "@/lib/utils";
 
@@ -39,6 +41,11 @@ interface Notification {
     user?: {
       slug?: string | null;
     } | null;
+  } | null;
+  project?: {
+    id: string;
+    slug?: string | null;
+    title?: string | null;
   } | null;
 }
 
@@ -135,6 +142,10 @@ export function NotificationDropdown() {
         return <AtSign className="h-4 w-4 text-orange-400" />;
       case "WEEKLY_DIGEST":
         return <Mail className="h-4 w-4 text-blue-400" />;
+      case "PROJECT_UPVOTED":
+        return <ArrowUp className="h-4 w-4 text-emerald-400" />;
+      case "PROJECT_COMMENTED":
+        return <MessageCircle className="h-4 w-4 text-sky-400" />;
       default:
         return <Bell className="h-4 w-4 text-zinc-400" />;
     }
@@ -142,6 +153,10 @@ export function NotificationDropdown() {
 
   // Get notification link
   const getNotificationLink = (notification: Notification): string | null => {
+    // Link to project for upvote and comment notifications
+    if ((notification.type === "PROJECT_UPVOTED" || notification.type === "PROJECT_COMMENTED") && notification.project?.slug) {
+      return `/projects/${notification.project.slug}`;
+    }
     // Link to project for milestone notifications
     if (notification.feedEvent?.milestone?.project?.slug) {
       return `/projects/${notification.feedEvent.milestone.project.slug}`;

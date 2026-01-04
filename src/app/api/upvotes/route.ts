@@ -31,9 +31,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if project exists
+    // Check if project exists and get owner info
     const project = await prisma.project.findUnique({
       where: { id: projectId },
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        userId: true,
+      },
     });
 
     if (!project) {
@@ -42,6 +48,15 @@ export async function POST(request: NextRequest) {
         { status: 404 }
       );
     }
+
+    // Get current user info for notification
+    const currentUser = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: {
+        name: true,
+        image: true,
+      },
+    });
 
     // Check if user already upvoted
     const existingUpvote = await prisma.upvote.findUnique({
@@ -79,6 +94,22 @@ export async function POST(request: NextRequest) {
       const count = await prisma.upvote.count({
         where: { projectId },
       });
+
+      // Create notification for project owner (if not self-upvote)
+      if (project.userId !== session.user.id) {
+        await prisma.notification.create({
+          data: {
+            type: "PROJECT_UPVOTED",
+            title: `${currentUser?.name || "Someone"} upvoted your project`,
+            message: project.title,
+            userId: project.userId,
+            projectId: project.id,
+            actorId: session.user.id,
+            actorName: currentUser?.name,
+            actorImage: currentUser?.image,
+          },
+        });
+      }
 
       return NextResponse.json({
         upvoted: true,

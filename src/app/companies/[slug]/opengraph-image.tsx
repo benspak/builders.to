@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og'
 import { prisma } from '@/lib/prisma'
 
-export const runtime = 'edge'
+export const runtime = 'nodejs'
 
 export const alt = 'Company on Builders.to'
 export const size = {
