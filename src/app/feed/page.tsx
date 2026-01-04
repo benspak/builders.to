@@ -10,6 +10,9 @@ export const metadata = {
   description: "See what builders are working on",
 };
 
+// Force dynamic rendering since this page requires database access
+export const dynamic = "force-dynamic";
+
 async function FeedContent() {
   const session = await auth();
 
@@ -174,6 +177,44 @@ async function FeedContent() {
   );
 }
 
+async function RoastMVPSection() {
+  const session = await auth();
+  const isAuthenticated = !!session?.user;
+
+  let userProjects: Array<{ id: string; title: string; slug: string | null }> = [];
+
+  if (session?.user?.id) {
+    const projects = await prisma.project.findMany({
+      where: {
+        userId: session.user.id,
+        // Exclude projects already in the roast queue (paid or featured)
+        OR: [
+          { roastMVP: null },
+          {
+            roastMVP: {
+              status: { in: ["PENDING_PAYMENT", "COMPLETED", "CANCELLED"] }
+            }
+          },
+        ],
+      },
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    userProjects = projects;
+  }
+
+  return (
+    <RoastMVPCard
+      isAuthenticated={isAuthenticated}
+      userProjects={userProjects}
+    />
+  );
+}
+
 async function TopBuildersSection() {
   // Fetch top 5 builders by project count
   const topBuilders = await prisma.user.findMany({
@@ -248,7 +289,7 @@ export default function FeedPage() {
                   </div>
                 }
               >
-                <RoastMVPCard />
+                <RoastMVPSection />
               </Suspense>
 
               {/* Top Builders Section */}
