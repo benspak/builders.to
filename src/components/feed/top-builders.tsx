@@ -1,0 +1,141 @@
+"use client";
+
+import Link from "next/link";
+import Image from "next/image";
+import { Trophy, User, Rocket } from "lucide-react";
+
+interface TopBuilder {
+  id: string;
+  name: string | null;
+  firstName: string | null;
+  lastName: string | null;
+  image: string | null;
+  slug: string | null;
+  headline: string | null;
+  _count: {
+    projects: number;
+  };
+}
+
+interface TopBuildersProps {
+  builders: TopBuilder[];
+}
+
+export function TopBuilders({ builders }: TopBuildersProps) {
+  if (builders.length === 0) {
+    return null;
+  }
+
+  const getDisplayName = (builder: TopBuilder) => {
+    if (builder.firstName && builder.lastName) {
+      return `${builder.firstName} ${builder.lastName}`;
+    }
+    return builder.name || "Anonymous Builder";
+  };
+
+  const getRankStyles = (index: number) => {
+    switch (index) {
+      case 0:
+        return {
+          badge: "bg-gradient-to-r from-amber-400 to-yellow-500 text-black",
+          glow: "shadow-amber-500/30",
+          icon: "🥇",
+        };
+      case 1:
+        return {
+          badge: "bg-gradient-to-r from-slate-300 to-zinc-400 text-black",
+          glow: "shadow-slate-400/20",
+          icon: "🥈",
+        };
+      case 2:
+        return {
+          badge: "bg-gradient-to-r from-amber-600 to-orange-700 text-white",
+          glow: "shadow-orange-600/20",
+          icon: "🥉",
+        };
+      default:
+        return {
+          badge: "bg-zinc-700/50 text-zinc-400",
+          glow: "",
+          icon: `#${index + 1}`,
+        };
+    }
+  };
+
+  return (
+    <div className="rounded-xl border border-zinc-800/50 bg-zinc-900/50 backdrop-blur-sm overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center gap-2.5 px-4 py-3 border-b border-zinc-800/50 bg-zinc-900/80">
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 shadow-lg shadow-violet-500/25">
+          <Trophy className="h-4 w-4 text-white" />
+        </div>
+        <div>
+          <h3 className="text-sm font-semibold text-white">Top Builders</h3>
+          <p className="text-[10px] text-zinc-500">Most projects launched</p>
+        </div>
+      </div>
+
+      {/* Builders List */}
+      <div className="divide-y divide-zinc-800/30">
+        {builders.map((builder, index) => {
+          const styles = getRankStyles(index);
+          const profileUrl = builder.slug
+            ? `/profile/${builder.slug}`
+            : `/profile/${builder.id}`;
+
+          return (
+            <Link
+              key={builder.id}
+              href={profileUrl}
+              className="flex items-center gap-3 px-4 py-3 hover:bg-zinc-800/30 transition-colors group"
+            >
+              {/* Rank Badge */}
+              <div
+                className={`flex h-6 w-6 items-center justify-center rounded-md text-xs font-bold shrink-0 ${styles.badge} ${styles.glow} shadow-sm`}
+              >
+                {index < 3 ? styles.icon : index + 1}
+              </div>
+
+              {/* Avatar */}
+              <div className="relative shrink-0">
+                {builder.image ? (
+                  <Image
+                    src={builder.image}
+                    alt={getDisplayName(builder)}
+                    width={32}
+                    height={32}
+                    className="rounded-full ring-2 ring-zinc-800 group-hover:ring-zinc-700 transition-all"
+                  />
+                ) : (
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-800 ring-2 ring-zinc-700">
+                    <User className="h-4 w-4 text-zinc-500" />
+                  </div>
+                )}
+              </div>
+
+              {/* Info */}
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-zinc-200 truncate group-hover:text-white transition-colors">
+                  {getDisplayName(builder)}
+                </p>
+                {builder.headline && (
+                  <p className="text-[11px] text-zinc-500 truncate">
+                    {builder.headline}
+                  </p>
+                )}
+              </div>
+
+              {/* Project Count */}
+              <div className="flex items-center gap-1 shrink-0">
+                <Rocket className="h-3 w-3 text-zinc-500" />
+                <span className="text-xs font-semibold text-zinc-400">
+                  {builder._count.projects}
+                </span>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
