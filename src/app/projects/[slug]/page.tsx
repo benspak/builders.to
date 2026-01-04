@@ -18,7 +18,8 @@ import {
   Images,
   Play,
   FileText,
-  ScrollText
+  ScrollText,
+  Users
 } from "lucide-react";
 import { DeleteProjectButton } from "@/components/projects/delete-project-button";
 import ReactMarkdown from "react-markdown";
@@ -40,6 +41,20 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
           name: true,
           image: true,
           slug: true,
+        },
+      },
+      coBuilders: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              firstName: true,
+              lastName: true,
+              image: true,
+              slug: true,
+            },
+          },
         },
       },
       images: {
@@ -195,6 +210,66 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                   <span>{formatRelativeTime(project.createdAt)}</span>
                 </div>
               </div>
+
+              {/* Co-Builders */}
+              {project.coBuilders && project.coBuilders.length > 0 && (
+                <div className="mt-4 flex items-center gap-3">
+                  <div className="flex items-center gap-1.5 text-sm text-zinc-500">
+                    <Users className="h-4 w-4" />
+                    <span>Co-Builders:</span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {project.coBuilders.map((cb) => {
+                      const displayName = cb.user.firstName && cb.user.lastName
+                        ? `${cb.user.firstName} ${cb.user.lastName}`
+                        : cb.user.name || "Unknown";
+
+                      return cb.user.slug ? (
+                        <Link
+                          key={cb.user.id}
+                          href={`/profile/${cb.user.slug}`}
+                          className="inline-flex items-center gap-1.5 rounded-full bg-zinc-800/50 border border-zinc-700/50 px-2.5 py-1 text-sm text-zinc-300 hover:text-white hover:border-zinc-600 transition-colors"
+                        >
+                          {cb.user.image ? (
+                            <Image
+                              src={cb.user.image}
+                              alt={displayName}
+                              width={18}
+                              height={18}
+                              className="rounded-full"
+                            />
+                          ) : (
+                            <div className="flex h-[18px] w-[18px] items-center justify-center rounded-full bg-zinc-700">
+                              <User className="h-2.5 w-2.5 text-zinc-400" />
+                            </div>
+                          )}
+                          <span>{displayName}</span>
+                        </Link>
+                      ) : (
+                        <div
+                          key={cb.user.id}
+                          className="inline-flex items-center gap-1.5 rounded-full bg-zinc-800/50 border border-zinc-700/50 px-2.5 py-1 text-sm text-zinc-400"
+                        >
+                          {cb.user.image ? (
+                            <Image
+                              src={cb.user.image}
+                              alt={displayName}
+                              width={18}
+                              height={18}
+                              className="rounded-full"
+                            />
+                          ) : (
+                            <div className="flex h-[18px] w-[18px] items-center justify-center rounded-full bg-zinc-700">
+                              <User className="h-2.5 w-2.5 text-zinc-400" />
+                            </div>
+                          )}
+                          <span>{displayName}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               {/* Links */}
               <div className="mt-6 flex flex-wrap gap-3">

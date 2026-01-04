@@ -23,6 +23,21 @@ export default async function EditProjectPage({ params }: EditProjectPageProps) 
       images: {
         orderBy: { order: "asc" },
       },
+      coBuilders: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              firstName: true,
+              lastName: true,
+              image: true,
+              slug: true,
+              headline: true,
+            },
+          },
+        },
+      },
     },
   });
 

@@ -12,10 +12,12 @@ import {
   Images,
   Play,
   FileText,
-  ScrollText
+  ScrollText,
+  Users
 } from "lucide-react";
 import { cn, generateSlug } from "@/lib/utils";
 import { ImageUpload, GalleryUpload } from "@/components/ui/image-upload";
+import { CoBuilderSelector, CoBuilder } from "./co-builder-selector";
 
 interface Company {
   id: string;
@@ -46,6 +48,10 @@ interface ProjectFormProps {
     demoUrl?: string | null;
     docsUrl?: string | null;
     changelogUrl?: string | null;
+    // Co-builders
+    coBuilders?: {
+      user: CoBuilder;
+    }[];
   };
   initialCompanyId?: string;
 }
@@ -87,6 +93,9 @@ export function ProjectForm({ initialData, initialCompanyId }: ProjectFormProps)
   );
   const [deletedImageIds, setDeletedImageIds] = useState<string[]>([]);
   const [slugTouched, setSlugTouched] = useState(!!initialData?.slug);
+  const [coBuilders, setCoBuilders] = useState<CoBuilder[]>(
+    initialData?.coBuilders?.map(cb => cb.user) || []
+  );
 
   // Handle gallery image changes with deletion tracking
   const handleGalleryChange = (newImages: GalleryImage[]) => {
@@ -145,6 +154,8 @@ export function ProjectForm({ initialData, initialCompanyId }: ProjectFormProps)
           demoUrl: formData.demoUrl || null,
           docsUrl: formData.docsUrl || null,
           changelogUrl: formData.changelogUrl || null,
+          // Send co-builder IDs
+          coBuilderIds: coBuilders.map(cb => cb.id),
         }),
       });
 
@@ -322,6 +333,24 @@ export function ProjectForm({ initialData, initialCompanyId }: ProjectFormProps)
         <p className="mt-2 text-xs text-zinc-500">
           Link this project to one of your companies
         </p>
+      </div>
+
+      {/* Co-Builders Section */}
+      <div>
+        <label className="block text-sm font-medium text-zinc-300 mb-3">
+          <span className="flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            Co-Builders (optional)
+          </span>
+        </label>
+        <p className="text-xs text-zinc-500 mb-3">
+          Tag other builders who are collaborating on this project
+        </p>
+        <CoBuilderSelector
+          selectedCoBuilders={coBuilders}
+          onChange={setCoBuilders}
+          maxCoBuilders={5}
+        />
       </div>
 
       {/* Description */}

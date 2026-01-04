@@ -12,6 +12,15 @@ interface Milestone {
   title?: string | null;
 }
 
+interface CoBuilderUser {
+  id: string;
+  name: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  image: string | null;
+  slug?: string | null;
+}
+
 interface ProjectCardProps {
   project: {
     id: string;
@@ -33,6 +42,9 @@ interface ProjectCardProps {
       image: string | null;
       slug?: string | null;
     };
+    coBuilders?: {
+      user: CoBuilderUser;
+    }[];
     _count: {
       upvotes: number;
       comments: number;
@@ -123,45 +135,126 @@ export function ProjectCard({ project }: ProjectCardProps) {
 
         {/* Footer */}
         <div className="mt-auto pt-4 flex items-center justify-between border-t border-white/5">
-          {/* Author */}
-          {project.user.slug ? (
-            <Link
-              href={`/profile/${project.user.slug}`}
-              className="flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors"
-            >
-              {project.user.image ? (
-                <Image
-                  src={project.user.image}
-                  alt={project.user.name || "User"}
-                  width={24}
-                  height={24}
-                  className="rounded-full"
-                />
+          {/* Author & Co-Builders */}
+          <div className="flex items-center gap-2">
+            {/* Stacked Avatars */}
+            <div className="flex items-center -space-x-2">
+              {/* Main Author */}
+              {project.user.slug ? (
+                <Link
+                  href={`/profile/${project.user.slug}`}
+                  className="relative z-10 block"
+                  title={project.user.name || "User"}
+                >
+                  {project.user.image ? (
+                    <Image
+                      src={project.user.image}
+                      alt={project.user.name || "User"}
+                      width={24}
+                      height={24}
+                      className="rounded-full ring-2 ring-zinc-900"
+                    />
+                  ) : (
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-700 ring-2 ring-zinc-900">
+                      <User className="h-3 w-3 text-zinc-400" />
+                    </div>
+                  )}
+                </Link>
               ) : (
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-700">
-                  <User className="h-3 w-3 text-zinc-400" />
+                <div className="relative z-10" title={project.user.name || "User"}>
+                  {project.user.image ? (
+                    <Image
+                      src={project.user.image}
+                      alt={project.user.name || "User"}
+                      width={24}
+                      height={24}
+                      className="rounded-full ring-2 ring-zinc-900"
+                    />
+                  ) : (
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-700 ring-2 ring-zinc-900">
+                      <User className="h-3 w-3 text-zinc-400" />
+                    </div>
+                  )}
                 </div>
               )}
-              <span className="truncate max-w-[100px]">{project.user.name}</span>
-            </Link>
-          ) : (
-            <div className="flex items-center gap-2 text-sm text-zinc-400">
-              {project.user.image ? (
-                <Image
-                  src={project.user.image}
-                  alt={project.user.name || "User"}
-                  width={24}
-                  height={24}
-                  className="rounded-full"
-                />
-              ) : (
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-700">
-                  <User className="h-3 w-3 text-zinc-400" />
+
+              {/* Co-Builders (show up to 3) */}
+              {project.coBuilders?.slice(0, 3).map((cb, idx) => {
+                const displayName = cb.user.firstName && cb.user.lastName
+                  ? `${cb.user.firstName} ${cb.user.lastName}`
+                  : cb.user.name || "Co-builder";
+
+                return cb.user.slug ? (
+                  <Link
+                    key={cb.user.id}
+                    href={`/profile/${cb.user.slug}`}
+                    className="relative block"
+                    style={{ zIndex: 9 - idx }}
+                    title={displayName}
+                  >
+                    {cb.user.image ? (
+                      <Image
+                        src={cb.user.image}
+                        alt={displayName}
+                        width={24}
+                        height={24}
+                        className="rounded-full ring-2 ring-zinc-900"
+                      />
+                    ) : (
+                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-700 ring-2 ring-zinc-900">
+                        <User className="h-3 w-3 text-zinc-400" />
+                      </div>
+                    )}
+                  </Link>
+                ) : (
+                  <div
+                    key={cb.user.id}
+                    className="relative"
+                    style={{ zIndex: 9 - idx }}
+                    title={displayName}
+                  >
+                    {cb.user.image ? (
+                      <Image
+                        src={cb.user.image}
+                        alt={displayName}
+                        width={24}
+                        height={24}
+                        className="rounded-full ring-2 ring-zinc-900"
+                      />
+                    ) : (
+                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-700 ring-2 ring-zinc-900">
+                        <User className="h-3 w-3 text-zinc-400" />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+
+              {/* Show overflow count */}
+              {project.coBuilders && project.coBuilders.length > 3 && (
+                <div
+                  className="relative flex h-6 w-6 items-center justify-center rounded-full bg-zinc-800 ring-2 ring-zinc-900 text-xs text-zinc-400"
+                  style={{ zIndex: 5 }}
+                >
+                  +{project.coBuilders.length - 3}
                 </div>
               )}
-              <span className="truncate max-w-[100px]">{project.user.name}</span>
             </div>
-          )}
+
+            {/* Author name (only show if no co-builders to save space) */}
+            {(!project.coBuilders || project.coBuilders.length === 0) && (
+              project.user.slug ? (
+                <Link
+                  href={`/profile/${project.user.slug}`}
+                  className="text-sm text-zinc-400 hover:text-white transition-colors truncate max-w-[100px]"
+                >
+                  {project.user.name}
+                </Link>
+              ) : (
+                <span className="text-sm text-zinc-400 truncate max-w-[100px]">{project.user.name}</span>
+              )
+            )}
+          </div>
 
           {/* Stats & Links */}
           <div className="flex items-center gap-2">

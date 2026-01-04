@@ -46,6 +46,20 @@ export async function GET(request: NextRequest) {
               slug: true,
             },
           },
+          coBuilders: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  firstName: true,
+                  lastName: true,
+                  image: true,
+                  slug: true,
+                },
+              },
+            },
+          },
           milestones: {
             orderBy: { achievedAt: "desc" },
             take: 3,
@@ -122,7 +136,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { title, tagline, description, url, githubUrl, imageUrl, status, companyId, slug, demoUrl, docsUrl, changelogUrl } = body;
+    const { title, tagline, description, url, githubUrl, imageUrl, status, companyId, slug, demoUrl, docsUrl, changelogUrl, coBuilderIds } = body;
 
     if (!title || !tagline) {
       return NextResponse.json(
@@ -175,6 +189,24 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Validate co-builder IDs if provided
+    const validCoBuilderIds: string[] = [];
+    if (coBuilderIds && Array.isArray(coBuilderIds) && coBuilderIds.length > 0) {
+      // Limit to 5 co-builders
+      const limitedIds = coBuilderIds.slice(0, 5);
+
+      // Filter out the owner (can't be co-builder of their own project)
+      const filteredIds = limitedIds.filter((id: string) => id !== session.user.id);
+
+      // Verify all users exist
+      const existingUsers = await prisma.user.findMany({
+        where: { id: { in: filteredIds } },
+        select: { id: true },
+      });
+
+      validCoBuilderIds.push(...existingUsers.map(u => u.id));
+    }
+
     const project = await prisma.project.create({
       data: {
         title,
@@ -191,6 +223,10 @@ export async function POST(request: NextRequest) {
         demoUrl: demoUrl || null,
         docsUrl: docsUrl || null,
         changelogUrl: changelogUrl || null,
+        // Create co-builder relationships
+        coBuilders: validCoBuilderIds.length > 0 ? {
+          create: validCoBuilderIds.map(userId => ({ userId })),
+        } : undefined,
       },
       include: {
         user: {
@@ -199,6 +235,20 @@ export async function POST(request: NextRequest) {
             name: true,
             image: true,
             slug: true,
+          },
+        },
+        coBuilders: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                firstName: true,
+                lastName: true,
+                image: true,
+                slug: true,
+              },
+            },
           },
         },
         milestones: {

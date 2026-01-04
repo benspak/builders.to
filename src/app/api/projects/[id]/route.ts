@@ -101,7 +101,7 @@ export async function PATCH(
     }
 
     const body = await request.json();
-    const { title, tagline, description, url, githubUrl, imageUrl, status, companyId, slug, demoUrl, docsUrl, changelogUrl } = body;
+    const { title, tagline, description, url, githubUrl, imageUrl, status, companyId, slug, demoUrl, docsUrl, changelogUrl, coBuilderIds } = body;
 
     // Validate image URL
     const imageUrlError = validateImageUrl(imageUrl);
@@ -145,6 +145,36 @@ export async function PATCH(
       }
     }
 
+    // Handle co-builder updates if provided
+    if (coBuilderIds !== undefined && Array.isArray(coBuilderIds)) {
+      // Limit to 5 co-builders
+      const limitedIds = coBuilderIds.slice(0, 5);
+
+      // Filter out the owner (can't be co-builder of their own project)
+      const filteredIds = limitedIds.filter((cbId: string) => cbId !== session.user.id);
+
+      // Verify all users exist
+      const existingUsers = await prisma.user.findMany({
+        where: { id: { in: filteredIds } },
+        select: { id: true },
+      });
+      const validCoBuilderIds = existingUsers.map(u => u.id);
+
+      // Delete existing co-builders and create new ones (replace all)
+      await prisma.projectCoBuilder.deleteMany({
+        where: { projectId: id },
+      });
+
+      if (validCoBuilderIds.length > 0) {
+        await prisma.projectCoBuilder.createMany({
+          data: validCoBuilderIds.map(userId => ({
+            projectId: id,
+            userId,
+          })),
+        });
+      }
+    }
+
     const project = await prisma.project.update({
       where: { id },
       data: {
@@ -168,6 +198,21 @@ export async function PATCH(
             id: true,
             name: true,
             image: true,
+            slug: true,
+          },
+        },
+        coBuilders: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                firstName: true,
+                lastName: true,
+                image: true,
+                slug: true,
+              },
+            },
           },
         },
         milestones: {

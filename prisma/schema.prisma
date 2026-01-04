@@ -91,6 +91,7 @@ model User {
   dailyUpdates   DailyUpdate[]
   updateLikes    UpdateLike[]
   updateComments UpdateComment[]
+  coBuilderOn    ProjectCoBuilder[]  // Projects where user is a co-builder
 
   // Endorsements
   endorsementsGiven    Endorsement[] @relation("EndorserRelation")
@@ -136,10 +137,27 @@ model Project {
   images     ProjectImage[]
   roastMVP   RoastMVP?
   milestones ProjectMilestone[]
+  coBuilders ProjectCoBuilder[]
 
   @@index([userId])
   @@index([createdAt])
   @@index([companyId])
+}
+
+// Project co-builders - allows multiple builders to be credited on a project
+model ProjectCoBuilder {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  projectId String
+  userId    String
+
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])  // A user can only be a co-builder once per project
+  @@index([projectId])
+  @@index([userId])
 }
 
 model ProjectImage {
