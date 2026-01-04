@@ -348,7 +348,7 @@ export default function FeedPage() {
         {/* Three Column Layout */}
         <div className="flex flex-col xl:flex-row gap-8">
           {/* Left Sidebar - Sticky and scrollable on desktop */}
-          <aside className="xl:w-72 shrink-0 order-2 xl:order-1">
+          <aside className="xl:w-72 shrink-0 order-1">
             <div className="xl:sticky xl:top-24 xl:max-h-[calc(100vh-8rem)] xl:overflow-y-auto space-y-6 xl:pb-4">
               {/* Roast my MVP Section */}
               <Suspense
@@ -392,38 +392,11 @@ export default function FeedPage() {
               >
                 <TopBuildersSection />
               </Suspense>
-
-              {/* Discord Community Card */}
-              <Link
-                href="https://discord.com/invite/G7nmswWkbn"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group block rounded-xl border border-indigo-500/30 bg-gradient-to-br from-indigo-500/10 via-violet-500/10 to-indigo-500/5 p-4 transition-all hover:border-indigo-500/50 hover:shadow-lg hover:shadow-indigo-500/10"
-              >
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-500/20 text-indigo-400 group-hover:bg-indigo-500/30 transition-colors">
-                    <MessageCircle className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-white">Join our Discord</h3>
-                    <p className="text-xs text-zinc-400">Connect with builders</p>
-                  </div>
-                </div>
-                <p className="text-sm text-zinc-300 mb-3">
-                  Chat with fellow builders, share progress, get feedback, and find collaborators.
-                </p>
-                <span className="inline-flex items-center gap-1.5 text-sm font-medium text-indigo-400 group-hover:text-indigo-300 transition-colors">
-                  Join the community
-                  <svg className="h-4 w-4 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                  </svg>
-                </span>
-              </Link>
             </div>
           </aside>
 
           {/* Main Feed */}
-          <main className="flex-1 min-w-0 max-w-2xl order-1 xl:order-2">
+          <main className="flex-1 min-w-0 max-w-2xl order-3 xl:order-2">
             <Suspense
               fallback={
                 <div className="flex items-center justify-center py-20">
@@ -436,7 +409,7 @@ export default function FeedPage() {
           </main>
 
           {/* Right Sidebar - Open Jobs */}
-          <aside className="xl:w-72 shrink-0 order-3">
+          <aside className="xl:w-72 shrink-0 order-2 xl:order-3">
             <div className="xl:sticky xl:top-24 xl:max-h-[calc(100vh-8rem)] xl:overflow-y-auto space-y-6 xl:pb-4">
               {/* Open Jobs Section */}
               <Suspense
@@ -465,6 +438,33 @@ export default function FeedPage() {
               >
                 <OpenJobsSection />
               </Suspense>
+
+              {/* Discord Community Card */}
+              <Link
+                href="https://discord.com/invite/G7nmswWkbn"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group block rounded-xl border border-indigo-500/30 bg-gradient-to-br from-indigo-500/10 via-violet-500/10 to-indigo-500/5 p-4 transition-all hover:border-indigo-500/50 hover:shadow-lg hover:shadow-indigo-500/10"
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-500/20 text-indigo-400 group-hover:bg-indigo-500/30 transition-colors">
+                    <MessageCircle className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-white">Join our Discord</h3>
+                    <p className="text-xs text-zinc-400">Connect with builders</p>
+                  </div>
+                </div>
+                <p className="text-sm text-zinc-300 mb-3">
+                  Chat with fellow builders, share progress, get feedback, and find collaborators.
+                </p>
+                <span className="inline-flex items-center gap-1.5 text-sm font-medium text-indigo-400 group-hover:text-indigo-300 transition-colors">
+                  Join the community
+                  <svg className="h-4 w-4 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </span>
+              </Link>
 
               {/* Product Hunt Badge */}
               <div className="flex justify-center">
