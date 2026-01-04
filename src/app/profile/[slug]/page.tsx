@@ -20,7 +20,7 @@ import {
   Award,
   Star,
 } from "lucide-react";
-import { EndorsementSection } from "@/components/profile/endorsement-section";
+import { EndorsementSection, FollowButton, FollowStats } from "@/components/profile";
 import { formatRelativeTime, getStatusColor, getStatusLabel, getCategoryColor, getCategoryLabel } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { UpdateForm, UpdateTimeline } from "@/components/updates";
@@ -99,6 +99,18 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
       // Streak tracking
       currentStreak: true,
       longestStreak: true,
+      // Follow counts
+      _count: {
+        select: {
+          followers: true,
+          following: true,
+        },
+      },
+      // Check if current user is following (will filter later)
+      followers: session?.user?.id ? {
+        where: { followerId: session.user.id },
+        select: { id: true },
+      } : false,
       projects: {
         orderBy: { createdAt: "desc" },
         select: {
@@ -204,6 +216,15 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
     ? user.endorsementsReceived.some(e => e.endorser.id === session.user.id)
     : false;
 
+  // Check if current user is following this profile
+  const isFollowing = session?.user?.id && user.followers
+    ? (Array.isArray(user.followers) ? user.followers.length > 0 : false)
+    : false;
+
+  // Follow counts
+  const followersCount = user._count.followers;
+  const followingCount = user._count.following;
+
   // Intent flags for display
   const intentFlags = [
     { active: user.openToWork, label: "Open to Work", icon: Briefcase, color: "emerald" },
@@ -279,15 +300,23 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                     )}
                   </div>
 
-                  {isOwnProfile && (
-                    <Link
-                      href="/settings"
-                      className="inline-flex items-center gap-2 rounded-xl bg-zinc-800/50 border border-zinc-700/50 px-4 py-2 text-sm font-medium text-zinc-300 hover:bg-zinc-800 hover:text-white transition-all shrink-0"
-                    >
-                      <Settings className="h-4 w-4" />
-                      Edit Profile
-                    </Link>
-                  )}
+                  <div className="flex items-center gap-3 shrink-0">
+                    {isOwnProfile ? (
+                      <Link
+                        href="/settings"
+                        className="inline-flex items-center gap-2 rounded-xl bg-zinc-800/50 border border-zinc-700/50 px-4 py-2 text-sm font-medium text-zinc-300 hover:bg-zinc-800 hover:text-white transition-all"
+                      >
+                        <Settings className="h-4 w-4" />
+                        Edit Profile
+                      </Link>
+                    ) : (
+                      <FollowButton
+                        userId={user.id}
+                        isFollowing={isFollowing}
+                        currentUserId={session?.user?.id}
+                      />
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -336,6 +365,15 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                     </a>
                   </div>
                 )}
+
+                {/* Follow Stats */}
+                <div className="pt-4 border-t border-white/5">
+                  <FollowStats
+                    userId={user.id}
+                    followersCount={followersCount}
+                    followingCount={followingCount}
+                  />
+                </div>
 
                 {/* Stats */}
                 <div className="pt-4 border-t border-white/5">

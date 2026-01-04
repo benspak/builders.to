@@ -96,6 +96,10 @@ model User {
   endorsementsGiven    Endorsement[] @relation("EndorserRelation")
   endorsementsReceived Endorsement[] @relation("EndorseeRelation")
 
+  // Follows
+  followers            Follow[] @relation("FollowingRelation")  // Users who follow this user
+  following            Follow[] @relation("FollowerRelation")   // Users this user follows
+
   // Feed and notifications
   feedEventLikes       FeedEventLike[]
   notifications        Notification[]
@@ -387,6 +391,22 @@ model Endorsement {
   @@unique([endorserId, endorseeId])  // One endorsement per user pair
   @@index([endorseeId])
   @@index([endorserId])
+}
+
+// User follows - social connections between builders
+model Follow {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+
+  followerId  String   // User doing the following
+  followingId String   // User being followed
+
+  follower    User @relation("FollowerRelation", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User @relation("FollowingRelation", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])  // Can only follow a user once
+  @@index([followingId])
+  @@index([followerId])
 }
 
 // Feed event types
