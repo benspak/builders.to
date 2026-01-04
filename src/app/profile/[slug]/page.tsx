@@ -237,7 +237,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   ].filter(flag => flag.active);
 
   return (
-    <div className="min-h-screen bg-zinc-950">
+    <div className="relative min-h-screen bg-zinc-950">
       {/* Background decorations */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 h-[500px] w-[500px] rounded-full bg-orange-500/10 blur-3xl" />

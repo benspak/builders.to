@@ -50,7 +50,7 @@ export default async function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950">
+    <div className="relative min-h-screen bg-zinc-950">
       {/* Background decorations */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 h-96 w-96 rounded-full bg-orange-500/10 blur-3xl" />
