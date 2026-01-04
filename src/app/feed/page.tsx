@@ -1,5 +1,6 @@
 import { Suspense } from "react";
-import { Loader2, Sparkles } from "lucide-react";
+import { Loader2, Sparkles, MessageCircle } from "lucide-react";
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { CombinedFeed, TopBuilders } from "@/components/feed";
@@ -319,6 +320,33 @@ export default function FeedPage() {
               >
                 <TopBuildersSection />
               </Suspense>
+
+              {/* Discord Community Card */}
+              <Link
+                href="https://discord.com/invite/G7nmswWkbn"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group block rounded-xl border border-indigo-500/30 bg-gradient-to-br from-indigo-500/10 via-violet-500/10 to-indigo-500/5 p-4 transition-all hover:border-indigo-500/50 hover:shadow-lg hover:shadow-indigo-500/10"
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-500/20 text-indigo-400 group-hover:bg-indigo-500/30 transition-colors">
+                    <MessageCircle className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-white">Join our Discord</h3>
+                    <p className="text-xs text-zinc-400">Connect with builders</p>
+                  </div>
+                </div>
+                <p className="text-sm text-zinc-300 mb-3">
+                  Chat with fellow builders, share progress, get feedback, and find collaborators.
+                </p>
+                <span className="inline-flex items-center gap-1.5 text-sm font-medium text-indigo-400 group-hover:text-indigo-300 transition-colors">
+                  Join the community
+                  <svg className="h-4 w-4 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </span>
+              </Link>
             </div>
           </aside>
 

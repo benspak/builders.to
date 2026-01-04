@@ -21,19 +21,18 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      {/* PopVia Sponsor Banner */}
+      {/* Builders X Community Banner */}
       <div className="mb-8 rounded-xl bg-gradient-to-r from-orange-500/10 via-amber-500/10 to-orange-500/10 border border-orange-500/20 p-4 text-center">
         <p className="text-zinc-300 text-sm sm:text-base">
-          <span className="font-semibold text-white">Builders.to</span> brought to you by{" "}
+          Join the{" "}
           <a
-            href="https://PopVia.com"
+            href="https://x.com/i/communities/1943895831322439993"
             target="_blank"
             rel="noopener noreferrer"
             className="font-semibold text-orange-400 hover:text-orange-300 transition-colors underline underline-offset-2"
           >
-            PopVia
+            Builders X Community
           </a>
-          {" "}- customer service automation for solo founders and small teams.
         </p>
       </div>
 
