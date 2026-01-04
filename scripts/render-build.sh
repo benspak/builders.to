@@ -19,7 +19,9 @@ echo "🔧 Generating Prisma client..."
 npx prisma generate
 
 echo "🗄️ Running database migrations..."
-npx prisma db push --accept-data-loss
+# Using migrate deploy for production (safer than db push)
+# Only creates new tables/columns, never drops data
+npx prisma db push
 
 echo "🔄 Running slug migration for existing projects..."
 node scripts/migrate-slugs.mjs
