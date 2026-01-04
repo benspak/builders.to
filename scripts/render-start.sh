@@ -8,6 +8,7 @@ echo "📁 Ensuring upload directories exist on persistent disk..."
 if [ -n "$UPLOAD_DIR" ]; then
   mkdir -p "$UPLOAD_DIR/projects"
   mkdir -p "$UPLOAD_DIR/companies"
+  mkdir -p "$UPLOAD_DIR/updates"
   echo "  Created directories under $UPLOAD_DIR"
 else
   echo "  UPLOAD_DIR not set, skipping persistent storage setup"
