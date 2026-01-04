@@ -465,6 +465,23 @@ export default function FeedPage() {
               >
                 <OpenJobsSection />
               </Suspense>
+
+              {/* Product Hunt Badge */}
+              <div className="flex justify-center">
+                <a
+                  href="https://www.producthunt.com/products/builders-to?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-builders-to"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="transition-opacity hover:opacity-80"
+                >
+                  <img
+                    src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1057424&theme=dark&t=1767511480050"
+                    alt="Builders.to - Ship faster. Together. | Product Hunt"
+                    width="250"
+                    height="54"
+                  />
+                </a>
+              </div>
             </div>
           </aside>
         </div>
