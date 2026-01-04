@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { CombinedFeed, TopBuilders, OpenJobs } from "@/components/feed";
 import { RoastMVPCard } from "@/components/roast-mvp/roast-mvp-card";
+import { SiteViewsCounter } from "@/components/analytics/site-views-counter";
 
 export const metadata = {
   title: "Feed - Builders.to",
@@ -292,16 +293,21 @@ export default function FeedPage() {
 
       <div className="relative mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="flex items-center gap-3 mb-8">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 shadow-lg shadow-orange-500/25">
-            <Sparkles className="h-6 w-6 text-white" />
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 shadow-lg shadow-orange-500/25">
+              <Sparkles className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-white">Builder Feed</h1>
+              <p className="text-zinc-400 text-sm">
+                See what builders are working on
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-2xl font-bold text-white">Builder Feed</h1>
-            <p className="text-zinc-400 text-sm">
-              See what builders are working on
-            </p>
-          </div>
+
+          {/* Site Stats */}
+          <SiteViewsCounter />
         </div>
 
         {/* Three Column Layout */}
