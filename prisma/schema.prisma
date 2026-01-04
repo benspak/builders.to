@@ -442,6 +442,9 @@ model CompanyRole {
   companyId       String
   company         Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
+  // Link to feed event
+  feedEvent       FeedEvent?
+
   @@index([companyId])
   @@index([isActive])
   @@index([type])
@@ -593,6 +596,8 @@ enum FeedEventType {
   PROJECT_ACQUIRED       // Project was acquired
   STATUS_UPDATE          // User updated their profile status
   PROJECT_STATUS_CHANGE  // Project status changed (any transition)
+  PROJECT_CREATED        // A new project was created
+  JOB_POSTED             // A new job/role was posted by a company
 }
 
 // Feed events - aggregated activity feed
@@ -605,8 +610,9 @@ model FeedEvent {
   userId      String
 
   // Related entities (polymorphic references)
-  projectId   String?
-  milestoneId String?       @unique  // For milestone events
+  projectId     String?
+  milestoneId   String?       @unique  // For milestone events
+  companyRoleId String?       @unique  // For job posted events
 
   // Denormalized data for fast feed rendering
   title       String        // e.g., "shipped v1" or "hit $1k MRR"
@@ -614,12 +620,14 @@ model FeedEvent {
 
   // Relations
   milestone   ProjectMilestone? @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
+  companyRole CompanyRole?      @relation(fields: [companyRoleId], references: [id], onDelete: Cascade)
   likes       FeedEventLike[]
   notifications Notification[]
 
   @@index([createdAt])
   @@index([userId])
   @@index([projectId])
+  @@index([companyRoleId])
 }
 
 // Likes on feed events

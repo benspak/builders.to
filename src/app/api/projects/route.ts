@@ -270,6 +270,17 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    // Create a feed event for the new project
+    await prisma.feedEvent.create({
+      data: {
+        type: "PROJECT_CREATED",
+        userId: session.user.id,
+        projectId: project.id,
+        title: title,
+        description: tagline,
+      },
+    });
+
     return NextResponse.json(project, { status: 201 });
   } catch (error) {
     console.error("Error creating project:", error);

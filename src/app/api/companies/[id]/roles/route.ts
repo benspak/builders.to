@@ -165,6 +165,12 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       }
     }
 
+    // Get company details for the feed event
+    const companyDetails = await prisma.company.findUnique({
+      where: { id },
+      select: { name: true, userId: true },
+    });
+
     const role = await prisma.companyRole.create({
       data: {
         title: title.trim(),
@@ -188,6 +194,17 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         expiresAt: expiresAt ? new Date(expiresAt) : null,
         companyId: id,
         isActive: true,
+      },
+    });
+
+    // Create a feed event for the new job posting
+    await prisma.feedEvent.create({
+      data: {
+        type: "JOB_POSTED",
+        userId: session.user.id,
+        companyRoleId: role.id,
+        title: title.trim(),
+        description: companyDetails?.name ? `${companyDetails.name} is hiring` : "New job posted",
       },
     });
 

@@ -4,6 +4,8 @@ import { UpdateItem } from "@/components/updates/update-item";
 import { MilestoneEventCard } from "./milestone-event-card";
 import { StatusUpdateCard } from "./status-update-card";
 import { ProjectStatusChangeCard } from "./project-status-change-card";
+import { ProjectCreatedCard } from "./project-created-card";
+import { JobPostedCard } from "./job-posted-card";
 
 interface DailyUpdate {
   id: string;
@@ -65,11 +67,12 @@ interface FeedEvent {
     slug?: string | null;
     headline?: string | null;
   } | null;
-  // For project status change events
+  // For project status change events and project created events
   project?: {
     id: string;
     slug?: string | null;
     title: string;
+    tagline?: string | null;
     imageUrl?: string | null;
     status: string;
     user: {
@@ -81,13 +84,33 @@ interface FeedEvent {
       slug?: string | null;
     };
   } | null;
+  // For job posted events
+  companyRole?: {
+    id: string;
+    title: string;
+    type: string;
+    category: string;
+    location?: string | null;
+    isRemote: boolean;
+    salaryMin?: number | null;
+    salaryMax?: number | null;
+    currency?: string | null;
+    company: {
+      id: string;
+      slug?: string | null;
+      name: string;
+      logo?: string | null;
+    };
+  } | null;
 }
 
 type FeedItem =
   | { type: "update"; data: DailyUpdate }
   | { type: "milestone"; data: FeedEvent }
   | { type: "status"; data: FeedEvent }
-  | { type: "projectStatusChange"; data: FeedEvent };
+  | { type: "projectStatusChange"; data: FeedEvent }
+  | { type: "projectCreated"; data: FeedEvent }
+  | { type: "jobPosted"; data: FeedEvent };
 
 interface CombinedFeedProps {
   updates: DailyUpdate[];
@@ -104,10 +127,12 @@ export function CombinedFeed({
 }: CombinedFeedProps) {
   // Separate different event types
   const milestoneEvents = feedEvents.filter(
-    (e) => e.type !== "STATUS_UPDATE" && e.type !== "PROJECT_STATUS_CHANGE"
+    (e) => e.type !== "STATUS_UPDATE" && e.type !== "PROJECT_STATUS_CHANGE" && e.type !== "PROJECT_CREATED" && e.type !== "JOB_POSTED"
   );
   const statusEvents = feedEvents.filter((e) => e.type === "STATUS_UPDATE");
   const projectStatusChangeEvents = feedEvents.filter((e) => e.type === "PROJECT_STATUS_CHANGE");
+  const projectCreatedEvents = feedEvents.filter((e) => e.type === "PROJECT_CREATED");
+  const jobPostedEvents = feedEvents.filter((e) => e.type === "JOB_POSTED");
 
   // Combine and sort by date
   const feedItems: FeedItem[] = [
@@ -115,6 +140,8 @@ export function CombinedFeed({
     ...milestoneEvents.map((e) => ({ type: "milestone" as const, data: e })),
     ...statusEvents.map((e) => ({ type: "status" as const, data: e })),
     ...projectStatusChangeEvents.map((e) => ({ type: "projectStatusChange" as const, data: e })),
+    ...projectCreatedEvents.map((e) => ({ type: "projectCreated" as const, data: e })),
+    ...jobPostedEvents.map((e) => ({ type: "jobPosted" as const, data: e })),
   ].sort((a, b) => {
     const dateA = new Date(a.data.createdAt).getTime();
     const dateB = new Date(b.data.createdAt).getTime();
@@ -163,6 +190,32 @@ export function CombinedFeed({
               event={{
                 ...item.data,
                 project: item.data.project,
+              }}
+              currentUserId={currentUserId}
+            />
+          );
+        }
+
+        if (item.type === "projectCreated" && item.data.project) {
+          return (
+            <ProjectCreatedCard
+              key={`project-created-${item.data.id}`}
+              event={{
+                ...item.data,
+                project: item.data.project,
+              }}
+              currentUserId={currentUserId}
+            />
+          );
+        }
+
+        if (item.type === "jobPosted" && item.data.companyRole) {
+          return (
+            <JobPostedCard
+              key={`job-posted-${item.data.id}`}
+              event={{
+                ...item.data,
+                companyRole: item.data.companyRole,
               }}
               currentUserId={currentUserId}
             />

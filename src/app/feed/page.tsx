@@ -93,8 +93,11 @@ async function FeedContent() {
     }).then(async (events) => {
       // For status update events, fetch the user info
       const statusEvents = events.filter(e => e.type === "STATUS_UPDATE");
-      // For project status change events, fetch the project info
+      // For project status change events and project created events, fetch the project info
       const projectStatusChangeEvents = events.filter(e => e.type === "PROJECT_STATUS_CHANGE");
+      const projectCreatedEvents = events.filter(e => e.type === "PROJECT_CREATED");
+      // For job posted events, fetch company role info
+      const jobPostedEvents = events.filter(e => e.type === "JOB_POSTED");
 
       // Fetch users for status updates
       let userMap = new Map<string, { id: string; name: string | null; firstName: string | null; lastName: string | null; image: string | null; slug: string | null; headline: string | null }>();
@@ -115,16 +118,18 @@ async function FeedContent() {
         userMap = new Map(users.map(u => [u.id, u]));
       }
 
-      // Fetch projects for project status changes
-      let projectMap = new Map<string, { id: string; slug: string | null; title: string; imageUrl: string | null; status: string; user: { id: string; name: string | null; firstName: string | null; lastName: string | null; image: string | null; slug: string | null } }>();
-      if (projectStatusChangeEvents.length > 0) {
-        const projectIds = Array.from(new Set(projectStatusChangeEvents.map(e => e.projectId).filter(Boolean))) as string[];
+      // Fetch projects for project status changes and project created events
+      let projectMap = new Map<string, { id: string; slug: string | null; title: string; tagline: string | null; imageUrl: string | null; status: string; user: { id: string; name: string | null; firstName: string | null; lastName: string | null; image: string | null; slug: string | null } }>();
+      const projectEventsWithIds = [...projectStatusChangeEvents, ...projectCreatedEvents];
+      if (projectEventsWithIds.length > 0) {
+        const projectIds = Array.from(new Set(projectEventsWithIds.map(e => e.projectId).filter(Boolean))) as string[];
         const projects = await prisma.project.findMany({
           where: { id: { in: projectIds } },
           select: {
             id: true,
             slug: true,
             title: true,
+            tagline: true,
             imageUrl: true,
             status: true,
             user: {
@@ -142,10 +147,40 @@ async function FeedContent() {
         projectMap = new Map(projects.map(p => [p.id, p]));
       }
 
+      // Fetch company roles for job posted events
+      let companyRoleMap = new Map<string, { id: string; title: string; type: string; category: string; location: string | null; isRemote: boolean; salaryMin: number | null; salaryMax: number | null; currency: string | null; company: { id: string; slug: string | null; name: string; logo: string | null } }>();
+      if (jobPostedEvents.length > 0) {
+        const companyRoleIds = Array.from(new Set(jobPostedEvents.map(e => e.companyRoleId).filter(Boolean))) as string[];
+        const companyRoles = await prisma.companyRole.findMany({
+          where: { id: { in: companyRoleIds } },
+          select: {
+            id: true,
+            title: true,
+            type: true,
+            category: true,
+            location: true,
+            isRemote: true,
+            salaryMin: true,
+            salaryMax: true,
+            currency: true,
+            company: {
+              select: {
+                id: true,
+                slug: true,
+                name: true,
+                logo: true,
+              },
+            },
+          },
+        });
+        companyRoleMap = new Map(companyRoles.map(r => [r.id, r]));
+      }
+
       return events.map(event => ({
         ...event,
         user: event.type === "STATUS_UPDATE" ? userMap.get(event.userId) || null : null,
-        project: event.type === "PROJECT_STATUS_CHANGE" && event.projectId ? projectMap.get(event.projectId) || null : null,
+        project: (event.type === "PROJECT_STATUS_CHANGE" || event.type === "PROJECT_CREATED") && event.projectId ? projectMap.get(event.projectId) || null : null,
+        companyRole: event.type === "JOB_POSTED" && event.companyRoleId ? companyRoleMap.get(event.companyRoleId) || null : null,
       }));
     }),
   ]);
