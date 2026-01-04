@@ -19,6 +19,7 @@ import {
   Flame,
   Award,
   Star,
+  MessageCircle,
 } from "lucide-react";
 import { EndorsementSection, FollowButton, FollowStats } from "@/components/profile";
 import { formatRelativeTime, getStatusColor, getStatusLabel, getCategoryColor, getCategoryLabel } from "@/lib/utils";
@@ -92,6 +93,9 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
       linkedinUrl: true,
       image: true,
       createdAt: true,
+      // Status
+      status: true,
+      statusUpdatedAt: true,
       // Intent flags
       openToWork: true,
       lookingForCofounder: true,
@@ -247,7 +251,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
         <div className="h-32 sm:h-40 bg-gradient-to-r from-orange-600/20 via-orange-500/10 to-cyan-500/10" />
 
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-          <div className="relative -mt-16 sm:-mt-20 pb-8">
+          <div className="relative -mt-12 sm:-mt-14 pb-8">
             <div className="flex flex-col sm:flex-row sm:items-end sm:gap-6">
               {/* Avatar */}
               <div className="relative">
@@ -255,13 +259,13 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                   <Image
                     src={user.image}
                     alt={displayName}
-                    width={128}
-                    height={128}
-                    className="h-28 w-28 sm:h-36 sm:w-36 rounded-2xl border-4 border-zinc-950 object-cover shadow-2xl"
+                    width={96}
+                    height={96}
+                    className="h-20 w-20 sm:h-24 sm:w-24 rounded-2xl border-4 border-zinc-950 object-cover shadow-2xl"
                   />
                 ) : (
-                  <div className="flex h-28 w-28 sm:h-36 sm:w-36 items-center justify-center rounded-2xl border-4 border-zinc-950 bg-gradient-to-br from-orange-500 to-pink-500 shadow-2xl">
-                    <User className="h-14 w-14 sm:h-16 sm:w-16 text-white" />
+                  <div className="flex h-20 w-20 sm:h-24 sm:w-24 items-center justify-center rounded-2xl border-4 border-zinc-950 bg-gradient-to-br from-orange-500 to-pink-500 shadow-2xl">
+                    <User className="h-10 w-10 sm:h-12 sm:w-12 text-white" />
                   </div>
                 )}
               </div>
@@ -277,6 +281,14 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                       <p className="mt-1 text-zinc-400 text-sm sm:text-base max-w-xl">
                         {user.headline}
                       </p>
+                    )}
+
+                    {/* Status */}
+                    {user.status && (
+                      <div className="mt-3 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-orange-500/10 to-cyan-500/10 border border-orange-500/20 px-4 py-2">
+                        <MessageCircle className="h-4 w-4 text-orange-400 flex-shrink-0" />
+                        <span className="text-sm text-zinc-200">{user.status}</span>
+                      </div>
                     )}
 
                     {/* Intent Badges */}

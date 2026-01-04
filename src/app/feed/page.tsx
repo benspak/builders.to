@@ -84,6 +84,63 @@ async function FeedContent() {
           },
         },
       },
+    }).then(async (events) => {
+      // For status update events, fetch the user info
+      const statusEvents = events.filter(e => e.type === "STATUS_UPDATE");
+      // For project status change events, fetch the project info
+      const projectStatusChangeEvents = events.filter(e => e.type === "PROJECT_STATUS_CHANGE");
+
+      // Fetch users for status updates
+      let userMap = new Map<string, { id: string; name: string | null; firstName: string | null; lastName: string | null; image: string | null; slug: string | null; headline: string | null }>();
+      if (statusEvents.length > 0) {
+        const userIds = Array.from(new Set(statusEvents.map(e => e.userId)));
+        const users = await prisma.user.findMany({
+          where: { id: { in: userIds } },
+          select: {
+            id: true,
+            name: true,
+            firstName: true,
+            lastName: true,
+            image: true,
+            slug: true,
+            headline: true,
+          },
+        });
+        userMap = new Map(users.map(u => [u.id, u]));
+      }
+
+      // Fetch projects for project status changes
+      let projectMap = new Map<string, { id: string; slug: string | null; title: string; imageUrl: string | null; status: string; user: { id: string; name: string | null; firstName: string | null; lastName: string | null; image: string | null; slug: string | null } }>();
+      if (projectStatusChangeEvents.length > 0) {
+        const projectIds = Array.from(new Set(projectStatusChangeEvents.map(e => e.projectId).filter(Boolean))) as string[];
+        const projects = await prisma.project.findMany({
+          where: { id: { in: projectIds } },
+          select: {
+            id: true,
+            slug: true,
+            title: true,
+            imageUrl: true,
+            status: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+                firstName: true,
+                lastName: true,
+                image: true,
+                slug: true,
+              },
+            },
+          },
+        });
+        projectMap = new Map(projects.map(p => [p.id, p]));
+      }
+
+      return events.map(event => ({
+        ...event,
+        user: event.type === "STATUS_UPDATE" ? userMap.get(event.userId) || null : null,
+        project: event.type === "PROJECT_STATUS_CHANGE" && event.projectId ? projectMap.get(event.projectId) || null : null,
+      }));
     }),
   ]);
 

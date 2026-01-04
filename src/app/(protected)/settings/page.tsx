@@ -35,6 +35,9 @@ export default async function SettingsPage() {
       youtubeUrl: true,
       linkedinUrl: true,
       image: true,
+      // Status
+      status: true,
+      statusUpdatedAt: true,
       // Intent flags
       openToWork: true,
       lookingForCofounder: true,

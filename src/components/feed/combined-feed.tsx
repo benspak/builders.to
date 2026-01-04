@@ -2,6 +2,8 @@
 
 import { UpdateItem } from "@/components/updates/update-item";
 import { MilestoneEventCard } from "./milestone-event-card";
+import { StatusUpdateCard } from "./status-update-card";
+import { ProjectStatusChangeCard } from "./project-status-change-card";
 
 interface DailyUpdate {
   id: string;
@@ -30,6 +32,8 @@ interface FeedEvent {
   createdAt: Date | string;
   likesCount: number;
   hasLiked: boolean;
+  projectId?: string | null;
+  // For milestone events
   milestone?: {
     id: string;
     type: string;
@@ -51,11 +55,39 @@ interface FeedEvent {
       };
     };
   } | null;
+  // For status update events
+  user?: {
+    id: string;
+    name?: string | null;
+    firstName?: string | null;
+    lastName?: string | null;
+    image?: string | null;
+    slug?: string | null;
+    headline?: string | null;
+  } | null;
+  // For project status change events
+  project?: {
+    id: string;
+    slug?: string | null;
+    title: string;
+    imageUrl?: string | null;
+    status: string;
+    user: {
+      id: string;
+      name?: string | null;
+      firstName?: string | null;
+      lastName?: string | null;
+      image?: string | null;
+      slug?: string | null;
+    };
+  } | null;
 }
 
 type FeedItem =
   | { type: "update"; data: DailyUpdate }
-  | { type: "milestone"; data: FeedEvent };
+  | { type: "milestone"; data: FeedEvent }
+  | { type: "status"; data: FeedEvent }
+  | { type: "projectStatusChange"; data: FeedEvent };
 
 interface CombinedFeedProps {
   updates: DailyUpdate[];
@@ -70,10 +102,19 @@ export function CombinedFeed({
   currentUserId,
   showAuthor = true,
 }: CombinedFeedProps) {
+  // Separate different event types
+  const milestoneEvents = feedEvents.filter(
+    (e) => e.type !== "STATUS_UPDATE" && e.type !== "PROJECT_STATUS_CHANGE"
+  );
+  const statusEvents = feedEvents.filter((e) => e.type === "STATUS_UPDATE");
+  const projectStatusChangeEvents = feedEvents.filter((e) => e.type === "PROJECT_STATUS_CHANGE");
+
   // Combine and sort by date
   const feedItems: FeedItem[] = [
     ...updates.map((u) => ({ type: "update" as const, data: u })),
-    ...feedEvents.map((e) => ({ type: "milestone" as const, data: e })),
+    ...milestoneEvents.map((e) => ({ type: "milestone" as const, data: e })),
+    ...statusEvents.map((e) => ({ type: "status" as const, data: e })),
+    ...projectStatusChangeEvents.map((e) => ({ type: "projectStatusChange" as const, data: e })),
   ].sort((a, b) => {
     const dateA = new Date(a.data.createdAt).getTime();
     const dateB = new Date(b.data.createdAt).getTime();
@@ -102,6 +143,33 @@ export function CombinedFeed({
           );
         }
 
+        if (item.type === "status" && item.data.user) {
+          return (
+            <StatusUpdateCard
+              key={`status-${item.data.id}`}
+              event={{
+                ...item.data,
+                user: item.data.user,
+              }}
+              currentUserId={currentUserId}
+            />
+          );
+        }
+
+        if (item.type === "projectStatusChange" && item.data.project) {
+          return (
+            <ProjectStatusChangeCard
+              key={`project-status-${item.data.id}`}
+              event={{
+                ...item.data,
+                project: item.data.project,
+              }}
+              currentUserId={currentUserId}
+            />
+          );
+        }
+
+        // Milestone events
         return (
           <MilestoneEventCard
             key={`milestone-${item.data.id}`}

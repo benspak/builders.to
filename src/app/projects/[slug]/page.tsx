@@ -174,13 +174,13 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                       <Image
                         src={project.user.image}
                         alt={project.user.name || "User"}
-                        width={24}
-                        height={24}
-                        className="rounded-full"
+                        width={20}
+                        height={20}
+                        className="rounded-full object-cover w-5 h-5"
                       />
                     ) : (
-                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-700">
-                        <User className="h-3 w-3 text-zinc-400" />
+                      <div className="flex h-5 w-5 items-center justify-center rounded-full bg-zinc-700">
+                        <User className="h-2.5 w-2.5 text-zinc-400" />
                       </div>
                     )}
                     <span>{project.user.name}</span>
@@ -191,13 +191,13 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                       <Image
                         src={project.user.image}
                         alt={project.user.name || "User"}
-                        width={24}
-                        height={24}
-                        className="rounded-full"
+                        width={20}
+                        height={20}
+                        className="rounded-full object-cover w-5 h-5"
                       />
                     ) : (
-                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-700">
-                        <User className="h-3 w-3 text-zinc-400" />
+                      <div className="flex h-5 w-5 items-center justify-center rounded-full bg-zinc-700">
+                        <User className="h-2.5 w-2.5 text-zinc-400" />
                       </div>
                     )}
                     <span>{project.user.name}</span>
@@ -234,13 +234,13 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                             <Image
                               src={cb.user.image}
                               alt={displayName}
-                              width={18}
-                              height={18}
-                              className="rounded-full"
+                              width={16}
+                              height={16}
+                              className="rounded-full object-cover w-4 h-4"
                             />
                           ) : (
-                            <div className="flex h-[18px] w-[18px] items-center justify-center rounded-full bg-zinc-700">
-                              <User className="h-2.5 w-2.5 text-zinc-400" />
+                            <div className="flex h-4 w-4 items-center justify-center rounded-full bg-zinc-700">
+                              <User className="h-2 w-2 text-zinc-400" />
                             </div>
                           )}
                           <span>{displayName}</span>
@@ -254,13 +254,13 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                             <Image
                               src={cb.user.image}
                               alt={displayName}
-                              width={18}
-                              height={18}
-                              className="rounded-full"
+                              width={16}
+                              height={16}
+                              className="rounded-full object-cover w-4 h-4"
                             />
                           ) : (
-                            <div className="flex h-[18px] w-[18px] items-center justify-center rounded-full bg-zinc-700">
-                              <User className="h-2.5 w-2.5 text-zinc-400" />
+                            <div className="flex h-4 w-4 items-center justify-center rounded-full bg-zinc-700">
+                              <User className="h-2 w-2 text-zinc-400" />
                             </div>
                           )}
                           <span>{displayName}</span>

@@ -68,6 +68,10 @@ model User {
   youtubeUrl    String?
   linkedinUrl   String?
 
+  // Profile status - what the user is currently up to
+  status              String?   // Short status message (e.g., "Building a new feature 🚀")
+  statusUpdatedAt     DateTime? // When the status was last updated
+
   // Intent flags - Builder Operating System
   openToWork          Boolean @default(false)
   lookingForCofounder Boolean @default(false)
@@ -429,9 +433,11 @@ model Follow {
 
 // Feed event types
 enum FeedEventType {
-  MILESTONE_ACHIEVED   // Project hit a milestone
-  PROJECT_LAUNCHED     // Project status changed to LAUNCHED
-  PROJECT_ACQUIRED     // Project was acquired
+  MILESTONE_ACHIEVED     // Project hit a milestone
+  PROJECT_LAUNCHED       // Project status changed to LAUNCHED
+  PROJECT_ACQUIRED       // Project was acquired
+  STATUS_UPDATE          // User updated their profile status
+  PROJECT_STATUS_CHANGE  // Project status changed (any transition)
 }
 
 // Feed events - aggregated activity feed

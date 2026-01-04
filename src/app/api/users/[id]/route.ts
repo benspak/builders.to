@@ -54,6 +54,9 @@ export async function GET(
         linkedinUrl: true,
         image: true,
         createdAt: true,
+        // Status
+        status: true,
+        statusUpdatedAt: true,
         // Intent flags
         openToWork: true,
         lookingForCofounder: true,
@@ -106,16 +109,18 @@ export async function PATCH(
       twitterUrl,
       youtubeUrl,
       linkedinUrl,
+      // Status
+      status,
       // Intent flags
       openToWork,
       lookingForCofounder,
       availableForContract,
     } = body;
 
-    // Generate slug from name if not exists
+    // Generate slug from name if not exists, and get current status for comparison
     const currentUser = await prisma.user.findUnique({
       where: { id },
-      select: { slug: true, name: true },
+      select: { slug: true, name: true, status: true },
     });
 
     let slug = currentUser?.slug;
@@ -154,6 +159,10 @@ export async function PATCH(
       }
     }
 
+    // Check if status is being updated to a new non-empty value
+    const trimmedStatus = status?.trim() || null;
+    const statusChanged = status !== undefined && trimmedStatus && trimmedStatus !== currentUser?.status;
+
     const user = await prisma.user.update({
       where: { id },
       data: {
@@ -169,6 +178,11 @@ export async function PATCH(
         twitterUrl: twitterUrl?.trim() || null,
         youtubeUrl: youtubeUrl?.trim() || null,
         linkedinUrl: linkedinUrl?.trim() || null,
+        // Status - update if provided, allow clearing with empty string
+        ...(status !== undefined && {
+          status: trimmedStatus,
+          statusUpdatedAt: trimmedStatus ? new Date() : null,
+        }),
         // Intent flags - only update if explicitly provided
         ...(typeof openToWork === 'boolean' && { openToWork }),
         ...(typeof lookingForCofounder === 'boolean' && { lookingForCofounder }),
@@ -194,10 +208,23 @@ export async function PATCH(
         openToWork: true,
         lookingForCofounder: true,
         availableForContract: true,
+        status: true,
+        statusUpdatedAt: true,
         currentStreak: true,
         longestStreak: true,
       },
     });
+
+    // Create a feed event if status was changed to a new value
+    if (statusChanged && trimmedStatus) {
+      await prisma.feedEvent.create({
+        data: {
+          type: "STATUS_UPDATE",
+          userId: id,
+          title: trimmedStatus,
+        },
+      });
+    }
 
     return NextResponse.json(user);
   } catch (error) {

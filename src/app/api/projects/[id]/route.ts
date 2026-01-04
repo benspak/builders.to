@@ -80,10 +80,10 @@ export async function PATCH(
 
     const { id } = await params;
 
-    // Check ownership
+    // Check ownership and get current status for comparison
     const existingProject = await prisma.project.findUnique({
       where: { id },
-      select: { userId: true },
+      select: { userId: true, status: true, title: true, slug: true },
     });
 
     if (!existingProject) {
@@ -175,6 +175,11 @@ export async function PATCH(
       }
     }
 
+    // Check if status is changing
+    const oldStatus = existingProject.status;
+    const newStatus = status;
+    const statusChanged = newStatus && newStatus !== oldStatus;
+
     const project = await prisma.project.update({
       where: { id },
       data: {
@@ -233,6 +238,19 @@ export async function PATCH(
         },
       },
     });
+
+    // Create a feed event if status changed
+    if (statusChanged) {
+      await prisma.feedEvent.create({
+        data: {
+          type: "PROJECT_STATUS_CHANGE",
+          userId: session.user.id,
+          projectId: id,
+          title: `${oldStatus} → ${newStatus}`,
+          description: title || existingProject.title,
+        },
+      });
+    }
 
     return NextResponse.json(project);
   } catch (error) {

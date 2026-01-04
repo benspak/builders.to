@@ -150,13 +150,13 @@ export function ProjectCard({ project }: ProjectCardProps) {
                     <Image
                       src={project.user.image}
                       alt={project.user.name || "User"}
-                      width={24}
-                      height={24}
-                      className="rounded-full ring-2 ring-zinc-900"
+                      width={20}
+                      height={20}
+                      className="rounded-full ring-2 ring-zinc-900 object-cover w-5 h-5"
                     />
                   ) : (
-                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-700 ring-2 ring-zinc-900">
-                      <User className="h-3 w-3 text-zinc-400" />
+                    <div className="flex h-5 w-5 items-center justify-center rounded-full bg-zinc-700 ring-2 ring-zinc-900">
+                      <User className="h-2.5 w-2.5 text-zinc-400" />
                     </div>
                   )}
                 </Link>
@@ -166,13 +166,13 @@ export function ProjectCard({ project }: ProjectCardProps) {
                     <Image
                       src={project.user.image}
                       alt={project.user.name || "User"}
-                      width={24}
-                      height={24}
-                      className="rounded-full ring-2 ring-zinc-900"
+                      width={20}
+                      height={20}
+                      className="rounded-full ring-2 ring-zinc-900 object-cover w-5 h-5"
                     />
                   ) : (
-                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-700 ring-2 ring-zinc-900">
-                      <User className="h-3 w-3 text-zinc-400" />
+                    <div className="flex h-5 w-5 items-center justify-center rounded-full bg-zinc-700 ring-2 ring-zinc-900">
+                      <User className="h-2.5 w-2.5 text-zinc-400" />
                     </div>
                   )}
                 </div>
@@ -196,13 +196,13 @@ export function ProjectCard({ project }: ProjectCardProps) {
                       <Image
                         src={cb.user.image}
                         alt={displayName}
-                        width={24}
-                        height={24}
-                        className="rounded-full ring-2 ring-zinc-900"
+                        width={20}
+                        height={20}
+                        className="rounded-full ring-2 ring-zinc-900 object-cover w-5 h-5"
                       />
                     ) : (
-                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-700 ring-2 ring-zinc-900">
-                        <User className="h-3 w-3 text-zinc-400" />
+                      <div className="flex h-5 w-5 items-center justify-center rounded-full bg-zinc-700 ring-2 ring-zinc-900">
+                        <User className="h-2.5 w-2.5 text-zinc-400" />
                       </div>
                     )}
                   </Link>
@@ -217,13 +217,13 @@ export function ProjectCard({ project }: ProjectCardProps) {
                       <Image
                         src={cb.user.image}
                         alt={displayName}
-                        width={24}
-                        height={24}
-                        className="rounded-full ring-2 ring-zinc-900"
+                        width={20}
+                        height={20}
+                        className="rounded-full ring-2 ring-zinc-900 object-cover w-5 h-5"
                       />
                     ) : (
-                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-700 ring-2 ring-zinc-900">
-                        <User className="h-3 w-3 text-zinc-400" />
+                      <div className="flex h-5 w-5 items-center justify-center rounded-full bg-zinc-700 ring-2 ring-zinc-900">
+                        <User className="h-2.5 w-2.5 text-zinc-400" />
                       </div>
                     )}
                   </div>
@@ -233,7 +233,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
               {/* Show overflow count */}
               {project.coBuilders && project.coBuilders.length > 3 && (
                 <div
-                  className="relative flex h-6 w-6 items-center justify-center rounded-full bg-zinc-800 ring-2 ring-zinc-900 text-xs text-zinc-400"
+                  className="relative flex h-5 w-5 items-center justify-center rounded-full bg-zinc-800 ring-2 ring-zinc-900 text-[10px] text-zinc-400"
                   style={{ zIndex: 5 }}
                 >
                   +{project.coBuilders.length - 3}
