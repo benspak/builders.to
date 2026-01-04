@@ -327,6 +327,42 @@ export default async function CompanyPage({ params }: CompanyPageProps) {
           </section>
         )}
 
+        {/* Active Projects */}
+        <section className="card p-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold text-white">
+              Active Projects ({company._count.projects})
+            </h2>
+            {isOwner && (
+              <Link
+                href={`/projects/new?company=${company.id}`}
+                className="btn-secondary text-sm"
+              >
+                Add Project
+              </Link>
+            )}
+          </div>
+
+          {company.projects.length > 0 ? (
+            <div className="grid gap-6 sm:grid-cols-2">
+              {company.projects.map((project) => (
+                <ProjectCard
+                  key={project.id}
+                  project={{
+                    ...project,
+                    createdAt: project.createdAt.toISOString(),
+                    hasUpvoted: userUpvotes.includes(project.id),
+                  }}
+                />
+              ))}
+            </div>
+          ) : (
+            <p className="text-zinc-500 text-center py-8">
+              No projects yet. {isOwner && "Add your first project!"}
+            </p>
+          )}
+        </section>
+
         {/* Open Roles */}
         {(company.roles.length > 0 || isOwner) && (
           <section className="card p-8">
@@ -376,42 +412,6 @@ export default async function CompanyPage({ params }: CompanyPageProps) {
             isOwner={isOwner}
             emptyMessage={isOwner ? "Share your first company update" : "No updates yet"}
           />
-        </section>
-
-        {/* Active Projects */}
-        <section className="card p-8">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-white">
-              Active Projects ({company._count.projects})
-            </h2>
-            {isOwner && (
-              <Link
-                href={`/projects/new?company=${company.id}`}
-                className="btn-secondary text-sm"
-              >
-                Add Project
-              </Link>
-            )}
-          </div>
-
-          {company.projects.length > 0 ? (
-            <div className="grid gap-6 sm:grid-cols-2">
-              {company.projects.map((project) => (
-                <ProjectCard
-                  key={project.id}
-                  project={{
-                    ...project,
-                    createdAt: project.createdAt.toISOString(),
-                    hasUpvoted: userUpvotes.includes(project.id),
-                  }}
-                />
-              ))}
-            </div>
-          ) : (
-            <p className="text-zinc-500 text-center py-8">
-              No projects yet. {isOwner && "Add your first project!"}
-            </p>
-          )}
         </section>
 
         {/* Footer info */}

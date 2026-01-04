@@ -3,7 +3,7 @@ import { Loader2, Sparkles, MessageCircle } from "lucide-react";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
-import { CombinedFeed, TopBuilders } from "@/components/feed";
+import { CombinedFeed, TopBuilders, OpenJobs } from "@/components/feed";
 import { RoastMVPCard } from "@/components/roast-mvp/roast-mvp-card";
 
 export const metadata = {
@@ -249,6 +249,37 @@ async function TopBuildersSection() {
   return <TopBuilders builders={topBuilders} />;
 }
 
+async function OpenJobsSection() {
+  // Fetch latest open roles from companies
+  const openRoles = await prisma.companyRole.findMany({
+    where: {
+      isActive: true,
+    },
+    select: {
+      id: true,
+      title: true,
+      type: true,
+      location: true,
+      isRemote: true,
+      salaryMin: true,
+      salaryMax: true,
+      currency: true,
+      company: {
+        select: {
+          id: true,
+          slug: true,
+          name: true,
+          logo: true,
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+    take: 6,
+  });
+
+  return <OpenJobs jobs={openRoles} />;
+}
+
 export default function FeedPage() {
   return (
     <div className="min-h-screen bg-zinc-950">
@@ -273,11 +304,11 @@ export default function FeedPage() {
           </div>
         </div>
 
-        {/* Two Column Layout */}
-        <div className="flex flex-col lg:flex-row gap-8">
+        {/* Three Column Layout */}
+        <div className="flex flex-col xl:flex-row gap-8">
           {/* Left Sidebar - Sticky and scrollable on desktop */}
-          <aside className="lg:w-80 shrink-0 order-2 lg:order-1">
-            <div className="lg:sticky lg:top-24 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto space-y-6 lg:pb-4">
+          <aside className="xl:w-72 shrink-0 order-2 xl:order-1">
+            <div className="xl:sticky xl:top-24 xl:max-h-[calc(100vh-8rem)] xl:overflow-y-auto space-y-6 xl:pb-4">
               {/* Roast my MVP Section */}
               <Suspense
                 fallback={
@@ -351,7 +382,7 @@ export default function FeedPage() {
           </aside>
 
           {/* Main Feed */}
-          <main className="flex-1 min-w-0 max-w-2xl order-1 lg:order-2">
+          <main className="flex-1 min-w-0 max-w-2xl order-1 xl:order-2">
             <Suspense
               fallback={
                 <div className="flex items-center justify-center py-20">
@@ -362,6 +393,39 @@ export default function FeedPage() {
               <FeedContent />
             </Suspense>
           </main>
+
+          {/* Right Sidebar - Open Jobs */}
+          <aside className="xl:w-72 shrink-0 order-3">
+            <div className="xl:sticky xl:top-24 xl:max-h-[calc(100vh-8rem)] xl:overflow-y-auto space-y-6 xl:pb-4">
+              {/* Open Jobs Section */}
+              <Suspense
+                fallback={
+                  <div className="rounded-xl border border-zinc-800/50 bg-zinc-900/50 overflow-hidden animate-pulse">
+                    <div className="px-4 py-3 border-b border-zinc-800/50">
+                      <div className="flex items-center gap-2">
+                        <div className="h-8 w-8 bg-zinc-800 rounded-lg" />
+                        <div className="h-5 w-24 bg-zinc-800 rounded" />
+                      </div>
+                    </div>
+                    <div className="divide-y divide-zinc-800/30">
+                      {[1, 2, 3, 4].map((i) => (
+                        <div key={i} className="flex items-start gap-3 px-4 py-3">
+                          <div className="h-10 w-10 bg-zinc-800 rounded-lg" />
+                          <div className="flex-1">
+                            <div className="h-4 w-32 bg-zinc-800 rounded mb-1" />
+                            <div className="h-3 w-20 bg-zinc-800 rounded mb-2" />
+                            <div className="h-3 w-24 bg-zinc-800 rounded" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                }
+              >
+                <OpenJobsSection />
+              </Suspense>
+            </div>
+          </aside>
         </div>
       </div>
     </div>
