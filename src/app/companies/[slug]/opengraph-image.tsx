@@ -24,9 +24,10 @@ const categoryConfig: Record<string, { label: string; color: string; bg: string 
   OTHER: { label: 'Other', color: '#a1a1aa', bg: 'rgba(161, 161, 170, 0.15)' },
 }
 
-export default async function Image({ params }: { params: { slug: string } }) {
+export default async function Image({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
   const company = await prisma.company.findUnique({
-    where: { slug: params.slug },
+    where: { slug },
     select: {
       name: true,
       logo: true,

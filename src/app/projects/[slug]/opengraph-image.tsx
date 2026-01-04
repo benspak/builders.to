@@ -19,9 +19,10 @@ const statusConfig: Record<string, { emoji: string; color: string; bg: string }>
   ACQUIRED: { emoji: '🏆', color: '#e879f9', bg: 'rgba(232, 121, 249, 0.15)' },
 }
 
-export default async function Image({ params }: { params: { slug: string } }) {
+export default async function Image({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
   const project = await prisma.project.findUnique({
-    where: { slug: params.slug },
+    where: { slug },
     select: {
       title: true,
       tagline: true,
