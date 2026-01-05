@@ -665,7 +665,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
             </section>
 
             {/* Daily Updates */}
-            <section>
+            <section id="daily-updates" className="scroll-mt-24">
               <div className="flex items-center gap-3 mb-4">
                 <Sparkles className="h-5 w-5 text-amber-500" />
                 <h2 className="text-xl font-semibold text-white">Daily Updates</h2>
