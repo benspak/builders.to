@@ -77,9 +77,14 @@ export async function POST(
       );
     }
 
-    // Check if update exists
+    // Check if update exists and get owner info
     const update = await prisma.dailyUpdate.findUnique({
       where: { id: updateId },
+      select: {
+        id: true,
+        content: true,
+        userId: true,
+      },
     });
 
     if (!update) {
@@ -88,6 +93,17 @@ export async function POST(
         { status: 404 }
       );
     }
+
+    // Get current user info for notification
+    const currentUser = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: {
+        name: true,
+        firstName: true,
+        lastName: true,
+        image: true,
+      },
+    });
 
     const comment = await prisma.updateComment.create({
       data: {
@@ -108,6 +124,31 @@ export async function POST(
         },
       },
     });
+
+    // Create notification for update owner (if not self-comment)
+    if (update.userId !== session.user.id) {
+      const commenterName = currentUser?.firstName && currentUser?.lastName
+        ? `${currentUser.firstName} ${currentUser.lastName}`
+        : currentUser?.name || "Someone";
+
+      // Truncate comment content for notification message
+      const truncatedContent = content.trim().length > 100
+        ? content.trim().substring(0, 100) + "..."
+        : content.trim();
+
+      await prisma.notification.create({
+        data: {
+          type: "UPDATE_COMMENTED",
+          title: `${commenterName} commented on your update`,
+          message: truncatedContent,
+          userId: update.userId,
+          updateId: update.id,
+          actorId: session.user.id,
+          actorName: commenterName,
+          actorImage: currentUser?.image,
+        },
+      });
+    }
 
     return NextResponse.json(comment, { status: 201 });
   } catch (error) {

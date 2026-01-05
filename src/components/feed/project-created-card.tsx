@@ -56,7 +56,7 @@ export function ProjectCreatedCard({ event, currentUserId }: ProjectCreatedCardP
     : user?.name || "Builder";
 
   const projectUrl = project ? `/projects/${project.slug || project.id}` : null;
-  const userUrl = user ? `/profile/${user.slug || user.id}` : null;
+  const userUrl = user?.slug ? `/profile/${user.slug}` : null;
 
   const handleLike = async () => {
     if (!currentUserId || loading) return;

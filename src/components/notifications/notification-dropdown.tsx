@@ -139,6 +139,8 @@ export function NotificationDropdown() {
         return <Trophy className="h-4 w-4 text-amber-400" />;
       case "UPDATE_LIKED":
         return <Heart className="h-4 w-4 text-rose-400" />;
+      case "UPDATE_COMMENTED":
+        return <MessageCircle className="h-4 w-4 text-sky-400" />;
       case "USER_MENTIONED":
         return <AtSign className="h-4 w-4 text-orange-400" />;
       case "WEEKLY_DIGEST":
@@ -164,6 +166,10 @@ export function NotificationDropdown() {
     }
     // Link to the liker's profile for update liked notifications
     if (notification.type === "UPDATE_LIKED" && notification.actorSlug) {
+      return `/profile/${notification.actorSlug}`;
+    }
+    // Link to the commenter's profile for update commented notifications
+    if (notification.type === "UPDATE_COMMENTED" && notification.actorSlug) {
       return `/profile/${notification.actorSlug}`;
     }
     // Link to profile for other update notifications (updates are shown on profile)
