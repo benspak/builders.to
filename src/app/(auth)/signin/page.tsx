@@ -12,51 +12,52 @@ export default async function SignInPage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 flex flex-col">
+    <div className="min-h-screen flex flex-col" style={{ background: "var(--background)" }}>
       {/* Background effects */}
       <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-orange-500/20 via-transparent to-transparent" />
-      <div className="fixed inset-0 bg-[url('/grid.svg')] bg-center [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]" />
+      <div className="fixed inset-0 bg-grid opacity-30" />
 
       <div className="relative flex-1 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors mb-8"
+            className="inline-flex items-center gap-2 text-sm transition-colors mb-8"
+            style={{ color: "var(--foreground-muted)" }}
           >
             <ArrowLeft className="h-4 w-4" />
             Back to home
           </Link>
 
-          <div className="rounded-2xl border border-white/10 bg-zinc-900/50 p-8 backdrop-blur-xl">
+          <div className="rounded-2xl p-8 backdrop-blur-xl card">
             <div className="text-center mb-8">
-              <h1 className="text-3xl font-bold text-white mb-2">Welcome to Builders</h1>
-              <p className="text-zinc-400">
+              <h1 className="text-3xl font-bold mb-2" style={{ color: "var(--foreground)" }}>Welcome to Builders</h1>
+              <p style={{ color: "var(--foreground-muted)" }}>
                 Sign in to share your projects and connect with fellow builders
               </p>
             </div>
 
             <SignInButtons />
 
-            <p className="mt-8 text-center text-xs text-zinc-500">
+            <p className="mt-8 text-center text-xs" style={{ color: "var(--foreground-subtle)" }}>
               By signing in, you agree to our{" "}
-              <Link href="/terms" className="text-orange-400 hover:text-orange-300">
+              <Link href="/terms" className="text-orange-500 hover:text-orange-400">
                 Terms of Service
               </Link>{" "}
               and{" "}
-              <Link href="/privacy" className="text-orange-400 hover:text-orange-300">
+              <Link href="/privacy" className="text-orange-500 hover:text-orange-400">
                 Privacy Policy
               </Link>
             </p>
           </div>
 
           <div className="mt-6 text-center">
-            <p className="text-sm text-zinc-500">
+            <p className="text-sm" style={{ color: "var(--foreground-subtle)" }}>
               Part of the{" "}
               <a
                 href="https://x.com/i/communities/1943895831322439993"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-orange-400 hover:text-orange-300"
+                className="text-orange-500 hover:text-orange-400"
               >
                 Builders.to community on X
               </a>
