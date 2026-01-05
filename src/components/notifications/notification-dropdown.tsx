@@ -26,6 +26,7 @@ interface Notification {
   createdAt: string;
   actorName?: string | null;
   actorImage?: string | null;
+  actorSlug?: string | null;
   feedEvent?: {
     id: string;
     type: string;
@@ -239,13 +240,34 @@ export function NotificationDropdown() {
                       {/* Actor avatar or icon */}
                       <div className="flex-shrink-0">
                         {notification.actorImage ? (
-                          <Image
-                            src={notification.actorImage}
-                            alt=""
-                            width={36}
-                            height={36}
-                            className="rounded-full"
-                          />
+                          notification.actorSlug ? (
+                            <Link
+                              href={`/profile/${notification.actorSlug}`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setIsOpen(false);
+                                if (!notification.read) {
+                                  markAsRead(notification.id);
+                                }
+                              }}
+                            >
+                              <Image
+                                src={notification.actorImage}
+                                alt=""
+                                width={36}
+                                height={36}
+                                className="rounded-full hover:ring-2 hover:ring-orange-400 transition-all"
+                              />
+                            </Link>
+                          ) : (
+                            <Image
+                              src={notification.actorImage}
+                              alt=""
+                              width={36}
+                              height={36}
+                              className="rounded-full"
+                            />
+                          )
                         ) : (
                           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-zinc-800">
                             {getNotificationIcon(notification.type)}
@@ -256,11 +278,42 @@ export function NotificationDropdown() {
                       {/* Content */}
                       <div className="flex-1 min-w-0">
                         <p className="text-sm text-white font-medium">
-                          {notification.title}
+                          {notification.type === "UPDATE_LIKED" && notification.actorName ? (
+                            <>
+                              {notification.actorSlug ? (
+                                <Link
+                                  href={`/profile/${notification.actorSlug}`}
+                                  className="text-orange-400 hover:text-orange-300 hover:underline"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setIsOpen(false);
+                                    if (!notification.read) {
+                                      markAsRead(notification.id);
+                                    }
+                                  }}
+                                >
+                                  {notification.actorName}
+                                </Link>
+                              ) : (
+                                <span className="text-zinc-300">{notification.actorName}</span>
+                              )}
+                              {" liked your update! ❤️"}
+                            </>
+                          ) : (
+                            notification.title
+                          )}
                         </p>
-                        {notification.message && (
+                        {notification.message && notification.type !== "UPDATE_LIKED" && (
                           <p className="text-xs text-zinc-400 mt-0.5 line-clamp-2">
                             {notification.message}
+                          </p>
+                        )}
+                        {notification.type === "UPDATE_LIKED" && notification.message && (
+                          <p className="text-xs text-zinc-400 mt-0.5 line-clamp-2">
+                            {/* Show just the update preview without repeating the actor name */}
+                            {notification.message.includes(": \"")
+                              ? notification.message.split(": \"")[1]?.replace(/"$/, "") || notification.message
+                              : notification.message}
                           </p>
                         )}
                         <p className="text-xs text-zinc-500 mt-1">

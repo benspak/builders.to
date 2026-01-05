@@ -66,7 +66,19 @@ export async function GET(request: NextRequest) {
             },
           },
         },
-      }),
+      }).then(notifications =>
+        // Fetch actor slugs for notifications with actorId
+        Promise.all(notifications.map(async (notification) => {
+          if (notification.actorId) {
+            const actor = await prisma.user.findUnique({
+              where: { id: notification.actorId },
+              select: { slug: true },
+            });
+            return { ...notification, actorSlug: actor?.slug };
+          }
+          return { ...notification, actorSlug: null };
+        }))
+      ),
       prisma.notification.count({ where }),
       prisma.notification.count({
         where: { userId: session.user.id, read: false },
