@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { rateLimit, RATE_LIMITS, rateLimitResponse } from "@/lib/rate-limit";
+import { extractMentions } from "@/lib/utils";
 
 // GET /api/updates/[id]/comments - Get comments for an update
 export async function GET(
@@ -125,17 +126,17 @@ export async function POST(
       },
     });
 
+    const commenterName = currentUser?.firstName && currentUser?.lastName
+      ? `${currentUser.firstName} ${currentUser.lastName}`
+      : currentUser?.name || "Someone";
+
+    // Truncate comment content for notification message
+    const truncatedContent = content.trim().length > 100
+      ? content.trim().substring(0, 100) + "..."
+      : content.trim();
+
     // Create notification for update owner (if not self-comment)
     if (update.userId !== session.user.id) {
-      const commenterName = currentUser?.firstName && currentUser?.lastName
-        ? `${currentUser.firstName} ${currentUser.lastName}`
-        : currentUser?.name || "Someone";
-
-      // Truncate comment content for notification message
-      const truncatedContent = content.trim().length > 100
-        ? content.trim().substring(0, 100) + "..."
-        : content.trim();
-
       await prisma.notification.create({
         data: {
           type: "UPDATE_COMMENTED",
@@ -148,6 +149,41 @@ export async function POST(
           actorImage: currentUser?.image,
         },
       });
+    }
+
+    // Extract and process @mentions
+    const mentionedSlugs = extractMentions(content.trim());
+
+    if (mentionedSlugs.length > 0) {
+      // Find users by their slugs
+      const mentionedUsers = await prisma.user.findMany({
+        where: {
+          slug: { in: mentionedSlugs },
+          // Don't notify the commenter if they mention themselves
+          id: { not: session.user.id },
+        },
+        select: { id: true, slug: true },
+      });
+
+      // Create notifications for mentioned users (except update owner who already got notified)
+      const mentionNotifications = mentionedUsers
+        .filter(user => user.id !== update.userId)
+        .map(mentionedUser => ({
+          type: "USER_MENTIONED" as const,
+          title: `${commenterName} mentioned you in a comment`,
+          message: truncatedContent,
+          userId: mentionedUser.id,
+          updateId: update.id,
+          actorId: session.user.id,
+          actorName: commenterName,
+          actorImage: currentUser?.image,
+        }));
+
+      if (mentionNotifications.length > 0) {
+        await prisma.notification.createMany({
+          data: mentionNotifications,
+        });
+      }
     }
 
     return NextResponse.json(comment, { status: 201 });

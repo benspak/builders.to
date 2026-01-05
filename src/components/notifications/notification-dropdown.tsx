@@ -176,8 +176,11 @@ export function NotificationDropdown() {
     if (notification.update?.user?.slug) {
       return `/profile/${notification.update.user.slug}`;
     }
-    // For mentions, go to the feed
+    // For mentions, go to the project if available, otherwise the feed
     if (notification.type === "USER_MENTIONED") {
+      if (notification.project?.slug) {
+        return `/projects/${notification.project.slug}`;
+      }
       return `/feed`;
     }
     return null;

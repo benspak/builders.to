@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { rateLimit, RATE_LIMITS, rateLimitResponse } from "@/lib/rate-limit";
+import { extractMentions } from "@/lib/utils";
 
 // GET /api/comments - Get comments for a project
 export async function GET(request: NextRequest) {
@@ -133,6 +134,41 @@ export async function POST(request: NextRequest) {
           actorImage: currentUser?.image,
         },
       });
+    }
+
+    // Extract and process @mentions
+    const mentionedSlugs = extractMentions(content);
+
+    if (mentionedSlugs.length > 0) {
+      // Find users by their slugs
+      const mentionedUsers = await prisma.user.findMany({
+        where: {
+          slug: { in: mentionedSlugs },
+          // Don't notify the commenter if they mention themselves
+          id: { not: session.user.id },
+        },
+        select: { id: true, slug: true },
+      });
+
+      // Create notifications for mentioned users (except project owner who already got notified)
+      const mentionNotifications = mentionedUsers
+        .filter(user => user.id !== project.userId)
+        .map(mentionedUser => ({
+          type: "USER_MENTIONED" as const,
+          title: `${currentUser?.name || "Someone"} mentioned you in a comment`,
+          message: content.length > 100 ? content.substring(0, 100) + "..." : content,
+          userId: mentionedUser.id,
+          projectId: project.id,
+          actorId: session.user.id,
+          actorName: currentUser?.name,
+          actorImage: currentUser?.image,
+        }));
+
+      if (mentionNotifications.length > 0) {
+        await prisma.notification.createMany({
+          data: mentionNotifications,
+        });
+      }
     }
 
     return NextResponse.json(comment, { status: 201 });
