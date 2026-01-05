@@ -481,7 +481,6 @@ body {
   color: var(--foreground);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 code, pre, .font-mono {
@@ -710,14 +709,14 @@ code, pre, .font-mono {
   color: var(--foreground);
 }
 
-/* Theme transition for smooth mode switching */
-* {
-  transition-property: background-color, border-color, color, fill, stroke;
-  transition-timing-function: ease;
-  transition-duration: 0ms;
-}
-
-html.transitioning,
-html.transitioning * {
-  transition-duration: 300ms !important;
+/* Theme transition - only on key elements for performance */
+body,
+.card,
+.input,
+.textarea,
+.btn-primary,
+.btn-secondary,
+nav,
+footer {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }

@@ -33,13 +33,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, [theme, mounted]);
 
   const toggleTheme = () => {
-    // Enable transitions for smooth theme switch
-    document.documentElement.classList.add("transitioning");
     setTheme((prev) => (prev === "dark" ? "light" : "dark"));
-    // Remove transitioning class after animation completes
-    setTimeout(() => {
-      document.documentElement.classList.remove("transitioning");
-    }, 300);
   };
 
   // Prevent flash of wrong theme
