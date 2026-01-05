@@ -1,11 +1,12 @@
 import { Suspense } from "react";
-import { Loader2, Sparkles, MessageCircle } from "lucide-react";
+import { Loader2, Sparkles, MessageCircle, Megaphone } from "lucide-react";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { CombinedFeed, TopBuilders, OpenJobs } from "@/components/feed";
 import { RoastMVPCard } from "@/components/roast-mvp/roast-mvp-card";
 import { SiteViewsCounter } from "@/components/analytics/site-views-counter";
+import { SidebarAd } from "@/components/ads";
 
 export const metadata = {
   title: "Feed - Builders.to",
@@ -316,6 +317,13 @@ async function OpenJobsSection() {
   return <OpenJobs jobs={openRoles} />;
 }
 
+async function SidebarAdSection() {
+  const session = await auth();
+  const isAuthenticated = !!session?.user;
+
+  return <SidebarAd isAuthenticated={isAuthenticated} />;
+}
+
 export default function FeedPage() {
   return (
     <div className="relative min-h-screen bg-zinc-950">
@@ -411,34 +419,6 @@ export default function FeedPage() {
           {/* Right Sidebar - Open Jobs */}
           <aside className="xl:w-72 shrink-0 order-2 xl:order-3">
             <div className="xl:sticky xl:top-24 xl:max-h-[calc(100vh-8rem)] xl:overflow-y-auto space-y-6 xl:pb-4">
-              {/* Open Jobs Section */}
-              <Suspense
-                fallback={
-                  <div className="rounded-xl border border-zinc-800/50 bg-zinc-900/50 overflow-hidden animate-pulse">
-                    <div className="px-4 py-3 border-b border-zinc-800/50">
-                      <div className="flex items-center gap-2">
-                        <div className="h-8 w-8 bg-zinc-800 rounded-lg" />
-                        <div className="h-5 w-24 bg-zinc-800 rounded" />
-                      </div>
-                    </div>
-                    <div className="divide-y divide-zinc-800/30">
-                      {[1, 2, 3, 4].map((i) => (
-                        <div key={i} className="flex items-start gap-3 px-4 py-3">
-                          <div className="h-10 w-10 bg-zinc-800 rounded-lg" />
-                          <div className="flex-1">
-                            <div className="h-4 w-32 bg-zinc-800 rounded mb-1" />
-                            <div className="h-3 w-20 bg-zinc-800 rounded mb-2" />
-                            <div className="h-3 w-24 bg-zinc-800 rounded" />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                }
-              >
-                <OpenJobsSection />
-              </Suspense>
-
               {/* Discord Community Card */}
               <Link
                 href="https://discord.com/invite/G7nmswWkbn"
@@ -482,6 +462,54 @@ export default function FeedPage() {
                   />
                 </a>
               </div>
+
+              {/* Sidebar Ad Section */}
+              <Suspense
+                fallback={
+                  <div className="rounded-xl border border-zinc-800/50 bg-zinc-900/50 overflow-hidden animate-pulse">
+                    <div className="flex items-center gap-2 px-4 py-3 border-b border-zinc-800/50">
+                      <div className="h-4 w-4 bg-zinc-800 rounded" />
+                      <div className="h-3 w-16 bg-zinc-800 rounded" />
+                    </div>
+                    <div className="p-5">
+                      <div className="w-full h-32 bg-zinc-800 rounded-lg mb-4" />
+                      <div className="h-5 w-3/4 bg-zinc-800 rounded mb-2" />
+                      <div className="h-4 w-full bg-zinc-800 rounded mb-4" />
+                      <div className="h-9 w-full bg-zinc-800 rounded-lg" />
+                    </div>
+                  </div>
+                }
+              >
+                <SidebarAdSection />
+              </Suspense>
+
+              {/* Open Jobs Section */}
+              <Suspense
+                fallback={
+                  <div className="rounded-xl border border-zinc-800/50 bg-zinc-900/50 overflow-hidden animate-pulse">
+                    <div className="px-4 py-3 border-b border-zinc-800/50">
+                      <div className="flex items-center gap-2">
+                        <div className="h-8 w-8 bg-zinc-800 rounded-lg" />
+                        <div className="h-5 w-24 bg-zinc-800 rounded" />
+                      </div>
+                    </div>
+                    <div className="divide-y divide-zinc-800/30">
+                      {[1, 2, 3, 4].map((i) => (
+                        <div key={i} className="flex items-start gap-3 px-4 py-3">
+                          <div className="h-10 w-10 bg-zinc-800 rounded-lg" />
+                          <div className="flex-1">
+                            <div className="h-4 w-32 bg-zinc-800 rounded mb-1" />
+                            <div className="h-3 w-20 bg-zinc-800 rounded mb-2" />
+                            <div className="h-3 w-24 bg-zinc-800 rounded" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                }
+              >
+                <OpenJobsSection />
+              </Suspense>
             </div>
           </aside>
         </div>

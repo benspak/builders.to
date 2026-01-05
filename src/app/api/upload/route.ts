@@ -19,7 +19,7 @@ const MIME_TO_EXT: Record<string, string> = {
 const ALLOWED_TYPES = Object.keys(MIME_TO_EXT);
 
 // Valid upload types
-const VALID_TYPES = ["projects", "companies", "updates"] as const;
+const VALID_TYPES = ["projects", "companies", "updates", "ads"] as const;
 type UploadType = (typeof VALID_TYPES)[number];
 
 // Get the upload directory - uses env var in production, falls back to public/uploads locally

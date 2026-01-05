@@ -4,7 +4,7 @@ import { signOut, useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { LogOut, User, ChevronDown, Settings, Rocket } from "lucide-react";
+import { LogOut, User, ChevronDown, Settings, Rocket, Megaphone } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface UserProfile {
@@ -102,6 +102,15 @@ export function UserMenu() {
             >
               <Settings className="h-4 w-4" />
               Settings
+            </Link>
+
+            <Link
+              href="/ads"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-zinc-300 transition-colors hover:bg-white/5 hover:text-white"
+            >
+              <Megaphone className="h-4 w-4" />
+              My Ads
             </Link>
 
             <div className="border-t border-white/10 mt-2 pt-2">

@@ -12,7 +12,7 @@ interface ImageUploadProps {
   placeholder?: string;
   aspectRatio?: "video" | "square" | "auto";
   disabled?: boolean;
-  uploadType?: "projects" | "companies";
+  uploadType?: "projects" | "companies" | "ads";
 }
 
 export function ImageUpload({
@@ -231,7 +231,7 @@ interface GalleryUploadProps {
   onChange: (images: GalleryImage[]) => void;
   maxImages?: number;
   disabled?: boolean;
-  uploadType?: "projects" | "companies";
+  uploadType?: "projects" | "companies" | "ads";
 }
 
 export function GalleryUpload({

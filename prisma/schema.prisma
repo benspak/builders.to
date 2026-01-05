@@ -110,6 +110,9 @@ model User {
   notifications        Notification[]
   emailPreferences     EmailPreferences?
 
+  // Advertising
+  advertisements       Advertisement[]
+
   @@index([slug])
 }
 
@@ -706,4 +709,63 @@ model EmailPreferences {
 
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
+}
+
+// Sidebar Advertisement - paid ad spots on the feed
+enum AdvertisementStatus {
+  DRAFT             // Ad created but not yet paid
+  PENDING_PAYMENT   // User started checkout but hasn't paid
+  ACTIVE            // Paid and currently running
+  EXPIRED           // Ad period has ended
+  CANCELLED         // Payment was refunded or cancelled
+}
+
+model Advertisement {
+  id              String              @id @default(cuid())
+  userId          String
+
+  // Ad content
+  title           String              // Headline text
+  description     String?             @db.Text  // Body text
+  imageUrl        String?             // Ad image
+  linkUrl         String              // Click-through URL
+  ctaText         String              @default("Learn More")  // CTA button text
+
+  // Payment info
+  stripeSessionId String?             @unique
+  stripePaymentId String?
+  amountPaid      Int                 @default(5000)  // $50.00 in cents
+  status          AdvertisementStatus @default(DRAFT)
+
+  // Active period (30 days from payment)
+  startDate       DateTime?           // When the ad starts showing
+  endDate         DateTime?           // When the ad stops showing
+
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  // Relations
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  views           AdView[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([startDate])
+  @@index([endDate])
+}
+
+// Ad view tracking for analytics
+model AdView {
+  id              String        @id @default(cuid())
+  adId            String
+  createdAt       DateTime      @default(now())
+
+  // Anonymous visitor tracking
+  visitorId       String?       // Anonymous session identifier
+
+  advertisement   Advertisement @relation(fields: [adId], references: [id], onDelete: Cascade)
+
+  @@index([adId])
+  @@index([createdAt])
+  @@index([adId, visitorId])
 }
