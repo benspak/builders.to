@@ -162,12 +162,16 @@ export function NotificationDropdown() {
     if (notification.feedEvent?.milestone?.project?.slug) {
       return `/projects/${notification.feedEvent.milestone.project.slug}`;
     }
-    // Link to profile for update notifications (updates are shown on profile)
+    // Link to the liker's profile for update liked notifications
+    if (notification.type === "UPDATE_LIKED" && notification.actorSlug) {
+      return `/profile/${notification.actorSlug}`;
+    }
+    // Link to profile for other update notifications (updates are shown on profile)
     if (notification.update?.user?.slug) {
       return `/profile/${notification.update.user.slug}`;
     }
-    // For mentions and likes, go to the feed
-    if (notification.type === "UPDATE_LIKED" || notification.type === "USER_MENTIONED") {
+    // For mentions, go to the feed
+    if (notification.type === "USER_MENTIONED") {
       return `/feed`;
     }
     return null;
