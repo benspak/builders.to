@@ -6,16 +6,15 @@ import {
   ArrowLeft,
   Edit2,
   ExternalLink,
-  CreditCard,
   Clock,
   CheckCircle,
   XCircle,
   AlertCircle,
-  Trash2
 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
-import { AdAnalytics } from "@/components/ads";
+import { AdAnalytics, CheckoutButton } from "@/components/ads";
+import { DeleteAdButton } from "./delete-button";
 import { cn } from "@/lib/utils";
 
 export const metadata = {
@@ -168,15 +167,7 @@ export default async function AdDetailPage({ params }: PageProps) {
               </Link>
             )}
             {canDelete && (
-              <form action={`/api/ads/${ad.id}`} method="DELETE">
-                <button
-                  type="submit"
-                  className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-400 rounded-lg border border-red-500/30 hover:bg-red-500/10 transition-colors"
-                >
-                  <Trash2 className="h-4 w-4" />
-                  Delete
-                </button>
-              </form>
+              <DeleteAdButton adId={ad.id} />
             )}
           </div>
         </div>
@@ -203,15 +194,7 @@ export default async function AdDetailPage({ params }: PageProps) {
                   Your ad will be displayed immediately after payment for 30 days.
                 </p>
               </div>
-              <form action={`/api/ads/${ad.id}/checkout`} method="POST">
-                <button
-                  type="submit"
-                  className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-white rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 transition-all shadow-lg shadow-emerald-500/20 whitespace-nowrap"
-                >
-                  <CreditCard className="h-4 w-4" />
-                  Pay $50 to Activate
-                </button>
-              </form>
+              <CheckoutButton adId={ad.id} />
             </div>
           </div>
         )}
