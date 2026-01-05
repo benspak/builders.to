@@ -704,10 +704,12 @@ model EmailPreferences {
   user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   weeklyDigest          Boolean  @default(true)
+  dailyDigest           Boolean  @default(true)  // Daily summary of likes, upvotes, celebrations
   milestoneNotifications Boolean @default(true)
 
-  // Track last digest sent
-  lastDigestSentAt      DateTime?
+  // Track last digests sent
+  lastDigestSentAt      DateTime?  // Weekly digest
+  lastDailyDigestSentAt DateTime?  // Daily digest
 
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt

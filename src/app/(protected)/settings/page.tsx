@@ -44,6 +44,14 @@ export default async function SettingsPage() {
       openToWork: true,
       lookingForCofounder: true,
       availableForContract: true,
+      // Email preferences
+      emailPreferences: {
+        select: {
+          weeklyDigest: true,
+          dailyDigest: true,
+          milestoneNotifications: true,
+        },
+      },
     },
   });
 

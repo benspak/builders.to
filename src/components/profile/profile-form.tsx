@@ -14,6 +14,8 @@ import {
   Code,
   MessageCircle,
   X,
+  Mail,
+  Bell,
 } from "lucide-react";
 import Image from "next/image";
 
@@ -62,6 +64,12 @@ interface ProfileFormProps {
     openToWork: boolean;
     lookingForCofounder: boolean;
     availableForContract: boolean;
+    // Email preferences
+    emailPreferences?: {
+      weeklyDigest: boolean;
+      dailyDigest: boolean;
+      milestoneNotifications: boolean;
+    } | null;
   };
 }
 
@@ -88,6 +96,10 @@ export function ProfileForm({ user }: ProfileFormProps) {
     openToWork: user.openToWork ?? false,
     lookingForCofounder: user.lookingForCofounder ?? false,
     availableForContract: user.availableForContract ?? false,
+    // Email preferences (default to true if not set)
+    weeklyDigest: user.emailPreferences?.weeklyDigest ?? true,
+    dailyDigest: user.emailPreferences?.dailyDigest ?? true,
+    milestoneNotifications: user.emailPreferences?.milestoneNotifications ?? true,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -506,6 +518,137 @@ export function ProfileForm({ user }: ProfileFormProps) {
             {formData.availableForContract && (
               <div className="absolute top-2 right-2 h-2 w-2 rounded-full bg-cyan-500" />
             )}
+          </label>
+        </div>
+      </div>
+
+      {/* Email Preferences Section */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-3 pb-4 border-b border-white/5">
+          <Mail className="h-5 w-5 text-orange-500" />
+          <div>
+            <h3 className="text-lg font-semibold text-white">Email Notifications</h3>
+            <p className="text-sm text-zinc-400">Choose what updates you&apos;d like to receive by email</p>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          {/* Daily Digest */}
+          <label
+            className={`flex cursor-pointer items-center justify-between gap-4 rounded-xl border-2 p-4 transition-all ${
+              formData.dailyDigest
+                ? "border-orange-500/50 bg-orange-500/10"
+                : "border-zinc-700/50 bg-zinc-800/30 hover:border-zinc-600/50"
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${
+                formData.dailyDigest ? "bg-orange-500/20" : "bg-zinc-700/30"
+              }`}>
+                <Bell className={`h-5 w-5 ${formData.dailyDigest ? "text-orange-400" : "text-zinc-500"}`} />
+              </div>
+              <div>
+                <div className={`font-medium ${formData.dailyDigest ? "text-orange-400" : "text-zinc-300"}`}>
+                  Daily Activity Summary
+                </div>
+                <div className="text-xs text-zinc-500">
+                  Receive a daily email with your likes, upvotes, and celebrations
+                </div>
+              </div>
+            </div>
+            <div className="relative">
+              <input
+                type="checkbox"
+                checked={formData.dailyDigest}
+                onChange={(e) => setFormData({ ...formData, dailyDigest: e.target.checked })}
+                className="sr-only peer"
+              />
+              <div className={`h-6 w-11 rounded-full transition-colors ${
+                formData.dailyDigest ? "bg-orange-500" : "bg-zinc-600"
+              }`}>
+                <div className={`h-5 w-5 rounded-full bg-white shadow-sm transition-transform mt-0.5 ${
+                  formData.dailyDigest ? "translate-x-5.5 ml-0.5" : "translate-x-0.5"
+                }`} style={{ transform: formData.dailyDigest ? 'translateX(22px)' : 'translateX(2px)' }} />
+              </div>
+            </div>
+          </label>
+
+          {/* Weekly Digest */}
+          <label
+            className={`flex cursor-pointer items-center justify-between gap-4 rounded-xl border-2 p-4 transition-all ${
+              formData.weeklyDigest
+                ? "border-violet-500/50 bg-violet-500/10"
+                : "border-zinc-700/50 bg-zinc-800/30 hover:border-zinc-600/50"
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${
+                formData.weeklyDigest ? "bg-violet-500/20" : "bg-zinc-700/30"
+              }`}>
+                <Mail className={`h-5 w-5 ${formData.weeklyDigest ? "text-violet-400" : "text-zinc-500"}`} />
+              </div>
+              <div>
+                <div className={`font-medium ${formData.weeklyDigest ? "text-violet-400" : "text-zinc-300"}`}>
+                  Weekly Milestone Digest
+                </div>
+                <div className="text-xs text-zinc-500">
+                  Get a weekly summary of your project milestones and celebrations
+                </div>
+              </div>
+            </div>
+            <div className="relative">
+              <input
+                type="checkbox"
+                checked={formData.weeklyDigest}
+                onChange={(e) => setFormData({ ...formData, weeklyDigest: e.target.checked })}
+                className="sr-only peer"
+              />
+              <div className={`h-6 w-11 rounded-full transition-colors ${
+                formData.weeklyDigest ? "bg-violet-500" : "bg-zinc-600"
+              }`}>
+                <div className={`h-5 w-5 rounded-full bg-white shadow-sm transition-transform mt-0.5`}
+                  style={{ transform: formData.weeklyDigest ? 'translateX(22px)' : 'translateX(2px)' }} />
+              </div>
+            </div>
+          </label>
+
+          {/* Milestone Notifications */}
+          <label
+            className={`flex cursor-pointer items-center justify-between gap-4 rounded-xl border-2 p-4 transition-all ${
+              formData.milestoneNotifications
+                ? "border-cyan-500/50 bg-cyan-500/10"
+                : "border-zinc-700/50 bg-zinc-800/30 hover:border-zinc-600/50"
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${
+                formData.milestoneNotifications ? "bg-cyan-500/20" : "bg-zinc-700/30"
+              }`}>
+                <Bell className={`h-5 w-5 ${formData.milestoneNotifications ? "text-cyan-400" : "text-zinc-500"}`} />
+              </div>
+              <div>
+                <div className={`font-medium ${formData.milestoneNotifications ? "text-cyan-400" : "text-zinc-300"}`}>
+                  Milestone Notifications
+                </div>
+                <div className="text-xs text-zinc-500">
+                  Get notified when someone celebrates your milestones
+                </div>
+              </div>
+            </div>
+            <div className="relative">
+              <input
+                type="checkbox"
+                checked={formData.milestoneNotifications}
+                onChange={(e) => setFormData({ ...formData, milestoneNotifications: e.target.checked })}
+                className="sr-only peer"
+              />
+              <div className={`h-6 w-11 rounded-full transition-colors ${
+                formData.milestoneNotifications ? "bg-cyan-500" : "bg-zinc-600"
+              }`}>
+                <div className={`h-5 w-5 rounded-full bg-white shadow-sm transition-transform mt-0.5`}
+                  style={{ transform: formData.milestoneNotifications ? 'translateX(22px)' : 'translateX(2px)' }} />
+              </div>
+            </div>
           </label>
         </div>
       </div>

@@ -118,6 +118,10 @@ export async function PATCH(
       openToWork,
       lookingForCofounder,
       availableForContract,
+      // Email preferences
+      weeklyDigest,
+      dailyDigest,
+      milestoneNotifications,
     } = body;
 
     // Generate slug from name if not exists, and get current status for comparison
@@ -233,6 +237,29 @@ export async function PATCH(
           type: "STATUS_UPDATE",
           userId: id,
           title: trimmedStatus,
+        },
+      });
+    }
+
+    // Update email preferences if any are provided
+    const hasEmailPreferenceUpdate =
+      typeof weeklyDigest === "boolean" ||
+      typeof dailyDigest === "boolean" ||
+      typeof milestoneNotifications === "boolean";
+
+    if (hasEmailPreferenceUpdate) {
+      await prisma.emailPreferences.upsert({
+        where: { userId: id },
+        create: {
+          userId: id,
+          weeklyDigest: weeklyDigest ?? true,
+          dailyDigest: dailyDigest ?? true,
+          milestoneNotifications: milestoneNotifications ?? true,
+        },
+        update: {
+          ...(typeof weeklyDigest === "boolean" && { weeklyDigest }),
+          ...(typeof dailyDigest === "boolean" && { dailyDigest }),
+          ...(typeof milestoneNotifications === "boolean" && { milestoneNotifications }),
         },
       });
     }
