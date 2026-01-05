@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import "./globals.css";
 import { AuthProvider } from "@/components/auth/auth-provider";
+import { ThemeProvider } from "@/components/ui/theme-provider";
 import { Navbar } from "@/components/ui/navbar";
 import { Footer } from "@/components/ui/footer";
 import { ViewTracker } from "@/components/analytics/view-tracker";
@@ -31,8 +32,26 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className="min-h-screen bg-zinc-950 antialiased">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* Prevent theme flash on page load */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var theme = localStorage.getItem('theme');
+                  if (!theme) {
+                    theme = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+                  }
+                  document.documentElement.setAttribute('data-theme', theme);
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
+      <body className="min-h-screen antialiased" style={{ background: "var(--background)", color: "var(--foreground)" }}>
         {/* LinkedIn Insight Tag */}
         <Script id="linkedin-partner-id" strategy="afterInteractive">
           {`
@@ -55,14 +74,16 @@ export default function RootLayout({
             src="https://px.ads.linkedin.com/collect/?pid=8477220&fmt=gif"
           />
         </noscript>
-        <AuthProvider>
-          <ViewTracker />
-          <div className="flex min-h-screen flex-col">
-            <Navbar />
-            <main className="flex-1">{children}</main>
-            <Footer />
-          </div>
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <ViewTracker />
+            <div className="flex min-h-screen flex-col">
+              <Navbar />
+              <main className="flex-1">{children}</main>
+              <Footer />
+            </div>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

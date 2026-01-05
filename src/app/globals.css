@@ -4,12 +4,467 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
+/* Dark theme (default) */
+:root,
+[data-theme="dark"] {
   --background: #09090b;
+  --background-secondary: #18181b;
+  --background-tertiary: #27272a;
   --foreground: #fafafa;
+  --foreground-muted: #a1a1aa;
+  --foreground-subtle: #71717a;
   --accent-orange: #f97316;
+  --accent-orange-hover: #ea580c;
   --accent-cyan: #06b6d4;
   --card-bg: rgba(24, 24, 27, 0.7);
+  --card-border: rgba(255, 255, 255, 0.1);
+  --card-border-hover: rgba(249, 115, 22, 0.3);
+  --input-bg: rgba(39, 39, 42, 0.5);
+  --input-border: rgba(63, 63, 70, 0.5);
+  --navbar-bg: rgba(9, 9, 11, 0.8);
+  --navbar-border: rgba(255, 255, 255, 0.05);
+  --shadow-color: rgba(0, 0, 0, 0.3);
+  --selection-bg: rgba(249, 115, 22, 0.3);
+  --scrollbar-thumb: rgba(255, 255, 255, 0.1);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.2);
+  --grid-color: rgba(255, 255, 255, 0.03);
+}
+
+/* Light theme */
+[data-theme="light"] {
+  --background: #ffffff;
+  --background-secondary: #f8fafc;
+  --background-tertiary: #f1f5f9;
+  --foreground: #0f172a;
+  --foreground-muted: #475569;
+  --foreground-subtle: #94a3b8;
+  --accent-orange: #ea580c;
+  --accent-orange-hover: #c2410c;
+  --accent-cyan: #0891b2;
+  --card-bg: #ffffff;
+  --card-border: #e2e8f0;
+  --card-border-hover: rgba(234, 88, 12, 0.5);
+  --input-bg: #ffffff;
+  --input-border: #cbd5e1;
+  --navbar-bg: rgba(255, 255, 255, 0.95);
+  --navbar-border: #e2e8f0;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  --selection-bg: rgba(249, 115, 22, 0.2);
+  --scrollbar-thumb: rgba(0, 0, 0, 0.2);
+  --scrollbar-thumb-hover: rgba(0, 0, 0, 0.3);
+  --grid-color: rgba(0, 0, 0, 0.04);
+}
+
+/* ============================================
+   THEME-AWARE COLOR OVERRIDES
+   These automatically switch colors based on theme
+   ============================================ */
+
+/* Background overrides */
+[data-theme="light"] .bg-zinc-950,
+[data-theme="light"] .bg-zinc-900,
+[data-theme="light"] .bg-zinc-900\/50,
+[data-theme="light"] .bg-zinc-900\/70 {
+  background-color: var(--background) !important;
+}
+
+[data-theme="light"] .bg-zinc-800,
+[data-theme="light"] .bg-zinc-800\/50 {
+  background-color: var(--background-secondary) !important;
+}
+
+[data-theme="light"] .bg-zinc-700 {
+  background-color: var(--background-tertiary) !important;
+}
+
+/* Text color overrides */
+[data-theme="light"] .text-white {
+  color: var(--foreground) !important;
+}
+
+[data-theme="light"] .text-zinc-100,
+[data-theme="light"] .text-zinc-200 {
+  color: var(--foreground) !important;
+}
+
+[data-theme="light"] .text-zinc-300 {
+  color: var(--foreground-muted) !important;
+}
+
+[data-theme="light"] .text-zinc-400 {
+  color: var(--foreground-muted) !important;
+}
+
+[data-theme="light"] .text-zinc-500 {
+  color: var(--foreground-subtle) !important;
+}
+
+[data-theme="light"] .text-zinc-600 {
+  color: var(--foreground-subtle) !important;
+}
+
+/* Border overrides */
+[data-theme="light"] .border-white\/5,
+[data-theme="light"] .border-white\/10,
+[data-theme="light"] .border-zinc-800,
+[data-theme="light"] .border-zinc-800\/50,
+[data-theme="light"] .border-zinc-700,
+[data-theme="light"] .border-zinc-700\/50 {
+  border-color: var(--card-border) !important;
+}
+
+/* Divide overrides */
+[data-theme="light"] .divide-zinc-800\/30 > :not([hidden]) ~ :not([hidden]),
+[data-theme="light"] .divide-zinc-800 > :not([hidden]) ~ :not([hidden]) {
+  border-color: var(--card-border) !important;
+}
+
+/* Ring overrides */
+[data-theme="light"] .ring-zinc-900 {
+  --tw-ring-color: var(--background) !important;
+}
+
+/* Hover state overrides */
+[data-theme="light"] .hover\:text-white:hover {
+  color: var(--foreground) !important;
+}
+
+[data-theme="light"] .hover\:bg-zinc-800:hover {
+  background-color: var(--background-tertiary) !important;
+}
+
+[data-theme="light"] .hover\:bg-white\/20:hover {
+  background-color: var(--background-tertiary) !important;
+}
+
+/* Background with opacity overrides */
+[data-theme="light"] .bg-white\/10 {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+[data-theme="light"] .bg-white\/20 {
+  background-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Gradient backgrounds - softer in light mode */
+[data-theme="light"] .from-zinc-900,
+[data-theme="light"] .to-transparent {
+  --tw-gradient-from: transparent !important;
+}
+
+/* Special component overrides */
+[data-theme="light"] .bg-gradient-to-t.from-zinc-900 {
+  background: linear-gradient(to top, rgba(255,255,255,0.9), transparent) !important;
+}
+
+/* Placeholder text */
+[data-theme="light"] .placeholder\:text-zinc-500::placeholder {
+  color: var(--foreground-subtle) !important;
+}
+
+/* Focus states */
+[data-theme="light"] .focus\:border-orange-500\/50:focus {
+  border-color: rgba(234, 88, 12, 0.5) !important;
+}
+
+/* Shadow adjustments for light mode */
+[data-theme="light"] .shadow-lg {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1) !important;
+}
+
+[data-theme="light"] .shadow-xl {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Orange glow adjustments */
+[data-theme="light"] .shadow-orange-500\/25 {
+  --tw-shadow-color: rgba(234, 88, 12, 0.2) !important;
+}
+
+[data-theme="light"] .shadow-orange-500\/5 {
+  --tw-shadow-color: rgba(234, 88, 12, 0.08) !important;
+}
+
+/* Special card backgrounds */
+[data-theme="light"] .bg-gradient-to-r.from-orange-500\/10,
+[data-theme="light"] .bg-gradient-to-br.from-orange-500\/10 {
+  background: linear-gradient(to right, rgba(234, 88, 12, 0.08), rgba(251, 191, 36, 0.08)) !important;
+}
+
+[data-theme="light"] .bg-gradient-to-br.from-indigo-500\/10 {
+  background: linear-gradient(to bottom right, rgba(99, 102, 241, 0.08), rgba(139, 92, 246, 0.08)) !important;
+}
+
+/* Badge and status backgrounds */
+[data-theme="light"] .bg-indigo-500\/20 {
+  background-color: rgba(99, 102, 241, 0.15) !important;
+}
+
+/* Animated pulse skeleton */
+[data-theme="light"] .animate-pulse .bg-zinc-800 {
+  background-color: #e2e8f0 !important;
+}
+
+/* Additional background variations */
+[data-theme="light"] .bg-zinc-950\/80,
+[data-theme="light"] .bg-zinc-900\/80 {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+}
+
+[data-theme="light"] .bg-zinc-800\/30 {
+  background-color: rgba(241, 245, 249, 0.8) !important;
+}
+
+[data-theme="light"] .bg-zinc-700\/50 {
+  background-color: rgba(226, 232, 240, 0.8) !important;
+}
+
+/* Timeline and decorative elements */
+[data-theme="light"] .ring-zinc-900\/50 {
+  --tw-ring-color: rgba(255, 255, 255, 0.8) !important;
+}
+
+[data-theme="light"] .ring-zinc-800 {
+  --tw-ring-color: var(--card-border) !important;
+}
+
+[data-theme="light"] .ring-zinc-700 {
+  --tw-ring-color: var(--card-border) !important;
+}
+
+/* Hover backgrounds */
+[data-theme="light"] .hover\:bg-zinc-800\/30:hover {
+  background-color: rgba(241, 245, 249, 0.9) !important;
+}
+
+[data-theme="light"] .hover\:bg-zinc-700\/50:hover {
+  background-color: rgba(226, 232, 240, 0.9) !important;
+}
+
+/* Dropdown and popover backgrounds */
+[data-theme="light"] .bg-zinc-800,
+[data-theme="light"] .bg-zinc-900 {
+  background-color: #ffffff !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Form focus rings */
+[data-theme="light"] .ring-orange-500\/20 {
+  --tw-ring-color: rgba(234, 88, 12, 0.15) !important;
+}
+
+/* Product Hunt badge theme */
+[data-theme="light"] img[src*="producthunt"] {
+  filter: none !important;
+}
+
+/* Card hover states */
+[data-theme="light"] .hover\:border-white\/10:hover {
+  border-color: var(--card-border) !important;
+}
+
+[data-theme="light"] .hover\:border-orange-500\/30:hover {
+  border-color: rgba(234, 88, 12, 0.4) !important;
+}
+
+/* Text on hover */
+[data-theme="light"] .hover\:text-zinc-300:hover {
+  color: var(--foreground) !important;
+}
+
+/* Orange/amber gradient backgrounds */
+[data-theme="light"] .from-amber-400,
+[data-theme="light"] .to-yellow-500 {
+  /* Keep gold badges visible in light mode */
+}
+
+/* Softer blurs in light mode */
+[data-theme="light"] .blur-3xl {
+  opacity: 0.5;
+}
+
+/* Code blocks */
+[data-theme="light"] pre,
+[data-theme="light"] code {
+  background-color: #f1f5f9 !important;
+  color: #334155 !important;
+}
+
+/* Additional text colors that might be used */
+[data-theme="light"] .text-zinc-200 {
+  color: var(--foreground) !important;
+}
+
+[data-theme="light"] .text-zinc-700 {
+  color: var(--foreground-muted) !important;
+}
+
+/* Focus visible states */
+[data-theme="light"] .focus-visible\:ring-zinc-800:focus-visible {
+  --tw-ring-color: var(--card-border) !important;
+}
+
+/* Border variations */
+[data-theme="light"] .border-zinc-900 {
+  border-color: var(--card-border) !important;
+}
+
+/* Gradient text adjustments - make more visible in light mode */
+[data-theme="light"] .gradient-text {
+  background: linear-gradient(135deg, #c2410c 0%, #ea580c 50%, #d97706 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Table and list dividers */
+[data-theme="light"] .divide-white\/5 > :not([hidden]) ~ :not([hidden]) {
+  border-color: var(--card-border) !important;
+}
+
+/* Indigo/violet special cards */
+[data-theme="light"] .border-indigo-500\/30 {
+  border-color: rgba(99, 102, 241, 0.25) !important;
+}
+
+[data-theme="light"] .text-indigo-400 {
+  color: #4f46e5 !important;
+}
+
+[data-theme="light"] .hover\:text-indigo-300:hover {
+  color: #6366f1 !important;
+}
+
+/* Maintain orange accent visibility */
+[data-theme="light"] .text-orange-400 {
+  color: #ea580c !important;
+}
+
+[data-theme="light"] .text-orange-500 {
+  color: #c2410c !important;
+}
+
+[data-theme="light"] .hover\:text-orange-400:hover {
+  color: #ea580c !important;
+}
+
+[data-theme="light"] .hover\:text-orange-300:hover {
+  color: #f97316 !important;
+}
+
+/* Pink like button */
+[data-theme="light"] .text-pink-400 {
+  color: #db2777 !important;
+}
+
+[data-theme="light"] .hover\:text-pink-400:hover {
+  color: #db2777 !important;
+}
+
+[data-theme="light"] .hover\:text-pink-300:hover {
+  color: #ec4899 !important;
+}
+
+/* Cyan accent */
+[data-theme="light"] .text-cyan-400,
+[data-theme="light"] .hover\:text-cyan-400:hover {
+  color: #0891b2 !important;
+}
+
+/* Blue accent for docs */
+[data-theme="light"] .hover\:text-blue-400:hover {
+  color: #2563eb !important;
+}
+
+/* Red for delete/danger */
+[data-theme="light"] .text-red-400 {
+  color: #dc2626 !important;
+}
+
+/* Timeline elements */
+[data-theme="light"] .from-orange-500\/30 {
+  --tw-gradient-from: rgba(234, 88, 12, 0.2) !important;
+}
+
+/* Avatar rings - need to be visible against light bg */
+[data-theme="light"] .ring-2.ring-zinc-800,
+[data-theme="light"] .ring-2.ring-zinc-900 {
+  --tw-ring-color: #ffffff !important;
+  box-shadow: 0 0 0 2px #ffffff, 0 0 0 3px #e2e8f0 !important;
+}
+
+/* Dropdown and modal overlays */
+[data-theme="light"] .bg-zinc-900\/95 {
+  background-color: rgba(255, 255, 255, 0.98) !important;
+}
+
+[data-theme="light"] .shadow-2xl.shadow-black\/50 {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Ring variants */
+[data-theme="light"] .ring-white\/10 {
+  --tw-ring-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+/* White backgrounds with opacity */
+[data-theme="light"] .bg-white\/5 {
+  background-color: rgba(0, 0, 0, 0.03) !important;
+}
+
+[data-theme="light"] .hover\:bg-white\/5:hover {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Unread notification highlight */
+[data-theme="light"] .bg-orange-500\/5 {
+  background-color: rgba(234, 88, 12, 0.08) !important;
+}
+
+/* Backdrop blur elements */
+[data-theme="light"] .backdrop-blur-xl {
+  backdrop-filter: blur(24px) !important;
+}
+
+/* Additional zinc text shades */
+[data-theme="light"] .text-zinc-300 {
+  color: var(--foreground) !important;
+}
+
+/* Menu item hovers */
+[data-theme="light"] .hover\:text-white:hover {
+  color: var(--foreground) !important;
+}
+
+/* Fix for mobile menu backgrounds */
+[data-theme="light"] [class*="bg-zinc-900"] {
+  background-color: #ffffff !important;
+}
+
+/* Status badges need to be visible */
+[data-theme="light"] .bg-emerald-500\/10 {
+  background-color: rgba(16, 185, 129, 0.1) !important;
+}
+
+[data-theme="light"] .bg-blue-500\/10 {
+  background-color: rgba(59, 130, 246, 0.1) !important;
+}
+
+[data-theme="light"] .bg-yellow-500\/10 {
+  background-color: rgba(234, 179, 8, 0.1) !important;
+}
+
+[data-theme="light"] .bg-rose-500\/10 {
+  background-color: rgba(244, 63, 94, 0.1) !important;
+}
+
+[data-theme="light"] .bg-violet-500\/10 {
+  background-color: rgba(139, 92, 246, 0.1) !important;
+}
+
+/* Gradient overlay for images in light mode */
+[data-theme="light"] .from-zinc-900\/60 {
+  --tw-gradient-from: rgba(255, 255, 255, 0.7) !important;
 }
 
 * {
@@ -26,6 +481,7 @@ body {
   color: var(--foreground);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 code, pre, .font-mono {
@@ -43,18 +499,19 @@ code, pre, .font-mono {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--scrollbar-thumb);
   border-radius: 4px;
+  transition: background 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--scrollbar-thumb-hover);
 }
 
 /* Selection */
 ::selection {
-  background: rgba(249, 115, 22, 0.3);
-  color: white;
+  background: var(--selection-bg);
+  color: var(--foreground);
 }
 
 /* Gradient text */
@@ -68,8 +525,8 @@ code, pre, .font-mono {
 /* Grid background pattern */
 .bg-grid {
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    linear-gradient(var(--grid-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
   background-size: 64px 64px;
 }
 
@@ -110,25 +567,87 @@ code, pre, .font-mono {
 }
 
 .btn-secondary {
-  @apply inline-flex items-center justify-center gap-2 px-6 py-3 font-semibold text-zinc-300 rounded-xl bg-zinc-800/50 border border-zinc-700/50 hover:bg-zinc-800 hover:text-white transition-all duration-200 hover:scale-[1.02] active:scale-[0.98];
+  background: var(--background-secondary);
+  border: 1px solid var(--card-border);
+  color: var(--foreground-muted);
+  @apply inline-flex items-center justify-center gap-2 px-6 py-3 font-semibold rounded-xl transition-all duration-200 hover:scale-[1.02] active:scale-[0.98];
+}
+
+.btn-secondary:hover {
+  background: var(--background-tertiary);
+  color: var(--foreground);
 }
 
 /* Card styles */
 .card {
-  @apply rounded-2xl border border-white/10 bg-zinc-900/50 backdrop-blur-sm;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  @apply rounded-2xl backdrop-blur-sm transition-all duration-300;
 }
 
-.card-hover {
-  @apply transition-all duration-300 hover:border-orange-500/30 hover:bg-zinc-900/70 hover:shadow-xl hover:shadow-orange-500/5;
+.card-hover:hover {
+  border-color: var(--card-border-hover);
+  box-shadow: 0 20px 25px -5px var(--shadow-color), 0 8px 10px -6px var(--shadow-color);
 }
 
 /* Input styles */
 .input {
-  @apply w-full px-4 py-3 rounded-xl bg-zinc-800/50 border border-zinc-700/50 text-white placeholder:text-zinc-500 focus:outline-none focus:border-orange-500/50 focus:ring-2 focus:ring-orange-500/20 transition-all;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  color: var(--foreground);
+  position: relative;
+  z-index: 1;
+  @apply w-full px-4 py-3 rounded-xl focus:outline-none focus:border-orange-500/50 focus:ring-2 focus:ring-orange-500/20 transition-all;
+}
+
+.input::placeholder {
+  color: var(--foreground-subtle);
+  opacity: 1;
 }
 
 .textarea {
-  @apply w-full px-4 py-3 rounded-xl bg-zinc-800/50 border border-zinc-700/50 text-white placeholder:text-zinc-500 focus:outline-none focus:border-orange-500/50 focus:ring-2 focus:ring-orange-500/20 transition-all resize-none;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  color: var(--foreground);
+  position: relative;
+  z-index: 1;
+  @apply w-full px-4 py-3 rounded-xl focus:outline-none focus:border-orange-500/50 focus:ring-2 focus:ring-orange-500/20 transition-all resize-none;
+}
+
+.textarea::placeholder {
+  color: var(--foreground-subtle);
+  opacity: 1;
+}
+
+/* Fix for input fields with icons - ensure proper stacking and solid background */
+.input,
+.textarea {
+  position: relative;
+  z-index: 2;
+  background-color: var(--input-bg) !important;
+}
+
+/* Dark mode input needs solid background too */
+[data-theme="dark"] .input,
+[data-theme="dark"] .textarea {
+  background-color: #27272a !important;
+}
+
+/* Light mode input solid background */
+[data-theme="light"] .input,
+[data-theme="light"] .textarea {
+  background-color: #ffffff !important;
+}
+
+/* Ensure icons in input wrappers are behind the input */
+.relative > svg.absolute {
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Ensure icons in input wrappers have correct color in light mode */
+[data-theme="light"] .relative > svg.absolute {
+  color: #94a3b8 !important;
 }
 
 /* Animations */
@@ -180,3 +699,25 @@ code, pre, .font-mono {
 .stagger-3 { animation-delay: 0.3s; }
 .stagger-4 { animation-delay: 0.4s; }
 .stagger-5 { animation-delay: 0.5s; }
+
+/* Theme-aware link styles */
+.nav-link {
+  color: var(--foreground-muted);
+  transition: color 0.2s ease;
+}
+
+.nav-link:hover {
+  color: var(--foreground);
+}
+
+/* Theme transition for smooth mode switching */
+* {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-timing-function: ease;
+  transition-duration: 0ms;
+}
+
+html.transitioning,
+html.transitioning * {
+  transition-duration: 300ms !important;
+}

@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { Loader2, Sparkles, MessageCircle, Megaphone } from "lucide-react";
+import { Loader2, Sparkles, MessageCircle } from "lucide-react";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
@@ -7,6 +7,7 @@ import { CombinedFeed, TopBuilders, OpenJobs } from "@/components/feed";
 import { RoastMVPCard } from "@/components/roast-mvp/roast-mvp-card";
 import { SiteViewsCounter } from "@/components/analytics/site-views-counter";
 import { SidebarAd } from "@/components/ads";
+import { ProductHuntBadge } from "@/components/ui/product-hunt-badge";
 
 export const metadata = {
   title: "Feed - Builders.to",
@@ -326,7 +327,7 @@ async function SidebarAdSection() {
 
 export default function FeedPage() {
   return (
-    <div className="relative min-h-screen bg-zinc-950">
+    <div className="relative min-h-screen" style={{ background: "var(--background)" }}>
       {/* Background decorations */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 h-[500px] w-[500px] rounded-full bg-orange-500/10 blur-3xl" />
@@ -448,19 +449,7 @@ export default function FeedPage() {
 
               {/* Product Hunt Badge */}
               <div className="flex justify-center">
-                <a
-                  href="https://www.producthunt.com/products/builders-to?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-builders-to"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="transition-opacity hover:opacity-80"
-                >
-                  <img
-                    src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1057424&theme=dark&t=1767511480050"
-                    alt="Builders.to - Ship faster. Together. | Product Hunt"
-                    width="250"
-                    height="54"
-                  />
-                </a>
+                <ProductHuntBadge />
               </div>
 
               {/* Sidebar Ad Section */}
