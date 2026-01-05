@@ -87,6 +87,7 @@ interface UpdateItemProps {
     user: {
       id: string;
       name: string | null;
+      displayName?: string | null;
       firstName: string | null;
       lastName: string | null;
       image: string | null;
@@ -107,9 +108,11 @@ export function UpdateItem({ update, currentUserId, showAuthor = true }: UpdateI
   const [isLiking, setIsLiking] = useState(false);
 
   const isOwner = currentUserId === update.user.id;
-  const displayName = update.user.firstName && update.user.lastName
-    ? `${update.user.firstName} ${update.user.lastName}`
-    : update.user.name || "Builder";
+  // Priority: displayName > firstName+lastName > name
+  const displayName = update.user.displayName
+    || (update.user.firstName && update.user.lastName ? `${update.user.firstName} ${update.user.lastName}` : null)
+    || update.user.name
+    || "Builder";
 
   async function handleDelete() {
     if (!confirm("Are you sure you want to delete this update?")) return;

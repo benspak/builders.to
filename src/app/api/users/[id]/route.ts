@@ -41,6 +41,8 @@ export async function GET(
         id: true,
         name: true,
         slug: true,
+        username: true,
+        displayName: true,
         firstName: true,
         lastName: true,
         zipCode: true,
@@ -100,6 +102,7 @@ export async function PATCH(
 
     const body = await request.json();
     const {
+      displayName,
       firstName,
       lastName,
       zipCode,
@@ -120,14 +123,19 @@ export async function PATCH(
     // Generate slug from name if not exists, and get current status for comparison
     const currentUser = await prisma.user.findUnique({
       where: { id },
-      select: { slug: true, name: true, status: true },
+      select: { slug: true, name: true, username: true, status: true },
     });
 
     let slug = currentUser?.slug;
     if (!slug) {
-      const baseName = firstName && lastName
-        ? `${firstName}-${lastName}`
-        : firstName || lastName || currentUser?.name || id;
+      // Priority for slug: username > displayName > firstName+lastName > name > id
+      const baseName = currentUser?.username
+        || displayName
+        || (firstName && lastName ? `${firstName}-${lastName}` : null)
+        || firstName
+        || lastName
+        || currentUser?.name
+        || id;
       slug = await getUniqueSlug(generateSlug(baseName), id);
     }
 
@@ -167,6 +175,7 @@ export async function PATCH(
       where: { id },
       data: {
         slug,
+        displayName: displayName?.trim() || null,
         firstName: firstName?.trim() || null,
         lastName: lastName?.trim() || null,
         zipCode: trimmedZip,
@@ -192,6 +201,8 @@ export async function PATCH(
         id: true,
         name: true,
         slug: true,
+        username: true,
+        displayName: true,
         firstName: true,
         lastName: true,
         zipCode: true,

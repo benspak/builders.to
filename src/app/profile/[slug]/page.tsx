@@ -53,20 +53,22 @@ export async function generateMetadata({ params }: ProfilePageProps): Promise<Me
   const { slug } = await params;
   const user = await prisma.user.findUnique({
     where: { slug },
-    select: { name: true, firstName: true, lastName: true, headline: true },
+    select: { name: true, displayName: true, firstName: true, lastName: true, headline: true },
   });
 
   if (!user) {
     return { title: "User Not Found - Builders.to" };
   }
 
-  const displayName = user.firstName && user.lastName
-    ? `${user.firstName} ${user.lastName}`
-    : user.name || "Builder";
+  // Priority: displayName > firstName+lastName > name
+  const nameToDisplay = user.displayName
+    || (user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : null)
+    || user.name
+    || "Builder";
 
   return {
-    title: `${displayName} - Builders.to`,
-    description: user.headline || `${displayName}'s profile on Builders.to`,
+    title: `${nameToDisplay} - Builders.to`,
+    description: user.headline || `${nameToDisplay}'s profile on Builders.to`,
   };
 }
 
@@ -80,6 +82,8 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
       id: true,
       name: true,
       slug: true,
+      username: true,
+      displayName: true,
       firstName: true,
       lastName: true,
       zipCode: true,
@@ -196,9 +200,11 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   }
 
   const isOwnProfile = session?.user?.id === user.id;
-  const displayName = user.firstName && user.lastName
-    ? `${user.firstName} ${user.lastName}`
-    : user.name || "Builder";
+  // Priority: displayName > firstName+lastName > name
+  const displayName = user.displayName
+    || (user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : null)
+    || user.name
+    || "Builder";
 
   const joinedDate = new Date(user.createdAt).toLocaleDateString("en-US", {
     month: "long",
@@ -277,6 +283,9 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                     <h1 className="text-2xl sm:text-3xl font-bold text-white">
                       {displayName}
                     </h1>
+                    {user.username && (
+                      <p className="text-sm text-orange-400">@{user.username}</p>
+                    )}
                     {user.headline && (
                       <p className="mt-1 text-zinc-400 text-sm sm:text-base max-w-xl">
                         {user.headline}

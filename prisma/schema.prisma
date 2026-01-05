@@ -55,7 +55,9 @@ model User {
   image         String?
 
   // Profile fields
-  slug          String?   @unique  // For public profile URLs
+  slug          String?   @unique  // For public profile URLs (auto-set from X username)
+  username      String?   @unique  // X/Twitter username (handle), captured at signup
+  displayName   String?             // User-chosen display name (alternative to first/last name)
   firstName     String?
   lastName      String?
   zipCode       String?

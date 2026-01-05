@@ -41,6 +41,8 @@ interface ProfileFormProps {
     id: string;
     name: string | null;
     slug: string | null;
+    username: string | null;
+    displayName: string | null;
     firstName: string | null;
     lastName: string | null;
     zipCode: string | null;
@@ -70,6 +72,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
   const [success, setSuccess] = useState(false);
 
   const [formData, setFormData] = useState({
+    displayName: user.displayName || "",
     firstName: user.firstName || "",
     lastName: user.lastName || "",
     zipCode: user.zipCode || "",
@@ -148,8 +151,11 @@ export function ProfileForm({ user }: ProfileFormProps) {
         )}
         <div>
           <p className="text-lg font-semibold text-white">{user.name}</p>
+          {user.username && (
+            <p className="text-sm text-orange-400">@{user.username}</p>
+          )}
           <p className="text-sm text-zinc-400">
-            Profile photo is synced from your sign-in provider
+            Profile photo is synced from X
           </p>
         </div>
       </div>
@@ -185,11 +191,33 @@ export function ProfileForm({ user }: ProfileFormProps) {
         </p>
       </div>
 
-      {/* Name Fields */}
+      {/* Display Name */}
+      <div>
+        <label htmlFor="displayName" className="block text-sm font-medium text-zinc-300 mb-2">
+          Display Name
+        </label>
+        <div className="relative">
+          <User className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
+          <input
+            id="displayName"
+            type="text"
+            maxLength={50}
+            placeholder="The name you want shown on your profile"
+            value={formData.displayName}
+            onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
+            className="input pl-11"
+          />
+        </div>
+        <p className="mt-2 text-xs text-zinc-500">
+          This is the name that will be displayed on your profile. Leave empty to use your X name.
+        </p>
+      </div>
+
+      {/* Name Fields (Optional) */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
         <div>
           <label htmlFor="firstName" className="block text-sm font-medium text-zinc-300 mb-2">
-            First Name
+            First Name <span className="text-zinc-500 font-normal">(optional)</span>
           </label>
           <div className="relative">
             <User className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
@@ -207,7 +235,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
 
         <div>
           <label htmlFor="lastName" className="block text-sm font-medium text-zinc-300 mb-2">
-            Last Name
+            Last Name <span className="text-zinc-500 font-normal">(optional)</span>
           </label>
           <div className="relative">
             <User className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />

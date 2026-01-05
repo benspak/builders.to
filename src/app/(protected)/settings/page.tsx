@@ -23,6 +23,8 @@ export default async function SettingsPage() {
       id: true,
       name: true,
       slug: true,
+      username: true,
+      displayName: true,
       firstName: true,
       lastName: true,
       zipCode: true,
