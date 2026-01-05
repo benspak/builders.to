@@ -19,8 +19,7 @@ echo "🔧 Generating Prisma client..."
 npx prisma generate
 
 echo "🗄️ Running database migrations..."
-# Using migrate deploy for production (safer than db push)
-# Only creates new tables/columns, never drops data
+# Using db push to sync schema - safe for adding nullable columns
 npx prisma db push
 
 echo "🔄 Running slug migration for existing projects..."
