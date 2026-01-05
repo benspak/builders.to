@@ -79,16 +79,10 @@ export function TopBuilders({ builders }: TopBuildersProps) {
       <div className="divide-y divide-zinc-800/30">
         {builders.map((builder, index) => {
           const styles = getRankStyles(index);
-          const profileUrl = builder.slug
-            ? `/profile/${builder.slug}`
-            : `/profile/${builder.id}`;
+          const profileUrl = builder.slug ? `/profile/${builder.slug}` : null;
 
-          return (
-            <Link
-              key={builder.id}
-              href={profileUrl}
-              className="flex items-center gap-3 px-4 py-3 hover:bg-zinc-800/30 transition-colors group"
-            >
+          const content = (
+            <>
               {/* Rank Badge */}
               <div
                 className={`flex h-6 w-6 items-center justify-center rounded-md text-xs font-bold shrink-0 ${styles.badge} ${styles.glow} shadow-sm`}
@@ -132,7 +126,24 @@ export function TopBuilders({ builders }: TopBuildersProps) {
                   {builder._count.projects}
                 </span>
               </div>
+            </>
+          );
+
+          return profileUrl ? (
+            <Link
+              key={builder.id}
+              href={profileUrl}
+              className="flex items-center gap-3 px-4 py-3 hover:bg-zinc-800/30 transition-colors group"
+            >
+              {content}
             </Link>
+          ) : (
+            <div
+              key={builder.id}
+              className="flex items-center gap-3 px-4 py-3"
+            >
+              {content}
+            </div>
           );
         })}
       </div>
