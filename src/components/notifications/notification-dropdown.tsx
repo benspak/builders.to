@@ -170,9 +170,9 @@ export function NotificationDropdown() {
     if (notification.type === "UPDATE_LIKED" && notification.actorSlug) {
       return `/${notification.actorSlug}`;
     }
-    // Link to the commenter's profile for update commented notifications
-    if (notification.type === "UPDATE_COMMENTED" && notification.actorSlug) {
-      return `/${notification.actorSlug}`;
+    // Link to the update for update commented notifications
+    if (notification.type === "UPDATE_COMMENTED" && notification.update?.user?.slug && notification.update?.id) {
+      return `/${notification.update.user.slug}/updates/${notification.update.id}`;
     }
     // Link to profile for other update notifications (updates are shown on profile)
     if (notification.update?.user?.slug) {
