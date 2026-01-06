@@ -30,7 +30,6 @@ export default async function Image({ params }: { params: Promise<{ slug: string
         select: {
           projects: true,
           companies: true,
-          endorsementsReceived: true,
         },
       },
     },
@@ -368,27 +367,6 @@ export default async function Image({ params }: { params: Promise<{ slug: string
               </div>
             </div>
 
-            {user._count.endorsementsReceived > 0 && (
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  padding: '16px 24px',
-                  borderRadius: '16px',
-                  backgroundColor: 'rgba(167, 139, 250, 0.1)',
-                  border: '1px solid rgba(167, 139, 250, 0.2)',
-                }}
-              >
-                <span style={{ fontSize: '28px' }}>⭐</span>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ color: '#a78bfa', fontSize: '28px', fontWeight: 700 }}>
-                    {user._count.endorsementsReceived}
-                  </span>
-                  <span style={{ color: '#71717a', fontSize: '14px' }}>Endorsements</span>
-                </div>
-              </div>
-            )}
           </div>
         </div>
 

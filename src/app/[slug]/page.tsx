@@ -17,11 +17,10 @@ import {
   Users,
   Code,
   Flame,
-  Award,
   Star,
   MessageCircle,
 } from "lucide-react";
-import { EndorsementSection, FollowButton, FollowStats } from "@/components/profile";
+import { FollowButton, FollowStats } from "@/components/profile";
 import { formatRelativeTime, getStatusColor, getStatusLabel, getCategoryColor, getCategoryLabel, getMemberRoleLabel, getMemberRoleColor } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { UpdateForm, UpdateTimeline } from "@/components/updates";
@@ -193,27 +192,6 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
           },
         },
       },
-      // Endorsements received
-      endorsementsReceived: {
-        orderBy: { createdAt: "desc" },
-        select: {
-          id: true,
-          message: true,
-          skill: true,
-          createdAt: true,
-          endorser: {
-            select: {
-              id: true,
-              name: true,
-              firstName: true,
-              lastName: true,
-              image: true,
-              slug: true,
-              headline: true,
-            },
-          },
-        },
-      },
     },
   });
 
@@ -243,10 +221,6 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   const launchedProjects = user.projects.filter(p => p.status === "LAUNCHED").length;
   const totalUpvotes = user.projects.reduce((sum, p) => sum + p._count.upvotes, 0);
 
-  // Check if current user has already endorsed this profile
-  const hasEndorsed = session?.user?.id
-    ? user.endorsementsReceived.some(e => e.endorser.id === session.user.id)
-    : false;
 
   // Check if current user is following this profile
   const isFollowing = session?.user?.id && user.followers
@@ -486,20 +460,6 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                     </div>
                   )}
 
-                  {/* Endorsements */}
-                  {user.endorsementsReceived.length > 0 && (
-                    <div className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-cyan-500/10 to-transparent border border-cyan-500/20">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-cyan-500/20">
-                        <Award className="h-4 w-4 text-cyan-400" />
-                      </div>
-                      <div>
-                        <div className="text-sm font-medium text-white">
-                          {user.endorsementsReceived.length} endorsement{user.endorsementsReceived.length !== 1 ? "s" : ""}
-                        </div>
-                        <div className="text-xs text-zinc-500">From other builders</div>
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
@@ -538,15 +498,6 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
 
           {/* Main content */}
           <div className="lg:col-span-2 space-y-8">
-            {/* Endorsements Section */}
-            <EndorsementSection
-              userId={user.id}
-              endorsements={user.endorsementsReceived}
-              isOwnProfile={isOwnProfile}
-              hasEndorsed={hasEndorsed}
-              currentUserId={session?.user?.id}
-            />
-
             {/* Projects */}
             <section>
               <div className="flex items-center gap-3 mb-4">
@@ -767,11 +718,11 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
               </section>
             )}
 
-            {/* Daily Updates */}
-            <section id="daily-updates" className="scroll-mt-24">
+            {/* Updates */}
+            <section id="updates" className="scroll-mt-24">
               <div className="flex items-center gap-3 mb-4">
                 <Sparkles className="h-5 w-5 text-amber-500" />
-                <h2 className="text-xl font-semibold text-white">Daily Updates</h2>
+                <h2 className="text-xl font-semibold text-white">Updates</h2>
                 <span className="text-sm text-zinc-500">({user.dailyUpdates.length})</span>
               </div>
 

@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -10,11 +11,14 @@ import {
   Heart,
   MessageCircle,
   Calendar,
-  Share2,
 } from "lucide-react";
 import { formatRelativeTime } from "@/lib/utils";
 import { UpdateActions } from "./update-actions";
 import { UpdateComments } from "@/components/updates/update-comments";
+import { TopBuilders, OpenJobs } from "@/components/feed";
+import { RoastMVPCard } from "@/components/roast-mvp/roast-mvp-card";
+import { SidebarAd } from "@/components/ads";
+import { ProductHuntBadge } from "@/components/ui/product-hunt-badge";
 
 interface UpdatePageProps {
   params: Promise<{ slug: string; id: string }>;
@@ -69,6 +73,116 @@ export async function generateMetadata({ params }: UpdatePageProps): Promise<Met
       description,
     },
   };
+}
+
+async function RoastMVPSection() {
+  const session = await auth();
+  const isAuthenticated = !!session?.user;
+
+  let userProjects: Array<{ id: string; title: string; slug: string | null }> = [];
+
+  if (session?.user?.id) {
+    const projects = await prisma.project.findMany({
+      where: {
+        userId: session.user.id,
+        OR: [
+          { roastMVP: null },
+          {
+            roastMVP: {
+              status: { in: ["PENDING_PAYMENT", "COMPLETED", "CANCELLED"] }
+            }
+          },
+        ],
+      },
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    userProjects = projects;
+  }
+
+  return (
+    <RoastMVPCard
+      isAuthenticated={isAuthenticated}
+      userProjects={userProjects}
+    />
+  );
+}
+
+async function TopBuildersSection() {
+  const buildersWithCounts = await prisma.user.findMany({
+    where: {
+      OR: [
+        { projects: { some: {} } },
+        { coBuilderOn: { some: {} } },
+      ],
+    },
+    select: {
+      id: true,
+      name: true,
+      firstName: true,
+      lastName: true,
+      image: true,
+      slug: true,
+      headline: true,
+      _count: {
+        select: {
+          projects: true,
+          coBuilderOn: true,
+        },
+      },
+    },
+  });
+
+  const topBuilders = buildersWithCounts
+    .map(builder => ({
+      ...builder,
+      totalProjects: builder._count.projects + builder._count.coBuilderOn,
+    }))
+    .sort((a, b) => b.totalProjects - a.totalProjects)
+    .slice(0, 5);
+
+  return <TopBuilders builders={topBuilders} />;
+}
+
+async function OpenJobsSection() {
+  const openRoles = await prisma.companyRole.findMany({
+    where: {
+      isActive: true,
+    },
+    select: {
+      id: true,
+      title: true,
+      type: true,
+      location: true,
+      isRemote: true,
+      salaryMin: true,
+      salaryMax: true,
+      currency: true,
+      company: {
+        select: {
+          id: true,
+          slug: true,
+          name: true,
+          logo: true,
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+    take: 6,
+  });
+
+  return <OpenJobs jobs={openRoles} />;
+}
+
+async function SidebarAdSection() {
+  const session = await auth();
+  const isAuthenticated = !!session?.user;
+
+  return <SidebarAd isAuthenticated={isAuthenticated} />;
 }
 
 export default async function UpdatePage({ params }: UpdatePageProps) {
@@ -128,14 +242,15 @@ export default async function UpdatePage({ params }: UpdatePageProps) {
   const isOwner = session?.user?.id === update.user.id;
 
   return (
-    <div className="relative min-h-screen bg-zinc-950">
+    <div className="relative min-h-screen" style={{ background: "var(--background)" }}>
       {/* Background decorations */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 h-[500px] w-[500px] rounded-full bg-orange-500/10 blur-3xl" />
         <div className="absolute top-1/3 -left-40 h-[400px] w-[400px] rounded-full bg-cyan-500/5 blur-3xl" />
+        <div className="absolute bottom-1/4 right-1/4 h-[300px] w-[300px] rounded-full bg-violet-500/5 blur-3xl" />
       </div>
 
-      <div className="relative mx-auto max-w-2xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="relative mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Back button */}
         <Link
           href={`/${slug}`}
@@ -145,105 +260,217 @@ export default async function UpdatePage({ params }: UpdatePageProps) {
           Back to profile
         </Link>
 
-        {/* Main content card */}
-        <article className="rounded-2xl border border-white/10 bg-zinc-900/50 backdrop-blur-sm overflow-hidden">
-          {/* Author header */}
-          <div className="p-6 border-b border-white/5">
-            <div className="flex items-center gap-4">
-              <Link href={`/${slug}`} className="flex-shrink-0">
-                {update.user.image ? (
-                  <Image
-                    src={update.user.image}
-                    alt={displayName}
-                    width={48}
-                    height={48}
-                    className="rounded-xl ring-2 ring-white/10 hover:ring-orange-500/30 transition-all"
-                  />
-                ) : (
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-orange-500 to-pink-500">
-                    <User className="h-6 w-6 text-white" />
+        {/* Three Column Layout */}
+        <div className="flex flex-col xl:flex-row gap-8">
+          {/* Left Sidebar - Sticky and scrollable on desktop */}
+          <aside className="xl:w-72 shrink-0 order-1">
+            <div className="xl:sticky xl:top-24 xl:max-h-[calc(100vh-8rem)] xl:overflow-y-auto space-y-6 xl:pb-4">
+              {/* Top Builders Section */}
+              <Suspense
+                fallback={
+                  <div className="rounded-xl border border-zinc-800/50 bg-zinc-900/50 overflow-hidden animate-pulse">
+                    <div className="px-4 py-3 border-b border-zinc-800/50">
+                      <div className="flex items-center gap-2">
+                        <div className="h-8 w-8 bg-zinc-800 rounded-lg" />
+                        <div className="h-5 w-24 bg-zinc-800 rounded" />
+                      </div>
+                    </div>
+                    <div className="divide-y divide-zinc-800/30">
+                      {[1, 2, 3, 4, 5].map((i) => (
+                        <div key={i} className="flex items-center gap-3 px-4 py-3">
+                          <div className="h-6 w-6 bg-zinc-800 rounded-md" />
+                          <div className="h-8 w-8 bg-zinc-800 rounded-full" />
+                          <div className="flex-1">
+                            <div className="h-4 w-24 bg-zinc-800 rounded mb-1" />
+                            <div className="h-3 w-16 bg-zinc-800 rounded" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                )}
-              </Link>
+                }
+              >
+                <TopBuildersSection />
+              </Suspense>
+            </div>
+          </aside>
 
-              <div className="flex-1 min-w-0">
-                <Link
-                  href={`/${slug}`}
-                  className="font-semibold text-white hover:text-orange-400 transition-colors"
-                >
-                  {displayName}
-                </Link>
-                {update.user.headline && (
-                  <p className="text-sm text-zinc-500 truncate">{update.user.headline}</p>
-                )}
+          {/* Main Content */}
+          <main className="flex-1 min-w-0 max-w-2xl order-3 xl:order-2">
+            {/* Main content card */}
+            <article className="rounded-2xl border border-white/10 bg-zinc-900/50 backdrop-blur-sm overflow-hidden">
+              {/* Author header */}
+              <div className="p-6 border-b border-white/5">
+                <div className="flex items-center gap-4">
+                  <Link href={`/${slug}`} className="flex-shrink-0">
+                    {update.user.image ? (
+                      <Image
+                        src={update.user.image}
+                        alt={displayName}
+                        width={48}
+                        height={48}
+                        className="rounded-xl ring-2 ring-white/10 hover:ring-orange-500/30 transition-all"
+                      />
+                    ) : (
+                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-orange-500 to-pink-500">
+                        <User className="h-6 w-6 text-white" />
+                      </div>
+                    )}
+                  </Link>
+
+                  <div className="flex-1 min-w-0">
+                    <Link
+                      href={`/${slug}`}
+                      className="font-semibold text-white hover:text-orange-400 transition-colors"
+                    >
+                      {displayName}
+                    </Link>
+                    {update.user.headline && (
+                      <p className="text-sm text-zinc-500 truncate">{update.user.headline}</p>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-2 text-sm text-zinc-500">
+                    <Calendar className="h-4 w-4" />
+                    <time dateTime={update.createdAt.toISOString()}>
+                      {formatRelativeTime(update.createdAt)}
+                    </time>
+                  </div>
+                </div>
               </div>
 
-              <div className="flex items-center gap-2 text-sm text-zinc-500">
-                <Calendar className="h-4 w-4" />
-                <time dateTime={update.createdAt.toISOString()}>
-                  {formatRelativeTime(update.createdAt)}
-                </time>
+              {/* Image attachment */}
+              {update.imageUrl && (
+                <div className="relative aspect-video bg-zinc-900">
+                  <Image
+                    src={update.imageUrl}
+                    alt="Update image"
+                    fill
+                    className="object-cover"
+                    priority
+                  />
+                </div>
+              )}
+
+              {/* Content */}
+              <div className="p-6">
+                <div className="prose prose-invert prose-zinc max-w-none">
+                  <p className="text-zinc-200 whitespace-pre-wrap text-base leading-relaxed">
+                    {update.content}
+                  </p>
+                </div>
               </div>
-            </div>
-          </div>
 
-          {/* Image attachment */}
-          {update.imageUrl && (
-            <div className="relative aspect-video bg-zinc-900">
-              <Image
-                src={update.imageUrl}
-                alt="Update image"
-                fill
-                className="object-cover"
-                priority
-              />
-            </div>
-          )}
+              {/* Actions */}
+              <div className="px-6 py-4 border-t border-white/5 flex items-center justify-between">
+                <div className="flex items-center gap-6">
+                  {/* Stats */}
+                  <div className="flex items-center gap-1.5 text-sm text-zinc-500">
+                    <Heart className="h-4 w-4" />
+                    <span>{update._count.likes}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-sm text-zinc-500">
+                    <MessageCircle className="h-4 w-4" />
+                    <span>{update._count.comments}</span>
+                  </div>
+                </div>
 
-          {/* Content */}
-          <div className="p-6">
-            <div className="prose prose-invert prose-zinc max-w-none">
-              <p className="text-zinc-200 whitespace-pre-wrap text-base leading-relaxed">
-                {update.content}
-              </p>
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div className="px-6 py-4 border-t border-white/5 flex items-center justify-between">
-            <div className="flex items-center gap-6">
-              {/* Stats */}
-              <div className="flex items-center gap-1.5 text-sm text-zinc-500">
-                <Heart className="h-4 w-4" />
-                <span>{update._count.likes}</span>
+                {/* Action buttons */}
+                <UpdateActions
+                  updateId={update.id}
+                  userSlug={slug}
+                  content={update.content}
+                  isLiked={isLiked}
+                  likesCount={update._count.likes}
+                  currentUserId={session?.user?.id}
+                  isOwner={isOwner}
+                />
               </div>
-              <div className="flex items-center gap-1.5 text-sm text-zinc-500">
-                <MessageCircle className="h-4 w-4" />
-                <span>{update._count.comments}</span>
+
+              {/* Comments section */}
+              <div className="px-6 pb-6">
+                <UpdateComments
+                  updateId={update.id}
+                  currentUserId={session?.user?.id}
+                  initialCommentsCount={update._count.comments}
+                />
               </div>
+            </article>
+          </main>
+
+          {/* Right Sidebar */}
+          <aside className="xl:w-72 shrink-0 order-2 xl:order-3">
+            <div className="xl:sticky xl:top-24 xl:max-h-[calc(100vh-8rem)] xl:overflow-y-auto space-y-6 xl:pb-4">
+              {/* Roast my MVP Section */}
+              <Suspense
+                fallback={
+                  <div className="rounded-xl border border-zinc-800/50 bg-zinc-900/50 p-4 animate-pulse">
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="h-5 w-5 bg-zinc-800 rounded" />
+                      <div className="h-5 w-32 bg-zinc-800 rounded" />
+                    </div>
+                    <div className="h-32 bg-zinc-800 rounded-lg" />
+                  </div>
+                }
+              >
+                <RoastMVPSection />
+              </Suspense>
+
+              {/* Product Hunt Badge */}
+              <div className="flex justify-center">
+                <ProductHuntBadge />
+              </div>
+
+              {/* Sidebar Ad Section */}
+              <Suspense
+                fallback={
+                  <div className="rounded-xl border border-zinc-800/50 bg-zinc-900/50 overflow-hidden animate-pulse">
+                    <div className="flex items-center gap-2 px-4 py-3 border-b border-zinc-800/50">
+                      <div className="h-4 w-4 bg-zinc-800 rounded" />
+                      <div className="h-3 w-16 bg-zinc-800 rounded" />
+                    </div>
+                    <div className="p-5">
+                      <div className="w-full h-32 bg-zinc-800 rounded-lg mb-4" />
+                      <div className="h-5 w-3/4 bg-zinc-800 rounded mb-2" />
+                      <div className="h-4 w-full bg-zinc-800 rounded mb-4" />
+                      <div className="h-9 w-full bg-zinc-800 rounded-lg" />
+                    </div>
+                  </div>
+                }
+              >
+                <SidebarAdSection />
+              </Suspense>
+
+              {/* Open Jobs Section */}
+              <Suspense
+                fallback={
+                  <div className="rounded-xl border border-zinc-800/50 bg-zinc-900/50 overflow-hidden animate-pulse">
+                    <div className="px-4 py-3 border-b border-zinc-800/50">
+                      <div className="flex items-center gap-2">
+                        <div className="h-8 w-8 bg-zinc-800 rounded-lg" />
+                        <div className="h-5 w-24 bg-zinc-800 rounded" />
+                      </div>
+                    </div>
+                    <div className="divide-y divide-zinc-800/30">
+                      {[1, 2, 3, 4].map((i) => (
+                        <div key={i} className="flex items-start gap-3 px-4 py-3">
+                          <div className="h-10 w-10 bg-zinc-800 rounded-lg" />
+                          <div className="flex-1">
+                            <div className="h-4 w-32 bg-zinc-800 rounded mb-1" />
+                            <div className="h-3 w-20 bg-zinc-800 rounded mb-2" />
+                            <div className="h-3 w-24 bg-zinc-800 rounded" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                }
+              >
+                <OpenJobsSection />
+              </Suspense>
             </div>
-
-            {/* Action buttons */}
-            <UpdateActions
-              updateId={update.id}
-              userSlug={slug}
-              content={update.content}
-              isLiked={isLiked}
-              likesCount={update._count.likes}
-              currentUserId={session?.user?.id}
-              isOwner={isOwner}
-            />
-          </div>
-
-          {/* Comments section */}
-          <div className="px-6 pb-6">
-            <UpdateComments
-              updateId={update.id}
-              currentUserId={session?.user?.id}
-              initialCommentsCount={update._count.comments}
-            />
-          </div>
-        </article>
+          </aside>
+        </div>
       </div>
     </div>
   );

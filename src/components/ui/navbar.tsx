@@ -117,7 +117,7 @@ export function Navbar() {
 
                       {userSlug && (
                         <Link
-                          href={`/${userSlug}#daily-updates`}
+                          href={`/${userSlug}#updates`}
                           onClick={() => setShareOpen(false)}
                           className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-zinc-300 transition-colors hover:bg-white/5 hover:text-white"
                         >
@@ -126,7 +126,7 @@ export function Navbar() {
                           </div>
                           <div>
                             <div className="font-medium">Share an Update</div>
-                            <div className="text-xs text-zinc-500">Post a daily update</div>
+                            <div className="text-xs text-zinc-500">Post an update</div>
                           </div>
                         </Link>
                       )}

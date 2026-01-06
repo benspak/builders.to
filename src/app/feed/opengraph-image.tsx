@@ -125,7 +125,7 @@ export default async function Image() {
               lineHeight: 1.4,
             }}
           >
-            Daily updates from the builder community
+            Updates from the builder community
           </div>
 
           {/* Feature tags */}
