@@ -122,8 +122,20 @@ export async function POST() {
     return NextResponse.json({ url, accountId });
   } catch (error) {
     console.error("Error starting Stripe Connect onboarding:", error);
+
+    // Return more specific error messages
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+
+    // Check for common Stripe errors
+    if (errorMessage.includes("platform")) {
+      return NextResponse.json(
+        { error: "Stripe Connect is not enabled for this account. Please enable Connect in the Stripe Dashboard." },
+        { status: 500 }
+      );
+    }
+
     return NextResponse.json(
-      { error: "Failed to start onboarding" },
+      { error: `Failed to start onboarding: ${errorMessage}` },
       { status: 500 }
     );
   }
