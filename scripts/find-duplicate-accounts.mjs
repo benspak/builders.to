@@ -6,6 +6,9 @@
  *
  * Or to merge accounts (keeps the older account):
  *   node scripts/find-duplicate-accounts.mjs your-email@example.com --merge
+ *
+ * Or to delete a specific account by ID:
+ *   node scripts/find-duplicate-accounts.mjs --delete USER_ID_HERE
  */
 
 import { PrismaClient } from '@prisma/client';
@@ -13,14 +16,30 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
-  const email = process.argv[2];
+  const arg1 = process.argv[2];
+  const arg2 = process.argv[3];
   const shouldMerge = process.argv.includes('--merge');
+  const shouldDelete = arg1 === '--delete';
 
-  if (!email) {
+  if (!arg1) {
     console.error('❌ Please provide an email address as an argument');
     console.log('   Usage: node scripts/find-duplicate-accounts.mjs your-email@example.com');
+    console.log('   Or:    node scripts/find-duplicate-accounts.mjs --delete USER_ID');
     process.exit(1);
   }
+
+  // Handle delete mode
+  if (shouldDelete) {
+    if (!arg2) {
+      console.error('❌ Please provide a user ID to delete');
+      console.log('   Usage: node scripts/find-duplicate-accounts.mjs --delete USER_ID');
+      process.exit(1);
+    }
+    await deleteAccount(arg2);
+    return;
+  }
+
+  const email = arg1;
 
   console.log(`\n🔍 Searching for accounts with email: ${email}\n`);
 
@@ -124,6 +143,93 @@ async function main() {
       console.log('');
     }
   }
+}
+
+async function deleteAccount(userId) {
+  console.log(`\n🔍 Looking up account: ${userId}\n`);
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      slug: true,
+      username: true,
+      createdAt: true,
+      accounts: {
+        select: { provider: true }
+      },
+      _count: {
+        select: {
+          projects: true,
+          dailyUpdates: true,
+          comments: true,
+          upvotes: true,
+          companies: true,
+        }
+      }
+    }
+  });
+
+  if (!user) {
+    console.error('❌ User not found with that ID');
+    process.exit(1);
+  }
+
+  console.log('Account to delete:');
+  console.log(`  ID:       ${user.id}`);
+  console.log(`  Name:     ${user.name || '(not set)'}`);
+  console.log(`  Email:    ${user.email || '(not set)'}`);
+  console.log(`  Username: ${user.username || '(not set)'}`);
+  console.log(`  Slug:     ${user.slug || '(not set)'}`);
+  console.log(`  OAuth:    ${user.accounts.map(a => a.provider).join(', ') || 'none'}`);
+  console.log(`  Content:  ${user._count.projects} projects, ${user._count.dailyUpdates} updates, ${user._count.comments} comments, ${user._count.companies} companies`);
+  console.log('');
+
+  if (user._count.projects > 0 || user._count.dailyUpdates > 0 || user._count.companies > 0) {
+    console.log('⚠️  WARNING: This account has content that will be DELETED!');
+    console.log('   Consider using --merge instead if you want to keep the content.\n');
+  }
+
+  console.log('🗑️  Deleting account...\n');
+
+  // Delete related records first (cascade should handle most, but being explicit)
+  await prisma.upvote.deleteMany({ where: { userId } });
+  console.log('   ✓ Deleted upvotes');
+
+  await prisma.commentLike.deleteMany({ where: { userId } });
+  console.log('   ✓ Deleted comment likes');
+
+  await prisma.comment.deleteMany({ where: { userId } });
+  console.log('   ✓ Deleted comments');
+
+  await prisma.updateLike.deleteMany({ where: { userId } });
+  console.log('   ✓ Deleted update likes');
+
+  await prisma.updateComment.deleteMany({ where: { userId } });
+  console.log('   ✓ Deleted update comments');
+
+  await prisma.dailyUpdate.deleteMany({ where: { userId } });
+  console.log('   ✓ Deleted daily updates');
+
+  await prisma.follow.deleteMany({ where: { OR: [{ followerId: userId }, { followingId: userId }] } });
+  console.log('   ✓ Deleted follows');
+
+  await prisma.endorsement.deleteMany({ where: { OR: [{ endorserId: userId }, { endorseeId: userId }] } });
+  console.log('   ✓ Deleted endorsements');
+
+  await prisma.notification.deleteMany({ where: { userId } });
+  console.log('   ✓ Deleted notifications');
+
+  await prisma.feedEventLike.deleteMany({ where: { userId } });
+  console.log('   ✓ Deleted feed event likes');
+
+  // Delete the user (will cascade to Account, Session, etc.)
+  await prisma.user.delete({ where: { id: userId } });
+  console.log('   ✓ Deleted user account');
+
+  console.log(`\n✅ Account ${userId} has been deleted.`);
 }
 
 async function mergeAccounts(users) {
