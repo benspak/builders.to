@@ -42,6 +42,7 @@ interface ProfileFormProps {
   user: {
     id: string;
     name: string | null;
+    email: string | null;
     slug: string | null;
     username: string | null;
     displayName: string | null;
@@ -80,6 +81,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
   const [success, setSuccess] = useState(false);
 
   const [formData, setFormData] = useState({
+    email: user.email || "",
     displayName: user.displayName || "",
     firstName: user.firstName || "",
     lastName: user.lastName || "",
@@ -170,6 +172,27 @@ export function ProfileForm({ user }: ProfileFormProps) {
             Profile photo is synced from X
           </p>
         </div>
+      </div>
+
+      {/* Email */}
+      <div>
+        <label htmlFor="email" className="block text-sm font-medium text-zinc-300 mb-2">
+          Email Address
+        </label>
+        <div className="relative">
+          <Mail className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
+          <input
+            id="email"
+            type="email"
+            placeholder="your@email.com"
+            value={formData.email}
+            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            className="input pl-11"
+          />
+        </div>
+        <p className="mt-2 text-xs text-zinc-500">
+          Your email is used for notifications and Stripe Connect payouts. It will not be displayed publicly.
+        </p>
       </div>
 
       {/* Status */}

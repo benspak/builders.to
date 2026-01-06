@@ -22,6 +22,7 @@ export default async function SettingsPage() {
     select: {
       id: true,
       name: true,
+      email: true,
       slug: true,
       username: true,
       displayName: true,
