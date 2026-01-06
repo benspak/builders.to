@@ -7,7 +7,7 @@ import { UserMenu } from "@/components/auth/user-menu";
 import { NotificationDropdown } from "@/components/notifications";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { SearchCommand } from "@/components/ui/search-command";
-import { Plus, Rocket, ChevronDown, Sparkles } from "lucide-react";
+import { Plus, Rocket, ChevronDown, Sparkles, Store } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface UserProfile {
@@ -74,6 +74,13 @@ export function Navbar() {
             style={{ color: "var(--foreground-muted)" }}
           >
             Projects
+          </Link>
+          <Link
+            href="/services"
+            className="hidden text-sm font-medium transition-colors sm:block"
+            style={{ color: "var(--foreground-muted)" }}
+          >
+            Services
           </Link>
           {/* Theme Toggle */}
           <ThemeToggle />

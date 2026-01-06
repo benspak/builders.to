@@ -19,6 +19,9 @@ import {
   Flame,
   Star,
   MessageCircle,
+  Store,
+  DollarSign,
+  Clock,
 } from "lucide-react";
 import { FollowButton, FollowStats } from "@/components/profile";
 import { formatRelativeTime, getStatusColor, getStatusLabel, getCategoryColor, getCategoryLabel, getMemberRoleLabel, getMemberRoleColor } from "@/lib/utils";
@@ -190,6 +193,23 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
               comments: true,
             },
           },
+        },
+      },
+      // Services marketplace listings
+      serviceListings: {
+        where: {
+          status: "ACTIVE",
+          expiresAt: { gt: new Date() },
+        },
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          slug: true,
+          title: true,
+          description: true,
+          category: true,
+          priceInCents: true,
+          deliveryDays: true,
         },
       },
     },
@@ -714,6 +734,84 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                       </div>
                     </Link>
                   ))}
+                </div>
+              </section>
+            )}
+
+            {/* Services */}
+            {user.serviceListings.length > 0 && (
+              <section>
+                <div className="flex items-center gap-3 mb-4">
+                  <Store className="h-5 w-5 text-amber-500" />
+                  <h2 className="text-xl font-semibold text-white">Services</h2>
+                  <span className="text-sm text-zinc-500">({user.serviceListings.length})</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {user.serviceListings.map((service) => {
+                    const formatPrice = (cents: number) => {
+                      return new Intl.NumberFormat("en-US", {
+                        style: "currency",
+                        currency: "USD",
+                        minimumFractionDigits: 0,
+                      }).format(cents / 100);
+                    };
+
+                    const categoryLabels: Record<string, string> = {
+                      MVP_BUILD: "MVP Build",
+                      DESIGN: "Design",
+                      MARKETING: "Marketing",
+                      AI_INTEGRATION: "AI Integration",
+                      DEVOPS: "DevOps",
+                      AUDIT: "Audit",
+                      OTHER: "Other",
+                    };
+
+                    const categoryColors: Record<string, string> = {
+                      MVP_BUILD: "bg-orange-500/10 text-orange-400 border-orange-500/30",
+                      DESIGN: "bg-pink-500/10 text-pink-400 border-pink-500/30",
+                      MARKETING: "bg-blue-500/10 text-blue-400 border-blue-500/30",
+                      AI_INTEGRATION: "bg-violet-500/10 text-violet-400 border-violet-500/30",
+                      DEVOPS: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
+                      AUDIT: "bg-amber-500/10 text-amber-400 border-amber-500/30",
+                      OTHER: "bg-zinc-500/10 text-zinc-400 border-zinc-500/30",
+                    };
+
+                    return (
+                      <Link
+                        key={service.id}
+                        href={`/services/${service.slug || service.id}`}
+                        className="block rounded-xl border border-white/10 bg-zinc-900/50 p-4 hover:border-amber-500/30 hover:bg-zinc-900/70 transition-all group"
+                      >
+                        <div className="mb-2">
+                          <span
+                            className={cn(
+                              "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium border",
+                              categoryColors[service.category] || categoryColors.OTHER
+                            )}
+                          >
+                            {categoryLabels[service.category] || "Other"}
+                          </span>
+                        </div>
+                        <h3 className="font-semibold text-white group-hover:text-amber-400 transition-colors line-clamp-1">
+                          {service.title}
+                        </h3>
+                        <p className="text-sm text-zinc-400 line-clamp-2 mt-1">
+                          {service.description}
+                        </p>
+                        <div className="mt-3 flex items-center gap-4 text-sm">
+                          <span className="flex items-center gap-1 text-emerald-400 font-semibold">
+                            <DollarSign className="h-4 w-4" />
+                            {formatPrice(service.priceInCents)}
+                          </span>
+                          <span className="flex items-center gap-1 text-zinc-500">
+                            <Clock className="h-4 w-4" />
+                            {service.deliveryDays} day{service.deliveryDays !== 1 ? "s" : ""}
+                          </span>
+                        </div>
+                      </Link>
+                    );
+                  })}
                 </div>
               </section>
             )}
