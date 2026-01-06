@@ -7,6 +7,7 @@ import { extractMentions } from "@/lib/utils";
 // GET /api/comments - Get comments for a project
 export async function GET(request: NextRequest) {
   try {
+    const session = await auth();
     const { searchParams } = new URL(request.url);
     const projectId = searchParams.get("projectId");
 
@@ -29,10 +30,35 @@ export async function GET(request: NextRequest) {
             slug: true,
           },
         },
+        likes: {
+          select: {
+            userId: true,
+          },
+        },
+        _count: {
+          select: {
+            likes: true,
+          },
+        },
       },
     });
 
-    return NextResponse.json(comments);
+    // Transform to include like status for current user
+    const commentsWithLikeStatus = comments.map(comment => ({
+      id: comment.id,
+      content: comment.content,
+      createdAt: comment.createdAt,
+      updatedAt: comment.updatedAt,
+      userId: comment.userId,
+      projectId: comment.projectId,
+      user: comment.user,
+      likesCount: comment._count.likes,
+      isLiked: session?.user?.id
+        ? comment.likes.some(like => like.userId === session.user.id)
+        : false,
+    }));
+
+    return NextResponse.json(commentsWithLikeStatus);
   } catch (error) {
     console.error("Error fetching comments:", error);
     return NextResponse.json(

@@ -7,6 +7,37 @@ interface RouteParams {
   params: Promise<{ id: string }>;
 }
 
+// Helper function to check if user has edit permission (owner, admin, or original creator)
+async function canEditCompany(companyId: string, userId: string): Promise<boolean> {
+  // Check if user is the original company owner
+  const company = await prisma.company.findUnique({
+    where: { id: companyId },
+    select: { userId: true },
+  });
+
+  if (company?.userId === userId) return true;
+
+  // Check if user is OWNER or ADMIN in CompanyMember
+  const membership = await prisma.companyMember.findUnique({
+    where: {
+      companyId_userId: { companyId, userId },
+    },
+    select: { role: true },
+  });
+
+  return membership?.role === "OWNER" || membership?.role === "ADMIN";
+}
+
+// Helper function to check if user is the original owner (for delete operations)
+async function isCompanyOwner(companyId: string, userId: string): Promise<boolean> {
+  const company = await prisma.company.findUnique({
+    where: { id: companyId },
+    select: { userId: true },
+  });
+
+  return company?.userId === userId;
+}
+
 // GET /api/companies/[id] - Get a single company
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
@@ -40,9 +71,27 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
           },
           orderBy: { createdAt: "desc" },
         },
+        members: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                image: true,
+                slug: true,
+                headline: true,
+              },
+            },
+          },
+          orderBy: [
+            { role: "asc" },
+            { createdAt: "asc" },
+          ],
+        },
         _count: {
           select: {
             projects: true,
+            members: true,
           },
         },
       },
@@ -79,7 +128,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
     const { id } = await params;
 
-    // Check ownership
+    // Get existing company
     const existingCompany = await prisma.company.findUnique({
       where: { id },
       select: { userId: true, slug: true },
@@ -92,7 +141,9 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    if (existingCompany.userId !== session.user.id) {
+    // Check if user has edit permission (owner, admin, or original creator)
+    const hasPermission = await canEditCompany(id, session.user.id);
+    if (!hasPermission) {
       return NextResponse.json(
         { error: "You don't have permission to edit this company" },
         { status: 403 }

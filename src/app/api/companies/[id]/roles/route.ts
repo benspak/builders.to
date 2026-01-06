@@ -88,7 +88,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     const { id } = await params;
 
-    // Verify company ownership
+    // Verify company exists
     const company = await prisma.company.findUnique({
       where: { id },
       select: { userId: true },
@@ -101,7 +101,20 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    if (company.userId !== session.user.id) {
+    // Check if user is owner or admin
+    const membership = await prisma.companyMember.findUnique({
+      where: {
+        companyId_userId: { companyId: id, userId: session.user.id },
+      },
+      select: { role: true },
+    });
+
+    const canManageRoles =
+      company.userId === session.user.id ||
+      membership?.role === "OWNER" ||
+      membership?.role === "ADMIN";
+
+    if (!canManageRoles) {
       return NextResponse.json(
         { error: "You don't have permission to post roles for this company" },
         { status: 403 }

@@ -80,7 +80,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     const { id } = await params;
 
-    // Verify company ownership
+    // Verify company exists
     const company = await prisma.company.findUnique({
       where: { id },
       select: { userId: true },
@@ -93,7 +93,14 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    if (company.userId !== session.user.id) {
+    // Check if user is owner or a member of the company
+    const isMember = await prisma.companyMember.findUnique({
+      where: {
+        companyId_userId: { companyId: id, userId: session.user.id },
+      },
+    });
+
+    if (company.userId !== session.user.id && !isMember) {
       return NextResponse.json(
         { error: "You don't have permission to post updates for this company" },
         { status: 403 }

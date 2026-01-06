@@ -32,8 +32,15 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // Build the where clause
+    // For "mine", include companies where user is owner OR a member
     const where = {
-      ...(mine && currentUserId && { userId: currentUserId }),
+      ...(mine && currentUserId && {
+        OR: [
+          { userId: currentUserId },
+          { members: { some: { userId: currentUserId } } },
+        ],
+      }),
       ...(category && { category }),
       ...(size && { size }),
       ...(hiring && { isHiring: true }),
@@ -67,6 +74,7 @@ export async function GET(request: NextRequest) {
               roles: {
                 where: { isActive: true },
               },
+              members: true,
             },
           },
         },
@@ -171,45 +179,59 @@ export async function POST(request: NextRequest) {
       finalSlug = generateUniqueSlug(name);
     }
 
-    const company = await prisma.company.create({
-      data: {
-        name,
-        slug: finalSlug,
-        logo,
-        location,
-        category: category || "OTHER",
-        about,
-        website,
-        size,
-        yearFounded: yearFounded ? parseInt(yearFounded) : null,
-        userId: session.user.id,
-        // New opportunity hub fields
-        techStack: techStack || [],
-        tools: tools || [],
-        customerCount: customerCount || null,
-        revenueRange: revenueRange || null,
-        userCount: userCount || null,
-        isBootstrapped: isBootstrapped || false,
-        isProfitable: isProfitable || false,
-        hasRaisedFunding: hasRaisedFunding || false,
-        fundingStage: hasRaisedFunding ? (fundingStage || null) : null,
-        isHiring: isHiring || false,
-        acceptsContracts: acceptsContracts || false,
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            image: true,
+    // Use a transaction to create company and owner membership together
+    const company = await prisma.$transaction(async (tx) => {
+      const newCompany = await tx.company.create({
+        data: {
+          name,
+          slug: finalSlug,
+          logo,
+          location,
+          category: category || "OTHER",
+          about,
+          website,
+          size,
+          yearFounded: yearFounded ? parseInt(yearFounded) : null,
+          userId: session.user.id,
+          // New opportunity hub fields
+          techStack: techStack || [],
+          tools: tools || [],
+          customerCount: customerCount || null,
+          revenueRange: revenueRange || null,
+          userCount: userCount || null,
+          isBootstrapped: isBootstrapped || false,
+          isProfitable: isProfitable || false,
+          hasRaisedFunding: hasRaisedFunding || false,
+          fundingStage: hasRaisedFunding ? (fundingStage || null) : null,
+          isHiring: isHiring || false,
+          acceptsContracts: acceptsContracts || false,
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+            },
+          },
+          _count: {
+            select: {
+              projects: true,
+            },
           },
         },
-        _count: {
-          select: {
-            projects: true,
-          },
+      });
+
+      // Automatically create owner membership for the creator
+      await tx.companyMember.create({
+        data: {
+          companyId: newCompany.id,
+          userId: session.user.id,
+          role: "OWNER",
         },
-      },
+      });
+
+      return newCompany;
     });
 
     return NextResponse.json(company, { status: 201 });

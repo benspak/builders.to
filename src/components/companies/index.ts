@@ -3,6 +3,7 @@ export { CompanyCard } from "./company-card";
 export { CompanyFilters } from "./company-filters";
 export { CompanyForm } from "./company-form";
 export { CompanyGrid } from "./company-grid";
+export { CompanyMembers } from "./company-members";
 export { DeleteCompanyButton } from "./delete-company-button";
 
 // Company Updates

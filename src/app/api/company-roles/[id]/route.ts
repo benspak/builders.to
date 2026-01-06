@@ -64,7 +64,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       where: { id },
       include: {
         company: {
-          select: { userId: true },
+          select: { id: true, userId: true },
         },
       },
     });
@@ -76,7 +76,20 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    if (existingRole.company.userId !== session.user.id) {
+    // Check if user is owner or admin
+    const membership = await prisma.companyMember.findUnique({
+      where: {
+        companyId_userId: { companyId: existingRole.companyId, userId: session.user.id },
+      },
+      select: { role: true },
+    });
+
+    const canManageRoles =
+      existingRole.company.userId === session.user.id ||
+      membership?.role === "OWNER" ||
+      membership?.role === "ADMIN";
+
+    if (!canManageRoles) {
       return NextResponse.json(
         { error: "You don't have permission to edit this role" },
         { status: 403 }
@@ -196,7 +209,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       where: { id },
       include: {
         company: {
-          select: { userId: true },
+          select: { id: true, userId: true },
         },
       },
     });
@@ -208,7 +221,20 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    if (existingRole.company.userId !== session.user.id) {
+    // Check if user is owner or admin
+    const membership = await prisma.companyMember.findUnique({
+      where: {
+        companyId_userId: { companyId: existingRole.companyId, userId: session.user.id },
+      },
+      select: { role: true },
+    });
+
+    const canManageRoles =
+      existingRole.company.userId === session.user.id ||
+      membership?.role === "OWNER" ||
+      membership?.role === "ADMIN";
+
+    if (!canManageRoles) {
       return NextResponse.json(
         { error: "You don't have permission to delete this role" },
         { status: 403 }

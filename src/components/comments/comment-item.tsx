@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
-import { User, MoreHorizontal, Pencil, Trash2, Loader2, X, Check } from "lucide-react";
+import { User, MoreHorizontal, Pencil, Trash2, Loader2, X, Check, Heart } from "lucide-react";
 import { formatRelativeTime, cn, MENTION_REGEX } from "@/lib/utils";
 
 // Component to render content with clickable @mentions
@@ -73,6 +73,8 @@ interface Comment {
     image: string | null;
     slug: string | null;
   };
+  likesCount?: number;
+  isLiked?: boolean;
 }
 
 interface CommentItemProps {
@@ -88,8 +90,43 @@ export function CommentItem({ comment, onDeleted, onUpdated }: CommentItemProps)
   const [editContent, setEditContent] = useState(comment.content);
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [likesCount, setLikesCount] = useState(comment.likesCount || 0);
+  const [isLiked, setIsLiked] = useState(comment.isLiked || false);
+  const [likeLoading, setLikeLoading] = useState(false);
 
   const isOwner = session?.user?.id === comment.user.id;
+
+  const handleLike = async () => {
+    if (!session?.user) return;
+    setLikeLoading(true);
+
+    // Optimistic update
+    const wasLiked = isLiked;
+    const prevCount = likesCount;
+    setIsLiked(!wasLiked);
+    setLikesCount(wasLiked ? prevCount - 1 : prevCount + 1);
+
+    try {
+      const response = await fetch(`/api/comments/${comment.id}/like`, {
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        // Revert on error
+        setIsLiked(wasLiked);
+        setLikesCount(prevCount);
+        throw new Error("Failed to toggle like");
+      }
+
+      const data = await response.json();
+      setIsLiked(data.liked);
+      setLikesCount(data.likesCount);
+    } catch (error) {
+      console.error("Error toggling like:", error);
+    } finally {
+      setLikeLoading(false);
+    }
+  };
 
   const handleEdit = async () => {
     if (!editContent.trim()) return;
@@ -274,9 +311,38 @@ export function CommentItem({ comment, onDeleted, onUpdated }: CommentItemProps)
               </div>
             </div>
           ) : (
-            <p className="mt-2 text-zinc-300 whitespace-pre-wrap break-words">
-              <ContentWithMentions content={comment.content} />
-            </p>
+            <>
+              <p className="mt-2 text-zinc-300 whitespace-pre-wrap break-words">
+                <ContentWithMentions content={comment.content} />
+              </p>
+
+              {/* Like button */}
+              <div className="mt-3 flex items-center gap-1">
+                <button
+                  onClick={handleLike}
+                  disabled={!session?.user || likeLoading}
+                  className={cn(
+                    "flex items-center gap-1.5 px-2 py-1 rounded-md text-xs transition-all",
+                    isLiked
+                      ? "text-rose-400 bg-rose-500/10 hover:bg-rose-500/20"
+                      : "text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10",
+                    !session?.user && "cursor-not-allowed opacity-50"
+                  )}
+                  title={session?.user ? (isLiked ? "Unlike" : "Like") : "Sign in to like"}
+                >
+                  <Heart
+                    className={cn(
+                      "h-3.5 w-3.5 transition-all",
+                      isLiked && "fill-current",
+                      likeLoading && "animate-pulse"
+                    )}
+                  />
+                  {likesCount > 0 && (
+                    <span className="font-medium">{likesCount}</span>
+                  )}
+                </button>
+              </div>
+            </>
           )}
         </div>
       </div>

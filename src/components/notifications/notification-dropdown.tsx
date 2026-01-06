@@ -149,6 +149,8 @@ export function NotificationDropdown() {
         return <ArrowUp className="h-4 w-4 text-emerald-400" />;
       case "PROJECT_COMMENTED":
         return <MessageCircle className="h-4 w-4 text-sky-400" />;
+      case "COMMENT_LIKED":
+        return <Heart className="h-4 w-4 text-rose-400" />;
       default:
         return <Bell className="h-4 w-4 text-zinc-400" />;
     }
@@ -156,8 +158,8 @@ export function NotificationDropdown() {
 
   // Get notification link
   const getNotificationLink = (notification: Notification): string | null => {
-    // Link to project for upvote and comment notifications
-    if ((notification.type === "PROJECT_UPVOTED" || notification.type === "PROJECT_COMMENTED") && notification.project?.slug) {
+    // Link to project for upvote, comment, and comment like notifications
+    if ((notification.type === "PROJECT_UPVOTED" || notification.type === "PROJECT_COMMENTED" || notification.type === "COMMENT_LIKED") && notification.project?.slug) {
       return `/projects/${notification.project.slug}`;
     }
     // Link to project for milestone notifications

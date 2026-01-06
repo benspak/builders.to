@@ -8,6 +8,7 @@ import { DeleteCompanyButton } from "@/components/companies/delete-company-butto
 import { CompanyUpdateForm } from "@/components/companies/company-update-form";
 import { CompanyUpdateList } from "@/components/companies/company-update-list";
 import { CompanyRoleList } from "@/components/companies/company-role-list";
+import { CompanyMembers } from "@/components/companies/company-members";
 import { TractionBadges } from "@/components/companies/traction-badges";
 import { TechStackDisplay } from "@/components/companies/tech-stack-display";
 import {
@@ -80,11 +81,29 @@ export default async function CompanyPage({ params }: CompanyPageProps) {
         where: { isActive: true },
         orderBy: { createdAt: "desc" },
       },
+      members: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+              slug: true,
+              headline: true,
+            },
+          },
+        },
+        orderBy: [
+          { role: "asc" },
+          { createdAt: "asc" },
+        ],
+      },
       _count: {
         select: {
           projects: true,
           updates: true,
           roles: true,
+          members: true,
         },
       },
     },
@@ -107,7 +126,15 @@ export default async function CompanyPage({ params }: CompanyPageProps) {
     userUpvotes = upvotes.map((u) => u.projectId);
   }
 
-  const isOwner = session?.user?.id === company.userId;
+  // Check user permissions
+  const isOriginalOwner = session?.user?.id === company.userId;
+  const userMembership = session?.user?.id
+    ? company.members.find((m) => m.user.id === session.user.id)
+    : null;
+  const isOwner = isOriginalOwner || userMembership?.role === "OWNER";
+  const isAdmin = userMembership?.role === "ADMIN";
+  const isMember = !!userMembership;
+  const canEdit = isOwner || isAdmin;
 
   // Check for traction data
   const hasTraction = company.customerCount || company.revenueRange || company.userCount ||
@@ -163,8 +190,8 @@ export default async function CompanyPage({ params }: CompanyPageProps) {
                   )}
                 </div>
 
-                {/* Owner Actions */}
-                {isOwner && (
+                {/* Owner/Admin Actions */}
+                {canEdit && (
                   <div className="flex items-center gap-2">
                     <Link
                       href={`/companies/${company.slug}/edit`}
@@ -173,7 +200,9 @@ export default async function CompanyPage({ params }: CompanyPageProps) {
                     >
                       <Pencil className="h-5 w-5" />
                     </Link>
-                    <DeleteCompanyButton companyId={company.id} />
+                    {isOriginalOwner && (
+                      <DeleteCompanyButton companyId={company.id} />
+                    )}
                   </div>
                 )}
               </div>
@@ -327,13 +356,41 @@ export default async function CompanyPage({ params }: CompanyPageProps) {
           </section>
         )}
 
+        {/* Team Members */}
+        {(company.members.length > 0 || canEdit) && (
+          <section className="card p-8">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+                <Users className="h-5 w-5 text-violet-400" />
+                Team
+                {company._count.members > 0 && (
+                  <span className="ml-2 text-sm font-normal text-zinc-400">
+                    ({company._count.members} member{company._count.members !== 1 ? "s" : ""})
+                  </span>
+                )}
+              </h2>
+            </div>
+
+            <CompanyMembers
+              companyId={company.id}
+              members={company.members.map((m) => ({
+                ...m,
+                createdAt: m.createdAt.toISOString(),
+              }))}
+              isOwner={isOwner}
+              isAdmin={isAdmin}
+              originalOwnerId={company.userId}
+            />
+          </section>
+        )}
+
         {/* Active Projects */}
         <section className="card p-8">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-semibold text-white">
               Active Projects ({company._count.projects})
             </h2>
-            {isOwner && (
+            {canEdit && (
               <Link
                 href={`/projects/new?company=${company.id}`}
                 className="btn-secondary text-sm"
@@ -358,13 +415,13 @@ export default async function CompanyPage({ params }: CompanyPageProps) {
             </div>
           ) : (
             <p className="text-zinc-500 text-center py-8">
-              No projects yet. {isOwner && "Add your first project!"}
+              No projects yet. {canEdit && "Add your first project!"}
             </p>
           )}
         </section>
 
         {/* Open Roles */}
-        {(company.roles.length > 0 || isOwner) && (
+        {(company.roles.length > 0 || canEdit) && (
           <section className="card p-8">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-white flex items-center gap-2">
@@ -381,8 +438,8 @@ export default async function CompanyPage({ params }: CompanyPageProps) {
             <CompanyRoleList
               roles={company.roles}
               companyId={company.id}
-              isOwner={isOwner}
-              emptyMessage={isOwner ? "Post your first role to start hiring" : "No open positions right now"}
+              isOwner={canEdit}
+              emptyMessage={canEdit ? "Post your first role to start hiring" : "No open positions right now"}
             />
           </section>
         )}
@@ -401,7 +458,7 @@ export default async function CompanyPage({ params }: CompanyPageProps) {
             </h2>
           </div>
 
-          {isOwner && (
+          {isMember && (
             <div className="mb-6">
               <CompanyUpdateForm companyId={company.id} />
             </div>
@@ -409,8 +466,8 @@ export default async function CompanyPage({ params }: CompanyPageProps) {
 
           <CompanyUpdateList
             updates={company.updates}
-            isOwner={isOwner}
-            emptyMessage={isOwner ? "Share your first company update" : "No updates yet"}
+            isOwner={canEdit}
+            emptyMessage={isMember ? "Share your first company update" : "No updates yet"}
           />
         </section>
 

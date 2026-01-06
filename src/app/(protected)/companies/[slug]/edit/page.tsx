@@ -27,6 +27,18 @@ export default async function EditCompanyPage({ params }: EditCompanyPageProps) 
       size: true,
       yearFounded: true,
       userId: true,
+      // New fields for opportunity hub
+      techStack: true,
+      tools: true,
+      customerCount: true,
+      revenueRange: true,
+      userCount: true,
+      isBootstrapped: true,
+      isProfitable: true,
+      hasRaisedFunding: true,
+      fundingStage: true,
+      isHiring: true,
+      acceptsContracts: true,
     },
   });
 
@@ -34,8 +46,22 @@ export default async function EditCompanyPage({ params }: EditCompanyPageProps) 
     notFound();
   }
 
-  // Check ownership
-  if (company.userId !== session?.user?.id) {
+  // Check if user is the original owner or a member with edit permissions
+  const membership = session?.user?.id
+    ? await prisma.companyMember.findUnique({
+        where: {
+          companyId_userId: { companyId: company.id, userId: session.user.id },
+        },
+        select: { role: true },
+      })
+    : null;
+
+  const canEdit =
+    company.userId === session?.user?.id ||
+    membership?.role === "OWNER" ||
+    membership?.role === "ADMIN";
+
+  if (!canEdit) {
     redirect("/companies");
   }
 

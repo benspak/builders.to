@@ -87,17 +87,19 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  accounts       Account[]
-  sessions       Session[]
-  projects       Project[]
-  upvotes        Upvote[]
-  comments       Comment[]
-  companies      Company[]
-  roastMVPs      RoastMVP[]
-  dailyUpdates   DailyUpdate[]
-  updateLikes    UpdateLike[]
-  updateComments UpdateComment[]
-  coBuilderOn    ProjectCoBuilder[]  // Projects where user is a co-builder
+  accounts          Account[]
+  sessions          Session[]
+  projects          Project[]
+  upvotes           Upvote[]
+  comments          Comment[]
+  commentLikes      CommentLike[]
+  companies         Company[]
+  companyMemberships CompanyMember[]  // Companies where user is a team member
+  roastMVPs         RoastMVP[]
+  dailyUpdates      DailyUpdate[]
+  updateLikes       UpdateLike[]
+  updateComments    UpdateComment[]
+  coBuilderOn       ProjectCoBuilder[]  // Projects where user is a co-builder
 
   // Endorsements
   endorsementsGiven    Endorsement[] @relation("EndorserRelation")
@@ -209,9 +211,25 @@ model Comment {
 
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  likes   CommentLike[]
 
   @@index([projectId])
   @@index([userId])
+}
+
+// Likes on project comments
+model CommentLike {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  userId    String
+  commentId String
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, commentId])
+  @@index([commentId])
 }
 
 enum ProjectStatus {
@@ -384,10 +402,35 @@ model Company {
   projects Project[]
   updates  CompanyUpdate[]
   roles    CompanyRole[]
+  members  CompanyMember[]  // Team members of the company
 
   @@index([userId])
   @@index([category])
   @@index([isHiring])
+}
+
+// Company members - allows multiple users to be part of a company with different roles
+enum CompanyMemberRole {
+  OWNER   // Full control, can delete company
+  ADMIN   // Can edit company and manage members
+  MEMBER  // Can view and post updates
+}
+
+model CompanyMember {
+  id        String            @id @default(cuid())
+  role      CompanyMemberRole @default(MEMBER)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  companyId String
+  userId    String
+
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, userId])  // A user can only be a member once per company
+  @@index([companyId])
+  @@index([userId])
 }
 
 // Company Updates - internal build logs / announcements
@@ -661,6 +704,7 @@ enum NotificationType {
   WEEKLY_DIGEST        // Weekly summary notification
   PROJECT_UPVOTED      // Someone upvoted your project
   PROJECT_COMMENTED    // Someone commented on your project
+  COMMENT_LIKED        // Someone liked your comment on a project
 }
 
 // In-app notifications
