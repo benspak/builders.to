@@ -99,11 +99,11 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     }
 
     const body = await request.json();
-    const { email, role = "MEMBER" } = body;
+    const { userId, role = "MEMBER" } = body;
 
-    if (!email) {
+    if (!userId) {
       return NextResponse.json(
-        { error: "User email is required" },
+        { error: "User ID is required" },
         { status: 400 }
       );
     }
@@ -116,15 +116,15 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // Find user by email
+    // Verify user exists
     const userToAdd = await prisma.user.findUnique({
-      where: { email },
-      select: { id: true, name: true, email: true, image: true, slug: true },
+      where: { id: userId },
+      select: { id: true, name: true, image: true, slug: true },
     });
 
     if (!userToAdd) {
       return NextResponse.json(
-        { error: "User not found. They must have an account on Builders.to first." },
+        { error: "User not found" },
         { status: 404 }
       );
     }
@@ -155,7 +155,6 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
           select: {
             id: true,
             name: true,
-            email: true,
             image: true,
             slug: true,
             headline: true,

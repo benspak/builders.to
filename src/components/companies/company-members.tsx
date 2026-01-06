@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -13,9 +13,19 @@ import {
   Users,
   X,
   Loader2,
-  Mail,
+  Search,
   ChevronDown,
 } from "lucide-react";
+
+interface SearchUser {
+  id: string;
+  name: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  image: string | null;
+  slug: string | null;
+  headline?: string | null;
+}
 
 interface CompanyMember {
   id: string;
@@ -54,17 +64,83 @@ export function CompanyMembers({
 }: CompanyMembersProps) {
   const router = useRouter();
   const [showAddForm, setShowAddForm] = useState(false);
-  const [email, setEmail] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<SearchUser[]>([]);
+  const [selectedUser, setSelectedUser] = useState<SearchUser | null>(null);
+  const [showDropdown, setShowDropdown] = useState(false);
   const [role, setRole] = useState<"ADMIN" | "MEMBER">("MEMBER");
   const [loading, setLoading] = useState(false);
+  const [searching, setSearching] = useState(false);
   const [error, setError] = useState("");
   const [updatingMemberId, setUpdatingMemberId] = useState<string | null>(null);
+  const searchRef = useRef<HTMLDivElement>(null);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const canManageMembers = isOwner || isAdmin;
 
+  // Get IDs of existing members to filter them out of search results
+  const existingMemberIds = useMemo(() => members.map((m) => m.user.id), [members]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Search users when query changes
+  useEffect(() => {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    if (!searchQuery.trim() || searchQuery.length < 2) {
+      setSearchResults([]);
+      setShowDropdown(false);
+      return;
+    }
+
+    searchTimeoutRef.current = setTimeout(async () => {
+      setSearching(true);
+      try {
+        const response = await fetch(`/api/users/search?q=${encodeURIComponent(searchQuery)}&limit=10`);
+        if (response.ok) {
+          const data = await response.json();
+          // Filter out existing members
+          const filteredUsers = data.users.filter(
+            (user: SearchUser) => !existingMemberIds.includes(user.id)
+          );
+          setSearchResults(filteredUsers);
+          setShowDropdown(filteredUsers.length > 0);
+        }
+      } catch (err) {
+        console.error("Error searching users:", err);
+      } finally {
+        setSearching(false);
+      }
+    }, 300);
+
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, [searchQuery, existingMemberIds]);
+
+  const handleSelectUser = (user: SearchUser) => {
+    setSelectedUser(user);
+    setSearchQuery("");
+    setSearchResults([]);
+    setShowDropdown(false);
+  };
+
   const handleAddMember = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim()) return;
+    if (!selectedUser) return;
 
     setLoading(true);
     setError("");
@@ -73,7 +149,7 @@ export function CompanyMembers({
       const response = await fetch(`/api/companies/${companyId}/members`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim(), role }),
+        body: JSON.stringify({ userId: selectedUser.id, role }),
       });
 
       if (!response.ok) {
@@ -81,7 +157,8 @@ export function CompanyMembers({
         throw new Error(data.error || "Failed to add member");
       }
 
-      setEmail("");
+      setSelectedUser(null);
+      setSearchQuery("");
       setRole("MEMBER");
       setShowAddForm(false);
       router.refresh();
@@ -262,19 +339,104 @@ export function CompanyMembers({
                 </div>
               )}
 
-              <div className="flex items-center gap-2">
-                <div className="relative flex-1">
-                  <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
-                  <input
-                    type="email"
-                    placeholder="Email address"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="input pl-10 py-2 text-sm"
-                    required
-                  />
+              {/* Selected user display */}
+              {selectedUser ? (
+                <div className="flex items-center justify-between p-3 rounded-lg bg-zinc-800/50 border border-orange-500/30">
+                  <div className="flex items-center gap-3">
+                    {selectedUser.image ? (
+                      <Image
+                        src={selectedUser.image}
+                        alt={selectedUser.name || "User"}
+                        width={36}
+                        height={36}
+                        className="rounded-full"
+                      />
+                    ) : (
+                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-zinc-700">
+                        <User className="h-4 w-4 text-zinc-400" />
+                      </div>
+                    )}
+                    <div>
+                      <p className="font-medium text-white text-sm">
+                        {selectedUser.name || selectedUser.firstName || "Unknown"}
+                      </p>
+                      {selectedUser.slug && (
+                        <p className="text-xs text-zinc-400">@{selectedUser.slug}</p>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedUser(null)}
+                    className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
                 </div>
+              ) : (
+                /* Search input with autocomplete */
+                <div ref={searchRef} className="relative">
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
+                  <input
+                    type="text"
+                    placeholder="Search by username or name..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onFocus={() => searchResults.length > 0 && setShowDropdown(true)}
+                    className="input pl-10 py-2 text-sm w-full"
+                  />
+                  {searching && (
+                    <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500 animate-spin" />
+                  )}
 
+                  {/* Search results dropdown */}
+                  {showDropdown && searchResults.length > 0 && (
+                    <div className="absolute z-50 mt-1 w-full rounded-lg border border-white/10 bg-zinc-900 shadow-xl max-h-60 overflow-y-auto">
+                      {searchResults.map((user) => (
+                        <button
+                          key={user.id}
+                          type="button"
+                          onClick={() => handleSelectUser(user)}
+                          className="flex w-full items-center gap-3 px-3 py-2.5 hover:bg-white/5 transition-colors text-left"
+                        >
+                          {user.image ? (
+                            <Image
+                              src={user.image}
+                              alt={user.name || "User"}
+                              width={32}
+                              height={32}
+                              className="rounded-full"
+                            />
+                          ) : (
+                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-700">
+                              <User className="h-4 w-4 text-zinc-400" />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-white text-sm truncate">
+                              {user.name || user.firstName || "Unknown"}
+                            </p>
+                            <p className="text-xs text-zinc-400 truncate">
+                              {user.slug ? `@${user.slug}` : ""}
+                              {user.headline && user.slug ? " · " : ""}
+                              {user.headline || ""}
+                            </p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* No results message */}
+                  {showDropdown && searchQuery.length >= 2 && !searching && searchResults.length === 0 && (
+                    <div className="absolute z-50 mt-1 w-full rounded-lg border border-white/10 bg-zinc-900 shadow-xl p-3 text-sm text-zinc-400 text-center">
+                      No builders found
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="flex items-center gap-2">
                 <div className="relative">
                   <select
                     value={role}
@@ -287,12 +449,10 @@ export function CompanyMembers({
                   </select>
                   <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 pointer-events-none" />
                 </div>
-              </div>
 
-              <div className="flex items-center gap-2">
                 <button
                   type="submit"
-                  disabled={loading || !email.trim()}
+                  disabled={loading || !selectedUser}
                   className="btn-primary text-sm py-2"
                 >
                   {loading ? (
@@ -311,7 +471,8 @@ export function CompanyMembers({
                   type="button"
                   onClick={() => {
                     setShowAddForm(false);
-                    setEmail("");
+                    setSelectedUser(null);
+                    setSearchQuery("");
                     setError("");
                   }}
                   className="btn-secondary text-sm py-2"
@@ -321,7 +482,7 @@ export function CompanyMembers({
               </div>
 
               <p className="text-xs text-zinc-500">
-                The user must have an existing account on Builders.to
+                Search for builders by their username or name
               </p>
             </form>
           ) : (
