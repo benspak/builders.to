@@ -187,6 +187,25 @@ export function getCategoryColor(category: string): string {
   return colors[category] || colors.OTHER;
 }
 
+// Company Member Role helpers
+export function getMemberRoleLabel(role: string): string {
+  const labels: Record<string, string> = {
+    OWNER: "Owner",
+    ADMIN: "Admin",
+    MEMBER: "Member",
+  };
+  return labels[role] || role;
+}
+
+export function getMemberRoleColor(role: string): string {
+  const colors: Record<string, string> = {
+    OWNER: "bg-amber-500/20 text-amber-300 border-amber-500/30",
+    ADMIN: "bg-violet-500/20 text-violet-300 border-violet-500/30",
+    MEMBER: "bg-zinc-500/20 text-zinc-300 border-zinc-500/30",
+  };
+  return colors[role] || colors.MEMBER;
+}
+
 // Company Size helpers
 export function getSizeLabel(size: string | null): string {
   if (!size) return "Unknown";

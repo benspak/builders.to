@@ -255,12 +255,14 @@ async function RoastMVPSection() {
 }
 
 async function TopBuildersSection() {
-  // Fetch top 5 builders by project count
-  const topBuilders = await prisma.user.findMany({
+  // Fetch top builders by total project count (owned + co-built)
+  // This rewards collaboration by counting both owned projects and co-builder contributions
+  const buildersWithCounts = await prisma.user.findMany({
     where: {
-      projects: {
-        some: {}, // Must have at least one project
-      },
+      OR: [
+        { projects: { some: {} } },      // Has at least one owned project
+        { coBuilderOn: { some: {} } },   // Or is a co-builder on at least one project
+      ],
     },
     select: {
       id: true,
@@ -273,16 +275,20 @@ async function TopBuildersSection() {
       _count: {
         select: {
           projects: true,
+          coBuilderOn: true,
         },
       },
     },
-    orderBy: {
-      projects: {
-        _count: "desc",
-      },
-    },
-    take: 5,
   });
+
+  // Calculate total project count (owned + co-built) and sort
+  const topBuilders = buildersWithCounts
+    .map(builder => ({
+      ...builder,
+      totalProjects: builder._count.projects + builder._count.coBuilderOn,
+    }))
+    .sort((a, b) => b.totalProjects - a.totalProjects)
+    .slice(0, 5);
 
   return <TopBuilders builders={topBuilders} />;
 }

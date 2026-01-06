@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Trophy, User, Rocket } from "lucide-react";
+import { Trophy, User, Rocket, Users } from "lucide-react";
 
 interface TopBuilder {
   id: string;
@@ -12,8 +12,10 @@ interface TopBuilder {
   image: string | null;
   slug: string | null;
   headline: string | null;
+  totalProjects: number;
   _count: {
     projects: number;
+    coBuilderOn: number;
   };
 }
 
@@ -71,7 +73,7 @@ export function TopBuilders({ builders }: TopBuildersProps) {
         </div>
         <div>
           <h3 className="text-sm font-semibold text-white">Top Builders</h3>
-          <p className="text-[10px] text-zinc-500">Most projects launched</p>
+          <p className="text-[10px] text-zinc-500">Projects built & collaborations</p>
         </div>
       </div>
 
@@ -120,11 +122,21 @@ export function TopBuilders({ builders }: TopBuildersProps) {
               </div>
 
               {/* Project Count */}
-              <div className="flex items-center gap-1 shrink-0">
-                <Rocket className="h-3 w-3 text-zinc-500" />
-                <span className="text-xs font-semibold text-zinc-400">
-                  {builder._count.projects}
-                </span>
+              <div className="flex items-center gap-1.5 shrink-0" title={`${builder._count.projects} owned, ${builder._count.coBuilderOn} as co-builder`}>
+                <div className="flex items-center gap-0.5">
+                  <Rocket className="h-3 w-3 text-zinc-500" />
+                  <span className="text-xs font-semibold text-zinc-400">
+                    {builder.totalProjects}
+                  </span>
+                </div>
+                {builder._count.coBuilderOn > 0 && (
+                  <div className="flex items-center gap-0.5 pl-1 border-l border-zinc-700">
+                    <Users className="h-2.5 w-2.5 text-violet-400" />
+                    <span className="text-[10px] text-violet-400">
+                      {builder._count.coBuilderOn}
+                    </span>
+                  </div>
+                )}
               </div>
             </>
           );

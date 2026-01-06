@@ -22,7 +22,7 @@ import {
   MessageCircle,
 } from "lucide-react";
 import { EndorsementSection, FollowButton, FollowStats } from "@/components/profile";
-import { formatRelativeTime, getStatusColor, getStatusLabel, getCategoryColor, getCategoryLabel } from "@/lib/utils";
+import { formatRelativeTime, getStatusColor, getStatusLabel, getCategoryColor, getCategoryLabel, getMemberRoleLabel, getMemberRoleColor } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { UpdateForm, UpdateTimeline } from "@/components/updates";
 
@@ -147,6 +147,28 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
           createdAt: true,
           _count: {
             select: { projects: true },
+          },
+        },
+      },
+      // Companies where user is a team member (not owner)
+      companyMemberships: {
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          role: true,
+          createdAt: true,
+          company: {
+            select: {
+              id: true,
+              slug: true,
+              name: true,
+              logo: true,
+              location: true,
+              category: true,
+              _count: {
+                select: { projects: true },
+              },
+            },
           },
         },
       },
@@ -404,7 +426,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                       <div className="text-xs text-zinc-400">Projects</div>
                     </div>
                     <div className="text-center p-3 rounded-xl bg-zinc-800/30">
-                      <div className="text-2xl font-bold text-white">{user.companies.length}</div>
+                      <div className="text-2xl font-bold text-white">{user.companies.length + user.companyMemberships.length}</div>
                       <div className="text-xs text-zinc-400">Companies</div>
                     </div>
                   </div>
@@ -594,7 +616,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
               )}
             </section>
 
-            {/* Companies */}
+            {/* Companies (Owned) */}
             <section>
               <div className="flex items-center gap-3 mb-4">
                 <Building2 className="h-5 w-5 text-cyan-500" />
@@ -629,9 +651,17 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
 
                         {/* Content */}
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-white group-hover:text-cyan-400 transition-colors truncate">
-                            {company.name}
-                          </h3>
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold text-white group-hover:text-cyan-400 transition-colors truncate">
+                              {company.name}
+                            </h3>
+                            <span className={cn(
+                              "inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium border",
+                              getMemberRoleColor("OWNER")
+                            )}>
+                              Owner
+                            </span>
+                          </div>
                           <div className="mt-1 flex flex-wrap items-center gap-2">
                             <span
                               className={cn(
@@ -663,6 +693,79 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                 </div>
               )}
             </section>
+
+            {/* Team Member At */}
+            {user.companyMemberships.length > 0 && (
+              <section>
+                <div className="flex items-center gap-3 mb-4">
+                  <Users className="h-5 w-5 text-violet-500" />
+                  <h2 className="text-xl font-semibold text-white">Team Member At</h2>
+                  <span className="text-sm text-zinc-500">({user.companyMemberships.length})</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {user.companyMemberships.map((membership) => (
+                    <Link
+                      key={membership.id}
+                      href={`/companies/${membership.company.slug || membership.company.id}`}
+                      className="block rounded-xl border border-white/10 bg-zinc-900/50 p-4 hover:border-violet-500/30 hover:bg-zinc-900/70 transition-all group"
+                    >
+                      <div className="flex items-start gap-3">
+                        {/* Logo */}
+                        <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-xl bg-zinc-800/50 border border-white/10">
+                          {membership.company.logo ? (
+                            <Image
+                              src={membership.company.logo}
+                              alt={membership.company.name}
+                              fill
+                              className="object-cover"
+                            />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center">
+                              <Building2 className="h-5 w-5 text-zinc-600" />
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Content */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold text-white group-hover:text-violet-400 transition-colors truncate">
+                              {membership.company.name}
+                            </h3>
+                            <span className={cn(
+                              "inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium border",
+                              getMemberRoleColor(membership.role)
+                            )}>
+                              {getMemberRoleLabel(membership.role)}
+                            </span>
+                          </div>
+                          <div className="mt-1 flex flex-wrap items-center gap-2">
+                            <span
+                              className={cn(
+                                "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium border",
+                                getCategoryColor(membership.company.category)
+                              )}
+                            >
+                              {getCategoryLabel(membership.company.category)}
+                            </span>
+                            {membership.company.location && (
+                              <span className="text-xs text-zinc-500 flex items-center gap-1">
+                                <MapPin className="h-3 w-3" />
+                                {membership.company.location}
+                              </span>
+                            )}
+                          </div>
+                          <div className="mt-2 text-xs text-zinc-500">
+                            {membership.company._count.projects} project{membership.company._count.projects !== 1 ? "s" : ""}
+                          </div>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            )}
 
             {/* Daily Updates */}
             <section id="daily-updates" className="scroll-mt-24">
