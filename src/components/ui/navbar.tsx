@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { UserMenu } from "@/components/auth/user-menu";
 import { NotificationDropdown } from "@/components/notifications";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { SearchCommand } from "@/components/ui/search-command";
 import { Plus, Rocket, ChevronDown, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -43,17 +44,22 @@ export function Navbar() {
         borderBottom: "1px solid var(--navbar-border)"
       }}
     >
-      <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link href="/" className="flex items-center gap-2 group">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 shadow-lg shadow-orange-500/25 group-hover:shadow-orange-500/40 transition-shadow">
-            <Rocket className="h-5 w-5 text-white" />
+      <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 gap-4">
+        <div className="flex items-center gap-4 min-w-0">
+          <Link href="/" className="flex items-center gap-2 group flex-shrink-0">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 shadow-lg shadow-orange-500/25 group-hover:shadow-orange-500/40 transition-shadow">
+              <Rocket className="h-5 w-5 text-white" />
+            </div>
+            <span className="text-xl font-bold" style={{ color: "var(--foreground)" }}>
+              Builders<span className="text-orange-500">.to</span>
+            </span>
+          </Link>
+          <div className="hidden sm:block">
+            <SearchCommand inline />
           </div>
-          <span className="text-xl font-bold" style={{ color: "var(--foreground)" }}>
-            Builders<span className="text-orange-500">.to</span>
-          </span>
-        </Link>
+        </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 flex-shrink-0">
           {/* Navigation links */}
           <Link
             href="/feed"
@@ -69,14 +75,6 @@ export function Navbar() {
           >
             Projects
           </Link>
-          <Link
-            href="/companies"
-            className="hidden text-sm font-medium transition-colors sm:block"
-            style={{ color: "var(--foreground-muted)" }}
-          >
-            Companies
-          </Link>
-
           {/* Theme Toggle */}
           <ThemeToggle />
 

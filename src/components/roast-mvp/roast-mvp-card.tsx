@@ -137,7 +137,7 @@ export function RoastMVPCard({ userProjects = [], isAuthenticated = false }: Roa
     : "";
 
   return (
-    <div className="rounded-xl border border-zinc-800/50 bg-zinc-900/50 backdrop-blur-sm overflow-hidden">
+    <div className="rounded-xl border border-zinc-800/50 bg-zinc-900/50 backdrop-blur-sm overflow-hidden relative">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800/50 bg-zinc-900/80">
         <div className="flex items-center gap-2">
@@ -147,7 +147,7 @@ export function RoastMVPCard({ userProjects = [], isAuthenticated = false }: Roa
             <p className="text-[10px] text-zinc-500">Featured this week</p>
           </div>
         </div>
-        <div className="relative" ref={panelRef}>
+        <div>
           {isAuthenticated ? (
             <button
               onClick={() => setShowSubmitPanel(!showSubmitPanel)}
@@ -164,85 +164,89 @@ export function RoastMVPCard({ userProjects = [], isAuthenticated = false }: Roa
               Submit yours →
             </Link>
           )}
-
-          {/* Submit Panel */}
-          {showSubmitPanel && (
-            <div className="absolute right-0 top-full mt-2 w-72 rounded-xl border border-zinc-700/50 bg-zinc-900 shadow-2xl shadow-black/50 z-50">
-              <div className="p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-semibold text-white">Submit for featuring</h3>
-                  <button
-                    onClick={() => setShowSubmitPanel(false)}
-                    className="text-zinc-500 hover:text-white transition-colors"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-
-                <p className="text-xs text-zinc-400 mb-4">
-                  Get your MVP featured for 7 days. <span className="text-orange-400 font-medium">$20</span>
-                </p>
-
-                {userProjects.length > 0 ? (
-                  <>
-                    <div className="space-y-2 max-h-40 overflow-y-auto mb-4">
-                      {userProjects.map((project) => (
-                        <button
-                          key={project.id}
-                          onClick={() => setSelectedProject(project.id)}
-                          className={cn(
-                            "w-full text-left px-3 py-2 rounded-lg text-sm transition-colors",
-                            selectedProject === project.id
-                              ? "bg-orange-500/20 text-orange-400 border border-orange-500/30"
-                              : "hover:bg-zinc-800 text-zinc-300 border border-transparent"
-                          )}
-                        >
-                          {project.title}
-                        </button>
-                      ))}
-                    </div>
-
-                    <button
-                      onClick={handleSubmitForRoast}
-                      disabled={!selectedProject || submitting}
-                      className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white rounded-lg bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {submitting ? (
-                        <>
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          Processing...
-                        </>
-                      ) : (
-                        <>
-                          <Sparkles className="h-4 w-4" />
-                          Pay $20 & Submit
-                        </>
-                      )}
-                    </button>
-                  </>
-                ) : (
-                  <div className="text-center py-2">
-                    <p className="text-xs text-zinc-500 mb-3">You need to create a project first</p>
-                    <Link
-                      href="/projects/new"
-                      className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-orange-400 rounded-lg border border-orange-500/30 hover:bg-orange-500/10 transition-colors"
-                    >
-                      Create Project
-                      <ChevronRight className="h-3 w-3" />
-                    </Link>
-                  </div>
-                )}
-
-                {data && data.queueCount > 0 && (
-                  <p className="text-[10px] text-zinc-500 mt-3 text-center">
-                    {data.queueCount} project{data.queueCount !== 1 ? "s" : ""} currently in queue
-                  </p>
-                )}
-              </div>
-            </div>
-          )}
         </div>
       </div>
+
+      {/* Submit Panel - Overlay inside card */}
+      {showSubmitPanel && (
+        <div 
+          className="absolute inset-0 z-20 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+          ref={panelRef}
+        >
+          <div className="w-full max-w-xs bg-zinc-900 border border-zinc-700/50 rounded-xl p-4 shadow-2xl">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-white">Submit for featuring</h3>
+              <button
+                onClick={() => setShowSubmitPanel(false)}
+                className="text-zinc-500 hover:text-white transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <p className="text-xs text-zinc-400 mb-4">
+              Get your MVP featured for 7 days. <span className="text-orange-400 font-medium">$20</span>
+            </p>
+
+            {userProjects.length > 0 ? (
+              <>
+                <div className="space-y-2 max-h-40 overflow-y-auto mb-4">
+                  {userProjects.map((project) => (
+                    <button
+                      key={project.id}
+                      onClick={() => setSelectedProject(project.id)}
+                      className={cn(
+                        "w-full text-left px-3 py-2 rounded-lg text-sm transition-colors",
+                        selectedProject === project.id
+                          ? "bg-orange-500/20 text-orange-400 border border-orange-500/30"
+                          : "hover:bg-zinc-800 text-zinc-300 border border-transparent"
+                      )}
+                    >
+                      {project.title}
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  onClick={handleSubmitForRoast}
+                  disabled={!selectedProject || submitting}
+                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white rounded-lg bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {submitting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-4 w-4" />
+                      Pay $20 & Submit
+                    </>
+                  )}
+                </button>
+              </>
+            ) : (
+              <div className="text-center py-2">
+                <p className="text-xs text-zinc-500 mb-3">You need to create a project first</p>
+                <Link
+                  href="/projects/new"
+                  className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-orange-400 rounded-lg border border-orange-500/30 hover:bg-orange-500/10 transition-colors"
+                >
+                  Create Project
+                  <ChevronRight className="h-3 w-3" />
+                </Link>
+              </div>
+            )}
+
+            {data && data.queueCount > 0 && (
+              <p className="text-[10px] text-zinc-500 mt-3 text-center">
+                {data.queueCount} project{data.queueCount !== 1 ? "s" : ""} currently in queue
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
 
       {/* Content */}
       {loading ? (
