@@ -15,6 +15,7 @@ const XIcon = ({ className }: { className?: string }) => (
 interface UpdateActionsProps {
   updateId: string;
   userSlug: string;
+  content: string;
   isLiked: boolean;
   likesCount: number;
   currentUserId?: string;
@@ -24,6 +25,7 @@ interface UpdateActionsProps {
 export function UpdateActions({
   updateId,
   userSlug,
+  content,
   isLiked: initialIsLiked,
   likesCount: initialLikesCount,
   currentUserId,
@@ -102,7 +104,16 @@ export function UpdateActions({
 
   function handleShareToX() {
     const url = `${window.location.origin}/${userSlug}/updates/${updateId}`;
-    const shareUrl = `https://x.com/intent/tweet?url=${encodeURIComponent(url)}`;
+
+    // Twitter has 280 char limit, URL takes ~23 chars (t.co shortening)
+    // Leave room for the URL + some spacing
+    const maxContentLength = 250;
+    const tweetContent = content.length > maxContentLength
+      ? content.slice(0, maxContentLength).trim() + "..."
+      : content;
+
+    // Create the X share URL with the update content and link
+    const shareUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(tweetContent)}&url=${encodeURIComponent(url)}`;
     window.open(shareUrl, "_blank", "width=550,height=420");
   }
 

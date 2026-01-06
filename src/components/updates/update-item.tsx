@@ -190,8 +190,15 @@ export function UpdateItem({ update, currentUserId, showAuthor = true }: UpdateI
     const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
     const shareableUrl = updateUrl ? `${baseUrl}${updateUrl}` : baseUrl;
 
-    // Create the X share URL with just the link (let Twitter unfurl the OG image)
-    const shareUrl = `https://x.com/intent/tweet?url=${encodeURIComponent(shareableUrl)}`;
+    // Twitter has 280 char limit, URL takes ~23 chars (t.co shortening)
+    // Leave room for the URL + some spacing
+    const maxContentLength = 250;
+    const tweetContent = update.content.length > maxContentLength
+      ? update.content.slice(0, maxContentLength).trim() + "..."
+      : update.content;
+
+    // Create the X share URL with the update content and link
+    const shareUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(tweetContent)}&url=${encodeURIComponent(shareableUrl)}`;
 
     // Open in new window
     window.open(shareUrl, "_blank", "width=550,height=420");

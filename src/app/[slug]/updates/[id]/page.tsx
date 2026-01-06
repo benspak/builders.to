@@ -227,6 +227,7 @@ export default async function UpdatePage({ params }: UpdatePageProps) {
             <UpdateActions
               updateId={update.id}
               userSlug={slug}
+              content={update.content}
               isLiked={isLiked}
               likesCount={update._count.likes}
               currentUserId={session?.user?.id}
