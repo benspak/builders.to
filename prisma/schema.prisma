@@ -118,7 +118,7 @@ model User {
   advertisements       Advertisement[]
 
   // Stripe Connect for Services Marketplace
-  stripeConnectId        String?   @unique  // Stripe Connect account ID
+  stripeConnectId        String?   // Stripe Connect account ID
   stripeConnectOnboarded Boolean   @default(false)
 
   // Services Marketplace
@@ -126,6 +126,7 @@ model User {
   serviceOrders          ServiceOrder[]    @relation("ServiceBuyer")
 
   @@index([slug])
+  @@index([stripeConnectId])
 }
 
 model Project {
