@@ -22,7 +22,7 @@ import type { ServiceCategory } from "@prisma/client";
 import { PurchaseButton } from "@/components/services/purchase-button";
 
 interface ServicePageProps {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ id: string }>;
 }
 
 const categoryLabels: Record<ServiceCategory, string> = {
@@ -46,11 +46,11 @@ const categoryColors: Record<ServiceCategory, string> = {
 };
 
 export async function generateMetadata({ params }: ServicePageProps): Promise<Metadata> {
-  const { slug } = await params;
+  const { id } = await params;
 
   const service = await prisma.serviceListing.findFirst({
     where: {
-      OR: [{ slug }, { id: slug }],
+      OR: [{ slug: id }, { id }],
     },
     select: {
       title: true,
@@ -74,12 +74,12 @@ export async function generateMetadata({ params }: ServicePageProps): Promise<Me
 }
 
 export default async function ServicePage({ params }: ServicePageProps) {
-  const { slug } = await params;
+  const { id } = await params;
   const session = await auth();
 
   const service = await prisma.serviceListing.findFirst({
     where: {
-      OR: [{ slug }, { id: slug }],
+      OR: [{ slug: id }, { id }],
     },
     include: {
       user: {
