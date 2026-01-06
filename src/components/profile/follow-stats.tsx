@@ -111,7 +111,7 @@ export function FollowStats({
                   {users.map((user) => (
                     <Link
                       key={user.id}
-                      href={user.slug ? `/profile/${user.slug}` : "#"}
+                      href={user.slug ? `/${user.slug}` : "#"}
                       onClick={closeModal}
                       className="flex items-center gap-3 p-4 hover:bg-zinc-800/50 transition-colors"
                     >

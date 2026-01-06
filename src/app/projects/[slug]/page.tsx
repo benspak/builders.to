@@ -167,7 +167,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                 {/* Author */}
                 {project.user.slug ? (
                   <Link
-                    href={`/profile/${project.user.slug}`}
+                    href={`/${project.user.slug}`}
                     className="flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors"
                   >
                     {project.user.image ? (
@@ -227,7 +227,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                       return cb.user.slug ? (
                         <Link
                           key={cb.user.id}
-                          href={`/profile/${cb.user.slug}`}
+                          href={`/${cb.user.slug}`}
                           className="inline-flex items-center gap-1.5 rounded-full bg-zinc-800/50 border border-zinc-700/50 px-2.5 py-1 text-sm text-zinc-300 hover:text-white hover:border-zinc-600 transition-colors"
                         >
                           {cb.user.image ? (

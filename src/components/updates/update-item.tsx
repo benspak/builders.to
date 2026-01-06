@@ -4,9 +4,11 @@ import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { User, Trash2, Loader2, MoreHorizontal, Heart, MessageCircle } from "lucide-react";
+import { User, Trash2, Loader2, MoreHorizontal, Heart, MessageCircle, ExternalLink } from "lucide-react";
 import { formatRelativeTime, cn, MENTION_REGEX } from "@/lib/utils";
 import { UpdateComments } from "./update-comments";
+
+const FEED_TRUNCATE_LENGTH = 500;
 
 // Component to render content with clickable @mentions
 function ContentWithMentions({ content }: { content: string }) {
@@ -54,7 +56,7 @@ function ContentWithMentions({ content }: { content: string }) {
           return (
             <Link
               key={index}
-              href={`/profile/${part.value}`}
+              href={`/${part.value}`}
               className="text-orange-400 hover:text-orange-300 hover:underline transition-colors font-medium"
               onClick={(e) => e.stopPropagation()}
             >
@@ -113,6 +115,15 @@ export function UpdateItem({ update, currentUserId, showAuthor = true }: UpdateI
     || (update.user.firstName && update.user.lastName ? `${update.user.firstName} ${update.user.lastName}` : null)
     || update.user.name
     || "Builder";
+
+  // Truncate content for feed display
+  const isTruncated = update.content.length > FEED_TRUNCATE_LENGTH;
+  const displayContent = isTruncated
+    ? update.content.slice(0, FEED_TRUNCATE_LENGTH)
+    : update.content;
+
+  // Build the update URL for linking
+  const updateUrl = update.user.slug ? `/${update.user.slug}/updates/${update.id}` : null;
 
   async function handleDelete() {
     if (!confirm("Are you sure you want to delete this update?")) return;
@@ -175,15 +186,12 @@ export function UpdateItem({ update, currentUserId, showAuthor = true }: UpdateI
   }
 
   function handleShareToX() {
-    // Build the share URL
+    // Build the share URL - use the unique update URL
     const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
-    const profileUrl = update.user.slug ? `${baseUrl}/profile/${update.user.slug}` : baseUrl;
+    const shareableUrl = updateUrl ? `${baseUrl}${updateUrl}` : baseUrl;
 
-    // Construct the tweet text
-    const tweetText = `${update.content.slice(0, 200)}${update.content.length > 200 ? "..." : ""}\n\n${profileUrl}`;
-
-    // Create the X share URL
-    const shareUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
+    // Create the X share URL with just the link (let Twitter unfurl the OG image)
+    const shareUrl = `https://x.com/intent/tweet?url=${encodeURIComponent(shareableUrl)}`;
 
     // Open in new window
     window.open(shareUrl, "_blank", "width=550,height=420");
@@ -202,7 +210,7 @@ export function UpdateItem({ update, currentUserId, showAuthor = true }: UpdateI
         <div className="flex-1 pb-6">
           {showAuthor && (
             <div className="flex items-center gap-3 mb-2">
-              <Link href={update.user.slug ? `/profile/${update.user.slug}` : "#"} className="flex-shrink-0">
+              <Link href={update.user.slug ? `/${update.user.slug}` : "#"} className="flex-shrink-0">
                 {update.user.image ? (
                   <Image
                     src={update.user.image}
@@ -219,7 +227,7 @@ export function UpdateItem({ update, currentUserId, showAuthor = true }: UpdateI
               </Link>
               <div className="flex-1 min-w-0">
                 <Link
-                  href={update.user.slug ? `/profile/${update.user.slug}` : "#"}
+                  href={update.user.slug ? `/${update.user.slug}` : "#"}
                   className="text-sm font-medium text-white hover:text-orange-400 transition-colors"
                 >
                   {displayName}
@@ -245,9 +253,24 @@ export function UpdateItem({ update, currentUserId, showAuthor = true }: UpdateI
             )}
 
             <div className="p-4">
-              <p className="text-zinc-300 whitespace-pre-wrap text-sm leading-relaxed">
-                <ContentWithMentions content={update.content} />
-              </p>
+              <div className="text-zinc-300 whitespace-pre-wrap text-sm leading-relaxed">
+                <ContentWithMentions content={displayContent} />
+                {isTruncated && (
+                  <>
+                    <span className="text-zinc-500">...</span>
+                    {updateUrl && (
+                      <Link
+                        href={updateUrl}
+                        className="inline-flex items-center gap-1 ml-2 text-orange-400 hover:text-orange-300 transition-colors font-medium"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        Read more
+                        <ExternalLink className="h-3 w-3" />
+                      </Link>
+                    )}
+                  </>
+                )}
+              </div>
               <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/5">
                 <div className="flex items-center gap-4">
                   {/* Like button */}

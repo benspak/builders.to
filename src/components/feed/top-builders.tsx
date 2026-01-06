@@ -81,7 +81,7 @@ export function TopBuilders({ builders }: TopBuildersProps) {
       <div className="divide-y divide-zinc-800/30">
         {builders.map((builder, index) => {
           const styles = getRankStyles(index);
-          const profileUrl = builder.slug ? `/profile/${builder.slug}` : null;
+          const profileUrl = builder.slug ? `/${builder.slug}` : null;
 
           const content = (
             <>

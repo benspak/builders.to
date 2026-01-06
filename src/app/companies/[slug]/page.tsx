@@ -279,7 +279,7 @@ export default async function CompanyPage({ params }: CompanyPageProps) {
                 <span className="text-sm text-zinc-500">Created by </span>
                 {company.user.slug ? (
                   <Link
-                    href={`/profile/${company.user.slug}`}
+                    href={`/${company.user.slug}`}
                     className="inline-flex items-center gap-2 text-sm text-zinc-300 hover:text-white transition-colors"
                   >
                     {company.user.image ? (
