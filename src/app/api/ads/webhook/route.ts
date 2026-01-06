@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
-import { getStripe, SIDEBAR_AD_DURATION_DAYS } from "@/lib/stripe";
+import { getStripe, SIDEBAR_AD_DURATION_DAYS, SERVICE_LISTING_DURATION_DAYS } from "@/lib/stripe";
 import Stripe from "stripe";
 
 // POST /api/ads/webhook - Handle Stripe webhook events for ads
@@ -39,48 +39,115 @@ export async function POST(request: Request) {
     );
   }
 
-  // Handle the checkout.session.completed event for ads
+  // Handle the checkout.session.completed event
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
+    const paymentType = session.metadata?.type;
 
-    // Only process sidebar_ad payments
-    if (session.metadata?.type !== "sidebar_ad") {
-      return NextResponse.json({ received: true });
+    // Handle sidebar_ad payments
+    if (paymentType === "sidebar_ad") {
+      const adId = session.metadata?.adId;
+
+      if (!adId) {
+        console.error("No adId in session metadata");
+        return NextResponse.json(
+          { error: "Missing adId in metadata" },
+          { status: 400 }
+        );
+      }
+
+      try {
+        const startDate = new Date();
+        const endDate = new Date();
+        endDate.setDate(endDate.getDate() + SIDEBAR_AD_DURATION_DAYS);
+
+        await prisma.advertisement.update({
+          where: { id: adId },
+          data: {
+            status: "ACTIVE",
+            stripePaymentId: session.payment_intent as string,
+            amountPaid: session.amount_total || 5000,
+            startDate,
+            endDate,
+          },
+        });
+
+        console.log(`[Webhook] Ad ${adId} activated successfully`);
+      } catch (error) {
+        console.error("Error activating ad:", error);
+        return NextResponse.json(
+          { error: "Failed to activate ad" },
+          { status: 500 }
+        );
+      }
     }
 
-    const adId = session.metadata.adId;
+    // Handle service_listing payments (listing fee)
+    if (paymentType === "service_listing") {
+      const serviceId = session.metadata?.serviceId;
 
-    if (!adId) {
-      console.error("No adId in session metadata");
-      return NextResponse.json(
-        { error: "Missing adId in metadata" },
-        { status: 400 }
-      );
+      if (!serviceId) {
+        console.error("No serviceId in session metadata");
+        return NextResponse.json(
+          { error: "Missing serviceId in metadata" },
+          { status: 400 }
+        );
+      }
+
+      try {
+        const now = new Date();
+        const expiresAt = new Date(now);
+        expiresAt.setDate(expiresAt.getDate() + SERVICE_LISTING_DURATION_DAYS);
+
+        await prisma.serviceListing.update({
+          where: { id: serviceId },
+          data: {
+            status: "ACTIVE",
+            activatedAt: now,
+            expiresAt: expiresAt,
+          },
+        });
+
+        console.log(`[Webhook] Service listing ${serviceId} activated successfully`);
+      } catch (error) {
+        console.error("Error activating service listing:", error);
+        return NextResponse.json(
+          { error: "Failed to activate service listing" },
+          { status: 500 }
+        );
+      }
     }
 
-    try {
-      const startDate = new Date();
-      const endDate = new Date();
-      endDate.setDate(endDate.getDate() + SIDEBAR_AD_DURATION_DAYS);
+    // Handle service_purchase payments (when someone buys a service)
+    if (paymentType === "service_purchase") {
+      const orderId = session.metadata?.orderId;
 
-      await prisma.advertisement.update({
-        where: { id: adId },
-        data: {
-          status: "ACTIVE",
-          stripePaymentId: session.payment_intent as string,
-          amountPaid: session.amount_total || 5000,
-          startDate,
-          endDate,
-        },
-      });
+      if (!orderId) {
+        console.error("No orderId in session metadata");
+        return NextResponse.json(
+          { error: "Missing orderId in metadata" },
+          { status: 400 }
+        );
+      }
 
-      console.log(`Ad ${adId} activated successfully`);
-    } catch (error) {
-      console.error("Error activating ad:", error);
-      return NextResponse.json(
-        { error: "Failed to activate ad" },
-        { status: 500 }
-      );
+      try {
+        await prisma.serviceOrder.update({
+          where: { id: orderId },
+          data: {
+            status: "PENDING_ACCEPTANCE",
+            stripeSessionId: session.id,
+            stripePaymentIntent: session.payment_intent as string,
+          },
+        });
+
+        console.log(`[Webhook] Service order ${orderId} payment received`);
+      } catch (error) {
+        console.error("Error updating service order:", error);
+        return NextResponse.json(
+          { error: "Failed to update service order" },
+          { status: 500 }
+        );
+      }
     }
   }
 

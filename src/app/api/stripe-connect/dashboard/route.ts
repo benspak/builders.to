@@ -46,7 +46,8 @@ export async function GET() {
 
     const url = await getSellerDashboardLink(user.stripeConnectId);
 
-    return NextResponse.json({ url });
+    // Redirect directly to the Stripe dashboard
+    return NextResponse.redirect(url);
   } catch (error) {
     console.error("Error getting Stripe dashboard link:", error);
     return NextResponse.json(
