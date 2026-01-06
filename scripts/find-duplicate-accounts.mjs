@@ -2,10 +2,10 @@
  * Script to find and investigate duplicate user accounts
  *
  * Usage:
- *   npx ts-node scripts/find-duplicate-accounts.ts your-email@example.com
+ *   node scripts/find-duplicate-accounts.mjs your-email@example.com
  *
  * Or to merge accounts (keeps the older account):
- *   npx ts-node scripts/find-duplicate-accounts.ts your-email@example.com --merge
+ *   node scripts/find-duplicate-accounts.mjs your-email@example.com --merge
  */
 
 import { PrismaClient } from '@prisma/client';
@@ -18,7 +18,7 @@ async function main() {
 
   if (!email) {
     console.error('❌ Please provide an email address as an argument');
-    console.log('   Usage: npx ts-node scripts/find-duplicate-accounts.ts your-email@example.com');
+    console.log('   Usage: node scripts/find-duplicate-accounts.mjs your-email@example.com');
     process.exit(1);
   }
 
@@ -89,7 +89,7 @@ async function main() {
       await mergeAccounts(usersWithEmail);
     } else {
       console.log('   To merge these accounts (keeping the oldest one), run:');
-      console.log(`   npx ts-node scripts/find-duplicate-accounts.ts ${email} --merge\n`);
+      console.log(`   node scripts/find-duplicate-accounts.mjs ${email} --merge\n`);
     }
   } else {
     console.log('ℹ️  This email is already associated with the account shown above.');
@@ -126,7 +126,7 @@ async function main() {
   }
 }
 
-async function mergeAccounts(users: any[]) {
+async function mergeAccounts(users) {
   // Keep the oldest account (first one since we ordered by createdAt asc)
   const keepAccount = users[0];
   const deleteAccounts = users.slice(1);
