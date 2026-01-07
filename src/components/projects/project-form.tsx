@@ -54,6 +54,12 @@ interface ProjectFormProps {
     }[];
   };
   initialCompanyId?: string;
+  githubPrefill?: {
+    title: string;
+    tagline: string;
+    githubUrl: string;
+    url: string;
+  };
 }
 
 // Project lifecycle states - from idea to exit
@@ -66,7 +72,7 @@ const statuses = [
   { value: "ACQUIRED", label: "🏆 Acquired", description: "Successfully exited" },
 ];
 
-export function ProjectForm({ initialData, initialCompanyId }: ProjectFormProps) {
+export function ProjectForm({ initialData, initialCompanyId, githubPrefill }: ProjectFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -74,14 +80,14 @@ export function ProjectForm({ initialData, initialCompanyId }: ProjectFormProps)
   const [loadingCompanies, setLoadingCompanies] = useState(true);
 
   const [formData, setFormData] = useState({
-    title: initialData?.title || "",
+    title: initialData?.title || githubPrefill?.title || "",
     slug: initialData?.slug || "",
-    tagline: initialData?.tagline || "",
+    tagline: initialData?.tagline || githubPrefill?.tagline || "",
     description: initialData?.description || "",
-    url: initialData?.url || "",
-    githubUrl: initialData?.githubUrl || "",
+    url: initialData?.url || githubPrefill?.url || "",
+    githubUrl: initialData?.githubUrl || githubPrefill?.githubUrl || "",
     imageUrl: initialData?.imageUrl || "",
-    status: initialData?.status || "IDEA",
+    status: initialData?.status || "BUILDING",
     companyId: initialData?.companyId || initialCompanyId || "",
     // Artifact fields
     demoUrl: initialData?.demoUrl || "",
@@ -132,6 +138,21 @@ export function ProjectForm({ initialData, initialCompanyId }: ProjectFormProps)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Client-side validation
+    if (!formData.title.trim()) {
+      setError("Project Name is required");
+      return;
+    }
+    if (!formData.tagline.trim()) {
+      setError("Tagline is required");
+      return;
+    }
+    if (!isEditing && !formData.slug.trim()) {
+      setError("URL Slug is required");
+      return;
+    }
+    
     setLoading(true);
     setError("");
 
@@ -193,6 +214,11 @@ export function ProjectForm({ initialData, initialCompanyId }: ProjectFormProps)
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
+      {/* Required fields note */}
+      <p className="text-sm text-zinc-500">
+        Fields marked with <span className="text-red-400">*</span> are required
+      </p>
+      
       {error && (
         <div className="rounded-xl bg-red-500/10 border border-red-500/20 px-4 py-3 text-sm text-red-400">
           {error}

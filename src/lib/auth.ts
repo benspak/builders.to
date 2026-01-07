@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import Twitter from "next-auth/providers/twitter";
+import GitHub from "next-auth/providers/github";
 import { prisma } from "@/lib/prisma";
 
 // Store for temporarily holding username during OAuth flow
@@ -51,6 +52,30 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         };
       },
     }),
+    GitHub({
+      clientId: process.env.GITHUB_CLIENT_ID!,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+      authorization: {
+        params: {
+          scope: "read:user user:email repo",
+        },
+      },
+      profile(profile) {
+        const githubId = String(profile.id);
+        const username = profile.login;
+
+        if (username) {
+          pendingUsernames.set(githubId, username);
+        }
+
+        return {
+          id: githubId,
+          name: profile.name || profile.login,
+          email: profile.email,
+          image: profile.avatar_url,
+        };
+      },
+    }),
   ],
   callbacks: {
     jwt({ token, user }) {
@@ -67,20 +92,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
   },
   events: {
-    // When a new user is created, set their slug and username from their X handle
+    // When a new user is created, set their slug and username from their OAuth handle
     async createUser({ user }) {
       if (user.id) {
-        // Get the linked Twitter account to find the provider account ID
+        // Try to get linked account (Twitter or GitHub)
         const account = await prisma.account.findFirst({
-          where: {
-            userId: user.id,
-            provider: "twitter",
-          },
-          select: { providerAccountId: true },
+          where: { userId: user.id },
+          select: { providerAccountId: true, provider: true },
         });
 
         // Get username from our temporary store
-        const twitterUsername = account?.providerAccountId
+        const oauthUsername = account?.providerAccountId
           ? pendingUsernames.get(account.providerAccountId)
           : null;
 
@@ -89,22 +111,27 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           pendingUsernames.delete(account.providerAccountId);
         }
 
-        // Use Twitter username for slug, fall back to name
-        const baseName = twitterUsername || user.name || user.id;
+        // Use OAuth username for slug, fall back to name
+        const baseName = oauthUsername || user.name || user.id;
 
         // Generate unique slug from username
         const slug = await getUniqueSlug(baseName);
 
-        // Update user with username, slug, and auto-set Twitter URL
+        // Update user with username, slug, and auto-set social URL
         await prisma.user.update({
           where: { id: user.id },
           data: {
             slug,
-            username: twitterUsername,
-            // Set twitterUrl automatically if we have username
-            ...(twitterUsername && {
-              twitterUrl: `https://x.com/${twitterUsername}`,
-            }),
+            username: oauthUsername,
+            // Set social URL automatically based on provider
+            ...(oauthUsername &&
+              account?.provider === "twitter" && {
+                twitterUrl: `https://x.com/${oauthUsername}`,
+              }),
+            ...(oauthUsername &&
+              account?.provider === "github" && {
+                githubUrl: `https://github.com/${oauthUsername}`,
+              }),
           },
         });
       }

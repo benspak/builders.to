@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { Plus, Loader2 } from "lucide-react";
+import { Plus, Loader2, Github } from "lucide-react";
 import { ProjectFilters } from "@/components/projects/project-filters";
 import { ProjectGrid } from "@/components/projects/project-grid";
 import { RoastMVPCard } from "@/components/roast-mvp/roast-mvp-card";
@@ -48,10 +48,19 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
           </p>
         </div>
         {session ? (
-          <Link href="/projects/new" className="btn-primary">
-            <Plus className="h-4 w-4" />
-            Share Project
-          </Link>
+          <div className="flex gap-3">
+            <Link
+              href="/projects/import"
+              className="inline-flex items-center gap-2 rounded-xl border border-zinc-700 px-4 py-2 font-medium text-zinc-300 transition-colors hover:bg-zinc-800"
+            >
+              <Github className="h-4 w-4" />
+              Import
+            </Link>
+            <Link href="/projects/new" className="btn-primary">
+              <Plus className="h-4 w-4" />
+              Share Project
+            </Link>
+          </div>
         ) : (
           <Link href="/signin?callbackUrl=/projects/new" className="btn-primary">
             <Plus className="h-4 w-4" />

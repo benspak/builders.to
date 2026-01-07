@@ -59,6 +59,10 @@ NEXTAUTH_URL="http://localhost:3000"
 # Twitter/X OAuth (https://developer.twitter.com/en/portal/dashboard)
 TWITTER_CLIENT_ID=""
 TWITTER_CLIENT_SECRET=""
+
+# GitHub OAuth (https://github.com/settings/developers)
+GITHUB_CLIENT_ID=""
+GITHUB_CLIENT_SECRET=""
 ```
 
 ### 3. Set Up Database
@@ -84,6 +88,15 @@ Open [http://localhost:3000](http://localhost:3000) to see the app.
 3. Enable OAuth 2.0 with:
    - Type: Web App
    - Callback URL: `http://localhost:3000/api/auth/callback/twitter`
+4. Copy Client ID and Client Secret to `.env`
+
+### GitHub
+
+1. Go to [GitHub Developer Settings](https://github.com/settings/developers)
+2. Click "New OAuth App"
+3. Set:
+   - Homepage URL: `http://localhost:3000`
+   - Callback URL: `http://localhost:3000/api/auth/callback/github`
 4. Copy Client ID and Client Secret to `.env`
 
 ## Project Structure
