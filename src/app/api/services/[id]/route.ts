@@ -280,6 +280,16 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       );
     }
 
+    // Delete related records first (portfolio projects)
+    await prisma.servicePortfolio.deleteMany({
+      where: { serviceId: id },
+    });
+
+    // Delete any completed/cancelled orders (non-active orders)
+    await prisma.serviceOrder.deleteMany({
+      where: { serviceId: id },
+    });
+
     await prisma.serviceListing.delete({
       where: { id },
     });

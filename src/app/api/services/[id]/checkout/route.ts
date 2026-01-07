@@ -42,8 +42,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // Only allow checkout for DRAFT or EXPIRED listings
-    if (!["DRAFT", "EXPIRED"].includes(service.status)) {
+    // Only allow checkout for DRAFT, EXPIRED, or PENDING_PAYMENT (retry) listings
+    if (!["DRAFT", "EXPIRED", "PENDING_PAYMENT"].includes(service.status)) {
       return NextResponse.json(
         { error: `Cannot checkout for ${service.status} listing` },
         { status: 400 }
