@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 import {
   Github,
   Star,
@@ -126,15 +127,34 @@ export function GitHubReposList() {
   }
 
   if (error) {
+    const isNoAccount = error.toLowerCase().includes("no github account linked");
+
     return (
-      <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-6 text-center">
-        <p className="text-red-400">{error}</p>
-        <button
-          onClick={fetchRepos}
-          className="mt-4 text-sm text-zinc-400 hover:text-white"
-        >
-          Try again
-        </button>
+      <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-8 text-center">
+        <div className="mb-4 flex justify-center">
+          <div className="rounded-full bg-red-500/20 p-3">
+            <Github className="h-8 w-8 text-red-400" />
+          </div>
+        </div>
+        <p className="text-red-400 font-medium mb-6">{error}</p>
+        <div className="flex flex-col items-center gap-3">
+          {isNoAccount ? (
+            <button
+              onClick={() => signIn("github", { callbackUrl: window.location.href })}
+              className="flex items-center gap-2 rounded-xl bg-white px-6 py-2.5 text-sm font-bold text-black transition-all hover:bg-zinc-200 active:scale-95"
+            >
+              <Github className="h-4 w-4" />
+              Connect GitHub Account
+            </button>
+          ) : (
+            <button
+              onClick={fetchRepos}
+              className="rounded-xl bg-zinc-800 px-6 py-2.5 text-sm font-semibold text-white transition-all hover:bg-zinc-700 active:scale-95"
+            >
+              Try again
+            </button>
+          )}
+        </div>
       </div>
     );
   }
