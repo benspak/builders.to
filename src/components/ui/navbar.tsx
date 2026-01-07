@@ -76,6 +76,13 @@ export function Navbar() {
             Projects
           </Link>
           <Link
+            href="/companies"
+            className="hidden text-sm font-medium transition-colors sm:block"
+            style={{ color: "var(--foreground-muted)" }}
+          >
+            Companies
+          </Link>
+          <Link
             href="/services"
             className="hidden text-sm font-medium transition-colors sm:block"
             style={{ color: "var(--foreground-muted)" }}
