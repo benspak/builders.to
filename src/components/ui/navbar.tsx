@@ -7,7 +7,7 @@ import { UserMenu } from "@/components/auth/user-menu";
 import { NotificationDropdown } from "@/components/notifications";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { SearchCommand } from "@/components/ui/search-command";
-import { Plus, Rocket, ChevronDown, Sparkles, Store } from "lucide-react";
+import { Plus, Rocket, ChevronDown, Sparkles, Store, Menu, X, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface UserProfile {
@@ -17,6 +17,7 @@ interface UserProfile {
 export function Navbar() {
   const { data: session } = useSession();
   const [shareOpen, setShareOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userSlug, setUserSlug] = useState<string | null>(null);
 
   useEffect(() => {
@@ -44,66 +45,148 @@ export function Navbar() {
         borderBottom: "1px solid var(--navbar-border)"
       }}
     >
-      <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 gap-4">
-        <div className="flex items-center gap-4 min-w-0">
-          <Link href="/" className="flex items-center gap-2 group flex-shrink-0">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 shadow-lg shadow-orange-500/25 group-hover:shadow-orange-500/40 transition-shadow">
-              <Rocket className="h-5 w-5 text-white" />
-            </div>
-            <span className="text-xl font-bold" style={{ color: "var(--foreground)" }}>
-              Builders<span className="text-orange-500">.to</span>
-            </span>
-          </Link>
-          <div className="hidden sm:block">
-            <SearchCommand inline />
+      <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-2 group flex-shrink-0">
+          <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 shadow-lg shadow-orange-500/25 group-hover:shadow-orange-500/40 transition-shadow">
+            <Rocket className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
           </div>
+          <span className="hidden sm:inline text-xl font-bold" style={{ color: "var(--foreground)" }}>
+            Builders<span className="text-orange-500">.to</span>
+          </span>
+        </Link>
+
+        {/* Desktop Search */}
+        <div className="hidden sm:block flex-1 max-w-md mx-4">
+          <SearchCommand inline />
         </div>
 
-        <div className="flex items-center gap-4 flex-shrink-0">
-          {/* Navigation links */}
+        {/* Right side items */}
+        <div className="flex items-center gap-3 sm:gap-4 lg:gap-6">
+          {/* Desktop Navigation links */}
           <Link
             href="/feed"
-            className="hidden text-sm font-medium transition-colors sm:block"
+            className="hidden lg:block text-sm font-medium transition-colors"
             style={{ color: "var(--foreground-muted)" }}
           >
             Feed
           </Link>
           <Link
             href="/dashboard"
-            className="hidden text-sm font-medium transition-colors sm:block"
+            className="hidden lg:block text-sm font-medium transition-colors"
             style={{ color: "var(--foreground-muted)" }}
           >
             Projects
           </Link>
           <Link
             href="/companies"
-            className="hidden text-sm font-medium transition-colors sm:block"
+            className="hidden lg:block text-sm font-medium transition-colors"
             style={{ color: "var(--foreground-muted)" }}
           >
             Companies
           </Link>
           <Link
             href="/services"
-            className="hidden text-sm font-medium transition-colors sm:block"
+            className="hidden lg:block text-sm font-medium transition-colors"
             style={{ color: "var(--foreground-muted)" }}
           >
             Services
           </Link>
+
+          {/* Mobile Search Button */}
+          <div className="sm:hidden">
+            <SearchCommand />
+          </div>
+
           {/* Theme Toggle */}
-          <ThemeToggle />
+          <div className="flex items-center px-1">
+            <ThemeToggle />
+          </div>
+
+          {/* Mobile Menu Button */}
+          <div className="relative lg:hidden">
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="p-2.5 rounded-full transition-colors active:scale-95"
+              style={{ 
+                background: "var(--background-tertiary)",
+                color: "var(--foreground-muted)" 
+              }}
+            >
+              {mobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+            </button>
+
+            {/* Mobile Dropdown Menu */}
+            {mobileMenuOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-10"
+                  onClick={() => setMobileMenuOpen(false)}
+                />
+                <div 
+                  className="absolute right-0 top-full z-20 mt-2 w-48 rounded-xl border p-2 shadow-xl backdrop-blur-xl"
+                  style={{
+                    background: "var(--card-bg)",
+                    borderColor: "var(--card-border)"
+                  }}
+                >
+                  <Link
+                    href="/feed"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-white/5"
+                    style={{ color: "var(--foreground-muted)" }}
+                  >
+                    Feed
+                  </Link>
+                  <Link
+                    href="/dashboard"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-white/5"
+                    style={{ color: "var(--foreground-muted)" }}
+                  >
+                    Projects
+                  </Link>
+                  <Link
+                    href="/companies"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-white/5"
+                    style={{ color: "var(--foreground-muted)" }}
+                  >
+                    Companies
+                  </Link>
+                  <Link
+                    href="/services"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-white/5"
+                    style={{ color: "var(--foreground-muted)" }}
+                  >
+                    Services
+                  </Link>
+                </div>
+              </>
+            )}
+          </div>
 
           {session ? (
             <>
-              {/* Share Dropdown */}
-              <div className="relative">
+              {/* Mobile: Direct link to share project */}
+              <Link
+                href="/projects/new"
+                className="sm:hidden inline-flex items-center justify-center rounded-full bg-gradient-to-r from-orange-500 to-orange-600 p-2.5 text-white transition-all hover:from-orange-600 hover:to-orange-700 active:scale-95 shadow-md shadow-orange-500/25"
+              >
+                <Plus className="h-4 w-4" />
+              </Link>
+
+              {/* Desktop: Share Dropdown */}
+              <div className="relative hidden sm:block">
                 <button
                   onClick={() => setShareOpen(!shareOpen)}
-                  className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 px-4 py-2 text-sm font-semibold text-white transition-all hover:from-orange-600 hover:to-orange-700 hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-orange-500/25"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 px-3 py-1.5 text-sm font-semibold text-white transition-all hover:from-orange-600 hover:to-orange-700 hover:scale-[1.02] active:scale-[0.98] shadow-md shadow-orange-500/25"
                 >
-                  <Plus className="h-4 w-4" />
-                  <span className="hidden sm:inline">Share</span>
+                  <Plus className="h-3.5 w-3.5" />
+                  <span>Share</span>
                   <ChevronDown className={cn(
-                    "h-4 w-4 transition-transform",
+                    "h-3.5 w-3.5 transition-transform",
                     shareOpen && "rotate-180"
                   )} />
                 </button>
@@ -148,7 +231,9 @@ export function Navbar() {
                   </>
                 )}
               </div>
-              <NotificationDropdown />
+              <div className="hidden sm:block">
+                <NotificationDropdown />
+              </div>
               <UserMenu />
             </>
           ) : (

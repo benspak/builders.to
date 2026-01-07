@@ -136,14 +136,17 @@ export function SearchCommand({ inline = false }: SearchCommandProps) {
           </kbd>
         </button>
 
-        {/* Mobile Search Icon */}
+        {/* Mobile Search Icon - Circular */}
         {!inline && (
           <button
             onClick={() => setOpen(true)}
-            className="sm:hidden p-2 rounded-lg transition-colors"
-            style={{ color: "var(--foreground-muted)" }}
+            className="sm:hidden p-2.5 rounded-full transition-colors"
+            style={{ 
+              background: "var(--background-tertiary)",
+              color: "var(--foreground-muted)" 
+            }}
           >
-            <Search className="h-5 w-5" />
+            <Search className="h-4 w-4" />
           </button>
         )}
       </div>
