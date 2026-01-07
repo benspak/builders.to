@@ -49,7 +49,7 @@ function ContentWithMentions({ content }: { content: string }) {
           return (
             <Link
               key={index}
-              href={`/profile/${part.value}`}
+              href={`/${part.value}`}
               className="text-orange-400 hover:text-orange-300 hover:underline transition-colors font-medium"
               onClick={(e) => e.stopPropagation()}
             >
@@ -279,7 +279,7 @@ function CommentItem({ comment, currentUserId, onDelete, onEdit }: CommentItemPr
   return (
     <div className="group flex gap-2">
       {/* Avatar */}
-      <Link href={comment.user.slug ? `/profile/${comment.user.slug}` : "#"} className="flex-shrink-0">
+      <Link href={comment.user.slug ? `/${comment.user.slug}` : "#"} className="flex-shrink-0">
         {comment.user.image ? (
           <Image
             src={comment.user.image}
@@ -300,7 +300,7 @@ function CommentItem({ comment, currentUserId, onDelete, onEdit }: CommentItemPr
         <div className="rounded-lg bg-zinc-800/50 px-3 py-2">
           <div className="flex items-center gap-2 mb-1">
             <Link
-              href={comment.user.slug ? `/profile/${comment.user.slug}` : "#"}
+              href={comment.user.slug ? `/${comment.user.slug}` : "#"}
               className="text-xs font-medium text-white hover:text-orange-400 transition-colors"
             >
               {displayName}

@@ -168,15 +168,15 @@ export function NotificationDropdown() {
     }
     // Link to the liker's profile for update liked notifications
     if (notification.type === "UPDATE_LIKED" && notification.actorSlug) {
-      return `/profile/${notification.actorSlug}`;
+      return `/${notification.actorSlug}`;
     }
-    // Link to the commenter's profile for update commented notifications
-    if (notification.type === "UPDATE_COMMENTED" && notification.actorSlug) {
-      return `/profile/${notification.actorSlug}`;
+    // Link to the update for update commented notifications
+    if (notification.type === "UPDATE_COMMENTED" && notification.update?.user?.slug && notification.update?.id) {
+      return `/${notification.update.user.slug}/updates/${notification.update.id}`;
     }
     // Link to profile for other update notifications (updates are shown on profile)
     if (notification.update?.user?.slug) {
-      return `/profile/${notification.update.user.slug}`;
+      return `/${notification.update.user.slug}`;
     }
     // For mentions, go to the project if available, otherwise the feed
     if (notification.type === "USER_MENTIONED") {
@@ -257,7 +257,7 @@ export function NotificationDropdown() {
                         {notification.actorImage ? (
                           notification.actorSlug ? (
                             <Link
-                              href={`/profile/${notification.actorSlug}`}
+                              href={`/${notification.actorSlug}`}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setIsOpen(false);
@@ -297,7 +297,7 @@ export function NotificationDropdown() {
                             <>
                               {notification.actorSlug ? (
                                 <Link
-                                  href={`/profile/${notification.actorSlug}`}
+                                  href={`/${notification.actorSlug}`}
                                   className="text-orange-400 hover:text-orange-300 hover:underline"
                                   onClick={(e) => {
                                     e.stopPropagation();

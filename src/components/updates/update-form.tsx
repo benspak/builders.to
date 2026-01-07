@@ -37,7 +37,7 @@ export function UpdateForm({ onSuccess }: UpdateFormProps) {
   const [isSearching, setIsSearching] = useState(false);
   const mentionDropdownRef = useRef<HTMLDivElement>(null);
 
-  const maxLength = 500;
+  const maxLength = 10000;
   const remainingChars = maxLength - content.length;
 
   // Debounced user search
@@ -254,14 +254,13 @@ export function UpdateForm({ onSuccess }: UpdateFormProps) {
           onChange={handleContentChange}
           onKeyDown={handleKeyDown}
           placeholder="What did you work on today? Use @ to mention others..."
-          maxLength={maxLength}
           rows={3}
           disabled={isSubmitting}
-          className="w-full rounded-xl border border-white/10 bg-zinc-800/50 px-4 py-3 text-white placeholder:text-zinc-500 focus:border-orange-500/50 focus:outline-none focus:ring-1 focus:ring-orange-500/50 disabled:opacity-50 resize-none"
+          className="w-full rounded-xl border border-white/10 bg-zinc-800/50 px-4 py-3 text-white placeholder:text-zinc-500 focus:border-orange-500/50 focus:outline-none focus:ring-1 focus:ring-orange-500/50 disabled:opacity-50 resize-y min-h-[80px] max-h-[400px]"
         />
         <div className="absolute bottom-3 right-3 text-xs text-zinc-500">
-          <span className={remainingChars < 50 ? (remainingChars < 0 ? "text-red-400" : "text-amber-400") : ""}>
-            {remainingChars}
+          <span className={remainingChars < 100 ? (remainingChars < 0 ? "text-red-400" : "text-amber-400") : ""}>
+            {content.length.toLocaleString()}/{maxLength.toLocaleString()}
           </span>
         </div>
 

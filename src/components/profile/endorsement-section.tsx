@@ -266,7 +266,7 @@ export function EndorsementSection({
               <div className="flex items-start gap-3">
                 {/* Avatar */}
                 <Link
-                  href={endorsement.endorser.slug ? `/profile/${endorsement.endorser.slug}` : "#"}
+                  href={endorsement.endorser.slug ? `/${endorsement.endorser.slug}` : "#"}
                   className="shrink-0"
                 >
                   {endorsement.endorser.image ? (
@@ -288,7 +288,7 @@ export function EndorsementSection({
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <Link
-                      href={endorsement.endorser.slug ? `/profile/${endorsement.endorser.slug}` : "#"}
+                      href={endorsement.endorser.slug ? `/${endorsement.endorser.slug}` : "#"}
                       className="font-medium text-white hover:text-cyan-400 transition-colors"
                     >
                       {getDisplayName(endorsement.endorser)}

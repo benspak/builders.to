@@ -232,7 +232,7 @@ export function RoastMVPSection({ isAuthenticated, userProjects = [] }: RoastMVP
                       {/* Author */}
                       {featured.project.user.slug ? (
                         <Link
-                          href={`/profile/${featured.project.user.slug}`}
+                          href={`/${featured.project.user.slug}`}
                           className="flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors"
                         >
                           {featured.project.user.image ? (

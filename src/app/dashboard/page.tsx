@@ -3,7 +3,6 @@ import Link from "next/link";
 import { Plus, Loader2, Github } from "lucide-react";
 import { ProjectFilters } from "@/components/projects/project-filters";
 import { ProjectGrid } from "@/components/projects/project-grid";
-import { RoastMVPCard } from "@/components/roast-mvp/roast-mvp-card";
 import { SiteViewsCounter } from "@/components/analytics/site-views-counter";
 import { auth } from "@/lib/auth";
 
@@ -35,9 +34,6 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
           </a>
         </p>
       </div>
-
-      {/* Roast my MVP Featured Card */}
-      <RoastMVPCard />
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">

@@ -49,7 +49,7 @@ function ContentWithMentions({ content }: { content: string }) {
           return (
             <Link
               key={index}
-              href={`/profile/${part.value}`}
+              href={`/${part.value}`}
               className="text-orange-400 hover:text-orange-300 hover:underline transition-colors font-medium"
               onClick={(e) => e.stopPropagation()}
             >
@@ -180,7 +180,7 @@ export function CommentItem({ comment, onDeleted, onUpdated }: CommentItemProps)
       <div className="flex gap-4">
         {/* Avatar */}
         {comment.user.slug ? (
-          <Link href={`/profile/${comment.user.slug}`} className="shrink-0">
+          <Link href={`/${comment.user.slug}`} className="shrink-0">
             {comment.user.image ? (
               <Image
                 src={comment.user.image}
@@ -219,7 +219,7 @@ export function CommentItem({ comment, onDeleted, onUpdated }: CommentItemProps)
             <div className="flex items-center gap-2">
               {comment.user.slug ? (
                 <Link
-                  href={`/profile/${comment.user.slug}`}
+                  href={`/${comment.user.slug}`}
                   className="font-medium text-white truncate hover:text-orange-400 transition-colors"
                 >
                   {comment.user.name}

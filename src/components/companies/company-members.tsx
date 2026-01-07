@@ -231,7 +231,7 @@ export function CompanyMembers({
             >
               <div className="flex items-center gap-3">
                 {member.user.slug ? (
-                  <Link href={`/profile/${member.user.slug}`}>
+                  <Link href={`/${member.user.slug}`}>
                     {member.user.image ? (
                       <Image
                         src={member.user.image}
@@ -264,7 +264,7 @@ export function CompanyMembers({
                   <div className="flex items-center gap-2">
                     {member.user.slug ? (
                       <Link
-                        href={`/profile/${member.user.slug}`}
+                        href={`/${member.user.slug}`}
                         className="font-medium text-white hover:text-orange-400 transition-colors"
                       >
                         {member.user.name || "Unknown"}

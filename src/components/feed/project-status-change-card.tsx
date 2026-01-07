@@ -58,7 +58,7 @@ export function ProjectStatusChangeCard({ event, currentUserId }: ProjectStatusC
     : user?.name || "Builder";
 
   const projectUrl = project ? `/projects/${project.slug || project.id}` : null;
-  const userUrl = user?.slug ? `/profile/${user.slug}` : null;
+  const userUrl = user?.slug ? `/${user.slug}` : null;
 
   const handleLike = async () => {
     if (!currentUserId || loading) return;

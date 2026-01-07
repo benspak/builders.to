@@ -90,7 +90,7 @@ export function MilestoneEventCard({ event, currentUserId }: MilestoneEventCardP
   if (!milestone || !project) return null;
 
   const projectUrl = `/projects/${project.slug || project.id}`;
-  const userUrl = user?.slug ? `/profile/${user.slug}` : null;
+  const userUrl = user?.slug ? `/${user.slug}` : null;
 
   return (
     <div className="rounded-2xl border border-white/10 bg-zinc-900/50 backdrop-blur-sm overflow-hidden">

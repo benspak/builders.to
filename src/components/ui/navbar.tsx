@@ -7,7 +7,7 @@ import { UserMenu } from "@/components/auth/user-menu";
 import { NotificationDropdown } from "@/components/notifications";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { SearchCommand } from "@/components/ui/search-command";
-import { Plus, Rocket, ChevronDown, Sparkles } from "lucide-react";
+import { Plus, Rocket, ChevronDown, Sparkles, Store } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface UserProfile {
@@ -75,6 +75,20 @@ export function Navbar() {
           >
             Projects
           </Link>
+          <Link
+            href="/companies"
+            className="hidden text-sm font-medium transition-colors sm:block"
+            style={{ color: "var(--foreground-muted)" }}
+          >
+            Companies
+          </Link>
+          <Link
+            href="/services"
+            className="hidden text-sm font-medium transition-colors sm:block"
+            style={{ color: "var(--foreground-muted)" }}
+          >
+            Services
+          </Link>
           {/* Theme Toggle */}
           <ThemeToggle />
 
@@ -117,7 +131,7 @@ export function Navbar() {
 
                       {userSlug && (
                         <Link
-                          href={`/profile/${userSlug}#daily-updates`}
+                          href={`/${userSlug}#updates`}
                           onClick={() => setShareOpen(false)}
                           className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-zinc-300 transition-colors hover:bg-white/5 hover:text-white"
                         >
@@ -126,7 +140,7 @@ export function Navbar() {
                           </div>
                           <div>
                             <div className="font-medium">Share an Update</div>
-                            <div className="text-xs text-zinc-500">Post a daily update</div>
+                            <div className="text-xs text-zinc-500">Post an update</div>
                           </div>
                         </Link>
                       )}

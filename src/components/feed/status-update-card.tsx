@@ -43,7 +43,7 @@ export function StatusUpdateCard({ event, currentUserId }: StatusUpdateCardProps
     ? `${user.firstName} ${user.lastName}`
     : user?.name || "Builder";
 
-  const userUrl = user?.slug ? `/profile/${user.slug}` : null;
+  const userUrl = user?.slug ? `/${user.slug}` : null;
 
   const handleLike = async () => {
     if (!currentUserId || loading) return;

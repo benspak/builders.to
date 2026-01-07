@@ -102,6 +102,7 @@ export async function PATCH(
 
     const body = await request.json();
     const {
+      email,
       displayName,
       firstName,
       lastName,
@@ -143,6 +144,34 @@ export async function PATCH(
       slug = await getUniqueSlug(generateSlug(baseName), id);
     }
 
+    // Validate email if provided
+    const trimmedEmail = email?.trim() || null;
+    if (trimmedEmail) {
+      // Basic email format validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(trimmedEmail)) {
+        return NextResponse.json(
+          { error: "Invalid email format" },
+          { status: 400 }
+        );
+      }
+
+      // Check for uniqueness if email is being changed
+      const existingUser = await prisma.user.findFirst({
+        where: {
+          email: trimmedEmail,
+          NOT: { id },
+        },
+      });
+
+      if (existingUser) {
+        return NextResponse.json(
+          { error: "This email is already in use by another account" },
+          { status: 400 }
+        );
+      }
+    }
+
     // Validate URLs
     const urlFields = { websiteUrl, twitterUrl, youtubeUrl, linkedinUrl };
     for (const [key, value] of Object.entries(urlFields)) {
@@ -179,6 +208,8 @@ export async function PATCH(
       where: { id },
       data: {
         slug,
+        // Update email if provided
+        ...(email !== undefined && { email: trimmedEmail }),
         displayName: displayName?.trim() || null,
         firstName: firstName?.trim() || null,
         lastName: lastName?.trim() || null,
@@ -204,6 +235,7 @@ export async function PATCH(
       select: {
         id: true,
         name: true,
+        email: true,
         slug: true,
         username: true,
         displayName: true,

@@ -142,7 +142,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
               {/* Main Author */}
               {project.user.slug ? (
                 <Link
-                  href={`/profile/${project.user.slug}`}
+                  href={`/${project.user.slug}`}
                   className="relative z-10 block"
                   title={project.user.name || "User"}
                 >
@@ -187,7 +187,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
                 return cb.user.slug ? (
                   <Link
                     key={cb.user.id}
-                    href={`/profile/${cb.user.slug}`}
+                    href={`/${cb.user.slug}`}
                     className="relative block"
                     style={{ zIndex: 9 - idx }}
                     title={displayName}
@@ -245,7 +245,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
             {(!project.coBuilders || project.coBuilders.length === 0) && (
               project.user.slug ? (
                 <Link
-                  href={`/profile/${project.user.slug}`}
+                  href={`/${project.user.slug}`}
                   className="text-sm text-zinc-400 hover:text-white transition-colors truncate max-w-[100px]"
                 >
                   {project.user.name}

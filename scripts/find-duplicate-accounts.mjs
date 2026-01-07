@@ -1,0 +1,305 @@
+/**
+ * Script to find and investigate duplicate user accounts
+ *
+ * Usage:
+ *   node scripts/find-duplicate-accounts.mjs your-email@example.com
+ *
+ * Or to merge accounts (keeps the older account):
+ *   node scripts/find-duplicate-accounts.mjs your-email@example.com --merge
+ *
+ * Or to delete a specific account by ID:
+ *   node scripts/find-duplicate-accounts.mjs --delete USER_ID_HERE
+ */
+
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
+
+async function main() {
+  const arg1 = process.argv[2];
+  const arg2 = process.argv[3];
+  const shouldMerge = process.argv.includes('--merge');
+  const shouldDelete = arg1 === '--delete';
+
+  if (!arg1) {
+    console.error('❌ Please provide an email address as an argument');
+    console.log('   Usage: node scripts/find-duplicate-accounts.mjs your-email@example.com');
+    console.log('   Or:    node scripts/find-duplicate-accounts.mjs --delete USER_ID');
+    process.exit(1);
+  }
+
+  // Handle delete mode
+  if (shouldDelete) {
+    if (!arg2) {
+      console.error('❌ Please provide a user ID to delete');
+      console.log('   Usage: node scripts/find-duplicate-accounts.mjs --delete USER_ID');
+      process.exit(1);
+    }
+    await deleteAccount(arg2);
+    return;
+  }
+
+  const email = arg1;
+
+  console.log(`\n🔍 Searching for accounts with email: ${email}\n`);
+
+  // Find all users with this email
+  const usersWithEmail = await prisma.user.findMany({
+    where: { email },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      slug: true,
+      username: true,
+      displayName: true,
+      createdAt: true,
+      image: true,
+      accounts: {
+        select: {
+          provider: true,
+          providerAccountId: true,
+        }
+      },
+      _count: {
+        select: {
+          projects: true,
+          dailyUpdates: true,
+          comments: true,
+          upvotes: true,
+        }
+      }
+    },
+    orderBy: { createdAt: 'asc' }
+  });
+
+  if (usersWithEmail.length === 0) {
+    console.log('✅ No users found with this email address.');
+    console.log('\n   This means you can safely set this email on your account.');
+    return;
+  }
+
+  console.log(`Found ${usersWithEmail.length} user(s) with this email:\n`);
+
+  usersWithEmail.forEach((user, index) => {
+    console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+    console.log(`Account #${index + 1}:`);
+    console.log(`  ID:           ${user.id}`);
+    console.log(`  Name:         ${user.name || '(not set)'}`);
+    console.log(`  Display Name: ${user.displayName || '(not set)'}`);
+    console.log(`  Username:     ${user.username || '(not set)'}`);
+    console.log(`  Slug:         ${user.slug || '(not set)'}`);
+    console.log(`  Created:      ${user.createdAt.toISOString()}`);
+    console.log(`  OAuth:        ${user.accounts.map(a => a.provider).join(', ') || 'none'}`);
+    console.log(`  Content:`);
+    console.log(`    - Projects:  ${user._count.projects}`);
+    console.log(`    - Updates:   ${user._count.dailyUpdates}`);
+    console.log(`    - Comments:  ${user._count.comments}`);
+    console.log(`    - Upvotes:   ${user._count.upvotes}`);
+  });
+
+  console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`);
+
+  if (usersWithEmail.length > 1) {
+    console.log('⚠️  Multiple accounts found with this email!');
+    console.log('   This shouldn\'t happen - email should be unique.\n');
+
+    if (shouldMerge) {
+      await mergeAccounts(usersWithEmail);
+    } else {
+      console.log('   To merge these accounts (keeping the oldest one), run:');
+      console.log(`   node scripts/find-duplicate-accounts.mjs ${email} --merge\n`);
+    }
+  } else {
+    console.log('ℹ️  This email is already associated with the account shown above.');
+    console.log('   If this is your account, you should already be able to use this email.');
+    console.log('   If you\'re signed into a DIFFERENT account, that\'s why you\'re seeing the error.\n');
+
+    // Check for users without email that might be the current session
+    const usersWithoutEmail = await prisma.user.findMany({
+      where: {
+        email: null,
+        accounts: { some: {} }  // Has at least one OAuth connection
+      },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        username: true,
+        createdAt: true,
+        accounts: {
+          select: { provider: true }
+        }
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 10
+    });
+
+    if (usersWithoutEmail.length > 0) {
+      console.log('   Recent accounts WITHOUT an email set (one might be yours):');
+      usersWithoutEmail.forEach(user => {
+        console.log(`   - ${user.id} | ${user.name || user.username || 'unnamed'} | ${user.accounts.map(a => a.provider).join(', ')} | Created: ${user.createdAt.toISOString().split('T')[0]}`);
+      });
+      console.log('');
+    }
+  }
+}
+
+async function deleteAccount(userId) {
+  console.log(`\n🔍 Looking up account: ${userId}\n`);
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      slug: true,
+      username: true,
+      createdAt: true,
+      accounts: {
+        select: { provider: true }
+      },
+      _count: {
+        select: {
+          projects: true,
+          dailyUpdates: true,
+          comments: true,
+          upvotes: true,
+          companies: true,
+        }
+      }
+    }
+  });
+
+  if (!user) {
+    console.error('❌ User not found with that ID');
+    process.exit(1);
+  }
+
+  console.log('Account to delete:');
+  console.log(`  ID:       ${user.id}`);
+  console.log(`  Name:     ${user.name || '(not set)'}`);
+  console.log(`  Email:    ${user.email || '(not set)'}`);
+  console.log(`  Username: ${user.username || '(not set)'}`);
+  console.log(`  Slug:     ${user.slug || '(not set)'}`);
+  console.log(`  OAuth:    ${user.accounts.map(a => a.provider).join(', ') || 'none'}`);
+  console.log(`  Content:  ${user._count.projects} projects, ${user._count.dailyUpdates} updates, ${user._count.comments} comments, ${user._count.companies} companies`);
+  console.log('');
+
+  if (user._count.projects > 0 || user._count.dailyUpdates > 0 || user._count.companies > 0) {
+    console.log('⚠️  WARNING: This account has content that will be DELETED!');
+    console.log('   Consider using --merge instead if you want to keep the content.\n');
+  }
+
+  console.log('🗑️  Deleting account...\n');
+
+  // Delete related records first (cascade should handle most, but being explicit)
+  await prisma.upvote.deleteMany({ where: { userId } });
+  console.log('   ✓ Deleted upvotes');
+
+  await prisma.commentLike.deleteMany({ where: { userId } });
+  console.log('   ✓ Deleted comment likes');
+
+  await prisma.comment.deleteMany({ where: { userId } });
+  console.log('   ✓ Deleted comments');
+
+  await prisma.updateLike.deleteMany({ where: { userId } });
+  console.log('   ✓ Deleted update likes');
+
+  await prisma.updateComment.deleteMany({ where: { userId } });
+  console.log('   ✓ Deleted update comments');
+
+  await prisma.dailyUpdate.deleteMany({ where: { userId } });
+  console.log('   ✓ Deleted daily updates');
+
+  await prisma.follow.deleteMany({ where: { OR: [{ followerId: userId }, { followingId: userId }] } });
+  console.log('   ✓ Deleted follows');
+
+  await prisma.endorsement.deleteMany({ where: { OR: [{ endorserId: userId }, { endorseeId: userId }] } });
+  console.log('   ✓ Deleted endorsements');
+
+  await prisma.notification.deleteMany({ where: { userId } });
+  console.log('   ✓ Deleted notifications');
+
+  await prisma.feedEventLike.deleteMany({ where: { userId } });
+  console.log('   ✓ Deleted feed event likes');
+
+  // Delete the user (will cascade to Account, Session, etc.)
+  await prisma.user.delete({ where: { id: userId } });
+  console.log('   ✓ Deleted user account');
+
+  console.log(`\n✅ Account ${userId} has been deleted.`);
+}
+
+async function mergeAccounts(users) {
+  // Keep the oldest account (first one since we ordered by createdAt asc)
+  const keepAccount = users[0];
+  const deleteAccounts = users.slice(1);
+
+  console.log(`\n🔄 Merging accounts...`);
+  console.log(`   Keeping: ${keepAccount.id} (created ${keepAccount.createdAt.toISOString()})`);
+  console.log(`   Deleting: ${deleteAccounts.map(u => u.id).join(', ')}\n`);
+
+  for (const account of deleteAccounts) {
+    console.log(`   Processing ${account.id}...`);
+
+    // Move OAuth connections
+    await prisma.account.updateMany({
+      where: { userId: account.id },
+      data: { userId: keepAccount.id }
+    });
+    console.log(`     ✓ Moved OAuth connections`);
+
+    // Move projects
+    await prisma.project.updateMany({
+      where: { userId: account.id },
+      data: { userId: keepAccount.id }
+    });
+    console.log(`     ✓ Moved projects`);
+
+    // Move daily updates
+    await prisma.dailyUpdate.updateMany({
+      where: { userId: account.id },
+      data: { userId: keepAccount.id }
+    });
+    console.log(`     ✓ Moved daily updates`);
+
+    // Move comments
+    await prisma.comment.updateMany({
+      where: { userId: account.id },
+      data: { userId: keepAccount.id }
+    });
+    console.log(`     ✓ Moved comments`);
+
+    // Move upvotes (may fail if duplicate, that's ok)
+    try {
+      await prisma.upvote.updateMany({
+        where: { userId: account.id },
+        data: { userId: keepAccount.id }
+      });
+      console.log(`     ✓ Moved upvotes`);
+    } catch {
+      console.log(`     ⚠ Some upvotes skipped (already voted)`);
+    }
+
+    // Move companies
+    await prisma.company.updateMany({
+      where: { userId: account.id },
+      data: { userId: keepAccount.id }
+    });
+    console.log(`     ✓ Moved companies`);
+
+    // Delete the duplicate user
+    await prisma.user.delete({
+      where: { id: account.id }
+    });
+    console.log(`     ✓ Deleted duplicate account`);
+  }
+
+  console.log(`\n✅ Merge complete! All content has been moved to account ${keepAccount.id}`);
+}
+
+main()
+  .catch(console.error)
+  .finally(() => prisma.$disconnect());
