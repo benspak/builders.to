@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { formatRelativeTime } from "@/lib/utils";
 import { Pin, MoreHorizontal, Pencil, Trash2, Loader2, X, Check } from "lucide-react";
+import { ImageLightbox } from "@/components/ui/image-lightbox";
 
 interface CompanyUpdateItemProps {
   update: {
@@ -134,13 +135,12 @@ export function CompanyUpdateItem({ update, isOwner }: CompanyUpdateItemProps) {
           )}
 
           {update.imageUrl && !isEditing && (
-            <div className="mt-3 relative rounded-xl overflow-hidden border border-white/10">
-              <Image
+            <div className="mt-3 rounded-xl overflow-hidden border border-white/10">
+              <ImageLightbox
                 src={update.imageUrl}
                 alt="Update image"
-                width={600}
-                height={400}
-                className="object-cover max-h-[300px] w-auto"
+                containerClassName="relative aspect-video max-h-[300px] bg-zinc-900"
+                className="object-cover"
               />
             </div>
           )}
