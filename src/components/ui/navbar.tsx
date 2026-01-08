@@ -2,40 +2,19 @@
 
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { UserMenu } from "@/components/auth/user-menu";
 import { NotificationDropdown } from "@/components/notifications";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { SearchCommand } from "@/components/ui/search-command";
-import { Plus, Rocket, ChevronDown, Sparkles, Store, Menu, X, Search } from "lucide-react";
+import { Plus, Rocket, ChevronDown, Sparkles, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-interface UserProfile {
-  slug: string | null;
-}
 
 export function Navbar() {
   const { data: session } = useSession();
   const [shareOpen, setShareOpen] = useState(false);
+  const [mobileShareOpen, setMobileShareOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [userSlug, setUserSlug] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function fetchUserSlug() {
-      if (session?.user?.id) {
-        try {
-          const response = await fetch(`/api/users/${session.user.id}`);
-          if (response.ok) {
-            const data: UserProfile = await response.json();
-            setUserSlug(data.slug);
-          }
-        } catch (error) {
-          console.error("Failed to fetch user slug:", error);
-        }
-      }
-    }
-    fetchUserSlug();
-  }, [session?.user?.id]);
 
   return (
     <header
@@ -169,13 +148,42 @@ export function Navbar() {
 
           {session ? (
             <>
-              {/* Mobile: Direct link to share project */}
-              <Link
-                href="/projects/new"
-                className="sm:hidden inline-flex items-center justify-center rounded-full bg-gradient-to-r from-orange-500 to-orange-600 p-2.5 text-white transition-all hover:from-orange-600 hover:to-orange-700 active:scale-95 shadow-md shadow-orange-500/25"
-              >
-                <Plus className="h-4 w-4" />
-              </Link>
+              {/* Mobile: Add Dropdown */}
+              <div className="relative sm:hidden">
+                <button
+                  onClick={() => setMobileShareOpen(!mobileShareOpen)}
+                  className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-orange-500 to-orange-600 p-2.5 text-white transition-all hover:from-orange-600 hover:to-orange-700 active:scale-95 shadow-md shadow-orange-500/25"
+                >
+                  <Plus className="h-4 w-4" />
+                </button>
+
+                {mobileShareOpen && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-10"
+                      onClick={() => setMobileShareOpen(false)}
+                    />
+                    <div className="absolute right-0 top-full z-20 mt-2 w-48 rounded-xl border border-white/10 bg-zinc-900/95 p-2 shadow-xl backdrop-blur-xl">
+                      <Link
+                        href="/projects/new"
+                        onClick={() => setMobileShareOpen(false)}
+                        className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-zinc-300 transition-colors hover:bg-white/5 hover:text-white"
+                      >
+                        <Rocket className="h-4 w-4 text-orange-400" />
+                        <span>Post Project</span>
+                      </Link>
+                      <Link
+                        href="/updates/new"
+                        onClick={() => setMobileShareOpen(false)}
+                        className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-zinc-300 transition-colors hover:bg-white/5 hover:text-white"
+                      >
+                        <Sparkles className="h-4 w-4 text-amber-400" />
+                        <span>Post Update</span>
+                      </Link>
+                    </div>
+                  </>
+                )}
+              </div>
 
               {/* Desktop: Share Dropdown */}
               <div className="relative hidden sm:block">
@@ -207,26 +215,24 @@ export function Navbar() {
                           <Rocket className="h-4 w-4 text-orange-400" />
                         </div>
                         <div>
-                          <div className="font-medium">Share a Project</div>
-                          <div className="text-xs text-zinc-500">Add a new project</div>
+                          <div className="font-medium">Post Project</div>
+                          <div className="text-xs text-zinc-500">Share what you're building</div>
                         </div>
                       </Link>
 
-                      {userSlug && (
-                        <Link
-                          href={`/${userSlug}#updates`}
-                          onClick={() => setShareOpen(false)}
-                          className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-zinc-300 transition-colors hover:bg-white/5 hover:text-white"
-                        >
-                          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/10">
-                            <Sparkles className="h-4 w-4 text-amber-400" />
-                          </div>
-                          <div>
-                            <div className="font-medium">Share an Update</div>
-                            <div className="text-xs text-zinc-500">Post an update</div>
-                          </div>
-                        </Link>
-                      )}
+                      <Link
+                        href="/updates/new"
+                        onClick={() => setShareOpen(false)}
+                        className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-zinc-300 transition-colors hover:bg-white/5 hover:text-white"
+                      >
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/10">
+                          <Sparkles className="h-4 w-4 text-amber-400" />
+                        </div>
+                        <div>
+                          <div className="font-medium">Post Update</div>
+                          <div className="text-xs text-zinc-500">Share what you're working on</div>
+                        </div>
+                      </Link>
                     </div>
                   </>
                 )}

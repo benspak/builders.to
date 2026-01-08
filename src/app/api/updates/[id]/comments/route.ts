@@ -15,7 +15,11 @@ export async function GET(
     const comments = await prisma.updateComment.findMany({
       where: { updateId },
       orderBy: { createdAt: "asc" },
-      include: {
+      select: {
+        id: true,
+        content: true,
+        createdAt: true,
+        updatedAt: true,
         user: {
           select: {
             id: true,
@@ -112,7 +116,11 @@ export async function POST(
         userId: session.user.id,
         updateId,
       },
-      include: {
+      select: {
+        id: true,
+        content: true,
+        createdAt: true,
+        updatedAt: true,
         user: {
           select: {
             id: true,

@@ -111,7 +111,11 @@ export async function PATCH(
     const updatedComment = await prisma.updateComment.update({
       where: { id },
       data: { content: content.trim() },
-      include: {
+      select: {
+        id: true,
+        content: true,
+        createdAt: true,
+        updatedAt: true,
         user: {
           select: {
             id: true,

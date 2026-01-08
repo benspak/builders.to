@@ -67,6 +67,7 @@ interface Comment {
   id: string;
   content: string;
   createdAt: string | Date;
+  updatedAt?: string | Date;
   user: {
     id: string;
     name: string | null;
@@ -267,6 +268,8 @@ function CommentItem({ comment, currentUserId, onDelete, onEdit }: CommentItemPr
   const displayName = comment.user.firstName && comment.user.lastName
     ? `${comment.user.firstName} ${comment.user.lastName}`
     : comment.user.name || "Builder";
+  const isEdited = comment.updatedAt && 
+    new Date(comment.updatedAt).getTime() - new Date(comment.createdAt).getTime() > 1000;
 
   async function handleSaveEdit() {
     if (!editContent.trim()) return;
@@ -298,16 +301,59 @@ function CommentItem({ comment, currentUserId, onDelete, onEdit }: CommentItemPr
       {/* Content */}
       <div className="flex-1 min-w-0">
         <div className="rounded-lg bg-zinc-800/50 px-3 py-2">
-          <div className="flex items-center gap-2 mb-1">
-            <Link
-              href={comment.user.slug ? `/${comment.user.slug}` : "#"}
-              className="text-xs font-medium text-white hover:text-orange-400 transition-colors"
-            >
-              {displayName}
-            </Link>
-            <span className="text-[10px] text-zinc-500">
+          <div className="flex items-center justify-between gap-2 mb-1">
+            <div className="flex items-center gap-2">
+              <Link
+                href={comment.user.slug ? `/${comment.user.slug}` : "#"}
+                className="text-xs font-medium text-white hover:text-orange-400 transition-colors"
+              >
+                {displayName}
+              </Link>
+<span className="text-[10px] text-zinc-500">
               {formatRelativeTime(comment.createdAt)}
+              {isEdited && " (edited)"}
             </span>
+            </div>
+
+            {/* Actions menu */}
+            {isOwner && !isEditing && (
+              <div className="relative">
+                <button
+                  onClick={() => setShowMenu(!showMenu)}
+                  className="opacity-0 group-hover:opacity-100 p-0.5 rounded text-zinc-500 hover:text-zinc-300 transition-all"
+                >
+                  <MoreHorizontal className="h-3 w-3" />
+                </button>
+
+                {showMenu && (
+                  <>
+                    <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
+                    <div className="absolute right-0 top-full mt-1 z-20 w-24 rounded-lg border border-white/10 bg-zinc-800 shadow-xl py-1">
+                      <button
+                        onClick={() => {
+                          setIsEditing(true);
+                          setShowMenu(false);
+                        }}
+                        className="flex w-full items-center gap-1.5 px-2 py-1 text-xs text-zinc-300 hover:bg-zinc-700/50"
+                      >
+                        <Pencil className="h-3 w-3" />
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => {
+                          onDelete(comment.id);
+                          setShowMenu(false);
+                        }}
+                        className="flex w-full items-center gap-1.5 px-2 py-1 text-xs text-red-400 hover:bg-red-500/10"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                        Delete
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
           </div>
 
           {isEditing ? (
@@ -348,46 +394,6 @@ function CommentItem({ comment, currentUserId, onDelete, onEdit }: CommentItemPr
             </p>
           )}
         </div>
-
-        {/* Actions menu */}
-        {isOwner && !isEditing && (
-          <div className="relative inline-block mt-1">
-            <button
-              onClick={() => setShowMenu(!showMenu)}
-              className="opacity-0 group-hover:opacity-100 p-0.5 rounded text-zinc-500 hover:text-zinc-300 transition-all"
-            >
-              <MoreHorizontal className="h-3 w-3" />
-            </button>
-
-            {showMenu && (
-              <>
-                <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
-                <div className="absolute left-0 top-full mt-1 z-20 w-24 rounded-lg border border-white/10 bg-zinc-800 shadow-xl py-1">
-                  <button
-                    onClick={() => {
-                      setIsEditing(true);
-                      setShowMenu(false);
-                    }}
-                    className="flex w-full items-center gap-1.5 px-2 py-1 text-xs text-zinc-300 hover:bg-zinc-700/50"
-                  >
-                    <Pencil className="h-3 w-3" />
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => {
-                      onDelete(comment.id);
-                      setShowMenu(false);
-                    }}
-                    className="flex w-full items-center gap-1.5 px-2 py-1 text-xs text-red-400 hover:bg-red-500/10"
-                  >
-                    <Trash2 className="h-3 w-3" />
-                    Delete
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        )}
       </div>
     </div>
   );
