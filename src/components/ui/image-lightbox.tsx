@@ -14,18 +14,7 @@ interface ImageLightboxProps {
 
 export function ImageLightbox({ src, alt, className, containerClassName }: ImageLightboxProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [imageSize, setImageSize] = useState<{ width: number; height: number } | null>(null);
-
-  // Load image dimensions
-  useEffect(() => {
-    if (isOpen && !imageSize) {
-      const img = new window.Image();
-      img.onload = () => {
-        setImageSize({ width: img.naturalWidth, height: img.naturalHeight });
-      };
-      img.src = src;
-    }
-  }, [isOpen, src, imageSize]);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   // Prevent body scroll when lightbox is open
   useEffect(() => {
@@ -50,9 +39,6 @@ export function ImageLightbox({ src, alt, className, containerClassName }: Image
     return () => window.removeEventListener("keydown", handleEscape);
   }, [isOpen]);
 
-  const isPortrait = imageSize ? imageSize.height > imageSize.width : false;
-  const aspectRatio = imageSize ? imageSize.width / imageSize.height : 16 / 9;
-
   return (
     <>
       {/* Thumbnail - clickable */}
@@ -71,60 +57,60 @@ export function ImageLightbox({ src, alt, className, containerClassName }: Image
       {/* Lightbox Modal */}
       {isOpen && (
         <div 
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-sm"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-sm animate-in fade-in duration-200"
           onClick={() => setIsOpen(false)}
         >
-          {/* Close button */}
+          {/* Close button - safe area for notched phones */}
           <button
-            onClick={() => setIsOpen(false)}
-            className="absolute top-4 right-4 z-10 p-2.5 rounded-full bg-white text-zinc-900 hover:bg-zinc-100 shadow-lg transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsOpen(false);
+            }}
+            className="absolute top-4 right-4 z-10 p-2.5 rounded-full bg-white text-zinc-900 hover:bg-zinc-100 shadow-lg transition-colors safe-area-top"
+            style={{ top: "max(1rem, env(safe-area-inset-top))" }}
             aria-label="Close"
           >
             <X className="h-6 w-6" />
           </button>
 
-          {/* Image container */}
+          {/* Image container - uses img tag for natural sizing */}
           <div 
-            className={cn(
-              "relative flex items-center justify-center p-4 sm:p-8",
-              "w-full h-full"
-            )}
+            className="relative w-full h-full flex items-center justify-center p-4 sm:p-8"
+            style={{ 
+              paddingTop: "max(1rem, env(safe-area-inset-top))",
+              paddingBottom: "max(1rem, env(safe-area-inset-bottom))"
+            }}
             onClick={(e) => e.stopPropagation()}
           >
-            {imageSize ? (
-              <div
-                className={cn(
-                  "relative",
-                  isPortrait 
-                    ? "h-[90vh] sm:h-[85vh]" 
-                    : "w-full sm:w-auto sm:max-w-[90vw]"
-                )}
-                style={{
-                  aspectRatio: aspectRatio,
-                  maxHeight: "90vh",
-                  maxWidth: "95vw",
-                }}
-              >
-                <Image
-                  src={src}
-                  alt={alt}
-                  fill
-                  className="object-contain"
-                  sizes="(max-width: 768px) 100vw, 90vw"
-                  priority
-                />
-              </div>
-            ) : (
-              // Loading state
-              <div className="flex items-center justify-center">
+            {!isLoaded && (
+              <div className="absolute inset-0 flex items-center justify-center">
                 <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-white" />
               </div>
             )}
+            
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={src}
+              alt={alt}
+              onLoad={() => setIsLoaded(true)}
+              onClick={() => setIsOpen(false)}
+              className={cn(
+                "max-w-full max-h-full w-auto h-auto object-contain cursor-zoom-out transition-opacity duration-200",
+                isLoaded ? "opacity-100" : "opacity-0"
+              )}
+              style={{
+                maxWidth: "min(100%, 95vw)",
+                maxHeight: "min(100%, 90vh)",
+              }}
+            />
           </div>
 
           {/* Tap to close hint on mobile */}
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-xs text-white/50 sm:hidden">
-            Tap anywhere to close
+          <div 
+            className="absolute left-1/2 -translate-x-1/2 text-xs text-white/50 sm:hidden pointer-events-none"
+            style={{ bottom: "max(1.5rem, env(safe-area-inset-bottom))" }}
+          >
+            Tap image to close
           </div>
         </div>
       )}
