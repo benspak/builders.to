@@ -7,6 +7,7 @@ import Image from "next/image";
 import { User, Trash2, Loader2, MoreHorizontal, Heart, MessageCircle, ExternalLink } from "lucide-react";
 import { formatRelativeTime, cn, MENTION_REGEX } from "@/lib/utils";
 import { UpdateComments } from "./update-comments";
+import { ImageLightbox } from "@/components/ui/image-lightbox";
 
 const FEED_TRUNCATE_LENGTH = 500;
 
@@ -249,14 +250,12 @@ export function UpdateItem({ update, currentUserId, showAuthor = true }: UpdateI
           <div className="rounded-xl border border-white/5 bg-zinc-800/30 overflow-hidden hover:border-white/10 transition-colors">
             {/* Image attachment */}
             {update.imageUrl && (
-              <div className="relative aspect-video max-h-80 bg-zinc-900">
-                <Image
-                  src={update.imageUrl}
-                  alt="Update image"
-                  fill
-                  className="object-cover"
-                />
-              </div>
+              <ImageLightbox
+                src={update.imageUrl}
+                alt="Update image"
+                containerClassName="relative aspect-video max-h-80 bg-zinc-900"
+                className="object-cover"
+              />
             )}
 
             <div className="p-4">
