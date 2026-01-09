@@ -45,9 +45,9 @@ export function Navbar() {
                   onClick={() => setMobileMenuOpen(false)}
                 />
                 <div 
-                  className="absolute left-0 top-full z-20 mt-2 w-48 rounded-xl border p-2 shadow-xl backdrop-blur-xl"
+                  className="absolute left-0 top-full z-20 mt-2 w-48 rounded-xl border p-2 shadow-2xl"
                   style={{
-                    background: "var(--card-bg)",
+                    background: "var(--background-secondary)",
                     borderColor: "var(--card-border)"
                   }}
                 >
@@ -175,9 +175,9 @@ export function Navbar() {
                       onClick={() => setMobileShareOpen(false)}
                     />
                     <div 
-                      className="absolute right-0 top-full z-20 mt-2 w-48 rounded-xl border p-2 shadow-xl backdrop-blur-xl"
+                      className="absolute right-0 top-full z-20 mt-2 w-48 rounded-xl border p-2 shadow-2xl"
                       style={{
-                        background: "var(--card-bg)",
+                        background: "var(--background-secondary)",
                         borderColor: "var(--card-border)"
                       }}
                     >

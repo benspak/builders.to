@@ -97,17 +97,24 @@ export function UserMenu() {
             className="fixed inset-0 z-10"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute right-0 top-full z-20 mt-2 w-56 rounded-xl border border-white/10 bg-zinc-900/95 p-2 shadow-xl backdrop-blur-xl">
-            <div className="border-b border-white/10 px-3 py-2 mb-2">
-              <p className="text-sm font-medium text-white">{session.user.name}</p>
-              <p className="text-xs text-zinc-400">{session.user.email}</p>
+          <div 
+            className="absolute right-0 top-full z-20 mt-2 w-56 rounded-xl border p-2 shadow-2xl"
+            style={{
+              background: "var(--background-secondary)",
+              borderColor: "var(--card-border)"
+            }}
+          >
+            <div className="border-b px-3 py-2 mb-2" style={{ borderColor: "var(--card-border)" }}>
+              <p className="text-sm font-medium" style={{ color: "var(--foreground)" }}>{session.user.name}</p>
+              <p className="text-xs" style={{ color: "var(--foreground-muted)" }}>{session.user.email}</p>
             </div>
 
-            <div className="sm:hidden border-b border-white/10 pb-2 mb-2">
+            <div className="sm:hidden border-b pb-2 mb-2" style={{ borderColor: "var(--card-border)" }}>
               <Link
                 href="/notifications"
                 onClick={() => setIsOpen(false)}
-                className="flex items-center justify-between rounded-lg px-3 py-2 text-sm text-zinc-300 transition-colors hover:bg-white/5 hover:text-white"
+                className="flex items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors hover:bg-black/5 dark:hover:bg-white/5"
+                style={{ color: "var(--foreground-muted)" }}
               >
                 <div className="flex items-center gap-2">
                   <Bell className="h-4 w-4" />
@@ -125,7 +132,8 @@ export function UserMenu() {
               <Link
                 href={`/${userSlug}`}
                 onClick={() => setIsOpen(false)}
-                className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-zinc-300 transition-colors hover:bg-white/5 hover:text-white"
+                className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-black/5 dark:hover:bg-white/5"
+                style={{ color: "var(--foreground-muted)" }}
               >
                 <User className="h-4 w-4" />
                 My Profile
@@ -135,7 +143,8 @@ export function UserMenu() {
             <Link
               href="/dashboard"
               onClick={() => setIsOpen(false)}
-              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-zinc-300 transition-colors hover:bg-white/5 hover:text-white"
+              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-black/5 dark:hover:bg-white/5"
+              style={{ color: "var(--foreground-muted)" }}
             >
               <Rocket className="h-4 w-4" />
               Projects
@@ -144,7 +153,8 @@ export function UserMenu() {
             <Link
               href="/companies"
               onClick={() => setIsOpen(false)}
-              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-zinc-300 transition-colors hover:bg-white/5 hover:text-white"
+              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-black/5 dark:hover:bg-white/5"
+              style={{ color: "var(--foreground-muted)" }}
             >
               <Building2 className="h-4 w-4" />
               Companies
@@ -153,7 +163,8 @@ export function UserMenu() {
             <Link
               href="/services"
               onClick={() => setIsOpen(false)}
-              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-zinc-300 transition-colors hover:bg-white/5 hover:text-white"
+              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-black/5 dark:hover:bg-white/5"
+              style={{ color: "var(--foreground-muted)" }}
             >
               <Store className="h-4 w-4" />
               Services
@@ -162,7 +173,8 @@ export function UserMenu() {
             <Link
               href="/settings"
               onClick={() => setIsOpen(false)}
-              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-zinc-300 transition-colors hover:bg-white/5 hover:text-white"
+              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-black/5 dark:hover:bg-white/5"
+              style={{ color: "var(--foreground-muted)" }}
             >
               <Settings className="h-4 w-4" />
               Settings
@@ -171,16 +183,18 @@ export function UserMenu() {
             <Link
               href="/ads"
               onClick={() => setIsOpen(false)}
-              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-zinc-300 transition-colors hover:bg-white/5 hover:text-white"
+              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-black/5 dark:hover:bg-white/5"
+              style={{ color: "var(--foreground-muted)" }}
             >
               <Megaphone className="h-4 w-4" />
               My Ads
             </Link>
 
-            <div className="border-t border-white/10 mt-2 pt-2">
+            <div className="border-t mt-2 pt-2" style={{ borderColor: "var(--card-border)" }}>
               <button
                 onClick={() => signOut({ callbackUrl: "/" })}
-                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-zinc-300 transition-colors hover:bg-white/5 hover:text-white"
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-black/5 dark:hover:bg-white/5"
+                style={{ color: "var(--foreground-muted)" }}
               >
                 <LogOut className="h-4 w-4" />
                 Sign out
