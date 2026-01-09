@@ -5,7 +5,7 @@ export const SIDEBAR_AD_PRICE_CENTS = 2000;
 export const SIDEBAR_AD_DURATION_DAYS = 30;
 
 // Services Marketplace pricing
-export const SERVICE_LISTING_FEE_CENTS = 500; // $5
+export const SERVICE_LISTING_FEE_CENTS = 100; // $1
 export const SERVICE_LISTING_DURATION_DAYS = 90;
 export const SERVICE_PLATFORM_FEE_PERCENT = 5;
 export const MIN_LAUNCHED_PROJECTS_FOR_LISTING = 2;

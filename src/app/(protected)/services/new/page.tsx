@@ -120,7 +120,7 @@ export default async function NewServicePage() {
             </div>
             <div>
               <h3 className="text-sm font-medium text-amber-400 mb-1">
-                $5 Listing Fee
+                $1 Listing Fee
               </h3>
               <p className="text-xs text-zinc-400">
                 Your listing will be active for 90 days. Platform fee is 5% on successful transactions.

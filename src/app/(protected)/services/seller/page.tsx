@@ -273,7 +273,7 @@ export default function SellerPage() {
                 Services Marketplace
               </h3>
               <p className="text-xs text-zinc-400">
-                Sell your builder skills to other builders. Each listing costs $5 for 90 days.
+                Sell your builder skills to other builders. Each listing costs $1 for 90 days.
                 Platform fee is 5% on successful transactions.
               </p>
             </div>

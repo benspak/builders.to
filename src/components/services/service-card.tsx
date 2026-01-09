@@ -276,7 +276,7 @@ export function ServiceCard({ listing, isOwner = false }: ServiceCardProps) {
             <span className="text-xs text-zinc-500">
               {listing.status === "DRAFT"
                 ? "Complete your listing to publish"
-                : "Pay $5 listing fee to activate"}
+                : "Pay $1 listing fee to activate"}
             </span>
             {listing.status === "PENDING_PAYMENT" && (
               <Link
