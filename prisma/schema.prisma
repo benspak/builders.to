@@ -63,6 +63,7 @@ model User {
   zipCode       String?
   city          String?   // Derived from zipCode
   state         String?   // Derived from zipCode
+  locationSlug  String?   // URL-friendly location slug for Builders Local (e.g., "san-francisco-ca")
   headline      String?
   bio           String?   @db.Text
   websiteUrl    String?
@@ -126,6 +127,7 @@ model User {
 
   @@index([slug])
   @@index([stripeConnectId])
+  @@index([locationSlug])
 }
 
 model Project {

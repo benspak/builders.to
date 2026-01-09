@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { lookupZipCode } from "@/lib/zipcode";
+import { generateLocationSlug } from "@/lib/utils";
 
 function generateSlug(name: string): string {
   return name
@@ -190,6 +191,7 @@ export async function PATCH(
     // Lookup city/state from zip code if provided
     let city: string | null = null;
     let state: string | null = null;
+    let locationSlug: string | null = null;
     const trimmedZip = zipCode?.trim() || null;
 
     if (trimmedZip) {
@@ -197,6 +199,8 @@ export async function PATCH(
       if (locationData) {
         city = locationData.city;
         state = locationData.stateAbbreviation;
+        // Generate locationSlug for Builders Local
+        locationSlug = generateLocationSlug(`${city}, ${state}`);
       }
     }
 
@@ -216,6 +220,7 @@ export async function PATCH(
         zipCode: trimmedZip,
         city,
         state,
+        locationSlug,
         headline: headline?.trim() || null,
         bio: bio?.trim() || null,
         websiteUrl: websiteUrl?.trim() || null,

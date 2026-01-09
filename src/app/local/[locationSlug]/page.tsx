@@ -3,7 +3,8 @@ import Link from "next/link";
 import { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { CompanyCard } from "@/components/companies/company-card";
-import { MapPin, Building2, ArrowLeft } from "lucide-react";
+import { BuilderCard } from "@/components/profile/builder-card";
+import { MapPin, Building2, ArrowLeft, Users } from "lucide-react";
 import { formatLocationSlug } from "@/lib/utils";
 
 // Force dynamic rendering since this page fetches from database
@@ -16,21 +17,29 @@ interface LocationPageProps {
 export async function generateMetadata({ params }: LocationPageProps): Promise<Metadata> {
   const { locationSlug } = await params;
 
-  // Get the first company with this location to get the display name
+  // Get the first company or user with this location to get the display name
   const company = await prisma.company.findFirst({
     where: { locationSlug },
     select: { location: true },
   });
 
-  if (!company) {
-    return { title: "Location Not Found - Builders.to" };
+  const user = await prisma.user.findFirst({
+    where: { locationSlug },
+    select: { city: true, state: true },
+  });
+
+  let locationName: string;
+  if (company?.location) {
+    locationName = company.location;
+  } else if (user?.city && user?.state) {
+    locationName = `${user.city}, ${user.state}`;
+  } else {
+    locationName = formatLocationSlug(locationSlug);
   }
 
-  const locationName = company.location || formatLocationSlug(locationSlug);
-
   return {
-    title: `Companies in ${locationName} - Builders Local | Builders.to`,
-    description: `Discover companies building amazing products in ${locationName}. Connect with local builders and explore the tech ecosystem.`,
+    title: `Builders & Companies in ${locationName} - Builders Local | Builders.to`,
+    description: `Discover talented builders and innovative companies in ${locationName}. Connect with local talent and explore the tech ecosystem.`,
   };
 }
 
@@ -60,12 +69,46 @@ export default async function LocationPage({ params }: LocationPageProps) {
     },
   });
 
-  if (companies.length === 0) {
+  // Get all builders in this location
+  const builders = await prisma.user.findMany({
+    where: { locationSlug },
+    orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      displayName: true,
+      firstName: true,
+      lastName: true,
+      image: true,
+      headline: true,
+      city: true,
+      state: true,
+      openToWork: true,
+      lookingForCofounder: true,
+      availableForContract: true,
+      currentStreak: true,
+      _count: {
+        select: {
+          projects: true,
+        },
+      },
+    },
+  });
+
+  if (companies.length === 0 && builders.length === 0) {
     notFound();
   }
 
-  // Get the location display name from the first company
-  const locationName = companies[0].location || formatLocationSlug(locationSlug);
+  // Get the location display name
+  let locationName: string;
+  if (companies.length > 0 && companies[0].location) {
+    locationName = companies[0].location;
+  } else if (builders.length > 0 && builders[0].city && builders[0].state) {
+    locationName = `${builders[0].city}, ${builders[0].state}`;
+  } else {
+    locationName = formatLocationSlug(locationSlug);
+  }
 
   return (
     <div className="relative min-h-screen bg-zinc-950">
@@ -93,30 +136,66 @@ export default async function LocationPage({ params }: LocationPageProps) {
             </div>
             <div>
               <h1 className="text-3xl font-bold text-white">{locationName}</h1>
-              <p className="text-zinc-400">
-                {companies.length} {companies.length === 1 ? "company" : "companies"} building here
-              </p>
+              <div className="flex items-center gap-4 text-zinc-400 text-sm mt-1">
+                {builders.length > 0 && (
+                  <span className="flex items-center gap-1.5">
+                    <Users className="h-4 w-4" />
+                    {builders.length} {builders.length === 1 ? "builder" : "builders"}
+                  </span>
+                )}
+                {companies.length > 0 && (
+                  <span className="flex items-center gap-1.5">
+                    <Building2 className="h-4 w-4" />
+                    {companies.length} {companies.length === 1 ? "company" : "companies"}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Companies Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {companies.map((company) => (
-            <CompanyCard
-              key={company.id}
-              company={{
-                ...company,
-                createdAt: company.createdAt.toISOString(),
-              }}
-            />
-          ))}
-        </div>
+        {/* Builders Section */}
+        {builders.length > 0 && (
+          <section className="mb-12">
+            <div className="flex items-center gap-2 mb-6">
+              <Users className="h-5 w-5 text-orange-400" />
+              <h2 className="text-xl font-semibold text-white">Builders</h2>
+              <span className="text-sm text-zinc-500">({builders.length})</span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {builders.map((builder) => (
+                <BuilderCard key={builder.id} builder={builder} />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Companies Section */}
+        {companies.length > 0 && (
+          <section className="mb-12">
+            <div className="flex items-center gap-2 mb-6">
+              <Building2 className="h-5 w-5 text-emerald-400" />
+              <h2 className="text-xl font-semibold text-white">Companies</h2>
+              <span className="text-sm text-zinc-500">({companies.length})</span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {companies.map((company) => (
+                <CompanyCard
+                  key={company.id}
+                  company={{
+                    ...company,
+                    createdAt: company.createdAt.toISOString(),
+                  }}
+                />
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Browse More */}
         <div className="mt-12 text-center">
           <p className="text-zinc-500 mb-4">
-            Looking for companies in other locations?
+            Looking for builders or companies in other locations?
           </p>
           <Link
             href="/local"

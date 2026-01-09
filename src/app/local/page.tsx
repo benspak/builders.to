@@ -1,20 +1,20 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { MapPin, Building2, ArrowRight, Globe } from "lucide-react";
-import { formatLocationSlug } from "@/lib/utils";
+import { MapPin, Building2, ArrowRight, Globe, Users } from "lucide-react";
 
 // Force dynamic rendering since this page fetches from database
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Builders Local - Discover Companies by Location | Builders.to",
-  description: "Find companies building amazing products in your city. Browse by location and connect with local builders.",
+  title: "Builders Local - Discover Builders & Companies by Location | Builders.to",
+  description: "Find builders and companies in your city. Connect with local talent and explore regional tech ecosystems.",
 };
 
 interface LocationData {
   location: string;
   locationSlug: string;
-  count: number;
+  companyCount: number;
+  builderCount: number;
 }
 
 export default async function LocalPage() {
@@ -29,30 +29,63 @@ export default async function LocalPage() {
     },
   });
 
+  // Get all unique locations with builder counts
+  const builders = await prisma.user.findMany({
+    where: {
+      locationSlug: { not: null },
+    },
+    select: {
+      city: true,
+      state: true,
+      locationSlug: true,
+    },
+  });
+
   // Group by locationSlug and count
   const locationMap = new Map<string, LocationData>();
 
+  // Add companies to map
   for (const company of companies) {
     if (company.locationSlug && company.location) {
       const existing = locationMap.get(company.locationSlug);
       if (existing) {
-        existing.count += 1;
+        existing.companyCount += 1;
       } else {
         locationMap.set(company.locationSlug, {
           location: company.location,
           locationSlug: company.locationSlug,
-          count: 1,
+          companyCount: 1,
+          builderCount: 0,
         });
       }
     }
   }
 
-  // Convert to array and sort by count (descending)
-  const locations = Array.from(locationMap.values())
-    .sort((a, b) => b.count - a.count);
+  // Add builders to map
+  for (const builder of builders) {
+    if (builder.locationSlug && builder.city && builder.state) {
+      const existing = locationMap.get(builder.locationSlug);
+      const location = `${builder.city}, ${builder.state}`;
+      if (existing) {
+        existing.builderCount += 1;
+      } else {
+        locationMap.set(builder.locationSlug, {
+          location,
+          locationSlug: builder.locationSlug,
+          companyCount: 0,
+          builderCount: 1,
+        });
+      }
+    }
+  }
 
-  // Calculate total companies with locations
-  const totalCompanies = locations.reduce((sum, loc) => sum + loc.count, 0);
+  // Convert to array and sort by total count (descending)
+  const locations = Array.from(locationMap.values())
+    .sort((a, b) => (b.companyCount + b.builderCount) - (a.companyCount + a.builderCount));
+
+  // Calculate totals
+  const totalCompanies = locations.reduce((sum, loc) => sum + loc.companyCount, 0);
+  const totalBuilders = locations.reduce((sum, loc) => sum + loc.builderCount, 0);
 
   return (
     <div className="relative min-h-screen bg-zinc-950">
@@ -71,15 +104,19 @@ export default async function LocalPage() {
             <span>Builders Local</span>
           </div>
           <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4">
-            Discover Companies by Location
+            Discover Builders & Companies by Location
           </h1>
           <p className="text-xl text-zinc-400 max-w-2xl mx-auto">
-            Find companies building amazing products in your city. Connect with local builders and explore regional tech ecosystems.
+            Find talented builders and innovative companies in your city. Connect with local talent and explore regional tech ecosystems.
           </p>
           <div className="mt-6 flex items-center justify-center gap-6 text-sm text-zinc-500">
             <span className="flex items-center gap-2">
               <MapPin className="h-4 w-4" />
               {locations.length} locations
+            </span>
+            <span className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              {totalBuilders} builders
             </span>
             <span className="flex items-center gap-2">
               <Building2 className="h-4 w-4" />
@@ -105,9 +142,20 @@ export default async function LocalPage() {
                         {loc.location}
                       </h2>
                     </div>
-                    <p className="text-sm text-zinc-400">
-                      {loc.count} {loc.count === 1 ? "company" : "companies"}
-                    </p>
+                    <div className="flex items-center gap-3 text-sm text-zinc-400">
+                      {loc.builderCount > 0 && (
+                        <span className="flex items-center gap-1">
+                          <Users className="h-3.5 w-3.5" />
+                          {loc.builderCount} {loc.builderCount === 1 ? "builder" : "builders"}
+                        </span>
+                      )}
+                      {loc.companyCount > 0 && (
+                        <span className="flex items-center gap-1">
+                          <Building2 className="h-3.5 w-3.5" />
+                          {loc.companyCount} {loc.companyCount === 1 ? "company" : "companies"}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <ArrowRight className="h-5 w-5 text-zinc-600 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
                 </div>
@@ -121,14 +169,14 @@ export default async function LocalPage() {
               No locations yet
             </h2>
             <p className="text-zinc-400 mb-6">
-              Companies with locations will appear here.
+              Set your location in your profile to appear here.
             </p>
             <Link
-              href="/companies/new"
+              href="/settings"
               className="inline-flex items-center gap-2 rounded-xl bg-orange-500 px-6 py-3 text-sm font-semibold text-white hover:bg-orange-600 transition-colors"
             >
-              <Building2 className="h-4 w-4" />
-              Add Your Company
+              <MapPin className="h-4 w-4" />
+              Set Your Location
             </Link>
           </div>
         )}
