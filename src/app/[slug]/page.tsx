@@ -24,7 +24,7 @@ import {
   Clock,
 } from "lucide-react";
 import { FollowButton, FollowStats } from "@/components/profile";
-import { formatRelativeTime, getStatusColor, getStatusLabel, getCategoryColor, getCategoryLabel, getMemberRoleLabel, getMemberRoleColor } from "@/lib/utils";
+import { formatRelativeTime, getStatusColor, getStatusLabel, getCategoryColor, getCategoryLabel, getMemberRoleLabel, getMemberRoleColor, getCompanyUrl } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { UpdateForm, UpdateTimeline } from "@/components/updates";
 
@@ -144,6 +144,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
           name: true,
           logo: true,
           location: true,
+          locationSlug: true,
           category: true,
           about: true,
           createdAt: true,
@@ -166,6 +167,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
               name: true,
               logo: true,
               location: true,
+              locationSlug: true,
               category: true,
               _count: {
                 select: { projects: true },
@@ -600,7 +602,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                   {user.companies.map((company) => (
                     <Link
                       key={company.id}
-                      href={`/companies/${company.slug || company.id}`}
+                      href={getCompanyUrl(company)}
                       className="block rounded-xl border border-white/10 bg-zinc-900/50 p-4 hover:border-cyan-500/30 hover:bg-zinc-900/70 transition-all group"
                     >
                       <div className="flex items-start gap-3">
@@ -678,7 +680,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                   {user.companyMemberships.map((membership) => (
                     <Link
                       key={membership.id}
-                      href={`/companies/${membership.company.slug || membership.company.id}`}
+                      href={getCompanyUrl(membership.company)}
                       className="block rounded-xl border border-white/10 bg-zinc-900/50 p-4 hover:border-violet-500/30 hover:bg-zinc-900/70 transition-all group"
                     >
                       <div className="flex items-start gap-3">

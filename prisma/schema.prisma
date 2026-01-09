@@ -375,18 +375,19 @@ enum CompensationType {
 }
 
 model Company {
-  id          String          @id @default(cuid())
-  slug        String?         @unique  // Temporarily optional for migration
-  name        String
-  logo        String?
-  location    String?
-  category    CompanyCategory @default(OTHER)
-  about       String?         @db.Text
-  website     String?
-  size        CompanySize?
-  yearFounded Int?
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  id           String          @id @default(cuid())
+  slug         String?         @unique  // Temporarily optional for migration
+  name         String
+  logo         String?
+  location     String?
+  locationSlug String?         // URL-friendly location slug for Builders Local (e.g., "san-francisco")
+  category     CompanyCategory @default(OTHER)
+  about        String?         @db.Text
+  website      String?
+  size         CompanySize?
+  yearFounded  Int?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
 
   // Tech Stack / Tooling
   techStack   String[]        // Array of technologies used (e.g., ["React", "PostgreSQL", "AWS"])
@@ -415,6 +416,7 @@ model Company {
   @@index([userId])
   @@index([category])
   @@index([isHiring])
+  @@index([locationSlug])
 }
 
 // Company members - allows multiple users to be part of a company with different roles

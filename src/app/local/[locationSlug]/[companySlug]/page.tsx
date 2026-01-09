@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import { Metadata } from "next";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ProjectCard } from "@/components/projects/project-card";
@@ -18,7 +19,12 @@ import {
   getCategoryColor,
   getSizeLabel,
   getCompanyUrl,
+  getCompanyEditUrl,
 } from "@/lib/utils";
+
+// Force dynamic rendering since this page fetches from database
+export const dynamic = "force-dynamic";
+
 import {
   ArrowLeft,
   ExternalLink,
@@ -35,26 +41,39 @@ import {
 } from "lucide-react";
 
 interface CompanyPageProps {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ locationSlug: string; companySlug: string }>;
 }
 
-export default async function CompanyPage({ params }: CompanyPageProps) {
-  const { slug } = await params;
-  const session = await auth();
+export async function generateMetadata({ params }: CompanyPageProps): Promise<Metadata> {
+  const { locationSlug, companySlug } = await params;
 
-  // First check if this company has a locationSlug and should redirect
-  const companyCheck = await prisma.company.findUnique({
-    where: { slug },
-    select: { id: true, slug: true, locationSlug: true },
+  const company = await prisma.company.findFirst({
+    where: {
+      slug: companySlug,
+      locationSlug: locationSlug,
+    },
+    select: { name: true, about: true, location: true },
   });
 
-  // If company has a location, redirect to the new Builders Local URL
-  if (companyCheck?.locationSlug) {
-    redirect(getCompanyUrl(companyCheck));
+  if (!company) {
+    return { title: "Company Not Found - Builders.to" };
   }
 
-  const company = await prisma.company.findUnique({
-    where: { slug },
+  return {
+    title: `${company.name} - ${company.location || "Builders Local"} | Builders.to`,
+    description: company.about || `${company.name} on Builders.to`,
+  };
+}
+
+export default async function LocalCompanyPage({ params }: CompanyPageProps) {
+  const { locationSlug, companySlug } = await params;
+  const session = await auth();
+
+  const company = await prisma.company.findFirst({
+    where: {
+      slug: companySlug,
+      locationSlug: locationSlug,
+    },
     include: {
       user: {
         select: {
@@ -122,6 +141,18 @@ export default async function CompanyPage({ params }: CompanyPageProps) {
   });
 
   if (!company) {
+    // Try to find by slug only and redirect if locationSlug doesn't match
+    const companyBySlug = await prisma.company.findUnique({
+      where: { slug: companySlug },
+      select: { slug: true, locationSlug: true, id: true },
+    });
+
+    if (companyBySlug) {
+      // Redirect to the correct URL
+      const correctUrl = getCompanyUrl(companyBySlug);
+      redirect(correctUrl);
+    }
+
     notFound();
   }
 
@@ -159,14 +190,16 @@ export default async function CompanyPage({ params }: CompanyPageProps) {
   // Active open roles count
   const activeRolesCount = company.roles.filter(r => r.isActive).length;
 
+  const editUrl = getCompanyEditUrl(company);
+
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
       <Link
-        href="/companies"
+        href={`/local/${locationSlug}`}
         className="inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors mb-8"
       >
         <ArrowLeft className="h-4 w-4" />
-        Back to companies
+        Back to {company.location}
       </Link>
 
       <article className="space-y-8">
@@ -195,10 +228,13 @@ export default async function CompanyPage({ params }: CompanyPageProps) {
                 <div>
                   <h1 className="text-3xl font-bold text-white">{company.name}</h1>
                   {company.location && (
-                    <div className="mt-2 flex items-center gap-2 text-zinc-400">
+                    <Link
+                      href={`/local/${locationSlug}`}
+                      className="mt-2 flex items-center gap-2 text-emerald-400 hover:text-emerald-300 transition-colors"
+                    >
                       <MapPin className="h-4 w-4" />
                       <span>{company.location}</span>
-                    </div>
+                    </Link>
                   )}
                 </div>
 
@@ -206,7 +242,7 @@ export default async function CompanyPage({ params }: CompanyPageProps) {
                 {canEdit && (
                   <div className="flex items-center gap-2">
                     <Link
-                      href={`/companies/${company.slug}/edit`}
+                      href={editUrl}
                       className="p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-white/5 transition-colors"
                       title="Edit company"
                     >

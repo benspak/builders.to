@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Building2, MapPin, Users, ExternalLink, Briefcase, Calendar, Zap, Code } from "lucide-react";
-import { cn, formatRelativeTime, getCategoryLabel, getCategoryColor, getSizeShortLabel } from "@/lib/utils";
+import { cn, formatRelativeTime, getCategoryLabel, getCategoryColor, getSizeShortLabel, getCompanyUrl } from "@/lib/utils";
 import { TractionBadgesMinimal } from "./traction-badges";
 import { TechStackDisplay } from "./tech-stack-display";
 
@@ -14,6 +14,7 @@ interface CompanyCardProps {
     name: string;
     logo?: string | null;
     location?: string | null;
+    locationSlug?: string | null;
     category: string;
     about?: string | null;
     website?: string | null;
@@ -48,6 +49,7 @@ export function CompanyCard({ company }: CompanyCardProps) {
     company.isBootstrapped || company.isProfitable || company.hasRaisedFunding;
 
   const activeRolesCount = company._count.roles || 0;
+  const companyUrl = getCompanyUrl(company);
 
   return (
     <div className="card card-hover group relative flex flex-col overflow-hidden">
@@ -73,7 +75,7 @@ export function CompanyCard({ company }: CompanyCardProps) {
           {/* Name and location */}
           <div className="flex-1 min-w-0">
             <Link
-              href={`/companies/${company.slug || company.id}`}
+              href={companyUrl}
               className="block group/title"
             >
               <h3 className="text-lg font-semibold text-white truncate group-hover/title:text-orange-400 transition-colors">

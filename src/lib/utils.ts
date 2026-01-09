@@ -27,6 +27,62 @@ export function generateUniqueSlug(title: string): string {
   return `${baseSlug}-${randomSuffix}`;
 }
 
+/**
+ * Generates a location slug from a location string
+ * Examples:
+ * - "San Francisco, CA" -> "san-francisco-ca"
+ * - "New York City" -> "new-york-city"
+ * - "London, UK" -> "london-uk"
+ */
+export function generateLocationSlug(location: string | null | undefined): string | null {
+  if (!location || location.trim() === "") {
+    return null;
+  }
+  return generateSlug(location);
+}
+
+/**
+ * Formats a location slug for display (title case with spaces)
+ * Example: "san-francisco-ca" -> "San Francisco Ca"
+ */
+export function formatLocationSlug(slug: string): string {
+  return slug
+    .split("-")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+/**
+ * Generates the URL path for a company based on location
+ * Returns /local/[locationSlug]/[companySlug] or /companies/[companySlug] if no location
+ */
+export function getCompanyUrl(company: {
+  slug?: string | null;
+  id: string;
+  locationSlug?: string | null;
+}): string {
+  const companySlug = company.slug || company.id;
+  if (company.locationSlug) {
+    return `/local/${company.locationSlug}/${companySlug}`;
+  }
+  return `/companies/${companySlug}`;
+}
+
+/**
+ * Generates the edit URL path for a company
+ */
+export function getCompanyEditUrl(company: {
+  slug?: string | null;
+  id: string;
+  locationSlug?: string | null;
+}): string {
+  const companySlug = company.slug || company.id;
+  if (company.locationSlug) {
+    return `/local/${company.locationSlug}/${companySlug}/edit`;
+  }
+  return `/companies/${companySlug}/edit`;
+}
+
 export function formatRelativeTime(date: Date | string): string {
   const now = new Date();
   const then = new Date(date);

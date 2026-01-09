@@ -7,7 +7,7 @@ import { UserMenu } from "@/components/auth/user-menu";
 import { NotificationDropdown } from "@/components/notifications";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { SearchCommand } from "@/components/ui/search-command";
-import { Plus, Rocket, ChevronDown, Sparkles, Menu, X } from "lucide-react";
+import { Plus, Rocket, ChevronDown, Sparkles, Menu, X, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function Navbar() {
@@ -44,7 +44,7 @@ export function Navbar() {
                   className="fixed inset-0 z-10"
                   onClick={() => setMobileMenuOpen(false)}
                 />
-                <div 
+                <div
                   className="absolute left-0 top-full z-20 mt-2 w-48 rounded-xl border p-2 shadow-xl backdrop-blur-xl"
                   style={{
                     background: "var(--card-bg)",
@@ -76,6 +76,15 @@ export function Navbar() {
                     Companies
                   </Link>
                   <Link
+                    href="/local"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-white/5"
+                    style={{ color: "var(--foreground-muted)" }}
+                  >
+                    <MapPin className="h-3.5 w-3.5 text-emerald-400" />
+                    Local
+                  </Link>
+                  <Link
                     href="/services"
                     onClick={() => setMobileMenuOpen(false)}
                     className="block px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-white/5"
@@ -83,10 +92,10 @@ export function Navbar() {
                   >
                     Services
                   </Link>
-                  
+
                   {/* Divider */}
                   <div className="my-2 border-t" style={{ borderColor: "var(--card-border)" }} />
-                  
+
                   {/* Theme Toggle */}
                   <div className="flex items-center justify-between px-3 py-2.5 rounded-lg">
                     <span className="text-sm font-medium" style={{ color: "var(--foreground-muted)" }}>
@@ -140,6 +149,14 @@ export function Navbar() {
             Companies
           </Link>
           <Link
+            href="/local"
+            className="hidden lg:flex items-center gap-1.5 text-sm font-medium transition-colors"
+            style={{ color: "var(--foreground-muted)" }}
+          >
+            <MapPin className="h-3.5 w-3.5 text-emerald-400" />
+            Local
+          </Link>
+          <Link
             href="/services"
             className="hidden lg:block text-sm font-medium transition-colors"
             style={{ color: "var(--foreground-muted)" }}
@@ -174,7 +191,7 @@ export function Navbar() {
                       className="fixed inset-0 z-10"
                       onClick={() => setMobileShareOpen(false)}
                     />
-                    <div 
+                    <div
                       className="absolute right-0 top-full z-20 mt-2 w-48 rounded-xl border p-2 shadow-xl backdrop-blur-xl"
                       style={{
                         background: "var(--card-bg)",
@@ -261,7 +278,7 @@ export function Navbar() {
               <div className="hidden sm:block">
                 <NotificationDropdown />
               </div>
-              
+
               <UserMenu />
             </>
           ) : (

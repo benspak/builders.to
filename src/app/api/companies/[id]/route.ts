@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { generateSlug, generateUniqueSlug, validateImageUrl } from "@/lib/utils";
+import { generateSlug, generateUniqueSlug, validateImageUrl, generateLocationSlug } from "@/lib/utils";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -224,6 +224,9 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       }
     }
 
+    // Generate location slug for Builders Local
+    const locationSlug = generateLocationSlug(location);
+
     const company = await prisma.company.update({
       where: { id },
       data: {
@@ -231,6 +234,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         slug: finalSlug,
         logo,
         location,
+        locationSlug,
         category,
         about,
         website,

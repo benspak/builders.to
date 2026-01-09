@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { CompanyCategory, CompanySize } from "@prisma/client";
-import { generateSlug, generateUniqueSlug, validateImageUrl } from "@/lib/utils";
+import { generateSlug, generateUniqueSlug, validateImageUrl, generateLocationSlug } from "@/lib/utils";
 import { rateLimit, RATE_LIMITS, rateLimitResponse } from "@/lib/rate-limit";
 
 // GET /api/companies - List all companies
@@ -18,6 +18,7 @@ export async function GET(request: NextRequest) {
     const mine = searchParams.get("mine") === "true";
     const hiring = searchParams.get("hiring") === "true";
     const contracts = searchParams.get("contracts") === "true";
+    const locationSlug = searchParams.get("locationSlug");
 
     // If filtering by "mine", get the current user's ID
     let currentUserId: string | null = null;
@@ -45,6 +46,7 @@ export async function GET(request: NextRequest) {
       ...(size && { size }),
       ...(hiring && { isHiring: true }),
       ...(contracts && { acceptsContracts: true }),
+      ...(locationSlug && { locationSlug }),
       ...(search && {
         OR: [
           { name: { contains: search, mode: "insensitive" as const } },
@@ -179,6 +181,9 @@ export async function POST(request: NextRequest) {
       finalSlug = generateUniqueSlug(name);
     }
 
+    // Generate location slug for Builders Local
+    const locationSlug = generateLocationSlug(location);
+
     // Use a transaction to create company and owner membership together
     const company = await prisma.$transaction(async (tx) => {
       const newCompany = await tx.company.create({
@@ -187,6 +192,7 @@ export async function POST(request: NextRequest) {
           slug: finalSlug,
           logo,
           location,
+          locationSlug,
           category: category || "OTHER",
           about,
           website,

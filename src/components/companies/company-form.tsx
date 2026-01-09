@@ -20,7 +20,7 @@ import {
   Plus,
   Briefcase,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, getCompanyUrl } from "@/lib/utils";
 import { ImageUpload } from "@/components/ui/image-upload";
 
 interface CompanyFormProps {
@@ -216,7 +216,9 @@ export function CompanyForm({ initialData }: CompanyFormProps) {
       }
 
       const company = await response.json();
-      router.push(`/companies/${company.slug}`);
+      // Use the new URL format with location
+      const companyUrl = getCompanyUrl(company);
+      router.push(companyUrl);
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");

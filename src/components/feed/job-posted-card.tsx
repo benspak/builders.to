@@ -13,7 +13,7 @@ import {
   ExternalLink,
   Loader2,
 } from "lucide-react";
-import { cn, formatRelativeTime } from "@/lib/utils";
+import { cn, formatRelativeTime, getCompanyUrl } from "@/lib/utils";
 
 interface JobPostedCardProps {
   event: {
@@ -39,6 +39,7 @@ interface JobPostedCardProps {
         slug?: string | null;
         name: string;
         logo?: string | null;
+        locationSlug?: string | null;
       };
     } | null;
   };
@@ -85,7 +86,7 @@ export function JobPostedCard({ event, currentUserId }: JobPostedCardProps) {
   const companyRole = event.companyRole;
   const company = companyRole?.company;
 
-  const companyUrl = company?.slug ? `/companies/${company.slug}` : company?.id ? `/companies/${company.id}` : null;
+  const companyUrl = company ? getCompanyUrl(company) : null;
   const salary = formatSalary(companyRole?.salaryMin, companyRole?.salaryMax, companyRole?.currency);
 
   const handleLike = async () => {

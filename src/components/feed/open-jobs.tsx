@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Building2, MapPin, Globe, DollarSign, Zap } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, getCompanyUrl } from "@/lib/utils";
 
 interface OpenJob {
   id: string;
@@ -19,6 +19,7 @@ interface OpenJob {
     slug?: string | null;
     name: string;
     logo?: string | null;
+    locationSlug?: string | null;
   };
 }
 
@@ -89,11 +90,12 @@ export function OpenJobs({ jobs }: OpenJobsProps) {
       <div className="divide-y divide-zinc-800/30">
         {jobs.map((job) => {
           const salary = formatSalary(job.salaryMin, job.salaryMax);
+          const companyUrl = getCompanyUrl(job.company);
 
           return (
             <Link
               key={job.id}
-              href={`/companies/${job.company.slug || job.company.id}`}
+              href={companyUrl}
               className="block px-4 py-3 hover:bg-white/5 transition-colors group"
             >
               <div className="flex items-start gap-3">
