@@ -753,7 +753,7 @@ model Advertisement {
   // Payment info
   stripeSessionId String?             @unique
   stripePaymentId String?
-  amountPaid      Int                 @default(5000)  // $50.00 in cents
+  amountPaid      Int                 @default(2000)  // $20.00 in cents
   status          AdvertisementStatus @default(DRAFT)
 
   // Active period (30 days from payment)

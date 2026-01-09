@@ -18,6 +18,10 @@ npm ci --include=dev
 echo "🔧 Generating Prisma client..."
 npx prisma generate
 
+echo "🗄️ Cleaning up deprecated tables..."
+# Explicitly drop the RoastMVP table that was removed from the schema
+npx prisma db execute --file ./scripts/drop-roast-mvp.sql || true
+
 echo "🗄️ Running database migrations..."
 # Using db push to sync schema - safe for adding nullable columns
 npx prisma db push
