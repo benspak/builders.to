@@ -68,14 +68,6 @@ export function Navbar() {
                     Projects
                   </Link>
                   <Link
-                    href="/companies"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="block px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-white/5"
-                    style={{ color: "var(--foreground-muted)" }}
-                  >
-                    Companies
-                  </Link>
-                  <Link
                     href="/local"
                     onClick={() => setMobileMenuOpen(false)}
                     className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-white/5"
@@ -140,13 +132,6 @@ export function Navbar() {
             style={{ color: "var(--foreground-muted)" }}
           >
             Projects
-          </Link>
-          <Link
-            href="/companies"
-            className="hidden lg:block text-sm font-medium transition-colors"
-            style={{ color: "var(--foreground-muted)" }}
-          >
-            Companies
           </Link>
           <Link
             href="/local"

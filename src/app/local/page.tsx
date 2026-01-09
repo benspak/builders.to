@@ -133,17 +133,6 @@ export default async function LocalPage() {
           </div>
         )}
 
-        {/* Browse All Link */}
-        <div className="mt-12 text-center">
-          <Link
-            href="/companies"
-            className="inline-flex items-center gap-2 text-zinc-400 hover:text-white transition-colors"
-          >
-            <Building2 className="h-4 w-4" />
-            Or browse all companies
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-        </div>
       </div>
     </div>
   );
