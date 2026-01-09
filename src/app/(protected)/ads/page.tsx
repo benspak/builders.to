@@ -38,7 +38,7 @@ async function AdsList() {
         <h3 className="text-lg font-medium text-white mb-2">No Ads Yet</h3>
         <p className="text-sm text-zinc-500 mb-6 max-w-md mx-auto">
           Create your first ad to reach thousands of builders on the Builders.to feed.
-          Each ad runs for 30 days for just $50.
+          Each ad runs for 30 days for just $20.
         </p>
         <Link
           href="/ads/new"
@@ -113,7 +113,7 @@ export default function AdsPage() {
               </h3>
               <p className="text-xs text-zinc-400">
                 Your ad will be displayed in the feed sidebar, seen by thousands of builders daily.
-                Each ad runs for 30 days for a flat $50 fee (non-refundable once active).
+                Each ad runs for 30 days for a flat $20 fee (non-refundable once active).
               </p>
             </div>
           </div>

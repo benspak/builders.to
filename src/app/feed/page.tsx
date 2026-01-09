@@ -3,7 +3,6 @@ import { Loader2, Sparkles } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { CombinedFeed, TopBuilders, OpenJobs } from "@/components/feed";
-import { RoastMVPCard } from "@/components/roast-mvp/roast-mvp-card";
 import { SiteViewsCounter } from "@/components/analytics/site-views-counter";
 import { SidebarAd } from "@/components/ads";
 import { ProductHuntBadge } from "@/components/ui/product-hunt-badge";
@@ -215,44 +214,6 @@ async function FeedContent() {
   );
 }
 
-async function RoastMVPSection() {
-  const session = await auth();
-  const isAuthenticated = !!session?.user;
-
-  let userProjects: Array<{ id: string; title: string; slug: string | null }> = [];
-
-  if (session?.user?.id) {
-    const projects = await prisma.project.findMany({
-      where: {
-        userId: session.user.id,
-        // Exclude projects already in the roast queue (paid or featured)
-        OR: [
-          { roastMVP: null },
-          {
-            roastMVP: {
-              status: { in: ["PENDING_PAYMENT", "COMPLETED", "CANCELLED"] }
-            }
-          },
-        ],
-      },
-      select: {
-        id: true,
-        title: true,
-        slug: true,
-      },
-      orderBy: { createdAt: "desc" },
-    });
-    userProjects = projects;
-  }
-
-  return (
-    <RoastMVPCard
-      isAuthenticated={isAuthenticated}
-      userProjects={userProjects}
-    />
-  );
-}
-
 async function TopBuildersSection() {
   // Fetch top builders by total project count (owned + co-built)
   // This rewards collaboration by counting both owned projects and co-builder contributions
@@ -410,21 +371,6 @@ export default function FeedPage() {
           {/* Right Sidebar - Open Jobs */}
           <aside className="xl:w-72 shrink-0 order-2 xl:order-3">
             <div className="xl:sticky xl:top-24 xl:max-h-[calc(100vh-8rem)] xl:overflow-y-auto space-y-6 xl:pb-4">
-              {/* Roast my MVP Section */}
-              <Suspense
-                fallback={
-                  <div className="rounded-xl border border-zinc-800/50 bg-zinc-900/50 p-4 animate-pulse">
-                    <div className="flex items-center gap-2 mb-4">
-                      <div className="h-5 w-5 bg-zinc-800 rounded" />
-                      <div className="h-5 w-32 bg-zinc-800 rounded" />
-                    </div>
-                    <div className="h-32 bg-zinc-800 rounded-lg" />
-                  </div>
-                }
-              >
-                <RoastMVPSection />
-              </Suspense>
-
               {/* Product Hunt Badge */}
               <div className="flex justify-center">
                 <ProductHuntBadge />

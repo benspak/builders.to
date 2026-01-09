@@ -95,7 +95,6 @@ model User {
   commentLikes      CommentLike[]
   companies         Company[]
   companyMemberships CompanyMember[]  // Companies where user is a team member
-  roastMVPs         RoastMVP[]
   dailyUpdates      DailyUpdate[]
   updateLikes       UpdateLike[]
   updateComments    UpdateComment[]
@@ -155,7 +154,6 @@ model Project {
   upvotes           Upvote[]
   comments          Comment[]
   images            ProjectImage[]
-  roastMVP          RoastMVP?
   milestones        ProjectMilestone[]
   coBuilders        ProjectCoBuilder[]
   notifications     Notification[]
@@ -511,44 +509,6 @@ model CompanyRole {
   @@index([createdAt])
 }
 
-// Roast my MVP - Featured project section
-model RoastMVP {
-  id              String         @id @default(cuid())
-  projectId       String
-  userId          String
-
-  // Payment info
-  stripeSessionId String?        @unique
-  stripePaymentId String?
-  amountPaid      Int            @default(2000) // $20.00 in cents
-  status          RoastMVPStatus @default(PENDING_PAYMENT)
-
-  // Queue management
-  queuePosition   Int?           // Position in queue (null if not yet paid)
-
-  // Feature dates
-  featuredAt      DateTime?      // When the project was/will be featured
-  expiresAt       DateTime?      // When the featuring ends (1 week after featuredAt)
-
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-
-  project         Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([projectId]) // Each project can only be in the roast queue once
-  @@index([status])
-  @@index([queuePosition])
-  @@index([userId])
-}
-
-enum RoastMVPStatus {
-  PENDING_PAYMENT   // User started checkout but hasn't paid
-  PAID              // Paid, in the queue waiting
-  FEATURED          // Currently being featured
-  COMPLETED         // Feature period is over
-  CANCELLED         // Payment was refunded or cancelled
-}
 
 // Site analytics - page views tracking
 model SiteView {

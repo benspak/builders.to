@@ -261,7 +261,7 @@ export function AdCard({ ad, onDelete }: AdCardProps) {
               ) : (
                 <>
                   <CreditCard className="h-4 w-4" />
-                  Pay $50 to Activate
+                  Pay $20 to Activate
                 </>
               )}
             </button>

@@ -49,7 +49,7 @@ export default function NewAdPage() {
               </p>
             </div>
             <div className="text-right">
-              <span className="text-2xl font-bold text-white">$50</span>
+              <span className="text-2xl font-bold text-white">$20</span>
               <span className="text-sm text-zinc-500">/month</span>
             </div>
           </div>

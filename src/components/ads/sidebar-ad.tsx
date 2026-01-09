@@ -93,7 +93,7 @@ export function SidebarAd({ isAuthenticated = false }: SidebarAdProps) {
           </div>
           <h3 className="text-sm font-medium text-white mb-1">Advertise Here</h3>
           <p className="text-xs text-zinc-500 mb-4">
-            Reach thousands of builders for just $50/mo
+            Reach thousands of builders for just $20/mo
           </p>
           {isAuthenticated ? (
             <Link
@@ -101,7 +101,7 @@ export function SidebarAd({ isAuthenticated = false }: SidebarAdProps) {
               className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 transition-all shadow-lg shadow-emerald-500/20"
             >
               <Megaphone className="h-4 w-4" />
-              Create Ad — $50/mo
+              Create Ad — $20/mo
             </Link>
           ) : (
             <Link
