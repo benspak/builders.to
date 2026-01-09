@@ -44,10 +44,15 @@ export function Navbar() {
                   className="fixed inset-0 z-10"
                   onClick={() => setMobileMenuOpen(false)}
                 />
+<<<<<<< HEAD
                 <div
                   className="absolute left-0 top-full z-20 mt-2 w-48 rounded-xl border p-2 shadow-xl backdrop-blur-xl"
+=======
+                <div 
+                  className="absolute left-0 top-full z-20 mt-2 w-48 rounded-xl border p-2 shadow-2xl"
+>>>>>>> a31b1206d6d05ad2c2c6c92eca6f53405b91d872
                   style={{
-                    background: "var(--card-bg)",
+                    background: "var(--background-secondary)",
                     borderColor: "var(--card-border)"
                   }}
                 >
@@ -191,10 +196,15 @@ export function Navbar() {
                       className="fixed inset-0 z-10"
                       onClick={() => setMobileShareOpen(false)}
                     />
+<<<<<<< HEAD
                     <div
                       className="absolute right-0 top-full z-20 mt-2 w-48 rounded-xl border p-2 shadow-xl backdrop-blur-xl"
+=======
+                    <div 
+                      className="absolute right-0 top-full z-20 mt-2 w-48 rounded-xl border p-2 shadow-2xl"
+>>>>>>> a31b1206d6d05ad2c2c6c92eca6f53405b91d872
                       style={{
-                        background: "var(--card-bg)",
+                        background: "var(--background-secondary)",
                         borderColor: "var(--card-border)"
                       }}
                     >
