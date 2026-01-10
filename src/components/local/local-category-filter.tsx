@@ -43,9 +43,9 @@ export function LocalCategoryFilter({
     // When we have a locationSlug, use path-based routing
     if (locationSlug) {
       if (!category) {
-        return `/local/${locationSlug}`;
+        return `/${locationSlug}`;
       }
-      return `/local/${locationSlug}/${category.toLowerCase()}`;
+      return `/${locationSlug}/${category.toLowerCase()}`;
     }
 
     // Without a locationSlug, use query params for filtering on /local

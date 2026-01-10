@@ -26,7 +26,7 @@ export function LocalListingCard({ listing, showStatus = false }: LocalListingCa
 
   return (
     <Link
-      href={`/local/listing/${listing.slug}`}
+      href={`/listing/${listing.slug}`}
       className="group block rounded-xl border border-zinc-800/50 bg-zinc-900/50 hover:border-orange-500/30 hover:bg-zinc-900/70 transition-all overflow-hidden"
     >
       <div className="flex">

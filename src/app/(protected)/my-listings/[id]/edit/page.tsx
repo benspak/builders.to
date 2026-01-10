@@ -65,7 +65,7 @@ export default async function EditListingPage({ params }: PageProps) {
         {/* Header */}
         <div className="mb-8">
           <Link
-            href={`/local/listing/${listing.slug}`}
+            href={`/listing/${listing.slug}`}
             className="inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-white mb-4 transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />

@@ -12,6 +12,9 @@ import { CompanyRoleList } from "@/components/companies/company-role-list";
 import { CompanyMembers } from "@/components/companies/company-members";
 import { TractionBadges } from "@/components/companies/traction-badges";
 import { TechStackDisplay } from "@/components/companies/tech-stack-display";
+import { LocalListingCard } from "@/components/local/local-listing-card";
+import { LocalCategoryFilter } from "@/components/local/local-category-filter";
+import { CATEGORY_LABELS } from "@/components/local/types";
 import {
   cn,
   formatRelativeTime,
@@ -20,6 +23,7 @@ import {
   getSizeLabel,
   getCompanyUrl,
   getCompanyEditUrl,
+  formatLocationSlug,
 } from "@/lib/utils";
 
 // Force dynamic rendering since this page fetches from database
@@ -38,7 +42,12 @@ import {
   MessageSquare,
   Code,
   Zap,
+  Plus,
+  Megaphone,
 } from "lucide-react";
+
+// Valid local listing categories
+const VALID_CATEGORIES = ["community", "services", "discussion", "coworking_housing", "for_sale", "jobs"];
 
 interface CompanyPageProps {
   params: Promise<{ slug: string; companySlug: string }>;
@@ -46,6 +55,19 @@ interface CompanyPageProps {
 
 export async function generateMetadata({ params }: CompanyPageProps): Promise<Metadata> {
   const { slug: locationSlug, companySlug } = await params;
+
+  // Check if this is a category filter page
+  if (VALID_CATEGORIES.includes(companySlug.toLowerCase())) {
+    const locationName = formatLocationSlug(locationSlug);
+    const categoryLabel = companySlug.toLowerCase() === "jobs"
+      ? "Jobs"
+      : CATEGORY_LABELS[companySlug.toUpperCase() as keyof typeof CATEGORY_LABELS] || companySlug;
+
+    return {
+      title: `${categoryLabel} in ${locationName} | Builders.to`,
+      description: `Find ${categoryLabel.toLowerCase()} listings in ${locationName}. Connect with your local community.`,
+    };
+  }
 
   const company = await prisma.company.findFirst({
     where: {
@@ -69,6 +91,235 @@ export default async function LocalCompanyPage({ params }: CompanyPageProps) {
   const { slug: locationSlug, companySlug } = await params;
   const session = await auth();
 
+  // Check if this is a category filter page
+  if (VALID_CATEGORIES.includes(companySlug.toLowerCase())) {
+    const category = companySlug.toUpperCase();
+    const locationName = formatLocationSlug(locationSlug);
+
+    // If it's the "jobs" category, fetch company roles
+    if (companySlug.toLowerCase() === "jobs") {
+      const jobs = await prisma.companyRole.findMany({
+        where: {
+          isActive: true,
+          company: {
+            locationSlug: locationSlug,
+          },
+        },
+        orderBy: { createdAt: "desc" },
+        include: {
+          company: {
+            select: {
+              id: true,
+              slug: true,
+              name: true,
+              logo: true,
+              location: true,
+              locationSlug: true,
+            },
+          },
+        },
+      });
+
+      return (
+        <div className="relative min-h-screen bg-zinc-950">
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute -top-40 -right-40 h-[500px] w-[500px] rounded-full bg-cyan-500/10 blur-3xl" />
+          </div>
+
+          <div className="relative mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+            <Link
+              href={`/${locationSlug}`}
+              className="inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors mb-6"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to {locationName}
+            </Link>
+
+            <div className="mb-8">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-cyan-500/20 border border-cyan-500/30">
+                  <Briefcase className="h-6 w-6 text-cyan-400" />
+                </div>
+                <div>
+                  <h1 className="text-3xl font-bold text-white">Jobs in {locationName}</h1>
+                  <p className="text-zinc-400">{jobs.length} open position{jobs.length !== 1 ? "s" : ""}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="mb-8">
+              <LocalCategoryFilter locationSlug={locationSlug} currentCategory="jobs" />
+            </div>
+
+            {jobs.length === 0 ? (
+              <div className="text-center py-20">
+                <Briefcase className="h-16 w-16 text-zinc-700 mx-auto mb-4" />
+                <h2 className="text-xl font-semibold text-white mb-2">
+                  No job listings in {locationName}
+                </h2>
+                <p className="text-zinc-400">
+                  Check back later for new opportunities!
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {jobs.map((role) => (
+                  <Link
+                    key={role.id}
+                    href={`/${role.company.locationSlug}/${role.company.slug}`}
+                    className="block rounded-xl border border-zinc-800/50 bg-zinc-900/50 p-6 hover:border-cyan-500/30 transition-colors"
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-lg bg-zinc-800/50 border border-white/10">
+                        {role.company.logo ? (
+                          <Image src={role.company.logo} alt={role.company.name} fill className="object-cover" />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center">
+                            <Building2 className="h-6 w-6 text-zinc-600" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-lg font-semibold text-white">{role.title}</h3>
+                        <p className="text-sm text-cyan-400">{role.company.name}</p>
+                        {role.company.location && (
+                          <p className="text-sm text-zinc-500 flex items-center gap-1 mt-1">
+                            <MapPin className="h-3 w-3" />
+                            {role.company.location}
+                          </p>
+                        )}
+                        {role.description && (
+                          <p className="text-sm text-zinc-400 mt-2 line-clamp-2">{role.description}</p>
+                        )}
+                        <div className="flex items-center gap-3 mt-3 text-xs text-zinc-500">
+                          <span className="px-2 py-1 rounded-full bg-zinc-800">{role.type}</span>
+                          {role.salaryRange && <span>{role.salaryRange}</span>}
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // For other categories, fetch local listings
+    const listings = await prisma.localListing.findMany({
+      where: {
+        locationSlug,
+        category: category as "COMMUNITY" | "SERVICES" | "DISCUSSION" | "COWORKING_HOUSING" | "FOR_SALE",
+        status: "ACTIVE",
+        OR: [
+          { expiresAt: null },
+          { expiresAt: { gt: new Date() } },
+        ],
+      },
+      orderBy: { createdAt: "desc" },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            displayName: true,
+            image: true,
+            slug: true,
+          },
+        },
+        images: {
+          orderBy: { order: "asc" },
+          take: 1,
+        },
+        _count: {
+          select: {
+            comments: true,
+            flags: true,
+          },
+        },
+      },
+    });
+
+    const categoryLabel = CATEGORY_LABELS[category as keyof typeof CATEGORY_LABELS] || category;
+
+    return (
+      <div className="relative min-h-screen bg-zinc-950">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-40 h-[500px] w-[500px] rounded-full bg-amber-500/10 blur-3xl" />
+        </div>
+
+        <div className="relative mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+          <Link
+            href={`/${locationSlug}`}
+            className="inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors mb-6"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to {locationName}
+          </Link>
+
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/20 border border-amber-500/30">
+                <Megaphone className="h-6 w-6 text-amber-400" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold text-white">{categoryLabel} in {locationName}</h1>
+                <p className="text-zinc-400">{listings.length} listing{listings.length !== 1 ? "s" : ""}</p>
+              </div>
+            </div>
+            <Link
+              href="/my-listings/new"
+              className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-zinc-900 rounded-lg bg-gradient-to-r from-orange-400 to-amber-500 hover:from-orange-500 hover:to-amber-600 transition-all"
+            >
+              <Plus className="h-4 w-4" />
+              Post a Listing
+            </Link>
+          </div>
+
+          <div className="mb-8">
+            <LocalCategoryFilter locationSlug={locationSlug} currentCategory={companySlug} />
+          </div>
+
+          {listings.length === 0 ? (
+            <div className="text-center py-20">
+              <Megaphone className="h-16 w-16 text-zinc-700 mx-auto mb-4" />
+              <h2 className="text-xl font-semibold text-white mb-2">
+                No {categoryLabel.toLowerCase()} listings in {locationName}
+              </h2>
+              <p className="text-zinc-400 mb-6">
+                Be the first to post!
+              </p>
+              <Link
+                href="/my-listings/new"
+                className="inline-flex items-center gap-2 rounded-lg bg-orange-500 px-6 py-3 text-sm font-semibold text-white hover:bg-orange-600 transition-colors"
+              >
+                <Plus className="h-4 w-4" />
+                Create Listing
+              </Link>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {listings.map((listing) => (
+                <LocalListingCard
+                  key={listing.id}
+                  listing={{
+                    ...listing,
+                    activatedAt: listing.activatedAt?.toISOString() || null,
+                    expiresAt: listing.expiresAt?.toISOString() || null,
+                    createdAt: listing.createdAt.toISOString(),
+                    updatedAt: listing.updatedAt.toISOString(),
+                  }}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // Otherwise, this is a company page
   const company = await prisma.company.findFirst({
     where: {
       slug: companySlug,

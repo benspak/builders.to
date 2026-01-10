@@ -106,7 +106,7 @@ export function LocalListingForm({ initialData, userLocation, mode = "create" }:
       }
 
       // Redirect to the listing or dashboard
-      router.push(mode === "edit" ? `/local/listing/${listing.slug}` : "/my-listings");
+      router.push(mode === "edit" ? `/listing/${listing.slug}` : "/my-listings");
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");

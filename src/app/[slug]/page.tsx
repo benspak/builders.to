@@ -30,6 +30,8 @@ import { cn } from "@/lib/utils";
 import { UpdateForm, UpdateTimeline } from "@/components/updates";
 import { CompanyCard } from "@/components/companies/company-card";
 import { BuilderCard } from "@/components/profile/builder-card";
+import { LocalListingCard } from "@/components/local/local-listing-card";
+import { Megaphone, Plus } from "lucide-react";
 
 // Force dynamic rendering since this page fetches from database
 export const dynamic = "force-dynamic";
@@ -59,7 +61,7 @@ interface PageProps {
 
 // Helper to check if slug is a location
 async function getLocationData(locationSlug: string) {
-  const [companies, builders] = await Promise.all([
+  const [companies, builders, listings] = await Promise.all([
     prisma.company.findMany({
       where: { locationSlug },
       orderBy: { createdAt: "desc" },
@@ -106,9 +108,42 @@ async function getLocationData(locationSlug: string) {
         },
       },
     }),
+    prisma.localListing.findMany({
+      where: {
+        locationSlug,
+        status: "ACTIVE",
+        OR: [
+          { expiresAt: null },
+          { expiresAt: { gt: new Date() } },
+        ],
+      },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            displayName: true,
+            image: true,
+            slug: true,
+          },
+        },
+        images: {
+          orderBy: { order: "asc" },
+          take: 1,
+        },
+        _count: {
+          select: {
+            comments: true,
+            flags: true,
+          },
+        },
+      },
+    }),
   ]);
 
-  if (companies.length === 0 && builders.length === 0) {
+  if (companies.length === 0 && builders.length === 0 && listings.length === 0) {
     return null;
   }
 
@@ -118,11 +153,13 @@ async function getLocationData(locationSlug: string) {
     locationName = companies[0].location;
   } else if (builders.length > 0 && builders[0].city && builders[0].state) {
     locationName = `${builders[0].city}, ${builders[0].state}`;
+  } else if (listings.length > 0) {
+    locationName = `${listings[0].city}, ${listings[0].state}`;
   } else {
     locationName = formatLocationSlug(locationSlug);
   }
 
-  return { companies, builders, locationName, locationSlug };
+  return { companies, builders, listings, locationName, locationSlug };
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -369,6 +406,12 @@ export default async function SlugPage({ params }: PageProps) {
                       {locationData.companies.length} {locationData.companies.length === 1 ? "company" : "companies"}
                     </span>
                   )}
+                  {locationData.listings.length > 0 && (
+                    <span className="flex items-center gap-1.5">
+                      <Megaphone className="h-4 w-4" />
+                      {locationData.listings.length} {locationData.listings.length === 1 ? "listing" : "listings"}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -405,6 +448,40 @@ export default async function SlugPage({ params }: PageProps) {
                     company={{
                       ...company,
                       createdAt: company.createdAt.toISOString(),
+                    }}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Local Listings Section */}
+          {locationData.listings.length > 0 && (
+            <section className="mb-12">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-2">
+                  <Megaphone className="h-5 w-5 text-amber-400" />
+                  <h2 className="text-xl font-semibold text-white">Local Listings</h2>
+                  <span className="text-sm text-zinc-500">({locationData.listings.length})</span>
+                </div>
+                <Link
+                  href="/my-listings/new"
+                  className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-900 rounded-lg bg-gradient-to-r from-orange-400 to-amber-500 hover:from-orange-500 hover:to-amber-600 transition-all"
+                >
+                  <Plus className="h-4 w-4" />
+                  Post a Listing
+                </Link>
+              </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {locationData.listings.map((listing) => (
+                  <LocalListingCard
+                    key={listing.id}
+                    listing={{
+                      ...listing,
+                      activatedAt: listing.activatedAt?.toISOString() || null,
+                      expiresAt: listing.expiresAt?.toISOString() || null,
+                      createdAt: listing.createdAt.toISOString(),
+                      updatedAt: listing.updatedAt.toISOString(),
                     }}
                   />
                 ))}
