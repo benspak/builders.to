@@ -812,75 +812,77 @@ export default async function SlugPage({ params }: PageProps) {
                 </p>
               </div>
             )}
-
-            {/* Featured Content */}
-            {user.featuredVideoUrl && (
-              <div className="rounded-2xl border border-white/10 bg-zinc-900/50 backdrop-blur-sm p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-red-500 to-purple-600">
-                    <YouTubeIcon className="h-4 w-4 text-white" />
-                  </div>
-                  <h3 className="text-sm font-semibold text-white">Featured Content</h3>
-                </div>
-                {(() => {
-                  // Extract video ID and create embed
-                  const url = user.featuredVideoUrl!;
-                  const youtubeMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\s]+)/);
-                  const twitchVideoMatch = url.match(/twitch\.tv\/videos\/(\d+)/);
-                  const twitchClipMatch = url.match(/(?:clips\.twitch\.tv\/|twitch\.tv\/\w+\/clip\/)([^?\s]+)/);
-
-                  if (youtubeMatch) {
-                    return (
-                      <div className="aspect-video rounded-lg overflow-hidden bg-zinc-800">
-                        <iframe
-                          src={`https://www.youtube.com/embed/${youtubeMatch[1]}`}
-                          className="w-full h-full"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                        />
-                      </div>
-                    );
-                  } else if (twitchVideoMatch) {
-                    return (
-                      <div className="aspect-video rounded-lg overflow-hidden bg-zinc-800">
-                        <iframe
-                          src={`https://player.twitch.tv/?video=${twitchVideoMatch[1]}&parent=${typeof window !== 'undefined' ? window.location.hostname : 'localhost'}&autoplay=false`}
-                          className="w-full h-full"
-                          allowFullScreen
-                        />
-                      </div>
-                    );
-                  } else if (twitchClipMatch) {
-                    return (
-                      <div className="aspect-video rounded-lg overflow-hidden bg-zinc-800">
-                        <iframe
-                          src={`https://clips.twitch.tv/embed?clip=${twitchClipMatch[1]}&parent=${typeof window !== 'undefined' ? window.location.hostname : 'localhost'}&autoplay=false`}
-                          className="w-full h-full"
-                          allowFullScreen
-                        />
-                      </div>
-                    );
-                  } else {
-                    // Fallback to link
-                    return (
-                      <a
-                        href={url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="block p-4 rounded-lg bg-zinc-800/50 border border-zinc-700/50 hover:border-orange-500/30 transition-all"
-                      >
-                        <p className="text-sm text-zinc-400 truncate">{url}</p>
-                        <p className="text-xs text-orange-400 mt-1">Watch video →</p>
-                      </a>
-                    );
-                  }
-                })()}
-              </div>
-            )}
           </div>
 
           {/* Main content */}
           <div className="lg:col-span-2 space-y-8">
+            {/* Featured Content */}
+            {user.featuredVideoUrl && (
+              <section>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-red-500 to-purple-600">
+                    <YouTubeIcon className="h-4 w-4 text-white" />
+                  </div>
+                  <h2 className="text-xl font-semibold text-white">Featured Content</h2>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-zinc-900/50 p-4">
+                  {(() => {
+                    // Extract video ID and create embed
+                    const url = user.featuredVideoUrl!;
+                    const youtubeMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\s]+)/);
+                    const twitchVideoMatch = url.match(/twitch\.tv\/videos\/(\d+)/);
+                    const twitchClipMatch = url.match(/(?:clips\.twitch\.tv\/|twitch\.tv\/\w+\/clip\/)([^?\s]+)/);
+
+                    if (youtubeMatch) {
+                      return (
+                        <div className="aspect-video rounded-lg overflow-hidden bg-zinc-800">
+                          <iframe
+                            src={`https://www.youtube.com/embed/${youtubeMatch[1]}`}
+                            className="w-full h-full"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                          />
+                        </div>
+                      );
+                    } else if (twitchVideoMatch) {
+                      return (
+                        <div className="aspect-video rounded-lg overflow-hidden bg-zinc-800">
+                          <iframe
+                            src={`https://player.twitch.tv/?video=${twitchVideoMatch[1]}&parent=${typeof window !== 'undefined' ? window.location.hostname : 'localhost'}&autoplay=false`}
+                            className="w-full h-full"
+                            allowFullScreen
+                          />
+                        </div>
+                      );
+                    } else if (twitchClipMatch) {
+                      return (
+                        <div className="aspect-video rounded-lg overflow-hidden bg-zinc-800">
+                          <iframe
+                            src={`https://clips.twitch.tv/embed?clip=${twitchClipMatch[1]}&parent=${typeof window !== 'undefined' ? window.location.hostname : 'localhost'}&autoplay=false`}
+                            className="w-full h-full"
+                            allowFullScreen
+                          />
+                        </div>
+                      );
+                    } else {
+                      // Fallback to link
+                      return (
+                        <a
+                          href={url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="block p-4 rounded-lg bg-zinc-800/50 border border-zinc-700/50 hover:border-orange-500/30 transition-all"
+                        >
+                          <p className="text-sm text-zinc-400 truncate">{url}</p>
+                          <p className="text-xs text-orange-400 mt-1">Watch video →</p>
+                        </a>
+                      );
+                    }
+                  })()}
+                </div>
+              </section>
+            )}
+
             {/* Projects */}
             <section>
               <div className="flex items-center gap-3 mb-4">
