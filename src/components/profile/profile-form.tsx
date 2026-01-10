@@ -38,6 +38,12 @@ const LinkedInIcon = () => (
   </svg>
 );
 
+const TwitchIcon = () => (
+  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z" />
+  </svg>
+);
+
 interface ProfileFormProps {
   user: {
     id: string;
@@ -57,6 +63,8 @@ interface ProfileFormProps {
     twitterUrl: string | null;
     youtubeUrl: string | null;
     linkedinUrl: string | null;
+    twitchUrl: string | null;
+    featuredVideoUrl: string | null;
     image: string | null;
     // Status
     status: string | null;
@@ -92,6 +100,8 @@ export function ProfileForm({ user }: ProfileFormProps) {
     twitterUrl: user.twitterUrl || "",
     youtubeUrl: user.youtubeUrl || "",
     linkedinUrl: user.linkedinUrl || "",
+    twitchUrl: user.twitchUrl || "",
+    featuredVideoUrl: user.featuredVideoUrl || "",
     // Status
     status: user.status || "",
     // Intent flags
@@ -442,6 +452,59 @@ export function ProfileForm({ user }: ProfileFormProps) {
               className="input pl-11"
             />
           </div>
+        </div>
+
+        {/* Twitch */}
+        <div>
+          <label htmlFor="twitchUrl" className="block text-sm font-medium text-zinc-300 mb-2">
+            Twitch
+          </label>
+          <div className="relative">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500">
+              <TwitchIcon />
+            </div>
+            <input
+              id="twitchUrl"
+              type="url"
+              placeholder="https://twitch.tv/username"
+              value={formData.twitchUrl}
+              onChange={(e) => setFormData({ ...formData, twitchUrl: e.target.value })}
+              className="input pl-11"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Featured Content Section */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-3 pb-4 border-b border-white/5">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-red-500 to-purple-600">
+            <YouTubeIcon />
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-white">Featured Content</h3>
+            <p className="text-sm text-zinc-400">Showcase a video on your profile</p>
+          </div>
+        </div>
+
+        <div>
+          <label htmlFor="featuredVideoUrl" className="block text-sm font-medium text-zinc-300 mb-2">
+            Featured Video URL
+          </label>
+          <div className="relative">
+            <LinkIcon className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
+            <input
+              id="featuredVideoUrl"
+              type="url"
+              placeholder="https://youtube.com/watch?v=... or https://twitch.tv/videos/..."
+              value={formData.featuredVideoUrl}
+              onChange={(e) => setFormData({ ...formData, featuredVideoUrl: e.target.value })}
+              className="input pl-11"
+            />
+          </div>
+          <p className="mt-2 text-xs text-zinc-500">
+            Add a YouTube or Twitch video URL to feature on your profile sidebar
+          </p>
         </div>
       </div>
 

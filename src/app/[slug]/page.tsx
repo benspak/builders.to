@@ -55,6 +55,12 @@ const LinkedInIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
+const TwitchIcon = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z" />
+  </svg>
+);
+
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
@@ -238,6 +244,8 @@ export default async function SlugPage({ params }: PageProps) {
       twitterUrl: true,
       youtubeUrl: true,
       linkedinUrl: true,
+      twitchUrl: true,
+      featuredVideoUrl: true,
       image: true,
       createdAt: true,
       // Status
@@ -523,6 +531,7 @@ export default async function SlugPage({ params }: PageProps) {
   const socialLinks = [
     { url: user.twitterUrl, icon: XIcon, label: "X" },
     { url: user.youtubeUrl, icon: YouTubeIcon, label: "YouTube" },
+    { url: user.twitchUrl, icon: TwitchIcon, label: "Twitch" },
     { url: user.linkedinUrl, icon: LinkedInIcon, label: "LinkedIn" },
   ].filter(link => link.url);
 
@@ -801,6 +810,71 @@ export default async function SlugPage({ params }: PageProps) {
                 <p className="text-sm text-zinc-400 whitespace-pre-wrap leading-relaxed">
                   {user.bio}
                 </p>
+              </div>
+            )}
+
+            {/* Featured Content */}
+            {user.featuredVideoUrl && (
+              <div className="rounded-2xl border border-white/10 bg-zinc-900/50 backdrop-blur-sm p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-red-500 to-purple-600">
+                    <YouTubeIcon className="h-4 w-4 text-white" />
+                  </div>
+                  <h3 className="text-sm font-semibold text-white">Featured Content</h3>
+                </div>
+                {(() => {
+                  // Extract video ID and create embed
+                  const url = user.featuredVideoUrl!;
+                  const youtubeMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\s]+)/);
+                  const twitchVideoMatch = url.match(/twitch\.tv\/videos\/(\d+)/);
+                  const twitchClipMatch = url.match(/(?:clips\.twitch\.tv\/|twitch\.tv\/\w+\/clip\/)([^?\s]+)/);
+
+                  if (youtubeMatch) {
+                    return (
+                      <div className="aspect-video rounded-lg overflow-hidden bg-zinc-800">
+                        <iframe
+                          src={`https://www.youtube.com/embed/${youtubeMatch[1]}`}
+                          className="w-full h-full"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
+                      </div>
+                    );
+                  } else if (twitchVideoMatch) {
+                    return (
+                      <div className="aspect-video rounded-lg overflow-hidden bg-zinc-800">
+                        <iframe
+                          src={`https://player.twitch.tv/?video=${twitchVideoMatch[1]}&parent=${typeof window !== 'undefined' ? window.location.hostname : 'localhost'}&autoplay=false`}
+                          className="w-full h-full"
+                          allowFullScreen
+                        />
+                      </div>
+                    );
+                  } else if (twitchClipMatch) {
+                    return (
+                      <div className="aspect-video rounded-lg overflow-hidden bg-zinc-800">
+                        <iframe
+                          src={`https://clips.twitch.tv/embed?clip=${twitchClipMatch[1]}&parent=${typeof window !== 'undefined' ? window.location.hostname : 'localhost'}&autoplay=false`}
+                          className="w-full h-full"
+                          allowFullScreen
+                        />
+                      </div>
+                    );
+                  } else {
+                    // Fallback to link
+                    return (
+                      <a
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block p-4 rounded-lg bg-zinc-800/50 border border-zinc-700/50 hover:border-orange-500/30 transition-all"
+                      >
+                        <p className="text-sm text-zinc-400 truncate">{url}</p>
+                        <p className="text-xs text-orange-400 mt-1">Watch video →</p>
+                      </a>
+                    );
+                  }
+                })()}
               </div>
             )}
           </div>

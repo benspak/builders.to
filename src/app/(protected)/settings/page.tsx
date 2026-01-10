@@ -37,6 +37,8 @@ export default async function SettingsPage() {
       twitterUrl: true,
       youtubeUrl: true,
       linkedinUrl: true,
+      twitchUrl: true,
+      featuredVideoUrl: true,
       image: true,
       // Status
       status: true,

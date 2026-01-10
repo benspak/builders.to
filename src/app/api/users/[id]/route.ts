@@ -55,6 +55,8 @@ export async function GET(
         twitterUrl: true,
         youtubeUrl: true,
         linkedinUrl: true,
+        twitchUrl: true,
+        featuredVideoUrl: true,
         image: true,
         createdAt: true,
         // Status
@@ -114,6 +116,8 @@ export async function PATCH(
       twitterUrl,
       youtubeUrl,
       linkedinUrl,
+      twitchUrl,
+      featuredVideoUrl,
       // Status
       status,
       // Intent flags
@@ -174,7 +178,7 @@ export async function PATCH(
     }
 
     // Validate URLs
-    const urlFields = { websiteUrl, twitterUrl, youtubeUrl, linkedinUrl };
+    const urlFields = { websiteUrl, twitterUrl, youtubeUrl, linkedinUrl, twitchUrl, featuredVideoUrl };
     for (const [key, value] of Object.entries(urlFields)) {
       if (value && typeof value === "string") {
         try {
@@ -227,6 +231,8 @@ export async function PATCH(
         twitterUrl: twitterUrl?.trim() || null,
         youtubeUrl: youtubeUrl?.trim() || null,
         linkedinUrl: linkedinUrl?.trim() || null,
+        twitchUrl: twitchUrl?.trim() || null,
+        featuredVideoUrl: featuredVideoUrl?.trim() || null,
         // Status - update if provided, allow clearing with empty string
         ...(status !== undefined && {
           status: trimmedStatus,
@@ -255,6 +261,8 @@ export async function PATCH(
         twitterUrl: true,
         youtubeUrl: true,
         linkedinUrl: true,
+        twitchUrl: true,
+        featuredVideoUrl: true,
         image: true,
         createdAt: true,
         openToWork: true,
