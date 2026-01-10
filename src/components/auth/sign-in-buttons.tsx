@@ -8,7 +8,7 @@ interface SignInButtonsProps {
   callbackUrl?: string;
 }
 
-export function SignInButtons({ className, callbackUrl = "/dashboard" }: SignInButtonsProps) {
+export function SignInButtons({ className, callbackUrl = "/projects" }: SignInButtonsProps) {
   return (
     <div className={cn("flex flex-col gap-4", className)}>
       <button

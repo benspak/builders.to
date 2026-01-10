@@ -60,7 +60,7 @@ export function Navbar() {
                     Feed
                   </Link>
                   <Link
-                    href="/dashboard"
+                    href="/projects"
                     onClick={() => setMobileMenuOpen(false)}
                     className="block px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-white/5"
                     style={{ color: "var(--foreground-muted)" }}
@@ -127,7 +127,7 @@ export function Navbar() {
             Feed
           </Link>
           <Link
-            href="/dashboard"
+            href="/projects"
             className="hidden lg:block text-sm font-medium transition-colors"
             style={{ color: "var(--foreground-muted)" }}
           >

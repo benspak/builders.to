@@ -28,7 +28,7 @@ export function DeleteProjectButton({ projectId }: DeleteProjectButtonProps) {
         throw new Error("Failed to delete project");
       }
 
-      router.push("/dashboard");
+      router.push("/projects");
       router.refresh();
     } catch (error) {
       console.error("Error deleting project:", error);

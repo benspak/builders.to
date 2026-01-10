@@ -19,7 +19,7 @@ export default function ProfileNotFound() {
         {/* Actions */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link
-            href="/dashboard"
+            href="/projects"
             className="inline-flex items-center gap-2 rounded-xl bg-zinc-800/50 border border-zinc-700/50 px-6 py-3 text-sm font-medium text-zinc-300 hover:bg-zinc-800 hover:text-white transition-all"
           >
             <ArrowLeft className="h-4 w-4" />

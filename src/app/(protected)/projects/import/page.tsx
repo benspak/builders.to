@@ -6,11 +6,11 @@ export default function ImportFromGitHubPage() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
       <Link
-        href="/dashboard"
+        href="/projects"
         className="inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors mb-8"
       >
         <ArrowLeft className="h-4 w-4" />
-        Back to dashboard
+        Back to projects
       </Link>
 
       <div className="mb-8">
@@ -27,5 +27,3 @@ export default function ImportFromGitHubPage() {
     </div>
   );
 }
-
-

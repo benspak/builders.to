@@ -6,7 +6,7 @@ import { ProjectGrid } from "@/components/projects/project-grid";
 import { SiteViewsCounter } from "@/components/analytics/site-views-counter";
 import { auth } from "@/lib/auth";
 
-interface DashboardPageProps {
+interface ProjectsPageProps {
   searchParams: Promise<{
     sort?: string;
     status?: string;
@@ -14,7 +14,7 @@ interface DashboardPageProps {
   }>;
 }
 
-export default async function DashboardPage({ searchParams }: DashboardPageProps) {
+export default async function ProjectsPage({ searchParams }: ProjectsPageProps) {
   const params = await searchParams;
   const session = await auth();
 

@@ -171,7 +171,7 @@ export default async function LocalPage() {
                   {builderLocations.map((loc) => (
                     <Link
                       key={loc.locationSlug}
-                      href={`/local/${loc.locationSlug}`}
+                      href={`/${loc.locationSlug}`}
                       className="group relative overflow-hidden rounded-2xl border border-white/10 bg-zinc-900/50 backdrop-blur-sm p-6 hover:border-orange-500/30 hover:bg-zinc-900/70 transition-all"
                     >
                       <div className="flex items-start justify-between">
@@ -211,7 +211,7 @@ export default async function LocalPage() {
                   {companyLocations.map((loc) => (
                     <Link
                       key={loc.locationSlug}
-                      href={`/local/${loc.locationSlug}`}
+                      href={`/${loc.locationSlug}`}
                       className="group relative overflow-hidden rounded-2xl border border-white/10 bg-zinc-900/50 backdrop-blur-sm p-6 hover:border-emerald-500/30 hover:bg-zinc-900/70 transition-all"
                     >
                       <div className="flex items-start justify-between">

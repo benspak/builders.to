@@ -5,11 +5,11 @@ import { Rocket } from "lucide-react";
 
 export function Footer() {
   return (
-    <footer 
+    <footer
       className="transition-colors duration-300"
-      style={{ 
-        background: "var(--background-secondary)", 
-        borderTop: "1px solid var(--card-border)" 
+      style={{
+        background: "var(--background-secondary)",
+        borderTop: "1px solid var(--card-border)"
       }}
     >
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
@@ -24,6 +24,14 @@ export function Footer() {
           </div>
 
           <div className="flex items-center gap-6 text-sm" style={{ color: "var(--foreground-subtle)" }}>
+            <a
+              href="https://github.com/benspak/builders.to"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition-colors hover:opacity-80"
+            >
+              GitHub
+            </a>
             <a
               href="https://x.com/i/communities/1943895831322439993"
               target="_blank"

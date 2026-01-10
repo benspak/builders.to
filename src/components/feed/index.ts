@@ -6,3 +6,4 @@ export { JobPostedCard } from "./job-posted-card";
 export { CombinedFeed } from "./combined-feed";
 export { TopBuilders } from "./top-builders";
 export { OpenJobs } from "./open-jobs";
+export { FeaturedServices } from "./featured-services";

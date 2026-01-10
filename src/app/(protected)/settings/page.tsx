@@ -71,11 +71,11 @@ export default async function SettingsPage() {
       <div className="relative mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Back link */}
         <Link
-          href={user.slug ? `/${user.slug}` : "/dashboard"}
+          href={user.slug ? `/${user.slug}` : "/projects"}
           className="inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors mb-6"
         >
           <ArrowLeft className="h-4 w-4" />
-          {user.slug ? "View Profile" : "Back to Dashboard"}
+          {user.slug ? "View Profile" : "Back to Projects"}
         </Link>
 
         {/* Header */}

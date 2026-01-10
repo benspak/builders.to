@@ -54,7 +54,7 @@ export function formatLocationSlug(slug: string): string {
 
 /**
  * Generates the URL path for a company based on location
- * Returns /local/[locationSlug]/[companySlug] or /companies/[companySlug] if no location
+ * Returns /[locationSlug]/[companySlug] or /companies/[companySlug] if no location
  */
 export function getCompanyUrl(company: {
   slug?: string | null;
@@ -63,7 +63,7 @@ export function getCompanyUrl(company: {
 }): string {
   const companySlug = company.slug || company.id;
   if (company.locationSlug) {
-    return `/local/${company.locationSlug}/${companySlug}`;
+    return `/${company.locationSlug}/${companySlug}`;
   }
   return `/companies/${companySlug}`;
 }
@@ -78,7 +78,7 @@ export function getCompanyEditUrl(company: {
 }): string {
   const companySlug = company.slug || company.id;
   if (company.locationSlug) {
-    return `/local/${company.locationSlug}/${companySlug}/edit`;
+    return `/${company.locationSlug}/${companySlug}/edit`;
   }
   return `/companies/${companySlug}/edit`;
 }

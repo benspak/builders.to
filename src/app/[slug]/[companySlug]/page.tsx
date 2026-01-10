@@ -41,11 +41,11 @@ import {
 } from "lucide-react";
 
 interface CompanyPageProps {
-  params: Promise<{ locationSlug: string; companySlug: string }>;
+  params: Promise<{ slug: string; companySlug: string }>;
 }
 
 export async function generateMetadata({ params }: CompanyPageProps): Promise<Metadata> {
-  const { locationSlug, companySlug } = await params;
+  const { slug: locationSlug, companySlug } = await params;
 
   const company = await prisma.company.findFirst({
     where: {
@@ -66,7 +66,7 @@ export async function generateMetadata({ params }: CompanyPageProps): Promise<Me
 }
 
 export default async function LocalCompanyPage({ params }: CompanyPageProps) {
-  const { locationSlug, companySlug } = await params;
+  const { slug: locationSlug, companySlug } = await params;
   const session = await auth();
 
   const company = await prisma.company.findFirst({
@@ -195,7 +195,7 @@ export default async function LocalCompanyPage({ params }: CompanyPageProps) {
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
       <Link
-        href={`/local/${locationSlug}`}
+        href={`/${locationSlug}`}
         className="inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors mb-8"
       >
         <ArrowLeft className="h-4 w-4" />
@@ -229,7 +229,7 @@ export default async function LocalCompanyPage({ params }: CompanyPageProps) {
                   <h1 className="text-3xl font-bold text-white">{company.name}</h1>
                   {company.location && (
                     <Link
-                      href={`/local/${locationSlug}`}
+                      href={`/${locationSlug}`}
                       className="mt-2 flex items-center gap-2 text-emerald-400 hover:text-emerald-300 transition-colors"
                     >
                       <MapPin className="h-4 w-4" />

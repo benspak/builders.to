@@ -2,7 +2,7 @@ import { ImageResponse } from 'next/og'
 
 export const runtime = 'nodejs'
 
-export const alt = 'Dashboard - Builders.to'
+export const alt = 'Projects - Builders.to'
 export const size = {
   width: 1200,
   height: 630,
@@ -125,7 +125,7 @@ export default async function Image() {
                 letterSpacing: '-0.02em',
               }}
             >
-              Dashboard
+              Projects
             </div>
           </div>
 

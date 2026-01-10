@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { Loader2, Sparkles } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
-import { CombinedFeed, TopBuilders, OpenJobs } from "@/components/feed";
+import { CombinedFeed, TopBuilders, OpenJobs, FeaturedServices } from "@/components/feed";
 import { SiteViewsCounter } from "@/components/analytics/site-views-counter";
 import { SidebarAd } from "@/components/ads";
 import { ProductHuntBadge } from "@/components/ui/product-hunt-badge";
@@ -291,6 +291,45 @@ async function SidebarAdSection() {
   return <SidebarAd isAuthenticated={isAuthenticated} />;
 }
 
+async function FeaturedServicesSection() {
+  // Fetch active services and randomize order for each page view
+  const services = await prisma.serviceListing.findMany({
+    where: {
+      status: "ACTIVE",
+      expiresAt: { gt: new Date() },
+    },
+    select: {
+      id: true,
+      slug: true,
+      title: true,
+      description: true,
+      category: true,
+      priceInCents: true,
+      deliveryDays: true,
+      user: {
+        select: {
+          id: true,
+          name: true,
+          displayName: true,
+          firstName: true,
+          lastName: true,
+          image: true,
+          slug: true,
+        },
+      },
+    },
+  });
+
+  // Shuffle services for random rotation on each page view
+  const shuffledServices = services
+    .map(service => ({ service, sort: Math.random() }))
+    .sort((a, b) => a.sort - b.sort)
+    .map(({ service }) => service)
+    .slice(0, 4);
+
+  return <FeaturedServices services={shuffledServices} />;
+}
+
 export default function FeedPage() {
   return (
     <div className="relative min-h-screen" style={{ background: "var(--background)" }}>
@@ -351,6 +390,38 @@ export default function FeedPage() {
                 }
               >
                 <TopBuildersSection />
+              </Suspense>
+
+              {/* Featured Services Section */}
+              <Suspense
+                fallback={
+                  <div className="rounded-xl border border-zinc-800/50 bg-zinc-900/50 overflow-hidden animate-pulse">
+                    <div className="px-4 py-3 border-b border-zinc-800/50">
+                      <div className="flex items-center gap-2">
+                        <div className="h-8 w-8 bg-zinc-800 rounded-lg" />
+                        <div className="h-5 w-20 bg-zinc-800 rounded" />
+                      </div>
+                    </div>
+                    <div className="divide-y divide-zinc-800/30">
+                      {[1, 2, 3].map((i) => (
+                        <div key={i} className="px-4 py-3">
+                          <div className="h-4 w-16 bg-zinc-800 rounded mb-2" />
+                          <div className="h-4 w-full bg-zinc-800 rounded mb-2" />
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="h-5 w-5 bg-zinc-800 rounded-full" />
+                            <div className="h-3 w-20 bg-zinc-800 rounded" />
+                          </div>
+                          <div className="flex gap-3">
+                            <div className="h-3 w-12 bg-zinc-800 rounded" />
+                            <div className="h-3 w-8 bg-zinc-800 rounded" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                }
+              >
+                <FeaturedServicesSection />
               </Suspense>
             </div>
           </aside>

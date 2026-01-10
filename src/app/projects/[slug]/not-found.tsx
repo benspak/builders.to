@@ -9,8 +9,8 @@ export default function ProjectNotFound() {
       <p className="text-zinc-400 mb-8">
         The project you&apos;re looking for doesn&apos;t exist or has been removed.
       </p>
-      <Link href="/dashboard" className="btn-primary">
-        Back to Dashboard
+      <Link href="/projects" className="btn-primary">
+        Back to Projects
       </Link>
     </div>
   );

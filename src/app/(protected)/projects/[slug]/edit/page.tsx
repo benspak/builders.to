@@ -46,7 +46,7 @@ export default async function EditProjectPage({ params }: EditProjectPageProps) 
   }
 
   if (project.userId !== session.user.id) {
-    redirect("/dashboard");
+    redirect("/projects");
   }
 
   return (
