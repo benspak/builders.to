@@ -4,6 +4,7 @@ import { Plus, Loader2, Github } from "lucide-react";
 import { ProjectFilters } from "@/components/projects/project-filters";
 import { ProjectGrid } from "@/components/projects/project-grid";
 import { SiteViewsCounter } from "@/components/analytics/site-views-counter";
+import { BannerAd } from "@/components/ads";
 import { auth } from "@/lib/auth";
 
 interface ProjectsPageProps {
@@ -20,19 +21,9 @@ export default async function ProjectsPage({ searchParams }: ProjectsPageProps) 
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      {/* Builders X Community Banner */}
-      <div className="mb-8 rounded-xl bg-gradient-to-r from-orange-500/10 via-amber-500/10 to-orange-500/10 border border-orange-500/20 p-4 text-center">
-        <p className="text-zinc-300 text-sm sm:text-base">
-          Join the{" "}
-          <a
-            href="https://x.com/i/communities/1943895831322439993"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-semibold text-orange-400 hover:text-orange-300 transition-colors underline underline-offset-2"
-          >
-            Builders X Community
-          </a>
-        </p>
+      {/* Banner Ad Spot */}
+      <div className="mb-8">
+        <BannerAd isAuthenticated={!!session} />
       </div>
 
       {/* Header */}
