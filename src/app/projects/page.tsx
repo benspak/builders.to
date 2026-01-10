@@ -1,11 +1,12 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { Plus, Loader2, Github } from "lucide-react";
+import { Plus, Loader2, Github, Rocket } from "lucide-react";
 import { ProjectFilters } from "@/components/projects/project-filters";
 import { ProjectGrid } from "@/components/projects/project-grid";
 import { SiteViewsCounter } from "@/components/analytics/site-views-counter";
 import { BannerAd } from "@/components/ads";
 import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
 interface ProjectsPageProps {
   searchParams: Promise<{
@@ -17,7 +18,10 @@ interface ProjectsPageProps {
 
 export default async function ProjectsPage({ searchParams }: ProjectsPageProps) {
   const params = await searchParams;
-  const session = await auth();
+  const [session, totalProjectCount] = await Promise.all([
+    auth(),
+    prisma.project.count(),
+  ]);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -29,7 +33,15 @@ export default async function ProjectsPage({ searchParams }: ProjectsPageProps) 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-white">Projects</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-bold text-white">Projects</h1>
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/30">
+              <Rocket className="h-4 w-4 text-orange-400" />
+              <span className="text-sm font-semibold text-orange-400">
+                {totalProjectCount.toLocaleString()}
+              </span>
+            </div>
+          </div>
           <p className="text-zinc-400 mt-1">
             Discover what builders are working on
           </p>
