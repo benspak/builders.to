@@ -15,7 +15,7 @@ CREATE TABLE "Advertisement" (
     "ctaText" TEXT NOT NULL DEFAULT 'Learn More',
     "stripeSessionId" TEXT,
     "stripePaymentId" TEXT,
-    "amountPaid" INTEGER NOT NULL DEFAULT 2000,
+    "amountPaid" INTEGER NOT NULL DEFAULT 500,
     "status" "AdvertisementStatus" NOT NULL DEFAULT 'DRAFT',
     "startDate" TIMESTAMP(3),
     "endDate" TIMESTAMP(3),

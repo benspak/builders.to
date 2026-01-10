@@ -66,7 +66,7 @@ export async function POST(request: Request) {
           data: {
             status: "ACTIVE",
             stripePaymentId: session.payment_intent as string,
-            amountPaid: session.amount_total || 2000,
+            amountPaid: session.amount_total || 500,
             startDate,
             endDate,
           },

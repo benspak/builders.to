@@ -1,7 +1,7 @@
 import Stripe from "stripe";
 
-// Price for Sidebar Advertisement ($20/month)
-export const SIDEBAR_AD_PRICE_CENTS = 2000;
+// Price for Sidebar Advertisement ($5/month)
+export const SIDEBAR_AD_PRICE_CENTS = 500;
 export const SIDEBAR_AD_DURATION_DAYS = 30;
 
 // Services Marketplace pricing
