@@ -4,8 +4,8 @@ import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import {
-  MapPin, ArrowLeft, Clock, Mail, Phone, Edit, DollarSign,
-  User, MessageSquare, Users, Wrench, Home, ShoppingBag, Calendar, AlertCircle
+  MapPin, ArrowLeft, Clock, Edit, DollarSign,
+  User, MessageSquare, Users, Wrench, Home, ShoppingBag, Calendar, AlertCircle, ExternalLink
 } from "lucide-react";
 import { formatRelativeTime, cn } from "@/lib/utils";
 import { LocalListingComments } from "@/components/local/local-listing-comments";
@@ -301,31 +301,21 @@ export default async function ListingDetailPage({ params }: PageProps) {
             <div className="rounded-xl border border-zinc-800/50 bg-zinc-900/50 p-6">
               <h3 className="text-lg font-semibold text-white mb-4">Contact</h3>
               <div className="space-y-3">
-                {listing.contactEmail && (
+                {listing.contactUrl ? (
                   <a
-                    href={`mailto:${listing.contactEmail}`}
+                    href={listing.contactUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="flex items-center gap-3 p-3 rounded-lg border border-zinc-700/50 bg-zinc-800/30 hover:bg-zinc-800/50 transition-colors"
                   >
-                    <Mail className="h-5 w-5 text-orange-400" />
+                    <ExternalLink className="h-5 w-5 text-cyan-400" />
                     <span className="text-sm text-zinc-300 truncate">
-                      {listing.contactEmail}
+                      {listing.contactUrl.replace(/^https?:\/\//, "")}
                     </span>
                   </a>
-                )}
-                {listing.contactPhone && (
-                  <a
-                    href={`tel:${listing.contactPhone}`}
-                    className="flex items-center gap-3 p-3 rounded-lg border border-zinc-700/50 bg-zinc-800/30 hover:bg-zinc-800/50 transition-colors"
-                  >
-                    <Phone className="h-5 w-5 text-emerald-400" />
-                    <span className="text-sm text-zinc-300">
-                      {listing.contactPhone}
-                    </span>
-                  </a>
-                )}
-                {!listing.contactEmail && !listing.contactPhone && (
+                ) : (
                   <p className="text-sm text-zinc-500">
-                    No contact information provided. Use comments to reach out.
+                    No contact link provided. Use comments to reach out.
                   </p>
                 )}
               </div>

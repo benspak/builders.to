@@ -100,8 +100,7 @@ export default async function EditListingPage({ params }: PageProps) {
               city: listing.city,
               state: listing.state,
               zipCode: listing.zipCode,
-              contactEmail: listing.contactEmail,
-              contactPhone: listing.contactPhone,
+              contactUrl: listing.contactUrl,
               priceInCents: listing.priceInCents,
               images: listing.images.map(img => ({
                 id: img.id,

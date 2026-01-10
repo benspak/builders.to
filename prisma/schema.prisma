@@ -954,6 +954,7 @@ model LocalListing {
   // Contact
   contactEmail    String?
   contactPhone    String?
+  contactUrl      String?
 
   // For SERVICES category only (paid $1)
   stripeSessionId String?              @unique

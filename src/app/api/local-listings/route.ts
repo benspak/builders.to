@@ -158,8 +158,7 @@ export async function POST(request: NextRequest) {
       city: customCity,
       state: customState,
       zipCode,
-      contactEmail,
-      contactPhone,
+      contactUrl,
       priceInCents, // For SERVICES category
       images,
     } = body;
@@ -249,8 +248,7 @@ export async function POST(request: NextRequest) {
         city: finalCity,
         state: finalState,
         zipCode: finalZipCode,
-        contactEmail: contactEmail || user?.email,
-        contactPhone,
+        contactUrl,
         priceInCents: isPaidCategory ? priceInCents : null,
         activatedAt,
         expiresAt,

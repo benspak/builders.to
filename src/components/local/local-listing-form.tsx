@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Plus, X, Upload, MapPin, DollarSign } from "lucide-react";
+import { Loader2, Plus, X, Upload, MapPin, DollarSign, Link as LinkIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LocalListingCategory, CATEGORY_LABELS, LocalListing } from "./types";
 
@@ -37,8 +37,7 @@ export function LocalListingForm({ initialData, userLocation, mode = "create" }:
     city: initialData?.city || userLocation?.city || "",
     state: initialData?.state || userLocation?.state || "",
     zipCode: initialData?.zipCode || userLocation?.zipCode || "",
-    contactEmail: initialData?.contactEmail || "",
-    contactPhone: initialData?.contactPhone || "",
+    contactUrl: initialData?.contactUrl || "",
     priceInCents: initialData?.priceInCents ? String(initialData.priceInCents / 100) : "",
     images: initialData?.images || [],
   });
@@ -64,8 +63,7 @@ export function LocalListingForm({ initialData, userLocation, mode = "create" }:
         city: useCustomLocation ? formData.city.trim() : userLocation?.city,
         state: useCustomLocation ? formData.state.trim() : userLocation?.state,
         zipCode: formData.zipCode?.trim() || null,
-        contactEmail: formData.contactEmail?.trim() || null,
-        contactPhone: formData.contactPhone?.trim() || null,
+        contactUrl: formData.contactUrl?.trim() || null,
         priceInCents: isPaidCategory && formData.priceInCents
           ? Math.round(parseFloat(formData.priceInCents) * 100)
           : null,
@@ -277,29 +275,24 @@ export function LocalListingForm({ initialData, userLocation, mode = "create" }:
         </div>
       </div>
 
-      {/* Contact Info */}
+      {/* Contact URL */}
       <div>
-        <label className="block text-sm font-medium text-zinc-300 mb-2">
-          Contact Information
+        <label htmlFor="contactUrl" className="block text-sm font-medium text-zinc-300 mb-2">
+          Website URL (optional)
         </label>
-        <div className="space-y-3">
+        <div className="relative">
+          <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
           <input
-            type="email"
-            value={formData.contactEmail}
-            onChange={(e) => setFormData(prev => ({ ...prev, contactEmail: e.target.value }))}
-            placeholder="Email (optional)"
-            className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-4 py-3 text-white placeholder:text-zinc-500 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
-          />
-          <input
-            type="tel"
-            value={formData.contactPhone}
-            onChange={(e) => setFormData(prev => ({ ...prev, contactPhone: e.target.value }))}
-            placeholder="Phone (optional)"
-            className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-4 py-3 text-white placeholder:text-zinc-500 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+            id="contactUrl"
+            type="url"
+            value={formData.contactUrl}
+            onChange={(e) => setFormData(prev => ({ ...prev, contactUrl: e.target.value }))}
+            placeholder="https://example.com"
+            className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 pl-10 pr-4 py-3 text-white placeholder:text-zinc-500 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
           />
         </div>
         <p className="mt-1 text-xs text-zinc-500">
-          Provide at least one way for people to contact you
+          Add a link to your website, portfolio, or relevant page
         </p>
       </div>
 

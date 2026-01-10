@@ -180,8 +180,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       city,
       state,
       zipCode,
-      contactEmail,
-      contactPhone,
+      contactUrl,
       priceInCents,
       images,
     } = body;
@@ -224,8 +223,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
           ...(state && { state }),
           ...(locationSlug && { locationSlug }),
           ...(zipCode !== undefined && { zipCode }),
-          ...(contactEmail !== undefined && { contactEmail }),
-          ...(contactPhone !== undefined && { contactPhone }),
+          ...(contactUrl !== undefined && { contactUrl }),
           ...(priceInCents !== undefined && listing.category === "SERVICES" && { priceInCents }),
         },
         include: {
