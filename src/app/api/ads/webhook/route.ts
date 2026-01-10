@@ -49,7 +49,7 @@ export async function POST(request: Request) {
       const adId = session.metadata?.adId;
 
       if (!adId) {
-        console.error("No adId in session metadata");
+        console.error("[Webhook] No adId in session metadata");
         return NextResponse.json(
           { error: "Missing adId in metadata" },
           { status: 400 }
@@ -57,6 +57,22 @@ export async function POST(request: Request) {
       }
 
       try {
+        // Check if ad exists first
+        const existingAd = await prisma.advertisement.findUnique({
+          where: { id: adId },
+        });
+
+        if (!existingAd) {
+          console.error(`[Webhook] Ad ${adId} not found`);
+          return NextResponse.json({ received: true, warning: "Ad not found" });
+        }
+
+        // Only update if not already active (idempotency)
+        if (existingAd.status === "ACTIVE") {
+          console.log(`[Webhook] Ad ${adId} already active, skipping`);
+          return NextResponse.json({ received: true });
+        }
+
         const startDate = new Date();
         const endDate = new Date();
         endDate.setDate(endDate.getDate() + SIDEBAR_AD_DURATION_DAYS);
@@ -74,7 +90,7 @@ export async function POST(request: Request) {
 
         console.log(`[Webhook] Ad ${adId} activated successfully`);
       } catch (error) {
-        console.error("Error activating ad:", error);
+        console.error("[Webhook] Error activating ad:", error);
         return NextResponse.json(
           { error: "Failed to activate ad" },
           { status: 500 }
@@ -87,7 +103,7 @@ export async function POST(request: Request) {
       const serviceId = session.metadata?.serviceId;
 
       if (!serviceId) {
-        console.error("No serviceId in session metadata");
+        console.error("[Webhook] No serviceId in session metadata");
         return NextResponse.json(
           { error: "Missing serviceId in metadata" },
           { status: 400 }
@@ -95,6 +111,22 @@ export async function POST(request: Request) {
       }
 
       try {
+        // Check if service listing exists first
+        const existingService = await prisma.serviceListing.findUnique({
+          where: { id: serviceId },
+        });
+
+        if (!existingService) {
+          console.error(`[Webhook] Service listing ${serviceId} not found`);
+          return NextResponse.json({ received: true, warning: "Service listing not found" });
+        }
+
+        // Only update if not already active (idempotency)
+        if (existingService.status === "ACTIVE") {
+          console.log(`[Webhook] Service listing ${serviceId} already active, skipping`);
+          return NextResponse.json({ received: true });
+        }
+
         const now = new Date();
         const expiresAt = new Date(now);
         expiresAt.setDate(expiresAt.getDate() + SERVICE_LISTING_DURATION_DAYS);
@@ -110,7 +142,7 @@ export async function POST(request: Request) {
 
         console.log(`[Webhook] Service listing ${serviceId} activated successfully`);
       } catch (error) {
-        console.error("Error activating service listing:", error);
+        console.error("[Webhook] Error activating service listing:", error);
         return NextResponse.json(
           { error: "Failed to activate service listing" },
           { status: 500 }
@@ -123,7 +155,7 @@ export async function POST(request: Request) {
       const orderId = session.metadata?.orderId;
 
       if (!orderId) {
-        console.error("No orderId in session metadata");
+        console.error("[Webhook] No orderId in session metadata");
         return NextResponse.json(
           { error: "Missing orderId in metadata" },
           { status: 400 }
@@ -131,18 +163,34 @@ export async function POST(request: Request) {
       }
 
       try {
+        // Check if order exists first to avoid Prisma errors
+        const existingOrder = await prisma.serviceOrder.findUnique({
+          where: { id: orderId },
+        });
+
+        if (!existingOrder) {
+          console.error(`[Webhook] Service order ${orderId} not found`);
+          // Return 200 to prevent Stripe from retrying for a non-existent order
+          return NextResponse.json({ received: true, warning: "Order not found" });
+        }
+
+        // Only update if not already processed (idempotency)
+        if (existingOrder.status === "PENDING_ACCEPTANCE" && existingOrder.stripePaymentIntent) {
+          console.log(`[Webhook] Service order ${orderId} already processed, skipping`);
+          return NextResponse.json({ received: true });
+        }
+
         await prisma.serviceOrder.update({
           where: { id: orderId },
           data: {
             status: "PENDING_ACCEPTANCE",
-            stripeSessionId: session.id,
             stripePaymentIntent: session.payment_intent as string,
           },
         });
 
         console.log(`[Webhook] Service order ${orderId} payment received`);
       } catch (error) {
-        console.error("Error updating service order:", error);
+        console.error("[Webhook] Error updating service order:", error);
         return NextResponse.json(
           { error: "Failed to update service order" },
           { status: 500 }
