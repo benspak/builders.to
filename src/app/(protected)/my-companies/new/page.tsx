@@ -6,11 +6,11 @@ export default function NewCompanyPage() {
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6 lg:px-8">
       <Link
-        href="/companies"
+        href="/my-companies"
         className="inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors mb-8"
       >
         <ArrowLeft className="h-4 w-4" />
-        Back to companies
+        Back to My Companies
       </Link>
 
       <div className="card p-8">

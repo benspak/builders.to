@@ -125,6 +125,13 @@ model User {
   serviceListings        ServiceListing[]
   serviceOrders          ServiceOrder[]    @relation("ServiceBuyer")
 
+  // Local Listings
+  localListings          LocalListing[]
+  localListingComments   LocalListingComment[]
+  localListingFlags      LocalListingFlag[]
+  localListingRatingsGiven    LocalListingRating[] @relation("LocalListingRater")
+  localListingRatingsReceived LocalListingRating[] @relation("LocalListingRated")
+
   @@index([slug])
   @@index([stripeConnectId])
   @@index([locationSlug])
@@ -905,4 +912,150 @@ model ServiceOrder {
   @@index([serviceId])
   @@index([buyerId])
   @@index([status])
+}
+
+// ============================================
+// Local Listings - Craigslist-style classifieds
+// ============================================
+
+enum LocalListingCategory {
+  COMMUNITY         // General community posts
+  SERVICES          // $1 per 90 days
+  DISCUSSION        // Conversations/questions
+  COWORKING_HOUSING // Space listings
+  FOR_SALE          // Items for sale
+  // Note: JOBS uses existing CompanyRole model
+}
+
+enum LocalListingStatus {
+  DRAFT
+  PENDING_PAYMENT   // For SERVICES only
+  ACTIVE
+  EXPIRED
+  FLAGGED
+  REMOVED
+}
+
+// Local listings - craigslist-style classifieds by location
+model LocalListing {
+  id              String               @id @default(cuid())
+  slug            String               @unique
+  title           String
+  description     String               @db.Text
+  category        LocalListingCategory
+  status          LocalListingStatus   @default(DRAFT)
+
+  // Location (default from user profile, overrideable)
+  locationSlug    String
+  city            String
+  state           String
+  zipCode         String?
+
+  // Contact
+  contactEmail    String?
+  contactPhone    String?
+
+  // For SERVICES category only (paid $1)
+  stripeSessionId String?              @unique
+  priceInCents    Int?                 // What they're charging for their service
+
+  // Expiration (90 days for paid SERVICES, 30 days for free categories)
+  activatedAt     DateTime?
+  expiresAt       DateTime?
+
+  // Relations
+  userId          String
+  user            User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  images          LocalListingImage[]
+  comments        LocalListingComment[]
+  flags           LocalListingFlag[]
+
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+
+  @@index([userId])
+  @@index([locationSlug])
+  @@index([category])
+  @@index([status])
+  @@index([expiresAt])
+  @@index([createdAt])
+}
+
+// Images attached to local listings
+model LocalListingImage {
+  id          String       @id @default(cuid())
+  url         String
+  caption     String?
+  order       Int          @default(0)
+  createdAt   DateTime     @default(now())
+
+  listingId   String
+  listing     LocalListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@index([listingId])
+  @@index([order])
+}
+
+// Comments on local listings
+model LocalListingComment {
+  id          String       @id @default(cuid())
+  content     String       @db.Text
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  userId      String
+  listingId   String
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listing     LocalListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@index([listingId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+// Flag/report a listing
+enum LocalListingFlagReason {
+  SPAM
+  INAPPROPRIATE
+  SCAM
+  DUPLICATE
+  WRONG_CATEGORY
+  OTHER
+}
+
+model LocalListingFlag {
+  id          String                  @id @default(cuid())
+  reason      LocalListingFlagReason
+  description String?                 @db.Text
+  createdAt   DateTime                @default(now())
+
+  userId      String
+  listingId   String
+
+  user        User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listing     LocalListing            @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, listingId])  // One flag per user per listing
+  @@index([listingId])
+  @@index([reason])
+}
+
+// Rating for listing authors (separate from listing itself)
+model LocalListingRating {
+  id          String   @id @default(cuid())
+  rating      Int      // 1-5 stars
+  comment     String?  @db.Text
+  createdAt   DateTime @default(now())
+
+  raterId     String   // User giving the rating
+  ratedUserId String   // User receiving the rating
+  listingId   String   // The listing this rating is associated with
+
+  rater       User     @relation("LocalListingRater", fields: [raterId], references: [id], onDelete: Cascade)
+  ratedUser   User     @relation("LocalListingRated", fields: [ratedUserId], references: [id], onDelete: Cascade)
+
+  @@unique([raterId, listingId])  // One rating per user per listing
+  @@index([ratedUserId])
+  @@index([listingId])
 }

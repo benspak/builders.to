@@ -4,7 +4,7 @@ import { signOut, useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { LogOut, User, ChevronDown, Settings, Rocket, Megaphone, Store, Bell } from "lucide-react";
+import { LogOut, User, ChevronDown, Settings, Rocket, Megaphone, Store, Bell, Building2, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface UserProfile {
@@ -158,6 +158,26 @@ export function UserMenu() {
             >
               <Store className="h-4 w-4" />
               Services
+            </Link>
+
+            <Link
+              href="/my-companies"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-black/5 dark:hover:bg-white/5"
+              style={{ color: "var(--foreground-muted)" }}
+            >
+              <Building2 className="h-4 w-4" />
+              My Company
+            </Link>
+
+            <Link
+              href="/my-listings"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-black/5 dark:hover:bg-white/5"
+              style={{ color: "var(--foreground-muted)" }}
+            >
+              <MapPin className="h-4 w-4" />
+              My Listings
             </Link>
 
             <Link

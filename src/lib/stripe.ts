@@ -10,6 +10,11 @@ export const SERVICE_LISTING_DURATION_DAYS = 90;
 export const SERVICE_PLATFORM_FEE_PERCENT = 5;
 export const MIN_LAUNCHED_PROJECTS_FOR_LISTING = 2;
 
+// Local Listings pricing
+export const LOCAL_LISTING_FEE_CENTS = 100; // $1 for Services category
+export const LOCAL_LISTING_PAID_DURATION_DAYS = 90; // Services category lasts 90 days
+export const LOCAL_LISTING_FREE_DURATION_DAYS = 30; // Free categories last 30 days
+
 // Lazy initialization to avoid build errors when env vars aren't set
 let stripeInstance: Stripe | null = null;
 

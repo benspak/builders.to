@@ -1,24 +1,32 @@
 import { notFound, redirect } from "next/navigation";
-import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { CompanyForm } from "@/components/companies/company-form";
 import { ArrowLeft, Building2 } from "lucide-react";
-import { getCompanyUrl } from "@/lib/utils";
+import Link from "next/link";
+import { getCompanyEditUrl, getCompanyUrl } from "@/lib/utils";
 
 interface EditCompanyPageProps {
-  params: Promise<{ locationSlug: string; companySlug: string }>;
+  params: Promise<{ slug: string }>;
 }
 
-export default async function EditLocalCompanyPage({ params }: EditCompanyPageProps) {
-  const { locationSlug, companySlug } = await params;
+export default async function EditCompanyPage({ params }: EditCompanyPageProps) {
+  const { slug } = await params;
   const session = await auth();
 
-  const company = await prisma.company.findFirst({
-    where: {
-      slug: companySlug,
-      locationSlug: locationSlug,
-    },
+  // First check if this company has a locationSlug and should redirect
+  const companyCheck = await prisma.company.findUnique({
+    where: { slug },
+    select: { id: true, slug: true, locationSlug: true },
+  });
+
+  // If company has a location, redirect to the new Builders Local edit URL
+  if (companyCheck?.locationSlug) {
+    redirect(getCompanyEditUrl(companyCheck));
+  }
+
+  const company = await prisma.company.findUnique({
+    where: { slug },
     select: {
       id: true,
       slug: true,
@@ -67,7 +75,7 @@ export default async function EditLocalCompanyPage({ params }: EditCompanyPagePr
     membership?.role === "ADMIN";
 
   if (!canEdit) {
-    redirect("/local");
+    redirect("/my-companies");
   }
 
   const backUrl = getCompanyUrl(company);

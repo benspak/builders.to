@@ -1,13 +1,15 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { MapPin, Building2, ArrowRight, Globe, Users } from "lucide-react";
+import { MapPin, Building2, ArrowRight, Globe, Users, Plus, Megaphone, LayoutList } from "lucide-react";
+import { LocalListingCard } from "@/components/local/local-listing-card";
+import { LocalCategoryFilter } from "@/components/local/local-category-filter";
 
 // Force dynamic rendering since this page fetches from database
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Builders Local - Discover Builders & Companies by Location | Builders.to",
-  description: "Find builders and companies in your city. Connect with local talent and explore regional tech ecosystems.",
+  title: "Builders Local - Classifieds & Community by Location | Builders.to",
+  description: "Find builders, companies, services, and local classifieds in your city. Connect with local talent and explore regional tech ecosystems.",
 };
 
 interface BuilderLocationData {
@@ -43,6 +45,40 @@ export default async function LocalPage() {
       city: true,
       state: true,
       locationSlug: true,
+    },
+  });
+
+  // Get recent local listings
+  const recentListings = await prisma.localListing.findMany({
+    where: {
+      status: "ACTIVE",
+      OR: [
+        { expiresAt: null },
+        { expiresAt: { gt: new Date() } },
+      ],
+    },
+    orderBy: { createdAt: "desc" },
+    take: 6,
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          displayName: true,
+          image: true,
+          slug: true,
+        },
+      },
+      images: {
+        orderBy: { order: "asc" },
+        take: 1,
+      },
+      _count: {
+        select: {
+          comments: true,
+          flags: true,
+        },
+      },
     },
   });
 
@@ -96,7 +132,7 @@ export default async function LocalPage() {
     ...companyLocations.map(l => l.locationSlug)
   ]).size;
 
-  const hasNoData = builderLocations.length === 0 && companyLocations.length === 0;
+  const hasNoLocationData = builderLocations.length === 0 && companyLocations.length === 0;
 
   return (
     <div className="relative min-h-screen bg-zinc-950">
@@ -115,12 +151,28 @@ export default async function LocalPage() {
             <span>Builders Local</span>
           </div>
           <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4">
-            Discover Builders & Companies by Location
+            Local Classifieds & Community
           </h1>
-          <p className="text-xl text-zinc-400 max-w-2xl mx-auto">
-            Find talented builders and innovative companies in your city. Connect with local talent and explore regional tech ecosystems.
+          <p className="text-xl text-zinc-400 max-w-2xl mx-auto mb-6">
+            Find services, jobs, housing, and connect with builders in your area.
           </p>
-          <div className="mt-6 flex items-center justify-center gap-6 text-sm text-zinc-500">
+          <div className="flex flex-wrap items-center justify-center gap-4 mb-8">
+            <Link
+              href="/local/new"
+              className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-zinc-900 rounded-lg bg-gradient-to-r from-orange-400 to-amber-500 hover:from-orange-500 hover:to-amber-600 transition-all shadow-lg shadow-orange-500/20"
+            >
+              <Plus className="h-4 w-4" />
+              Post a Listing
+            </Link>
+            <Link
+              href="/local/my-listings"
+              className="inline-flex items-center gap-2 px-6 py-3 text-sm font-medium text-zinc-300 rounded-lg border border-zinc-700 hover:bg-zinc-800 transition-colors"
+            >
+              <LayoutList className="h-4 w-4" />
+              My Listings
+            </Link>
+          </div>
+          <div className="flex items-center justify-center gap-6 text-sm text-zinc-500">
             <span className="flex items-center gap-2">
               <MapPin className="h-4 w-4" />
               {totalLocations} locations
@@ -136,22 +188,67 @@ export default async function LocalPage() {
           </div>
         </div>
 
-        {hasNoData ? (
+        {/* Category Filter */}
+        <div className="mb-12">
+          <LocalCategoryFilter includeJobs={false} />
+        </div>
+
+        {/* Recent Listings Section */}
+        {recentListings.length > 0 && (
+          <section className="mb-16">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/20 border border-amber-500/30">
+                  <Megaphone className="h-5 w-5 text-amber-400" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-white">Recent Listings</h2>
+                  <p className="text-sm text-zinc-400">Latest posts from the community</p>
+                </div>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {recentListings.map((listing) => (
+                <LocalListingCard
+                  key={listing.id}
+                  listing={{
+                    ...listing,
+                    activatedAt: listing.activatedAt?.toISOString() || null,
+                    expiresAt: listing.expiresAt?.toISOString() || null,
+                    createdAt: listing.createdAt.toISOString(),
+                    updatedAt: listing.updatedAt.toISOString(),
+                  }}
+                />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {hasNoLocationData && recentListings.length === 0 ? (
           <div className="text-center py-20">
             <MapPin className="h-16 w-16 text-zinc-700 mx-auto mb-4" />
             <h2 className="text-xl font-semibold text-white mb-2">
-              No locations yet
+              No listings or locations yet
             </h2>
             <p className="text-zinc-400 mb-6">
-              Set your location in your profile to appear here.
+              Be the first to post a listing or set your location in settings.
             </p>
-            <Link
-              href="/settings"
-              className="inline-flex items-center gap-2 rounded-xl bg-orange-500 px-6 py-3 text-sm font-semibold text-white hover:bg-orange-600 transition-colors"
-            >
-              <MapPin className="h-4 w-4" />
-              Set Your Location
-            </Link>
+            <div className="flex flex-wrap justify-center gap-4">
+              <Link
+                href="/local/new"
+                className="inline-flex items-center gap-2 rounded-xl bg-orange-500 px-6 py-3 text-sm font-semibold text-white hover:bg-orange-600 transition-colors"
+              >
+                <Plus className="h-4 w-4" />
+                Create First Listing
+              </Link>
+              <Link
+                href="/settings"
+                className="inline-flex items-center gap-2 rounded-xl border border-zinc-700 px-6 py-3 text-sm font-semibold text-zinc-300 hover:bg-zinc-800 transition-colors"
+              >
+                <MapPin className="h-4 w-4" />
+                Set Your Location
+              </Link>
+            </div>
           </div>
         ) : (
           <div className="space-y-16">
@@ -168,10 +265,10 @@ export default async function LocalPage() {
                   </div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {builderLocations.map((loc) => (
+                  {builderLocations.slice(0, 6).map((loc) => (
                     <Link
                       key={loc.locationSlug}
-                      href={`/${loc.locationSlug}`}
+                      href={`/local/${loc.locationSlug}`}
                       className="group relative overflow-hidden rounded-2xl border border-white/10 bg-zinc-900/50 backdrop-blur-sm p-6 hover:border-orange-500/30 hover:bg-zinc-900/70 transition-all"
                     >
                       <div className="flex items-start justify-between">
@@ -208,10 +305,10 @@ export default async function LocalPage() {
                   </div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {companyLocations.map((loc) => (
+                  {companyLocations.slice(0, 6).map((loc) => (
                     <Link
                       key={loc.locationSlug}
-                      href={`/${loc.locationSlug}`}
+                      href={`/local/${loc.locationSlug}`}
                       className="group relative overflow-hidden rounded-2xl border border-white/10 bg-zinc-900/50 backdrop-blur-sm p-6 hover:border-emerald-500/30 hover:bg-zinc-900/70 transition-all"
                     >
                       <div className="flex items-start justify-between">
@@ -236,7 +333,6 @@ export default async function LocalPage() {
             )}
           </div>
         )}
-
       </div>
     </div>
   );

@@ -24,7 +24,7 @@ export function DeleteCompanyButton({ companyId }: DeleteCompanyButtonProps) {
         throw new Error("Failed to delete company");
       }
 
-      router.push("/companies");
+      router.push("/my-companies");
       router.refresh();
     } catch (error) {
       console.error("Error deleting company:", error);

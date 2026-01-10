@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
-import { getStripe, SIDEBAR_AD_DURATION_DAYS, SERVICE_LISTING_DURATION_DAYS } from "@/lib/stripe";
+import { getStripe, SIDEBAR_AD_DURATION_DAYS, SERVICE_LISTING_DURATION_DAYS, LOCAL_LISTING_PAID_DURATION_DAYS } from "@/lib/stripe";
 import Stripe from "stripe";
 
 // POST /api/ads/webhook - Handle Stripe webhook events for ads
@@ -145,6 +145,58 @@ export async function POST(request: Request) {
         console.error("[Webhook] Error activating service listing:", error);
         return NextResponse.json(
           { error: "Failed to activate service listing" },
+          { status: 500 }
+        );
+      }
+    }
+
+    // Handle local_listing payments (Services category listing fee)
+    if (paymentType === "local_listing") {
+      const listingId = session.metadata?.listingId;
+
+      if (!listingId) {
+        console.error("[Webhook] No listingId in session metadata");
+        return NextResponse.json(
+          { error: "Missing listingId in metadata" },
+          { status: 400 }
+        );
+      }
+
+      try {
+        // Check if listing exists first
+        const existingListing = await prisma.localListing.findUnique({
+          where: { id: listingId },
+        });
+
+        if (!existingListing) {
+          console.error(`[Webhook] Local listing ${listingId} not found`);
+          return NextResponse.json({ received: true, warning: "Local listing not found" });
+        }
+
+        // Only update if not already active (idempotency)
+        if (existingListing.status === "ACTIVE") {
+          console.log(`[Webhook] Local listing ${listingId} already active, skipping`);
+          return NextResponse.json({ received: true });
+        }
+
+        const now = new Date();
+        const expiresAt = new Date(now);
+        expiresAt.setDate(expiresAt.getDate() + LOCAL_LISTING_PAID_DURATION_DAYS);
+
+        await prisma.localListing.update({
+          where: { id: listingId },
+          data: {
+            status: "ACTIVE",
+            activatedAt: now,
+            expiresAt: expiresAt,
+          },
+        });
+
+        console.log(`[Webhook] Local listing ${listingId} activated successfully`);
+      } catch (error) {
+        console.error("[Webhook] Error activating local listing:", error);
+        return NextResponse.json(
+          { error: "Failed to activate local listing" },
           { status: 500 }
         );
       }
