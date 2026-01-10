@@ -129,6 +129,7 @@ export function StreamerCard({ streamer }: StreamerCardProps) {
                     src={`https://img.youtube.com/vi/${youtubeMatch[1]}/mqdefault.jpg`}
                     alt="Featured video"
                     fill
+                    unoptimized
                     className="object-cover group-hover/thumb:scale-105 transition-transform"
                   />
                   <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover/thumb:bg-black/40 transition-colors">
