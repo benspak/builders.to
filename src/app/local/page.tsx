@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { MapPin, Building2, ArrowRight, Globe, Users, Plus, Megaphone, LayoutList } from "lucide-react";
 import { LocalListingCard } from "@/components/local/local-listing-card";
 import { LocalCategoryFilter } from "@/components/local/local-category-filter";
+import { CATEGORY_LABELS } from "@/components/local/types";
 
 // Force dynamic rendering since this page fetches from database
 export const dynamic = "force-dynamic";
@@ -24,7 +25,13 @@ interface CompanyLocationData {
   count: number;
 }
 
-export default async function LocalPage() {
+interface PageProps {
+  searchParams: Promise<{ category?: string }>;
+}
+
+export default async function LocalPage({ searchParams }: PageProps) {
+  const { category } = await searchParams;
+  const categoryFilter = category?.toUpperCase();
   // Get all unique locations with company counts
   const companies = await prisma.company.findMany({
     where: {
@@ -48,17 +55,25 @@ export default async function LocalPage() {
     },
   });
 
-  // Get recent local listings
+  // Build the where clause for listings
+  const listingsWhere: Parameters<typeof prisma.localListing.findMany>[0]["where"] = {
+    status: "ACTIVE",
+    OR: [
+      { expiresAt: null },
+      { expiresAt: { gt: new Date() } },
+    ],
+  };
+
+  // Add category filter if provided
+  if (categoryFilter && Object.keys(CATEGORY_LABELS).includes(categoryFilter)) {
+    listingsWhere.category = categoryFilter as keyof typeof CATEGORY_LABELS;
+  }
+
+  // Get local listings (recent or filtered by category)
   const recentListings = await prisma.localListing.findMany({
-    where: {
-      status: "ACTIVE",
-      OR: [
-        { expiresAt: null },
-        { expiresAt: { gt: new Date() } },
-      ],
-    },
+    where: listingsWhere,
     orderBy: { createdAt: "desc" },
-    take: 6,
+    take: categoryFilter ? 20 : 6, // Show more when filtering by category
     include: {
       user: {
         select: {
@@ -190,10 +205,10 @@ export default async function LocalPage() {
 
         {/* Category Filter */}
         <div className="mb-12">
-          <LocalCategoryFilter includeJobs={false} />
+          <LocalCategoryFilter includeJobs={false} currentCategory={category} />
         </div>
 
-        {/* Recent Listings Section */}
+        {/* Listings Section */}
         {recentListings.length > 0 && (
           <section className="mb-16">
             <div className="flex items-center justify-between mb-6">
@@ -202,8 +217,16 @@ export default async function LocalPage() {
                   <Megaphone className="h-5 w-5 text-amber-400" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-white">Recent Listings</h2>
-                  <p className="text-sm text-zinc-400">Latest posts from the community</p>
+                  <h2 className="text-2xl font-bold text-white">
+                    {categoryFilter && CATEGORY_LABELS[categoryFilter as keyof typeof CATEGORY_LABELS]
+                      ? `${CATEGORY_LABELS[categoryFilter as keyof typeof CATEGORY_LABELS]} Listings`
+                      : "Recent Listings"}
+                  </h2>
+                  <p className="text-sm text-zinc-400">
+                    {categoryFilter
+                      ? `${recentListings.length} listing${recentListings.length !== 1 ? "s" : ""} found`
+                      : "Latest posts from the community"}
+                  </p>
                 </div>
               </div>
             </div>
@@ -224,7 +247,32 @@ export default async function LocalPage() {
           </section>
         )}
 
-        {hasNoLocationData && recentListings.length === 0 ? (
+        {recentListings.length === 0 && categoryFilter ? (
+          <div className="text-center py-20">
+            <Megaphone className="h-16 w-16 text-zinc-700 mx-auto mb-4" />
+            <h2 className="text-xl font-semibold text-white mb-2">
+              No {CATEGORY_LABELS[categoryFilter as keyof typeof CATEGORY_LABELS]?.toLowerCase() || ""} listings yet
+            </h2>
+            <p className="text-zinc-400 mb-6">
+              Be the first to post a listing in this category!
+            </p>
+            <div className="flex flex-wrap justify-center gap-4">
+              <Link
+                href="/my-listings/new"
+                className="inline-flex items-center gap-2 rounded-xl bg-orange-500 px-6 py-3 text-sm font-semibold text-white hover:bg-orange-600 transition-colors"
+              >
+                <Plus className="h-4 w-4" />
+                Create Listing
+              </Link>
+              <Link
+                href="/local"
+                className="inline-flex items-center gap-2 rounded-xl border border-zinc-700 px-6 py-3 text-sm font-semibold text-zinc-300 hover:bg-zinc-800 transition-colors"
+              >
+                View All Listings
+              </Link>
+            </div>
+          </div>
+        ) : hasNoLocationData && recentListings.length === 0 ? (
           <div className="text-center py-20">
             <MapPin className="h-16 w-16 text-zinc-700 mx-auto mb-4" />
             <h2 className="text-xl font-semibold text-white mb-2">

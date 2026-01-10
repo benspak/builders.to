@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Users, Wrench, MessageSquare, Home, ShoppingBag, Briefcase, LayoutGrid } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LocalListingCategory, CATEGORY_LABELS, CATEGORY_COLORS } from "./types";
@@ -37,24 +37,29 @@ export function LocalCategoryFilter({
   includeJobs = true,
   className
 }: LocalCategoryFilterProps) {
-  const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const baseUrl = locationSlug
-    ? `/local/${locationSlug}`
-    : "/local";
-
   const getHref = (category: string | null) => {
+    // When we have a locationSlug, use path-based routing
+    if (locationSlug) {
+      if (!category) {
+        return `/local/${locationSlug}`;
+      }
+      return `/local/${locationSlug}/${category.toLowerCase()}`;
+    }
+
+    // Without a locationSlug, use query params for filtering on /local
     if (!category) {
-      return baseUrl;
+      return "/local";
     }
-    if (category === "JOBS" && locationSlug) {
-      return `/local/${locationSlug}/jobs`;
-    }
-    return `${baseUrl}/${category.toLowerCase()}`;
+    return `/local?category=${category.toLowerCase()}`;
   };
 
-  const filteredCategories = includeJobs
+  // Determine active category from either prop or query params
+  const activeCategory = currentCategory || searchParams.get("category");
+
+  // Filter out JOBS if not on a location page (JOBS only works with locationSlug for CompanyRole filtering)
+  const filteredCategories = locationSlug && includeJobs
     ? categories
     : categories.filter(c => c.value !== "JOBS");
 
@@ -62,10 +67,10 @@ export function LocalCategoryFilter({
     <div className={cn("flex flex-wrap gap-2", className)}>
       {/* All button */}
       <Link
-        href={baseUrl}
+        href={getHref(null)}
         className={cn(
           "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium border transition-colors",
-          !currentCategory
+          !activeCategory
             ? "bg-orange-500/20 text-orange-300 border-orange-500/30"
             : "bg-zinc-800/50 text-zinc-400 border-zinc-700/50 hover:bg-zinc-800 hover:text-white"
         )}
@@ -77,7 +82,7 @@ export function LocalCategoryFilter({
       {/* Category buttons */}
       {filteredCategories.map((cat) => {
         const Icon = CategoryIcons[cat.value];
-        const isActive = currentCategory?.toUpperCase() === cat.value;
+        const isActive = activeCategory?.toUpperCase() === cat.value;
 
         return (
           <Link
