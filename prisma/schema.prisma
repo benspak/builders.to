@@ -72,8 +72,6 @@ model User {
   linkedinUrl   String?
   twitchUrl     String?   // Twitch channel URL
   featuredVideoUrl String? // Featured video URL (YouTube/Twitch video to showcase)
-  twitchUrl     String?   // Twitch channel URL
-  featuredVideoUrl String? // Featured video URL (YouTube/Twitch video to showcase)
 
   // Profile status - what the user is currently up to
   status              String?   // Short status message (e.g., "Building a new feature 🚀")
