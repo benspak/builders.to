@@ -7,7 +7,7 @@ import { UserMenu } from "@/components/auth/user-menu";
 import { NotificationDropdown } from "@/components/notifications";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { SearchCommand } from "@/components/ui/search-command";
-import { Plus, Rocket, ChevronDown, Sparkles, Menu, X, MapPin } from "lucide-react";
+import { Plus, Rocket, ChevronDown, Sparkles, Menu, X, MapPin, Video } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function Navbar() {
@@ -84,6 +84,15 @@ export function Navbar() {
                   >
                     Services
                   </Link>
+                  <Link
+                    href="/streamers"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-white/5"
+                    style={{ color: "var(--foreground-muted)" }}
+                  >
+                    <Video className="h-3.5 w-3.5 text-purple-400" />
+                    Streamers
+                  </Link>
 
                   {/* Divider */}
                   <div className="my-2 border-t" style={{ borderColor: "var(--card-border)" }} />
@@ -147,6 +156,14 @@ export function Navbar() {
             style={{ color: "var(--foreground-muted)" }}
           >
             Services
+          </Link>
+          <Link
+            href="/streamers"
+            className="hidden lg:flex items-center gap-1.5 text-sm font-medium transition-colors"
+            style={{ color: "var(--foreground-muted)" }}
+          >
+            <Video className="h-3.5 w-3.5 text-purple-400" />
+            Streamers
           </Link>
 
           {/* Mobile Search */}
