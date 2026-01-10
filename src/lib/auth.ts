@@ -134,6 +134,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               }),
           },
         });
+
+        // Create a feed event to announce the new user
+        const displayName = user.name || oauthUsername || "A new builder";
+        await prisma.feedEvent.create({
+          data: {
+            type: "USER_JOINED",
+            userId: user.id,
+            title: `${displayName} joined the community`,
+            description: "Welcome to Builders.to! 🎉",
+          },
+        });
       }
     },
   },

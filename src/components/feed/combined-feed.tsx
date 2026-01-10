@@ -6,6 +6,7 @@ import { StatusUpdateCard } from "./status-update-card";
 import { ProjectStatusChangeCard } from "./project-status-change-card";
 import { ProjectCreatedCard } from "./project-created-card";
 import { JobPostedCard } from "./job-posted-card";
+import { UserJoinedCard } from "./user-joined-card";
 
 interface DailyUpdate {
   id: string;
@@ -57,7 +58,7 @@ interface FeedEvent {
       };
     };
   } | null;
-  // For status update events
+  // For status update events and user joined events
   user?: {
     id: string;
     name?: string | null;
@@ -66,6 +67,8 @@ interface FeedEvent {
     image?: string | null;
     slug?: string | null;
     headline?: string | null;
+    city?: string | null;
+    state?: string | null;
   } | null;
   // For project status change events and project created events
   project?: {
@@ -110,7 +113,8 @@ type FeedItem =
   | { type: "status"; data: FeedEvent }
   | { type: "projectStatusChange"; data: FeedEvent }
   | { type: "projectCreated"; data: FeedEvent }
-  | { type: "jobPosted"; data: FeedEvent };
+  | { type: "jobPosted"; data: FeedEvent }
+  | { type: "userJoined"; data: FeedEvent };
 
 interface CombinedFeedProps {
   updates: DailyUpdate[];
@@ -127,12 +131,13 @@ export function CombinedFeed({
 }: CombinedFeedProps) {
   // Separate different event types
   const milestoneEvents = feedEvents.filter(
-    (e) => e.type !== "STATUS_UPDATE" && e.type !== "PROJECT_STATUS_CHANGE" && e.type !== "PROJECT_CREATED" && e.type !== "JOB_POSTED"
+    (e) => e.type !== "STATUS_UPDATE" && e.type !== "PROJECT_STATUS_CHANGE" && e.type !== "PROJECT_CREATED" && e.type !== "JOB_POSTED" && e.type !== "USER_JOINED"
   );
   const statusEvents = feedEvents.filter((e) => e.type === "STATUS_UPDATE");
   const projectStatusChangeEvents = feedEvents.filter((e) => e.type === "PROJECT_STATUS_CHANGE");
   const projectCreatedEvents = feedEvents.filter((e) => e.type === "PROJECT_CREATED");
   const jobPostedEvents = feedEvents.filter((e) => e.type === "JOB_POSTED");
+  const userJoinedEvents = feedEvents.filter((e) => e.type === "USER_JOINED");
 
   // Combine and sort by date
   const feedItems: FeedItem[] = [
@@ -142,6 +147,7 @@ export function CombinedFeed({
     ...projectStatusChangeEvents.map((e) => ({ type: "projectStatusChange" as const, data: e })),
     ...projectCreatedEvents.map((e) => ({ type: "projectCreated" as const, data: e })),
     ...jobPostedEvents.map((e) => ({ type: "jobPosted" as const, data: e })),
+    ...userJoinedEvents.map((e) => ({ type: "userJoined" as const, data: e })),
   ].sort((a, b) => {
     const dateA = new Date(a.data.createdAt).getTime();
     const dateB = new Date(b.data.createdAt).getTime();
@@ -216,6 +222,19 @@ export function CombinedFeed({
               event={{
                 ...item.data,
                 companyRole: item.data.companyRole,
+              }}
+              currentUserId={currentUserId}
+            />
+          );
+        }
+
+        if (item.type === "userJoined" && item.data.user) {
+          return (
+            <UserJoinedCard
+              key={`user-joined-${item.data.id}`}
+              event={{
+                ...item.data,
+                user: item.data.user,
               }}
               currentUserId={currentUserId}
             />

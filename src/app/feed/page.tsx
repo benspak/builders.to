@@ -98,6 +98,8 @@ async function FeedContent() {
       const projectCreatedEvents = events.filter(e => e.type === "PROJECT_CREATED");
       // For job posted events, fetch company role info
       const jobPostedEvents = events.filter(e => e.type === "JOB_POSTED");
+      // For user joined events, fetch user info with location
+      const userJoinedEvents = events.filter(e => e.type === "USER_JOINED");
 
       // Fetch users for status updates
       let userMap = new Map<string, { id: string; name: string | null; firstName: string | null; lastName: string | null; image: string | null; slug: string | null; headline: string | null }>();
@@ -116,6 +118,27 @@ async function FeedContent() {
           },
         });
         userMap = new Map(users.map(u => [u.id, u]));
+      }
+
+      // Fetch users for user joined events (with location data)
+      let userJoinedMap = new Map<string, { id: string; name: string | null; firstName: string | null; lastName: string | null; image: string | null; slug: string | null; headline: string | null; city: string | null; state: string | null }>();
+      if (userJoinedEvents.length > 0) {
+        const userIds = Array.from(new Set(userJoinedEvents.map(e => e.userId)));
+        const users = await prisma.user.findMany({
+          where: { id: { in: userIds } },
+          select: {
+            id: true,
+            name: true,
+            firstName: true,
+            lastName: true,
+            image: true,
+            slug: true,
+            headline: true,
+            city: true,
+            state: true,
+          },
+        });
+        userJoinedMap = new Map(users.map(u => [u.id, u]));
       }
 
       // Fetch projects for project status changes and project created events
@@ -178,7 +201,11 @@ async function FeedContent() {
 
       return events.map(event => ({
         ...event,
-        user: event.type === "STATUS_UPDATE" ? userMap.get(event.userId) || null : null,
+        user: event.type === "STATUS_UPDATE"
+          ? userMap.get(event.userId) || null
+          : event.type === "USER_JOINED"
+            ? userJoinedMap.get(event.userId) || null
+            : null,
         project: (event.type === "PROJECT_STATUS_CHANGE" || event.type === "PROJECT_CREATED") && event.projectId ? projectMap.get(event.projectId) || null : null,
         companyRole: event.type === "JOB_POSTED" && event.companyRoleId ? companyRoleMap.get(event.companyRoleId) || null : null,
       }));

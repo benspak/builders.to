@@ -3,6 +3,7 @@ export { StatusUpdateCard } from "./status-update-card";
 export { ProjectStatusChangeCard } from "./project-status-change-card";
 export { ProjectCreatedCard } from "./project-created-card";
 export { JobPostedCard } from "./job-posted-card";
+export { UserJoinedCard } from "./user-joined-card";
 export { CombinedFeed } from "./combined-feed";
 export { TopBuilders } from "./top-builders";
 export { OpenJobs } from "./open-jobs";

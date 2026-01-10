@@ -621,6 +621,7 @@ enum FeedEventType {
   PROJECT_STATUS_CHANGE  // Project status changed (any transition)
   PROJECT_CREATED        // A new project was created
   JOB_POSTED             // A new job/role was posted by a company
+  USER_JOINED            // A new user signed up
 }
 
 // Feed events - aggregated activity feed
