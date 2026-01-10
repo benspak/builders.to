@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { Loader2, Video, Users } from "lucide-react";
+import { Loader2, Video, Users, ExternalLink, Sparkles } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { StreamerCard } from "@/components/streamers";
 
@@ -195,6 +195,47 @@ export default async function StreamersPage({ searchParams }: StreamersPageProps
             </Link>
           </div>
         </div>
+
+        {/* Featured Twitch Category */}
+        <a
+          href="https://www.twitch.tv/directory/collection/software-game-development-streams"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group mb-8 block relative overflow-hidden rounded-2xl border border-purple-500/30 bg-gradient-to-br from-purple-900/40 via-zinc-900/80 to-zinc-900/90 p-6 hover:border-purple-500/50 transition-all duration-300"
+        >
+          {/* Animated background glow */}
+          <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 via-transparent to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <div className="absolute -top-20 -right-20 h-40 w-40 rounded-full bg-purple-500/20 blur-3xl group-hover:bg-purple-500/30 transition-all duration-500" />
+
+          <div className="relative flex flex-col sm:flex-row sm:items-center gap-4">
+            {/* Icon */}
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-purple-700 shadow-lg shadow-purple-500/30 group-hover:shadow-purple-500/50 transition-shadow">
+              <TwitchIcon className="h-7 w-7 text-white" />
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 text-xs font-medium">
+                  <Sparkles className="h-3 w-3" />
+                  Featured Category
+                </span>
+              </div>
+              <h3 className="text-lg font-bold text-white mb-1 group-hover:text-purple-200 transition-colors">
+                Software & Game Development Streams
+              </h3>
+              <p className="text-zinc-400 text-sm">
+                Watch live coding, game dev, and software engineering streams on Twitch. Learn from builders in real-time!
+              </p>
+            </div>
+
+            {/* CTA */}
+            <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-500/20 border border-purple-500/30 text-purple-300 text-sm font-medium group-hover:bg-purple-500/30 group-hover:text-white transition-all shrink-0">
+              Watch Now
+              <ExternalLink className="h-4 w-4" />
+            </div>
+          </div>
+        </a>
 
         {/* Content */}
         <Suspense
