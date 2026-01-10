@@ -327,7 +327,7 @@ export default async function SlugPage({ params }: PageProps) {
       },
       dailyUpdates: {
         orderBy: { createdAt: "desc" },
-        take: 20,
+        // Fetch all updates for SEO indexability
         select: {
           id: true,
           content: true,
