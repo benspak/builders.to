@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { UpdateItem } from "@/components/updates/update-item";
 import { MilestoneEventCard } from "./milestone-event-card";
 import { StatusUpdateCard } from "./status-update-card";
@@ -7,6 +8,8 @@ import { ProjectStatusChangeCard } from "./project-status-change-card";
 import { ProjectCreatedCard } from "./project-created-card";
 import { JobPostedCard } from "./job-posted-card";
 import { UserJoinedCard } from "./user-joined-card";
+import { ChevronDown, Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface DailyUpdate {
   id: string;
@@ -121,14 +124,25 @@ interface CombinedFeedProps {
   feedEvents: FeedEvent[];
   currentUserId?: string;
   showAuthor?: boolean;
+  /** Number of items to show initially before requiring "Load more" */
+  initialDisplayCount?: number;
+  /** Number of items to reveal each time "Load more" is clicked */
+  loadMoreCount?: number;
 }
+
+const DEFAULT_INITIAL_COUNT = 20;
+const DEFAULT_LOAD_MORE_COUNT = 20;
 
 export function CombinedFeed({
   updates,
   feedEvents,
   currentUserId,
   showAuthor = true,
+  initialDisplayCount = DEFAULT_INITIAL_COUNT,
+  loadMoreCount = DEFAULT_LOAD_MORE_COUNT,
 }: CombinedFeedProps) {
+  const [visibleCount, setVisibleCount] = useState(initialDisplayCount);
+  const [isLoading, setIsLoading] = useState(false);
   // Separate different event types
   const milestoneEvents = feedEvents.filter(
     (e) => e.type !== "STATUS_UPDATE" && e.type !== "PROJECT_STATUS_CHANGE" && e.type !== "PROJECT_CREATED" && e.type !== "JOB_POSTED" && e.type !== "USER_JOINED"
@@ -154,6 +168,18 @@ export function CombinedFeed({
     return dateB - dateA;
   });
 
+  const hasMoreItems = feedItems.length > visibleCount;
+  const remainingCount = feedItems.length - visibleCount;
+
+  const handleLoadMore = () => {
+    // Small delay to show loading state for better UX
+    setIsLoading(true);
+    setTimeout(() => {
+      setVisibleCount((prev) => Math.min(prev + loadMoreCount, feedItems.length));
+      setIsLoading(false);
+    }, 150);
+  };
+
   if (feedItems.length === 0) {
     return (
       <div className="text-center py-12">
@@ -162,94 +188,154 @@ export function CombinedFeed({
     );
   }
 
+  // Helper function to render a feed item
+  const renderFeedItem = (item: FeedItem) => {
+    if (item.type === "update") {
+      return (
+        <UpdateItem
+          key={`update-${item.data.id}`}
+          update={item.data}
+          currentUserId={currentUserId}
+          showAuthor={showAuthor}
+        />
+      );
+    }
+
+    if (item.type === "status" && item.data.user) {
+      return (
+        <StatusUpdateCard
+          key={`status-${item.data.id}`}
+          event={{
+            ...item.data,
+            user: item.data.user,
+          }}
+          currentUserId={currentUserId}
+        />
+      );
+    }
+
+    if (item.type === "projectStatusChange" && item.data.project) {
+      return (
+        <ProjectStatusChangeCard
+          key={`project-status-${item.data.id}`}
+          event={{
+            ...item.data,
+            project: item.data.project,
+          }}
+          currentUserId={currentUserId}
+        />
+      );
+    }
+
+    if (item.type === "projectCreated" && item.data.project) {
+      return (
+        <ProjectCreatedCard
+          key={`project-created-${item.data.id}`}
+          event={{
+            ...item.data,
+            project: item.data.project,
+          }}
+          currentUserId={currentUserId}
+        />
+      );
+    }
+
+    if (item.type === "jobPosted" && item.data.companyRole) {
+      return (
+        <JobPostedCard
+          key={`job-posted-${item.data.id}`}
+          event={{
+            ...item.data,
+            companyRole: item.data.companyRole,
+          }}
+          currentUserId={currentUserId}
+        />
+      );
+    }
+
+    if (item.type === "userJoined" && item.data.user) {
+      return (
+        <UserJoinedCard
+          key={`user-joined-${item.data.id}`}
+          event={{
+            ...item.data,
+            user: item.data.user,
+          }}
+          currentUserId={currentUserId}
+        />
+      );
+    }
+
+    // Milestone events
+    return (
+      <MilestoneEventCard
+        key={`milestone-${item.data.id}`}
+        event={item.data}
+        currentUserId={currentUserId}
+      />
+    );
+  };
+
   return (
     <div className="space-y-4">
-      {feedItems.map((item) => {
-        if (item.type === "update") {
-          return (
-            <UpdateItem
-              key={`update-${item.data.id}`}
-              update={item.data}
-              currentUserId={currentUserId}
-              showAuthor={showAuthor}
-            />
-          );
-        }
+      {/*
+        Render ALL feed items in the HTML for SEO indexability.
+        Items beyond visibleCount are hidden with CSS but remain in the DOM
+        so search engines can crawl and index them.
+      */}
+      {feedItems.map((item, index) => (
+        <div
+          key={`wrapper-${item.type}-${item.data.id}`}
+          className={cn(
+            // Hide items beyond visibleCount visually, but keep in DOM for SEO
+            index >= visibleCount && "hidden"
+          )}
+          // Structured data attributes for better SEO
+          data-feed-index={index}
+        >
+          {renderFeedItem(item)}
+        </div>
+      ))}
 
-        if (item.type === "status" && item.data.user) {
-          return (
-            <StatusUpdateCard
-              key={`status-${item.data.id}`}
-              event={{
-                ...item.data,
-                user: item.data.user,
-              }}
-              currentUserId={currentUserId}
-            />
-          );
-        }
+      {/* Load More Button */}
+      {hasMoreItems && (
+        <div className="pt-4 pb-2">
+          <button
+            onClick={handleLoadMore}
+            disabled={isLoading}
+            className={cn(
+              "w-full flex items-center justify-center gap-2 py-3 px-4",
+              "rounded-xl border border-white/10 bg-zinc-800/50",
+              "text-sm font-medium text-zinc-300",
+              "hover:bg-zinc-800 hover:border-orange-500/30 hover:text-white",
+              "transition-all duration-200",
+              "disabled:opacity-50 disabled:cursor-not-allowed"
+            )}
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Loading...</span>
+              </>
+            ) : (
+              <>
+                <ChevronDown className="h-4 w-4" />
+                <span>
+                  Load more ({remainingCount} remaining)
+                </span>
+              </>
+            )}
+          </button>
+        </div>
+      )}
 
-        if (item.type === "projectStatusChange" && item.data.project) {
-          return (
-            <ProjectStatusChangeCard
-              key={`project-status-${item.data.id}`}
-              event={{
-                ...item.data,
-                project: item.data.project,
-              }}
-              currentUserId={currentUserId}
-            />
-          );
-        }
-
-        if (item.type === "projectCreated" && item.data.project) {
-          return (
-            <ProjectCreatedCard
-              key={`project-created-${item.data.id}`}
-              event={{
-                ...item.data,
-                project: item.data.project,
-              }}
-              currentUserId={currentUserId}
-            />
-          );
-        }
-
-        if (item.type === "jobPosted" && item.data.companyRole) {
-          return (
-            <JobPostedCard
-              key={`job-posted-${item.data.id}`}
-              event={{
-                ...item.data,
-                companyRole: item.data.companyRole,
-              }}
-              currentUserId={currentUserId}
-            />
-          );
-        }
-
-        if (item.type === "userJoined" && item.data.user) {
-          return (
-            <UserJoinedCard
-              key={`user-joined-${item.data.id}`}
-              event={{
-                ...item.data,
-                user: item.data.user,
-              }}
-              currentUserId={currentUserId}
-            />
-          );
-        }
-
-        // Milestone events
-        return (
-          <MilestoneEventCard
-            key={`milestone-${item.data.id}`}
-            event={item.data}
-            currentUserId={currentUserId}
-          />
-        );
-      })}
+      {/*
+        SEO: Render hidden items as a noscript fallback for crawlers
+        that don't execute JavaScript. This ensures all content is indexable.
+      */}
+      <noscript>
+        <style>{`.hidden { display: block !important; }`}</style>
+      </noscript>
     </div>
   );
 }

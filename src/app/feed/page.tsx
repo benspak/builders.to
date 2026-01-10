@@ -19,10 +19,12 @@ async function FeedContent() {
   const session = await auth();
 
   // Fetch both daily updates and feed events (milestones)
+  // Fetch all for SEO indexability - the CombinedFeed component handles "load more" UX
   const [updates, feedEvents] = await Promise.all([
     prisma.dailyUpdate.findMany({
       orderBy: { createdAt: "desc" },
-      take: 30,
+      // Fetch more items for SEO - component will handle pagination UX
+      take: 100,
       select: {
         id: true,
         content: true,
@@ -54,7 +56,8 @@ async function FeedContent() {
     }),
     prisma.feedEvent.findMany({
       orderBy: { createdAt: "desc" },
-      take: 20,
+      // Fetch more items for SEO
+      take: 50,
       include: {
         milestone: {
           include: {
