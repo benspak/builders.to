@@ -158,14 +158,14 @@ export default async function LocalPage() {
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4 mb-8">
             <Link
-              href="/local/new"
+              href="/my-listings/new"
               className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-zinc-900 rounded-lg bg-gradient-to-r from-orange-400 to-amber-500 hover:from-orange-500 hover:to-amber-600 transition-all shadow-lg shadow-orange-500/20"
             >
               <Plus className="h-4 w-4" />
               Post a Listing
             </Link>
             <Link
-              href="/local/my-listings"
+              href="/my-listings"
               className="inline-flex items-center gap-2 px-6 py-3 text-sm font-medium text-zinc-300 rounded-lg border border-zinc-700 hover:bg-zinc-800 transition-colors"
             >
               <LayoutList className="h-4 w-4" />
@@ -235,7 +235,7 @@ export default async function LocalPage() {
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Link
-                href="/local/new"
+                href="/my-listings/new"
                 className="inline-flex items-center gap-2 rounded-xl bg-orange-500 px-6 py-3 text-sm font-semibold text-white hover:bg-orange-600 transition-colors"
               >
                 <Plus className="h-4 w-4" />

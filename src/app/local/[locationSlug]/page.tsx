@@ -154,7 +154,7 @@ export default async function LocationPage({ params }: PageProps) {
             </div>
           </div>
           <Link
-            href="/local/new"
+            href="/my-listings/new"
             className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-zinc-900 rounded-lg bg-gradient-to-r from-orange-400 to-amber-500 hover:from-orange-500 hover:to-amber-600 transition-all shadow-lg shadow-orange-500/20"
           >
             <Plus className="h-4 w-4" />
@@ -178,7 +178,7 @@ export default async function LocationPage({ params }: PageProps) {
               Be the first to post a listing in this area!
             </p>
             <Link
-              href="/local/new"
+              href="/my-listings/new"
               className="inline-flex items-center gap-2 rounded-lg bg-orange-500 px-6 py-3 text-sm font-semibold text-white hover:bg-orange-600 transition-colors"
             >
               <Plus className="h-4 w-4" />
