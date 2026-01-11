@@ -44,6 +44,7 @@ export async function GET(request: NextRequest) {
           _count: {
             select: {
               likes: true,
+              comments: true,
             },
           },
         },
@@ -69,6 +70,7 @@ export async function GET(request: NextRequest) {
         ...event,
         hasLiked: userLikes.includes(event.id),
         likesCount: event._count.likes,
+        commentsCount: event._count.comments,
       })),
       pagination: {
         page,

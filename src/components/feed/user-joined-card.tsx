@@ -11,6 +11,7 @@ import {
   Loader2
 } from "lucide-react";
 import { cn, formatRelativeTime } from "@/lib/utils";
+import { FeedEventComments } from "./feed-event-comments";
 
 interface UserJoinedCardProps {
   event: {
@@ -21,6 +22,7 @@ interface UserJoinedCardProps {
     createdAt: Date | string;
     likesCount: number;
     hasLiked: boolean;
+    commentsCount?: number;
     user: {
       id: string;
       name?: string | null;
@@ -206,6 +208,14 @@ export function UserJoinedCard({ event, currentUserId }: UserJoinedCardProps) {
             <span>{likesCount > 0 ? likesCount : "Welcome!"}</span>
           </button>
         </div>
+
+        {/* Comments Section */}
+        <FeedEventComments
+          feedEventId={event.id}
+          currentUserId={currentUserId}
+          initialCommentsCount={event.commentsCount ?? 0}
+          accentColor="violet"
+        />
       </div>
     </div>
   );

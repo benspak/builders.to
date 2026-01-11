@@ -37,6 +37,10 @@ export interface Notification {
       } | null;
     } | null;
   } | null;
+  feedEventComment?: {
+    id: string;
+    feedEventId: string;
+  } | null;
   update?: {
     id: string;
     user?: {
@@ -137,6 +141,8 @@ export function NotificationList({ onItemClick, showMarkAllRead = true }: Notifi
         return <MessageCircle className="h-4 w-4 text-sky-400" />;
       case "COMMENT_LIKED":
         return <Heart className="h-4 w-4 text-rose-400" />;
+      case "FEED_EVENT_COMMENTED":
+        return <MessageCircle className="h-4 w-4 text-sky-400" />;
       default:
         return <Bell className="h-4 w-4 text-zinc-400" />;
     }
@@ -145,6 +151,10 @@ export function NotificationList({ onItemClick, showMarkAllRead = true }: Notifi
   const getNotificationLink = (notification: Notification): string | null => {
     if ((notification.type === "PROJECT_UPVOTED" || notification.type === "PROJECT_COMMENTED" || notification.type === "COMMENT_LIKED") && notification.project?.slug) {
       return `/projects/${notification.project.slug}`;
+    }
+    // Feed event comments link to feed with anchor to the specific event
+    if (notification.type === "FEED_EVENT_COMMENTED" && notification.feedEventComment?.feedEventId) {
+      return `/feed#event-${notification.feedEventComment.feedEventId}`;
     }
     if (notification.feedEvent?.milestone?.project?.slug) {
       return `/projects/${notification.feedEvent.milestone.project.slug}`;
@@ -159,6 +169,10 @@ export function NotificationList({ onItemClick, showMarkAllRead = true }: Notifi
       return `/${notification.update.user.slug}`;
     }
     if (notification.type === "USER_MENTIONED") {
+      // If mentioned on a feed event comment, link to feed
+      if (notification.feedEventComment?.feedEventId) {
+        return `/feed#event-${notification.feedEventComment.feedEventId}`;
+      }
       if (notification.project?.slug) {
         return `/projects/${notification.project.slug}`;
       }
@@ -284,4 +298,3 @@ export function NotificationList({ onItemClick, showMarkAllRead = true }: Notifi
     </div>
   );
 }
-

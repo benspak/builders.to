@@ -38,6 +38,7 @@ interface FeedEvent {
   createdAt: Date | string;
   likesCount: number;
   hasLiked: boolean;
+  commentsCount?: number;
   projectId?: string | null;
   // For milestone events
   milestone?: {
@@ -286,6 +287,7 @@ export function CombinedFeed({
       {feedItems.map((item, index) => (
         <div
           key={`wrapper-${item.type}-${item.data.id}`}
+          id={item.type !== "update" ? `event-${item.data.id}` : undefined}
           className={cn(
             // Hide items beyond visibleCount visually, but keep in DOM for SEO
             index >= visibleCount && "hidden"

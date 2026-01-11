@@ -12,6 +12,7 @@ import {
   Loader2
 } from "lucide-react";
 import { cn, formatRelativeTime, getStatusColor, getStatusLabel } from "@/lib/utils";
+import { FeedEventComments } from "./feed-event-comments";
 
 interface ProjectCreatedCardProps {
   event: {
@@ -22,6 +23,7 @@ interface ProjectCreatedCardProps {
     createdAt: Date | string;
     likesCount: number;
     hasLiked: boolean;
+    commentsCount?: number;
     projectId?: string | null;
     project?: {
       id: string;
@@ -242,6 +244,14 @@ export function ProjectCreatedCard({ event, currentUserId }: ProjectCreatedCardP
             )}
           </div>
         </div>
+
+        {/* Comments Section */}
+        <FeedEventComments
+          feedEventId={event.id}
+          currentUserId={currentUserId}
+          initialCommentsCount={event.commentsCount ?? 0}
+          accentColor="emerald"
+        />
       </div>
     </div>
   );

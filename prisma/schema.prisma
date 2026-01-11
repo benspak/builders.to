@@ -113,6 +113,7 @@ model User {
 
   // Feed and notifications
   feedEventLikes       FeedEventLike[]
+  feedEventComments    FeedEventComment[]
   notifications        Notification[]
   emailPreferences     EmailPreferences?
 
@@ -655,6 +656,7 @@ model FeedEvent {
   milestone   ProjectMilestone? @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
   companyRole CompanyRole?      @relation(fields: [companyRoleId], references: [id], onDelete: Cascade)
   likes       FeedEventLike[]
+  comments    FeedEventComment[]
   notifications Notification[]
 
   @@index([createdAt])
@@ -678,17 +680,37 @@ model FeedEventLike {
   @@index([feedEventId])
 }
 
+// Comments on feed events (for all feed item types)
+model FeedEventComment {
+  id          String    @id @default(cuid())
+  content     String    @db.Text
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  userId      String
+  feedEventId String
+
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  feedEvent   FeedEvent @relation(fields: [feedEventId], references: [id], onDelete: Cascade)
+  notifications Notification[]
+
+  @@index([feedEventId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
 // Notification types
 enum NotificationType {
-  MILESTONE_LIKED      // Someone liked your milestone
-  MILESTONE_CELEBRATED // Multiple people celebrated (batched)
-  UPDATE_LIKED         // Someone liked your daily update
-  UPDATE_COMMENTED     // Someone commented on your daily update
-  USER_MENTIONED       // Someone mentioned you in an update
-  WEEKLY_DIGEST        // Weekly summary notification
-  PROJECT_UPVOTED      // Someone upvoted your project
-  PROJECT_COMMENTED    // Someone commented on your project
-  COMMENT_LIKED        // Someone liked your comment on a project
+  MILESTONE_LIKED       // Someone liked your milestone
+  MILESTONE_CELEBRATED  // Multiple people celebrated (batched)
+  UPDATE_LIKED          // Someone liked your daily update
+  UPDATE_COMMENTED      // Someone commented on your daily update
+  USER_MENTIONED        // Someone mentioned you in an update
+  WEEKLY_DIGEST         // Weekly summary notification
+  PROJECT_UPVOTED       // Someone upvoted your project
+  PROJECT_COMMENTED     // Someone commented on your project
+  COMMENT_LIKED         // Someone liked your comment on a project
+  FEED_EVENT_COMMENTED  // Someone commented on your feed event (milestone, project, etc.)
 }
 
 // In-app notifications
@@ -716,6 +738,10 @@ model Notification {
   projectId   String?
   project     Project?         @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
+  // Optional link to feed event comment (for direct reply navigation)
+  feedEventCommentId String?
+  feedEventComment   FeedEventComment? @relation(fields: [feedEventCommentId], references: [id], onDelete: Cascade)
+
   // Actor who triggered the notification (if applicable)
   actorId     String?
   actorName   String?          // Denormalized for deleted users
@@ -724,6 +750,7 @@ model Notification {
   @@index([userId, read])
   @@index([createdAt])
   @@index([projectId])
+  @@index([feedEventCommentId])
 }
 
 // Email preferences per user

@@ -10,6 +10,7 @@ import {
   Loader2
 } from "lucide-react";
 import { cn, formatRelativeTime } from "@/lib/utils";
+import { FeedEventComments } from "./feed-event-comments";
 
 interface StatusUpdateCardProps {
   event: {
@@ -19,6 +20,7 @@ interface StatusUpdateCardProps {
     createdAt: Date | string;
     likesCount: number;
     hasLiked: boolean;
+    commentsCount?: number;
     user: {
       id: string;
       name?: string | null;
@@ -188,6 +190,14 @@ export function StatusUpdateCard({ event, currentUserId }: StatusUpdateCardProps
             <span>{likesCount}</span>
           </button>
         </div>
+
+        {/* Comments Section */}
+        <FeedEventComments
+          feedEventId={event.id}
+          currentUserId={currentUserId}
+          initialCommentsCount={event.commentsCount ?? 0}
+          accentColor="orange"
+        />
       </div>
     </div>
   );

@@ -11,6 +11,7 @@ import {
   Loader2
 } from "lucide-react";
 import { cn, formatRelativeTime, getMilestoneColor, getMilestoneLabel, getStatusColor, getStatusLabel } from "@/lib/utils";
+import { FeedEventComments } from "./feed-event-comments";
 
 interface MilestoneEventCardProps {
   event: {
@@ -21,6 +22,7 @@ interface MilestoneEventCardProps {
     createdAt: Date | string;
     likesCount: number;
     hasLiked: boolean;
+    commentsCount?: number;
     milestone?: {
       id: string;
       type: string;
@@ -245,6 +247,14 @@ export function MilestoneEventCard({ event, currentUserId }: MilestoneEventCardP
             </Link>
           </div>
         </div>
+
+        {/* Comments Section */}
+        <FeedEventComments
+          feedEventId={event.id}
+          currentUserId={currentUserId}
+          initialCommentsCount={event.commentsCount ?? 0}
+          accentColor="amber"
+        />
       </div>
     </div>
   );

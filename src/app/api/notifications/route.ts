@@ -48,6 +48,12 @@ export async function GET(request: NextRequest) {
               },
             },
           },
+          feedEventComment: {
+            select: {
+              id: true,
+              feedEventId: true,
+            },
+          },
           update: {
             select: {
               id: true,
