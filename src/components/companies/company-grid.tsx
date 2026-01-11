@@ -30,6 +30,8 @@ interface CompanyGridProps {
   category?: string;
   size?: string;
   search?: string;
+  hiring?: boolean;
+  contracts?: boolean;
 }
 
 export function CompanyGrid({
@@ -37,6 +39,8 @@ export function CompanyGrid({
   category,
   size,
   search,
+  hiring,
+  contracts,
 }: CompanyGridProps) {
   const [companies, setCompanies] = useState<Company[]>(initialCompanies);
   const [loading, setLoading] = useState(initialCompanies.length === 0);
@@ -52,6 +56,8 @@ export function CompanyGrid({
         ...(category && { category }),
         ...(size && { size }),
         ...(search && { search }),
+        ...(hiring && { hiring: "true" }),
+        ...(contracts && { contracts: "true" }),
       });
 
       const response = await fetch(`/api/companies?${params}`);
@@ -67,13 +73,13 @@ export function CompanyGrid({
     } catch (error) {
       console.error("Failed to fetch companies:", error);
     }
-  }, [category, size, search]);
+  }, [category, size, search, hiring, contracts]);
 
   useEffect(() => {
     setLoading(true);
     setPage(1);
     fetchCompanies(1, true).finally(() => setLoading(false));
-  }, [category, size, search, fetchCompanies]);
+  }, [category, size, search, hiring, contracts, fetchCompanies]);
 
   const loadMore = async () => {
     if (loadingMore || !hasMore) return;

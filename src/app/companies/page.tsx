@@ -10,6 +10,8 @@ interface CompaniesPageProps {
     category?: string;
     size?: string;
     search?: string;
+    hiring?: string;
+    contracts?: string;
   }>;
 }
 
@@ -62,6 +64,8 @@ export default async function CompaniesPage({ searchParams }: CompaniesPageProps
           category={params.category}
           size={params.size}
           search={params.search}
+          hiring={params.hiring === "true"}
+          contracts={params.contracts === "true"}
         />
       </Suspense>
     </div>
