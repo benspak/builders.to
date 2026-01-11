@@ -110,56 +110,6 @@ export function StreamerCard({ streamer }: StreamerCardProps) {
         )}
       </div>
 
-      {/* Featured Video Thumbnail */}
-      {streamer.featuredVideoUrl && (
-        <div className="mt-4">
-          {(() => {
-            const url = streamer.featuredVideoUrl;
-            const youtubeMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\s]+)/);
-
-            if (youtubeMatch) {
-              return (
-                <a
-                  href={url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block relative aspect-video rounded-lg overflow-hidden bg-zinc-800 group/thumb"
-                >
-                  <Image
-                    src={`https://img.youtube.com/vi/${youtubeMatch[1]}/mqdefault.jpg`}
-                    alt="Featured video"
-                    fill
-                    unoptimized
-                    className="object-cover group-hover/thumb:scale-105 transition-transform"
-                  />
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover/thumb:bg-black/40 transition-colors">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-600/90 group-hover/thumb:bg-red-600 transition-colors">
-                      <svg className="h-5 w-5 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M8 5v14l11-7z" />
-                      </svg>
-                    </div>
-                  </div>
-                  <div className="absolute bottom-2 left-2 px-2 py-1 rounded bg-black/70 text-xs text-white">
-                    Featured Video
-                  </div>
-                </a>
-              );
-            }
-
-            return (
-              <a
-                href={url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block p-3 rounded-lg bg-zinc-800/50 border border-zinc-700/50 hover:border-purple-500/30 transition-all"
-              >
-                <p className="text-xs text-zinc-500">Featured Content</p>
-                <p className="text-sm text-purple-400 truncate mt-0.5">{url}</p>
-              </a>
-            );
-          })()}
-        </div>
-      )}
     </div>
   );
 }
