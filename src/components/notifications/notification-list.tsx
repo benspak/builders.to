@@ -159,8 +159,8 @@ export function NotificationList({ onItemClick, showMarkAllRead = true }: Notifi
     if (notification.feedEvent?.milestone?.project?.slug) {
       return `/projects/${notification.feedEvent.milestone.project.slug}`;
     }
-    if (notification.type === "UPDATE_LIKED" && notification.actorSlug) {
-      return `/${notification.actorSlug}`;
+    if (notification.type === "UPDATE_LIKED" && notification.update?.user?.slug && notification.update?.id) {
+      return `/${notification.update.user.slug}/updates/${notification.update.id}`;
     }
     if (notification.type === "UPDATE_COMMENTED" && notification.update?.user?.slug && notification.update?.id) {
       return `/${notification.update.user.slug}/updates/${notification.update.id}`;
