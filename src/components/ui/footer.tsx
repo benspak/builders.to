@@ -81,7 +81,7 @@ export function Footer() {
 
         <div className="mt-6 text-center text-sm" style={{ color: "var(--foreground-subtle)" }}>
           © {new Date().getFullYear()} Builders.to — Built with ❤️ by{" "}
-          <Link href="https://popvia.com" target="_blank" rel="noopener noreferrer" className="text-orange-500 hover:text-orange-400">PopVia</Link>
+          <Link href="/ben-spak" className="text-orange-500 hover:text-orange-400">Ben Spak</Link>
         </div>
       </div>
     </footer>
