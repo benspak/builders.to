@@ -18,8 +18,6 @@ import {
   ChevronRight,
   Loader2
 } from "lucide-react";
-import { Navbar } from "@/components/ui/navbar";
-import { Footer } from "@/components/ui/footer";
 import {
   TOKENS_PER_DOLLAR,
   WELCOME_BONUS_TOKENS,
@@ -172,10 +170,7 @@ export default function TokensPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: "var(--background)" }}>
-      <Navbar />
-
-      <main className="flex-1 py-8">
+    <div className="py-8">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="mb-8">
@@ -447,9 +442,6 @@ export default function TokensPage() {
             </div>
           )}
         </div>
-      </main>
-
-      <Footer />
     </div>
   );
 }
