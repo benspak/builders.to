@@ -12,9 +12,11 @@ import {
   Pause,
   Play,
   ShoppingBag,
-  Rocket
+  Rocket,
+  Loader2
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import type { ServiceCategory, ServiceListingStatus } from "@prisma/client";
 
@@ -88,19 +90,70 @@ const statusColors: Record<ServiceListingStatus, string> = {
 };
 
 export function ServiceCard({ listing, isOwner = false }: ServiceCardProps) {
+  const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setMenuOpen(false);
+        setShowDeleteConfirm(false);
       }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const handlePauseOrReactivate = async (newStatus: "PAUSED" | "ACTIVE") => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`/api/services/${listing.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to update listing");
+      }
+
+      setMenuOpen(false);
+      router.refresh();
+    } catch (error) {
+      console.error("Error updating listing:", error);
+      alert(error instanceof Error ? error.message : "Failed to update listing");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`/api/services/${listing.id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to delete listing");
+      }
+
+      setMenuOpen(false);
+      router.refresh();
+    } catch (error) {
+      console.error("Error deleting listing:", error);
+      alert(error instanceof Error ? error.message : "Failed to delete listing");
+    } finally {
+      setIsLoading(false);
+      setShowDeleteConfirm(false);
+    }
+  };
 
   const formatPrice = (cents: number) => {
     return new Intl.NumberFormat("en-US", {
@@ -245,22 +298,68 @@ export function ServiceCard({ listing, isOwner = false }: ServiceCardProps) {
                       Edit
                     </Link>
                     {listing.status === "ACTIVE" && (
-                      <button className="w-full flex items-center gap-2 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-700/50">
-                        <Pause className="h-4 w-4" />
+                      <button
+                        onClick={() => handlePauseOrReactivate("PAUSED")}
+                        disabled={isLoading}
+                        className="w-full flex items-center gap-2 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-700/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isLoading ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Pause className="h-4 w-4" />
+                        )}
                         Pause Listing
                       </button>
                     )}
                     {listing.status === "PAUSED" && (
-                      <button className="w-full flex items-center gap-2 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-700/50">
-                        <Play className="h-4 w-4" />
+                      <button
+                        onClick={() => handlePauseOrReactivate("ACTIVE")}
+                        disabled={isLoading}
+                        className="w-full flex items-center gap-2 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-700/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isLoading ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Play className="h-4 w-4" />
+                        )}
                         Reactivate
                       </button>
                     )}
                     <hr className="my-1 border-zinc-700" />
-                    <button className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-400 hover:bg-red-500/10">
-                      <Trash2 className="h-4 w-4" />
-                      Delete
-                    </button>
+                    {!showDeleteConfirm ? (
+                      <button
+                        onClick={() => setShowDeleteConfirm(true)}
+                        disabled={isLoading}
+                        className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        Delete
+                      </button>
+                    ) : (
+                      <div className="px-4 py-2 space-y-2">
+                        <p className="text-xs text-zinc-400">Are you sure?</p>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={handleDelete}
+                            disabled={isLoading}
+                            className="flex-1 px-2 py-1 text-xs font-medium text-white bg-red-600 hover:bg-red-700 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {isLoading ? (
+                              <Loader2 className="h-3 w-3 animate-spin mx-auto" />
+                            ) : (
+                              "Delete"
+                            )}
+                          </button>
+                          <button
+                            onClick={() => setShowDeleteConfirm(false)}
+                            disabled={isLoading}
+                            className="flex-1 px-2 py-1 text-xs font-medium text-zinc-300 bg-zinc-700 hover:bg-zinc-600 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
