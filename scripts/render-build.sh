@@ -34,7 +34,7 @@ npx prisma db execute --schema ./prisma/schema.prisma --file ./scripts/pre-push-
 echo "🗄️ Running database migrations..."
 # Using db push to sync schema - pre-migration script handles potentially breaking changes
 # --accept-data-loss is safe here as we're adding new columns/constraints, not removing data
-npx prisma db push --accept-data-loss
+npx prisma db push
 
 echo "🔄 Running slug migration for existing projects..."
 node scripts/migrate-slugs.mjs || {

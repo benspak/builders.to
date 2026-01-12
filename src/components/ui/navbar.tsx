@@ -8,7 +8,7 @@ import { NotificationDropdown } from "@/components/notifications";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { SearchCommand } from "@/components/ui/search-command";
 import { TokenBalance } from "@/components/ui/token-balance";
-import { Plus, Rocket, ChevronDown, Sparkles, Menu, X, MapPin } from "lucide-react";
+import { Plus, Rocket, ChevronDown, Sparkles, Menu, X, MapPin, Megaphone } from "lucide-react";
 import { BuildersLogo } from "@/components/ui/builders-logo";
 import { cn } from "@/lib/utils";
 
@@ -201,6 +201,15 @@ export function Navbar() {
                         <Sparkles className="h-4 w-4 text-amber-400" />
                         <span>Post Update</span>
                       </Link>
+                      <Link
+                        href="/my-listings/new"
+                        onClick={() => setMobileShareOpen(false)}
+                        className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-white/5"
+                        style={{ color: "var(--foreground-muted)" }}
+                      >
+                        <Megaphone className="h-4 w-4 text-emerald-400" />
+                        <span>Post Listing</span>
+                      </Link>
                     </div>
                   </>
                 )}
@@ -252,6 +261,20 @@ export function Navbar() {
                         <div>
                           <div className="font-medium">Post Update</div>
                           <div className="text-xs text-zinc-500">Share what you're working on</div>
+                        </div>
+                      </Link>
+
+                      <Link
+                        href="/my-listings/new"
+                        onClick={() => setShareOpen(false)}
+                        className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-zinc-300 transition-colors hover:bg-white/5 hover:text-white"
+                      >
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/10">
+                          <Megaphone className="h-4 w-4 text-emerald-400" />
+                        </div>
+                        <div>
+                          <div className="font-medium">Post Listing</div>
+                          <div className="text-xs text-zinc-500">Promote your business locally</div>
                         </div>
                       </Link>
                     </div>
