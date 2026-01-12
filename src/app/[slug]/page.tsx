@@ -103,6 +103,7 @@ async function getLocationData(locationSlug: string) {
         headline: true,
         city: true,
         state: true,
+        country: true,
         openToWork: true,
         lookingForCofounder: true,
         availableForContract: true,
@@ -157,8 +158,9 @@ async function getLocationData(locationSlug: string) {
   let locationName: string;
   if (companies.length > 0 && companies[0].location) {
     locationName = companies[0].location;
-  } else if (builders.length > 0 && builders[0].city && builders[0].state) {
-    locationName = `${builders[0].city}, ${builders[0].state}`;
+  } else if (builders.length > 0 && builders[0].city) {
+    const locationSuffix = builders[0].country || builders[0].state;
+    locationName = locationSuffix ? `${builders[0].city}, ${locationSuffix}` : builders[0].city;
   } else if (listings.length > 0) {
     locationName = `${listings[0].city}, ${listings[0].state}`;
   } else {
@@ -198,15 +200,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const locationUser = await prisma.user.findFirst({
     where: { locationSlug: slug },
-    select: { city: true, state: true },
+    select: { city: true, state: true, country: true },
   });
 
   if (company || locationUser) {
     let locationName: string;
     if (company?.location) {
       locationName = company.location;
-    } else if (locationUser?.city && locationUser?.state) {
-      locationName = `${locationUser.city}, ${locationUser.state}`;
+    } else if (locationUser?.city) {
+      const locationSuffix = locationUser.country || locationUser.state;
+      locationName = locationSuffix ? `${locationUser.city}, ${locationSuffix}` : locationUser.city;
     } else {
       locationName = formatLocationSlug(slug);
     }
@@ -235,9 +238,8 @@ export default async function SlugPage({ params }: PageProps) {
       displayName: true,
       firstName: true,
       lastName: true,
-      zipCode: true,
       city: true,
-      state: true,
+      country: true,
       headline: true,
       bio: true,
       websiteUrl: true,
@@ -675,13 +677,13 @@ export default async function SlugPage({ params }: PageProps) {
                 </div>
 
                 {/* Location */}
-                {(user.city || user.state) && (
+                {(user.city || user.country) && (
                   <div className="flex items-center gap-3 text-sm">
                     <MapPin className="h-4 w-4 text-zinc-500" />
                     <span className="text-zinc-300">
-                      {user.city && user.state
-                        ? `${user.city}, ${user.state}`
-                        : user.city || user.state}
+                      {user.city && user.country
+                        ? `${user.city}, ${user.country}`
+                        : user.city || user.country}
                     </span>
                   </div>
                 )}

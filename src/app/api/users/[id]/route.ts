@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { lookupZipCode } from "@/lib/zipcode";
 import { generateLocationSlug } from "@/lib/utils";
 
 function generateSlug(name: string): string {
@@ -46,9 +45,8 @@ export async function GET(
         displayName: true,
         firstName: true,
         lastName: true,
-        zipCode: true,
         city: true,
-        state: true,
+        country: true,
         headline: true,
         bio: true,
         websiteUrl: true,
@@ -109,7 +107,8 @@ export async function PATCH(
       displayName,
       firstName,
       lastName,
-      zipCode,
+      city,
+      country,
       headline,
       bio,
       websiteUrl,
@@ -192,20 +191,16 @@ export async function PATCH(
       }
     }
 
-    // Lookup city/state from zip code if provided
-    let city: string | null = null;
-    let state: string | null = null;
+    // Process city and country for location
+    const trimmedCity = city?.trim() || null;
+    const trimmedCountry = country?.trim() || null;
     let locationSlug: string | null = null;
-    const trimmedZip = zipCode?.trim() || null;
 
-    if (trimmedZip) {
-      const locationData = await lookupZipCode(trimmedZip);
-      if (locationData) {
-        city = locationData.city;
-        state = locationData.stateAbbreviation;
-        // Generate locationSlug for Builders Local
-        locationSlug = generateLocationSlug(`${city}, ${state}`);
-      }
+    // Generate locationSlug from city and country
+    if (trimmedCity && trimmedCountry) {
+      locationSlug = generateLocationSlug(`${trimmedCity}, ${trimmedCountry}`);
+    } else if (trimmedCity) {
+      locationSlug = generateLocationSlug(trimmedCity);
     }
 
     // Check if status is being updated to a new non-empty value
@@ -221,9 +216,8 @@ export async function PATCH(
         displayName: displayName?.trim() || null,
         firstName: firstName?.trim() || null,
         lastName: lastName?.trim() || null,
-        zipCode: trimmedZip,
-        city,
-        state,
+        city: trimmedCity,
+        country: trimmedCountry,
         locationSlug,
         headline: headline?.trim() || null,
         bio: bio?.trim() || null,
@@ -252,9 +246,8 @@ export async function PATCH(
         displayName: true,
         firstName: true,
         lastName: true,
-        zipCode: true,
         city: true,
-        state: true,
+        country: true,
         headline: true,
         bio: true,
         websiteUrl: true,

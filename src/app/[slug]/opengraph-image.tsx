@@ -22,6 +22,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
       image: true,
       city: true,
       state: true,
+      country: true,
       currentStreak: true,
       openToWork: true,
       lookingForCofounder: true,
@@ -61,9 +62,11 @@ export default async function Image({ params }: { params: Promise<{ slug: string
     ? `${user.firstName} ${user.lastName}`
     : user.name || 'Builder'
 
-  const location = user.city && user.state
-    ? `${user.city}, ${user.state}`
-    : user.city || user.state
+  // Use country if available, fall back to state for legacy users
+  const locationSuffix = user.country || user.state
+  const location = user.city && locationSuffix
+    ? `${user.city}, ${locationSuffix}`
+    : user.city || null
 
   // Intent badges
   const intents = [

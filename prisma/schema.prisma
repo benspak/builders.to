@@ -60,10 +60,11 @@ model User {
   displayName   String?            // User-chosen display name (alternative to first/last name)
   firstName     String?
   lastName      String?
-  zipCode       String?
-  city          String?   // Derived from zipCode
-  state         String?   // Derived from zipCode
-  locationSlug  String?   // URL-friendly location slug for Builders Local (e.g., "san-francisco-ca")
+  zipCode       String?            // Legacy field, kept for backward compatibility
+  city          String?            // User's city
+  state         String?            // Legacy field, kept for backward compatibility (US state abbreviation)
+  country       String?            // User's country
+  locationSlug  String?   // URL-friendly location slug for Builders Local (e.g., "san-francisco-usa")
   headline      String?
   bio           String?   @db.Text
   websiteUrl    String?

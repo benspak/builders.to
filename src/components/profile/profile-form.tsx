@@ -54,9 +54,8 @@ interface ProfileFormProps {
     displayName: string | null;
     firstName: string | null;
     lastName: string | null;
-    zipCode: string | null;
     city: string | null;
-    state: string | null;
+    country: string | null;
     headline: string | null;
     bio: string | null;
     websiteUrl: string | null;
@@ -93,7 +92,8 @@ export function ProfileForm({ user }: ProfileFormProps) {
     displayName: user.displayName || "",
     firstName: user.firstName || "",
     lastName: user.lastName || "",
-    zipCode: user.zipCode || "",
+    city: user.city || "",
+    country: user.country || "",
     headline: user.headline || "",
     bio: user.bio || "",
     websiteUrl: user.websiteUrl || "",
@@ -297,36 +297,38 @@ export function ProfileForm({ user }: ProfileFormProps) {
         </div>
       </div>
 
-      {/* Zip Code & Location */}
+      {/* Location - City & Country */}
       <div>
-        <label htmlFor="zipCode" className="block text-sm font-medium text-zinc-300 mb-2">
+        <label className="block text-sm font-medium text-zinc-300 mb-2">
           Location
         </label>
-        <div className="flex items-start gap-4">
-          <div className="relative max-w-[140px]">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="relative">
             <MapPin className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
             <input
-              id="zipCode"
+              id="city"
               type="text"
-              maxLength={5}
-              placeholder="12345"
-              value={formData.zipCode}
-              onChange={(e) => {
-                const value = e.target.value.replace(/\D/g, "").slice(0, 5);
-                setFormData({ ...formData, zipCode: value });
-              }}
+              maxLength={100}
+              placeholder="City"
+              value={formData.city}
+              onChange={(e) => setFormData({ ...formData, city: e.target.value })}
               className="input pl-11"
             />
           </div>
-          {user.city && user.state && (
-            <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-zinc-800/30 border border-zinc-700/50">
-              <MapPin className="h-4 w-4 text-orange-500" />
-              <span className="text-zinc-300 font-medium">{user.city}, {user.state}</span>
-            </div>
-          )}
+          <div className="relative">
+            <input
+              id="country"
+              type="text"
+              maxLength={100}
+              placeholder="Country"
+              value={formData.country}
+              onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+              className="input"
+            />
+          </div>
         </div>
         <p className="mt-2 text-xs text-zinc-500">
-          Enter your zip code to display your city and state on your profile
+          Your location will be displayed on your profile (e.g., &quot;San Francisco, USA&quot;)
         </p>
       </div>
 

@@ -32,7 +32,8 @@ interface UserJoinedCardProps {
       slug?: string | null;
       headline?: string | null;
       city?: string | null;
-      state?: string | null;
+      state?: string | null;  // Legacy field
+      country?: string | null;
     };
   };
   currentUserId?: string;
@@ -51,10 +52,11 @@ export function UserJoinedCard({ event, currentUserId }: UserJoinedCardProps) {
 
   const userUrl = user?.slug ? `/${user.slug}` : null;
 
-  // Format location string
-  const location = user?.city && user?.state
-    ? `${user.city}, ${user.state}`
-    : user?.city || user?.state || null;
+  // Format location string (use country if available, fall back to state for legacy users)
+  const locationSuffix = user?.country || user?.state;
+  const location = user?.city && locationSuffix
+    ? `${user.city}, ${locationSuffix}`
+    : user?.city || null;
 
   const handleLike = async () => {
     if (!currentUserId || loading) return;

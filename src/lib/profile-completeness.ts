@@ -41,7 +41,7 @@ export const PROFILE_FIELDS: ProfileField[] = [
   {
     key: "location",
     label: "Location",
-    description: "Add your zip code to show your city",
+    description: "Add your city and country",
     weight: 15,
     category: "essential",
     icon: "MapPin",
@@ -112,9 +112,8 @@ export interface UserProfileData {
   displayName?: string | null;
   firstName?: string | null;
   lastName?: string | null;
-  zipCode?: string | null;
   city?: string | null;
-  state?: string | null;
+  country?: string | null;
   headline?: string | null;
   bio?: string | null;
   websiteUrl?: string | null;
@@ -199,7 +198,7 @@ function checkFieldComplete(fieldKey: string, user: UserProfileData): boolean {
       return Boolean(user.bio?.trim() && user.bio.trim().length >= 20);
 
     case "location":
-      return Boolean(user.zipCode?.trim() || (user.city && user.state));
+      return Boolean(user.city?.trim());
 
     case "socialLink":
       return Boolean(

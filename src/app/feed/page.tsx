@@ -125,7 +125,7 @@ async function FeedContent() {
       }
 
       // Fetch users for user joined events (with location data)
-      let userJoinedMap = new Map<string, { id: string; name: string | null; firstName: string | null; lastName: string | null; image: string | null; slug: string | null; headline: string | null; city: string | null; state: string | null }>();
+      let userJoinedMap = new Map<string, { id: string; name: string | null; firstName: string | null; lastName: string | null; image: string | null; slug: string | null; headline: string | null; city: string | null; state: string | null; country: string | null }>();
       if (userJoinedEvents.length > 0) {
         const userIds = Array.from(new Set(userJoinedEvents.map(e => e.userId)));
         const users = await prisma.user.findMany({
@@ -140,6 +140,7 @@ async function FeedContent() {
             headline: true,
             city: true,
             state: true,
+            country: true,
           },
         });
         userJoinedMap = new Map(users.map(u => [u.id, u]));

@@ -15,7 +15,8 @@ interface BuilderCardProps {
     image: string | null;
     headline: string | null;
     city: string | null;
-    state: string | null;
+    state: string | null;  // Legacy field
+    country: string | null;
     openToWork: boolean;
     lookingForCofounder: boolean;
     availableForContract: boolean;
@@ -37,7 +38,9 @@ function getDisplayName(builder: BuilderCardProps["builder"]): string {
 export function BuilderCard({ builder }: BuilderCardProps) {
   const displayName = getDisplayName(builder);
   const profileUrl = builder.slug ? `/${builder.slug}` : null;
-  const location = builder.city && builder.state ? `${builder.city}, ${builder.state}` : null;
+  // Use country if available, fall back to state for legacy users
+  const locationSuffix = builder.country || builder.state;
+  const location = builder.city && locationSuffix ? `${builder.city}, ${locationSuffix}` : builder.city || null;
 
   const hasIntentFlags = builder.openToWork || builder.lookingForCofounder || builder.availableForContract;
 
