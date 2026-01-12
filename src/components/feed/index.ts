@@ -11,3 +11,4 @@ export { OpenJobs } from "./open-jobs";
 export { FeaturedServices } from "./featured-services";
 export { FeedEventComments } from "./feed-event-comments";
 export { EditorsPick } from "./editors-pick";
+export { UserInterviewCTA } from "./user-interview-cta";
