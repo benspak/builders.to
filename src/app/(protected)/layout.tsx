@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
+import { ReferralProcessor } from "@/components/auth/referral-processor";
 
 export default async function ProtectedLayout({
   children,
@@ -12,5 +13,10 @@ export default async function ProtectedLayout({
     redirect("/signin");
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      <ReferralProcessor />
+      {children}
+    </>
+  );
 }

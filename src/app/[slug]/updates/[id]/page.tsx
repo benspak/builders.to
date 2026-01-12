@@ -17,7 +17,6 @@ import { UpdateActions } from "./update-actions";
 import { UpdateComments } from "@/components/updates/update-comments";
 import { TopBuilders, OpenJobs } from "@/components/feed";
 import { SidebarAd } from "@/components/ads";
-import { ProductHuntBadge } from "@/components/ui/product-hunt-badge";
 
 interface UpdatePageProps {
   params: Promise<{ slug: string; id: string }>;
@@ -363,11 +362,6 @@ export default async function UpdatePage({ params }: UpdatePageProps) {
           {/* Right Sidebar */}
           <aside className="xl:w-72 shrink-0 order-2 xl:order-3">
             <div className="xl:sticky xl:top-24 xl:max-h-[calc(100vh-8rem)] xl:overflow-y-auto space-y-6 xl:pb-4">
-              {/* Product Hunt Badge */}
-              <div className="flex justify-center">
-                <ProductHuntBadge />
-              </div>
-
               {/* Sidebar Ad Section */}
               <Suspense
                 fallback={

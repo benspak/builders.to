@@ -7,6 +7,7 @@ import { UserMenu } from "@/components/auth/user-menu";
 import { NotificationDropdown } from "@/components/notifications";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { SearchCommand } from "@/components/ui/search-command";
+import { TokenBalance } from "@/components/ui/token-balance";
 import { Plus, Rocket, ChevronDown, Sparkles, Menu, X, MapPin, Video } from "lucide-react";
 import { BuildersLogo } from "@/components/ui/builders-logo";
 import { cn } from "@/lib/utils";
@@ -275,6 +276,11 @@ export function Navbar() {
                     </div>
                   </>
                 )}
+              </div>
+
+              {/* Token Balance - Desktop only */}
+              <div className="hidden md:block">
+                <TokenBalance compact />
               </div>
 
               {/* Notifications - Desktop only */}

@@ -3,6 +3,10 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import Twitter from "next-auth/providers/twitter";
 import GitHub from "next-auth/providers/github";
 import { prisma } from "@/lib/prisma";
+import {
+  generateReferralCode,
+  grantWelcomeBonus,
+} from "@/lib/tokens";
 
 // Store for temporarily holding username during OAuth flow
 // This is needed because the adapter doesn't pass custom fields
@@ -134,6 +138,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               }),
           },
         });
+
+        // Generate a unique referral code for the new user
+        await generateReferralCode(user.id);
+
+        // Grant welcome bonus tokens to the new user
+        try {
+          await grantWelcomeBonus(user.id);
+        } catch (error) {
+          console.error("Failed to grant welcome bonus:", error);
+        }
 
         // Create a feed event to announce the new user
         const displayName = user.name || oauthUsername || "A new builder";

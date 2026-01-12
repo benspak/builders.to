@@ -5,7 +5,6 @@ import { auth } from "@/lib/auth";
 import { CombinedFeed, TopBuilders, OpenJobs, FeaturedServices, EditorsPick } from "@/components/feed";
 import { SiteViewsCounter } from "@/components/analytics/site-views-counter";
 import { SidebarAd } from "@/components/ads";
-import { ProductHuntBadge } from "@/components/ui/product-hunt-badge";
 
 export const metadata = {
   title: "Feed - Builders.to",
@@ -512,11 +511,6 @@ export default function FeedPage() {
           {/* Right Sidebar - Open Jobs */}
           <aside className="xl:w-72 shrink-0 order-2 xl:order-3">
             <div className="xl:sticky xl:top-24 xl:max-h-[calc(100vh-8rem)] xl:overflow-y-auto space-y-6 xl:pb-4">
-              {/* Product Hunt Badge */}
-              <div className="flex justify-center">
-                <ProductHuntBadge />
-              </div>
-
               {/* Editor's Pick Section */}
               <Suspense
                 fallback={

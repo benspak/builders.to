@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Rocket } from "lucide-react";
+import { ProductHuntBadge } from "./product-hunt-badge";
 
 export function Footer() {
   return (
@@ -58,6 +59,7 @@ export function Footer() {
         </div>
 
         <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+          <ProductHuntBadge />
           <a href="https://startupfa.me/s/buildersto?utm_source=builders.to" target="_blank" rel="noopener noreferrer">
             <img
               src="https://startupfa.me/badges/featured-badge-small.webp"

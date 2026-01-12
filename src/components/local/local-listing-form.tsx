@@ -89,20 +89,10 @@ export function LocalListingForm({ initialData, userLocation, mode = "create" }:
 
       const listing = await response.json();
 
-      // If it's a paid Services listing that's new, redirect to checkout
+      // If it's a paid Services listing that's new, redirect to checkout page
       if (mode === "create" && listing.category === "SERVICES" && listing.status === "DRAFT") {
-        // Redirect to checkout
-        const checkoutResponse = await fetch(`/api/local-listings/${listing.id}/checkout`, {
-          method: "POST",
-        });
-
-        if (checkoutResponse.ok) {
-          const { url } = await checkoutResponse.json();
-          if (url) {
-            window.location.href = url;
-            return;
-          }
-        }
+        router.push(`/my-listings/${listing.id}/checkout`);
+        return;
       }
 
       // Redirect to the listing or dashboard

@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { rateLimit, RATE_LIMITS, rateLimitResponse } from "@/lib/rate-limit";
 import { extractMentions } from "@/lib/utils";
+import { grantEngagementBonus, checkAndGrantStreakBonus } from "@/lib/tokens";
 
 // GET /api/updates - Get updates for a user or global feed
 export async function GET(request: NextRequest) {
@@ -153,6 +154,28 @@ export async function POST(request: NextRequest) {
       }),
     ]);
 
+    // Grant token rewards for posting an update
+    let tokensEarned = 0;
+    let streakMilestoneReached = false;
+
+    try {
+      // Grant engagement bonus (1 token per day, max once per day)
+      const engagementGranted = await grantEngagementBonus(session.user.id);
+      if (engagementGranted) {
+        tokensEarned += 1;
+      }
+
+      // Check for streak milestone bonuses
+      const streakResult = await checkAndGrantStreakBonus(session.user.id, newStreak);
+      if (streakResult.granted && streakResult.amount) {
+        tokensEarned += streakResult.amount;
+        streakMilestoneReached = true;
+      }
+    } catch (error) {
+      // Log but don't fail the update creation if token granting fails
+      console.error("Error granting tokens for update:", error);
+    }
+
     // Extract mentions and create notifications
     const mentionedSlugs = extractMentions(content);
 
@@ -197,7 +220,17 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    return NextResponse.json(update, { status: 201 });
+    return NextResponse.json({
+      ...update,
+      streak: {
+        current: newStreak,
+        longest: longestStreak,
+        milestoneReached: streakMilestoneReached,
+      },
+      tokens: {
+        earned: tokensEarned,
+      },
+    }, { status: 201 });
   } catch (error) {
     console.error("Error creating update:", error);
     return NextResponse.json(

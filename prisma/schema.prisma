@@ -136,9 +136,18 @@ model User {
   localListingRatingsGiven    LocalListingRating[] @relation("LocalListingRater")
   localListingRatingsReceived LocalListingRating[] @relation("LocalListingRated")
 
+  // Token System
+  tokenBalance           Int       @default(0)   // Current token balance
+  referralCode           String?   @unique       // Unique referral code for sharing
+  referredById           String?                 // Who referred this user
+  referredBy             User?     @relation("Referrals", fields: [referredById], references: [id], onDelete: SetNull)
+  referrals              User[]    @relation("Referrals")  // Users this user referred
+  tokenTransactions      TokenTransaction[]
+
   @@index([slug])
   @@index([stripeConnectId])
   @@index([locationSlug])
+  @@index([referralCode])
 }
 
 model Project {
@@ -1089,4 +1098,36 @@ model LocalListingRating {
   @@unique([raterId, listingId])  // One rating per user per listing
   @@index([ratedUserId])
   @@index([listingId])
+}
+
+// ============================================
+// Token System - In-app currency for rewards
+// ============================================
+
+enum TokenTransactionType {
+  WELCOME_BONUS             // New user signup bonus (5 tokens)
+  REFERRAL_REWARD           // Referrer gets tokens when referee signs up (10 tokens)
+  STREAK_BONUS              // Bonus for maintaining daily update streaks
+  ENGAGEMENT_BONUS          // Bonus for posting updates, commenting, etc.
+  AD_REDEMPTION             // Spent tokens to unlock an advertisement
+  SERVICE_REDEMPTION        // Spent tokens to unlock a service listing
+  LOCAL_LISTING_REDEMPTION  // Spent tokens to unlock a local listing
+  ADMIN_ADJUSTMENT          // Manual adjustment by admin
+}
+
+// Track all token movements for audit/history
+model TokenTransaction {
+  id          String               @id @default(cuid())
+  userId      String
+  amount      Int                  // Positive = earned, Negative = spent
+  type        TokenTransactionType
+  description String?              // Human-readable description
+  metadata    Json?                // Store referral IDs, streak days, item IDs, etc.
+  createdAt   DateTime             @default(now())
+
+  user        User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([type])
 }

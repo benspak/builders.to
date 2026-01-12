@@ -3,34 +3,35 @@
 import { useEffect, useState } from "react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { Store, ArrowLeft, Clock, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
+import { MapPin, ArrowLeft, Clock, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 import { TokenCheckout } from "@/components/ui/token-checkout";
-import { SERVICE_REDEMPTION_COST } from "@/lib/tokens";
-import { SERVICE_LISTING_FEE_CENTS } from "@/lib/stripe";
+import { LOCAL_LISTING_REDEMPTION_COST } from "@/lib/tokens";
+import { LOCAL_LISTING_FEE_CENTS } from "@/lib/stripe";
 
-export default function ServiceCheckoutPage() {
+export default function LocalListingCheckoutPage() {
   const params = useParams();
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [service, setService] = useState<{
+  const [listing, setListing] = useState<{
     id: string;
     title: string;
     description: string;
+    category: string;
     status: string;
   } | null>(null);
   const [loading, setLoading] = useState(true);
 
   const cancelled = searchParams.get("cancelled") === "true";
-  const serviceId = params.id as string;
+  const listingId = params.id as string;
 
-  // Fetch service details
+  // Fetch listing details
   useEffect(() => {
-    async function fetchService() {
+    async function fetchListing() {
       try {
-        const response = await fetch(`/api/services/${serviceId}`);
+        const response = await fetch(`/api/local-listings/${listingId}`);
         if (response.ok) {
           const data = await response.json();
-          setService(data);
+          setListing(data);
         }
       } catch {
         // Ignore fetch errors
@@ -38,36 +39,36 @@ export default function ServiceCheckoutPage() {
         setLoading(false);
       }
     }
-    fetchService();
-  }, [serviceId]);
+    fetchListing();
+  }, [listingId]);
 
   const handleSuccess = () => {
-    // Redirect to seller dashboard after successful activation
-    router.push("/services/seller?listing=activated");
+    // Redirect to my listings after successful activation
+    router.push("/my-listings?activated=true");
   };
 
   return (
     <div className="relative min-h-screen bg-zinc-950">
       {/* Background decorations */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 h-[500px] w-[500px] rounded-full bg-amber-500/10 blur-3xl" />
-        <div className="absolute top-1/3 -left-40 h-[400px] w-[400px] rounded-full bg-orange-500/5 blur-3xl" />
+        <div className="absolute -top-40 -right-40 h-[500px] w-[500px] rounded-full bg-emerald-500/10 blur-3xl" />
+        <div className="absolute top-1/3 -left-40 h-[400px] w-[400px] rounded-full bg-teal-500/5 blur-3xl" />
       </div>
 
       <div className="relative mx-auto max-w-xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
           <Link
-            href="/services/seller"
+            href="/my-listings"
             className="inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-white mb-4 transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Dashboard
+            Back to My Listings
           </Link>
 
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 shadow-lg shadow-amber-500/25">
-              <Store className="h-6 w-6 text-white" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-lg shadow-emerald-500/25">
+              <MapPin className="h-6 w-6 text-white" />
             </div>
             <div>
               <h1 className="text-2xl font-bold text-white">Activate Listing</h1>
@@ -90,11 +91,15 @@ export default function ServiceCheckoutPage() {
           </div>
         )}
 
-        {/* Service Summary */}
-        {service && (
+        {/* Listing Summary */}
+        {listing && (
           <div className="rounded-xl border border-zinc-800/50 bg-zinc-900/50 p-6 mb-6">
-            <h3 className="font-semibold text-white mb-2">{service.title}</h3>
-            <p className="text-sm text-zinc-400 line-clamp-2">{service.description}</p>
+            <h3 className="font-semibold text-white mb-2">{listing.title}</h3>
+            <p className="text-sm text-zinc-400 line-clamp-2">{listing.description}</p>
+            <span className="inline-flex items-center gap-1 mt-3 px-2 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400">
+              <MapPin className="h-3 w-3" />
+              Services Listing
+            </span>
           </div>
         )}
 
@@ -107,15 +112,15 @@ export default function ServiceCheckoutPage() {
             <div className="space-y-3 mb-6">
               <div className="flex items-center gap-3 text-sm">
                 <CheckCircle2 className="h-5 w-5 text-emerald-400" />
-                <span className="text-zinc-300">Listed on the public marketplace</span>
+                <span className="text-zinc-300">Listed in your local area</span>
               </div>
               <div className="flex items-center gap-3 text-sm">
                 <CheckCircle2 className="h-5 w-5 text-emerald-400" />
-                <span className="text-zinc-300">Shown on your profile</span>
+                <span className="text-zinc-300">Visible to local builders</span>
               </div>
               <div className="flex items-center gap-3 text-sm">
                 <CheckCircle2 className="h-5 w-5 text-emerald-400" />
-                <span className="text-zinc-300">Receive orders from other builders</span>
+                <span className="text-zinc-300">Contact info displayed to interested users</span>
               </div>
               <div className="flex items-center gap-3 text-sm">
                 <Clock className="h-5 w-5 text-amber-400" />
@@ -126,15 +131,15 @@ export default function ServiceCheckoutPage() {
             {/* Payment Options */}
             {loading ? (
               <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin text-amber-400" />
+                <Loader2 className="h-6 w-6 animate-spin text-emerald-400" />
               </div>
             ) : (
               <TokenCheckout
-                itemId={serviceId}
-                itemType="service"
-                itemTitle={service?.title || "Service Listing"}
-                priceCents={SERVICE_LISTING_FEE_CENTS}
-                tokenCost={SERVICE_REDEMPTION_COST}
+                itemId={listingId}
+                itemType="local-listing"
+                itemTitle={listing?.title || "Local Listing"}
+                priceCents={LOCAL_LISTING_FEE_CENTS}
+                tokenCost={LOCAL_LISTING_REDEMPTION_COST}
                 onSuccess={handleSuccess}
               />
             )}
