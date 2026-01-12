@@ -28,8 +28,9 @@ echo "🗄️ Cleaning up deprecated tables..."
 npx prisma db execute --schema ./prisma/schema.prisma --file ./scripts/drop-roast-mvp.sql || true
 
 echo "🗄️ Running database migrations..."
-# Using db push to sync schema - safe for adding nullable columns
-npx prisma db push
+# Using db push to sync schema
+# --accept-data-loss is needed for adding unique constraints where NULLs may exist
+npx prisma db push --accept-data-loss
 
 echo "🔄 Running slug migration for existing projects..."
 node scripts/migrate-slugs.mjs || {
