@@ -57,7 +57,19 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-8 text-center text-sm" style={{ color: "var(--foreground-subtle)" }}>
+        <div className="mt-8 flex justify-center">
+          <a href="https://startupfa.me/s/buildersto?utm_source=builders.to" target="_blank" rel="noopener noreferrer">
+            <img
+              src="https://startupfa.me/badges/featured-badge-small.webp"
+              alt="Builders.to - Featured on Startup Fame"
+              width={224}
+              height={36}
+              className="opacity-80 hover:opacity-100 transition-opacity"
+            />
+          </a>
+        </div>
+
+        <div className="mt-6 text-center text-sm" style={{ color: "var(--foreground-subtle)" }}>
           © {new Date().getFullYear()} Builders.to — Built with ❤️ by{" "}
           <Link href="https://popvia.com" target="_blank" rel="noopener noreferrer" className="text-orange-500 hover:text-orange-400">PopVia</Link>
         </div>
