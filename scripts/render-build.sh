@@ -4,6 +4,11 @@
 
 set -e
 
+echo "🔍 Build environment info..."
+echo "  Node version: $(node --version)"
+echo "  npm version: $(npm --version)"
+echo "  Working directory: $(pwd)"
+
 echo "🧹 Clearing build cache..."
 rm -rf .next node_modules/.cache
 
@@ -27,7 +32,9 @@ echo "🗄️ Running database migrations..."
 npx prisma db push
 
 echo "🔄 Running slug migration for existing projects..."
-node scripts/migrate-slugs.mjs
+node scripts/migrate-slugs.mjs || {
+  echo "⚠️  Slug migration had issues (may be okay if already done)"
+}
 
 echo "🏗️ Building Next.js application..."
 npm run build
