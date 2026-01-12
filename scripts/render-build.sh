@@ -27,10 +27,13 @@ echo "🗄️ Cleaning up deprecated tables..."
 # Explicitly drop the RoastMVP table that was removed from the schema
 npx prisma db execute --schema ./prisma/schema.prisma --file ./scripts/drop-roast-mvp.sql || true
 
+echo "🗄️ Running pre-migration scripts..."
+# Apply token system schema changes safely before prisma db push
+npx prisma db execute --schema ./prisma/schema.prisma --file ./scripts/pre-push-token-system.sql || true
+
 echo "🗄️ Running database migrations..."
-# Using db push to sync schema
-# --accept-data-loss is needed for adding unique constraints where NULLs may exist
-npx prisma db push --accept-data-loss
+# Using db push to sync schema - pre-migration script handles potentially breaking changes
+npx prisma db push
 
 echo "🔄 Running slug migration for existing projects..."
 node scripts/migrate-slugs.mjs || {
