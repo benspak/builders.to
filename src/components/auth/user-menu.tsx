@@ -4,7 +4,7 @@ import { signOut, useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { LogOut, User, ChevronDown, Settings, Megaphone, Bell, Building2, MapPin } from "lucide-react";
+import { LogOut, User, ChevronDown, Settings, Megaphone, Bell, Building2, MapPin, Coins } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface UserProfile {
@@ -16,6 +16,7 @@ export function UserMenu() {
   const [isOpen, setIsOpen] = useState(false);
   const [userSlug, setUserSlug] = useState<string | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [tokenBalance, setTokenBalance] = useState<number | null>(null);
 
   useEffect(() => {
     async function fetchUserSlug() {
@@ -51,6 +52,23 @@ export function UserMenu() {
     fetchUnreadCount();
     const interval = setInterval(fetchUnreadCount, 60000);
     return () => clearInterval(interval);
+  }, [session?.user?.id]);
+
+  useEffect(() => {
+    async function fetchTokenBalance() {
+      if (session?.user?.id) {
+        try {
+          const response = await fetch("/api/tokens");
+          if (response.ok) {
+            const data = await response.json();
+            setTokenBalance(data.balance);
+          }
+        } catch (error) {
+          console.error("Failed to fetch token balance:", error);
+        }
+      }
+    }
+    fetchTokenBalance();
   }, [session?.user?.id]);
 
   if (!session?.user) return null;
@@ -107,6 +125,25 @@ export function UserMenu() {
             <div className="border-b px-3 py-2 mb-2" style={{ borderColor: "var(--card-border)" }}>
               <p className="text-sm font-medium" style={{ color: "var(--foreground)" }}>{session.user.name}</p>
               <p className="text-xs" style={{ color: "var(--foreground-muted)" }}>{session.user.email}</p>
+            </div>
+
+            {/* Token Balance - Mobile only */}
+            <div className="md:hidden border-b pb-2 mb-2" style={{ borderColor: "var(--card-border)" }}>
+              <Link
+                href="/tokens"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors hover:bg-black/5 dark:hover:bg-white/5"
+              >
+                <div className="flex items-center gap-2">
+                  <div className="flex h-5 w-5 items-center justify-center rounded bg-amber-500/20">
+                    <Coins className="h-3 w-3 text-amber-400" />
+                  </div>
+                  <span className="text-amber-400 font-medium">Tokens</span>
+                </div>
+                <span className="font-semibold text-amber-400">
+                  {tokenBalance !== null ? tokenBalance : "..."}
+                </span>
+              </Link>
             </div>
 
             <div className="sm:hidden border-b pb-2 mb-2" style={{ borderColor: "var(--card-border)" }}>
