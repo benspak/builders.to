@@ -326,7 +326,7 @@ export default async function ServicesPage({ searchParams }: ServicesPageProps) 
                 Credibility-First Marketplace
               </h3>
               <p className="text-xs text-zinc-400">
-                Every seller has at least 2 launched projects. See their proof of work before you hire.
+                Every seller has at least 1 launched project. See their proof of work before you hire.
                 No bids, no races to the bottom—just verified builders with real track records.
               </p>
             </div>

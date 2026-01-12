@@ -2,11 +2,13 @@ import NextAuth from "next-auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import Twitter from "next-auth/providers/twitter";
 import GitHub from "next-auth/providers/github";
+import Resend from "next-auth/providers/resend";
 import { prisma } from "@/lib/prisma";
 import {
   generateReferralCode,
   grantWelcomeBonus,
 } from "@/lib/tokens";
+import { generateMagicLinkEmail } from "@/lib/magic-link-email";
 
 // Store for temporarily holding username during OAuth flow
 // This is needed because the adapter doesn't pass custom fields
@@ -80,6 +82,37 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         };
       },
     }),
+    Resend({
+      apiKey: process.env.RESEND_API_KEY,
+      from: process.env.EMAIL_FROM || "Builders.to <noreply@builders.to>",
+      async sendVerificationRequest({ identifier: email, url }) {
+        const { html, text } = generateMagicLinkEmail({
+          email,
+          url,
+          baseUrl: process.env.NEXTAUTH_URL || "https://builders.to",
+        });
+
+        const response = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            from: process.env.EMAIL_FROM || "Builders.to <noreply@builders.to>",
+            to: email,
+            subject: "Sign in to Builders.to ✨",
+            html,
+            text,
+          }),
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(`Resend error: ${JSON.stringify(error)}`);
+        }
+      },
+    }),
   ],
   callbacks: {
     jwt({ token, user }) {
@@ -115,8 +148,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           pendingUsernames.delete(account.providerAccountId);
         }
 
-        // Use OAuth username for slug, fall back to name
-        const baseName = oauthUsername || user.name || user.id;
+        // For email signups, derive a base name from email
+        const emailBaseName = user.email?.split("@")[0] || null;
+
+        // Use OAuth username for slug, fall back to email prefix, then name, then id
+        const baseName = oauthUsername || emailBaseName || user.name || user.id;
 
         // Generate unique slug from username
         const slug = await getUniqueSlug(baseName);
@@ -150,7 +186,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
 
         // Create a feed event to announce the new user
-        const displayName = user.name || oauthUsername || "A new builder";
+        const displayName = user.name || oauthUsername || emailBaseName || "A new builder";
         await prisma.feedEvent.create({
           data: {
             type: "USER_JOINED",

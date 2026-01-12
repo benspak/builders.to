@@ -2,6 +2,8 @@
 
 import { signIn } from "next-auth/react";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
+import { Mail, Loader2, ArrowLeft, CheckCircle } from "lucide-react";
 
 interface SignInButtonsProps {
   className?: string;
@@ -9,6 +11,116 @@ interface SignInButtonsProps {
 }
 
 export function SignInButtons({ className, callbackUrl = "/projects" }: SignInButtonsProps) {
+  const [showEmailForm, setShowEmailForm] = useState(false);
+  const [email, setEmail] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleEmailSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || isLoading) return;
+
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const result = await signIn("resend", {
+        email,
+        callbackUrl,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        setError("Failed to send magic link. Please try again.");
+      } else {
+        setEmailSent(true);
+      }
+    } catch {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (emailSent) {
+    return (
+      <div className={cn("flex flex-col gap-4", className)}>
+        <div className="flex flex-col items-center gap-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 px-6 py-8 text-center">
+          <CheckCircle className="h-12 w-12 text-emerald-500" />
+          <div>
+            <h3 className="text-lg font-semibold text-white mb-1">Check your email!</h3>
+            <p className="text-sm text-zinc-400">
+              We sent a magic link to <span className="text-white font-medium">{email}</span>
+            </p>
+          </div>
+          <p className="text-xs text-zinc-500">
+            Click the link in the email to sign in. The link expires in 24 hours.
+          </p>
+        </div>
+        <button
+          onClick={() => {
+            setEmailSent(false);
+            setEmail("");
+            setShowEmailForm(false);
+          }}
+          className="text-sm text-zinc-500 hover:text-zinc-400 transition-colors"
+        >
+          ← Try a different method
+        </button>
+      </div>
+    );
+  }
+
+  if (showEmailForm) {
+    return (
+      <div className={cn("flex flex-col gap-4", className)}>
+        <form onSubmit={handleEmailSubmit} className="flex flex-col gap-4">
+          <div>
+            <label htmlFor="email" className="sr-only">Email address</label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email"
+              required
+              autoFocus
+              className="w-full rounded-xl bg-zinc-900 border border-zinc-800 px-4 py-4 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all"
+            />
+          </div>
+          {error && (
+            <p className="text-sm text-red-400">{error}</p>
+          )}
+          <button
+            type="submit"
+            disabled={isLoading || !email}
+            className="group relative flex items-center justify-center gap-3 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4 font-semibold text-white transition-all hover:from-orange-600 hover:to-orange-700 hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-orange-500/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="h-5 w-5 animate-spin" />
+                <span>Sending magic link...</span>
+              </>
+            ) : (
+              <>
+                <Mail className="h-5 w-5" />
+                <span>Send Magic Link</span>
+              </>
+            )}
+          </button>
+        </form>
+        <button
+          onClick={() => setShowEmailForm(false)}
+          className="flex items-center justify-center gap-2 text-sm text-zinc-500 hover:text-zinc-400 transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to all options
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className={cn("flex flex-col gap-4", className)}>
       <button
@@ -26,6 +138,24 @@ export function SignInButtons({ className, callbackUrl = "/projects" }: SignInBu
         <GitHubIcon className="h-5 w-5" />
         <span>Continue with GitHub</span>
         <div className="absolute inset-0 rounded-xl ring-2 ring-white/10 ring-inset" />
+      </button>
+
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-zinc-800" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-zinc-900/50 px-2 text-zinc-500">or</span>
+        </div>
+      </div>
+
+      <button
+        onClick={() => setShowEmailForm(true)}
+        className="group relative flex items-center justify-center gap-3 rounded-xl bg-zinc-900 px-6 py-4 font-semibold text-white transition-all hover:bg-zinc-800 hover:scale-[1.02] active:scale-[0.98] border border-zinc-700"
+      >
+        <Mail className="h-5 w-5" />
+        <span>Continue with Email</span>
+        <div className="absolute inset-0 rounded-xl ring-1 ring-white/5 ring-inset" />
       </button>
     </div>
   );
