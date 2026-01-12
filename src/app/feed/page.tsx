@@ -103,6 +103,8 @@ async function FeedContent() {
       const jobPostedEvents = events.filter(e => e.type === "JOB_POSTED");
       // For user joined events, fetch user info with location
       const userJoinedEvents = events.filter(e => e.type === "USER_JOINED");
+      // For listing created events, fetch local listing info
+      const listingCreatedEvents = events.filter(e => e.type === "LISTING_CREATED");
 
       // Fetch users for status updates
       let userMap = new Map<string, { id: string; name: string | null; firstName: string | null; lastName: string | null; image: string | null; slug: string | null; headline: string | null }>();
@@ -203,6 +205,37 @@ async function FeedContent() {
         companyRoleMap = new Map(companyRoles.map(r => [r.id, r]));
       }
 
+      // Fetch local listings for listing created events
+      let localListingMap = new Map<string, { id: string; slug: string; title: string; description: string; category: string; city: string; state: string; locationSlug: string; priceInCents: number | null; user: { id: string; name: string | null; firstName: string | null; lastName: string | null; image: string | null; slug: string | null } }>();
+      if (listingCreatedEvents.length > 0) {
+        const localListingIds = Array.from(new Set(listingCreatedEvents.map(e => e.localListingId).filter(Boolean))) as string[];
+        const localListings = await prisma.localListing.findMany({
+          where: { id: { in: localListingIds } },
+          select: {
+            id: true,
+            slug: true,
+            title: true,
+            description: true,
+            category: true,
+            city: true,
+            state: true,
+            locationSlug: true,
+            priceInCents: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+                firstName: true,
+                lastName: true,
+                image: true,
+                slug: true,
+              },
+            },
+          },
+        });
+        localListingMap = new Map(localListings.map(l => [l.id, l]));
+      }
+
       return events.map(event => ({
         ...event,
         user: event.type === "STATUS_UPDATE"
@@ -212,6 +245,7 @@ async function FeedContent() {
             : null,
         project: (event.type === "PROJECT_STATUS_CHANGE" || event.type === "PROJECT_CREATED") && event.projectId ? projectMap.get(event.projectId) || null : null,
         companyRole: event.type === "JOB_POSTED" && event.companyRoleId ? companyRoleMap.get(event.companyRoleId) || null : null,
+        localListing: event.type === "LISTING_CREATED" && event.localListingId ? localListingMap.get(event.localListingId) || null : null,
       }));
     }),
   ]);

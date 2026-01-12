@@ -279,6 +279,19 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    // Create a feed event for active listings (free categories)
+    if (initialStatus === "ACTIVE") {
+      await prisma.feedEvent.create({
+        data: {
+          type: "LISTING_CREATED",
+          userId: session.user.id,
+          localListingId: listing.id,
+          title: title,
+          description: description.slice(0, 200),
+        },
+      });
+    }
+
     return NextResponse.json(listing, { status: 201 });
   } catch (error) {
     console.error("Error creating local listing:", error);

@@ -101,6 +101,17 @@ export async function POST(request: Request, { params }: RouteParams) {
       },
     });
 
+    // Create a feed event for the newly activated listing
+    await prisma.feedEvent.create({
+      data: {
+        type: "LISTING_CREATED",
+        userId: session.user.id,
+        localListingId: id,
+        title: listing.title,
+        description: listing.description.slice(0, 200),
+      },
+    });
+
     return NextResponse.json({
       success: true,
       message: "Local listing activated successfully with tokens",

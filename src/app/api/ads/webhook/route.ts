@@ -192,6 +192,17 @@ export async function POST(request: Request) {
           },
         });
 
+        // Create a feed event for the newly activated listing
+        await prisma.feedEvent.create({
+          data: {
+            type: "LISTING_CREATED",
+            userId: existingListing.userId,
+            localListingId: listingId,
+            title: existingListing.title,
+            description: existingListing.description.slice(0, 200),
+          },
+        });
+
         console.log(`[Webhook] Local listing ${listingId} activated successfully`);
       } catch (error) {
         console.error("[Webhook] Error activating local listing:", error);

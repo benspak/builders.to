@@ -643,6 +643,7 @@ enum FeedEventType {
   PROJECT_CREATED        // A new project was created
   JOB_POSTED             // A new job/role was posted by a company
   USER_JOINED            // A new user signed up
+  LISTING_CREATED        // A new local listing was created
 }
 
 // Feed events - aggregated activity feed
@@ -655,25 +656,28 @@ model FeedEvent {
   userId      String
 
   // Related entities (polymorphic references)
-  projectId     String?
-  milestoneId   String?       @unique  // For milestone events
-  companyRoleId String?       @unique  // For job posted events
+  projectId       String?
+  milestoneId     String?       @unique  // For milestone events
+  companyRoleId   String?       @unique  // For job posted events
+  localListingId  String?       @unique  // For listing created events
 
   // Denormalized data for fast feed rendering
   title       String        // e.g., "shipped v1" or "hit $1k MRR"
   description String?       @db.Text
 
   // Relations
-  milestone   ProjectMilestone? @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
-  companyRole CompanyRole?      @relation(fields: [companyRoleId], references: [id], onDelete: Cascade)
-  likes       FeedEventLike[]
-  comments    FeedEventComment[]
+  milestone    ProjectMilestone? @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
+  companyRole  CompanyRole?      @relation(fields: [companyRoleId], references: [id], onDelete: Cascade)
+  localListing LocalListing?     @relation(fields: [localListingId], references: [id], onDelete: Cascade)
+  likes        FeedEventLike[]
+  comments     FeedEventComment[]
   notifications Notification[]
 
   @@index([createdAt])
   @@index([userId])
   @@index([projectId])
   @@index([companyRoleId])
+  @@index([localListingId])
 }
 
 // Likes on feed events
@@ -1010,6 +1014,7 @@ model LocalListing {
   images          LocalListingImage[]
   comments        LocalListingComment[]
   flags           LocalListingFlag[]
+  feedEvents      FeedEvent[]
 
   createdAt       DateTime             @default(now())
   updatedAt       DateTime             @updatedAt
