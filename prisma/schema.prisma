@@ -138,6 +138,7 @@ model User {
 
   // Token System
   tokenBalance           Int       @default(0)   // Current token balance
+  lifetimeTokensEarned   Int       @default(0)   // Total tokens earned (public metric for ranking)
   referralCode           String?   @unique       // Unique referral code for sharing
   referredById           String?                 // Who referred this user
   referredBy             User?     @relation("Referrals", fields: [referredById], references: [id], onDelete: SetNull)
@@ -1109,6 +1110,7 @@ enum TokenTransactionType {
   REFERRAL_REWARD           // Referrer gets tokens when referee signs up (10 tokens)
   STREAK_BONUS              // Bonus for maintaining daily update streaks
   ENGAGEMENT_BONUS          // Bonus for posting updates, commenting, etc.
+  PROFILE_COMPLETION        // Bonus for reaching 100% profile completeness (10 tokens)
   AD_REDEMPTION             // Spent tokens to unlock an advertisement
   SERVICE_REDEMPTION        // Spent tokens to unlock a service listing
   LOCAL_LISTING_REDEMPTION  // Spent tokens to unlock a local listing

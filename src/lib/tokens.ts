@@ -6,6 +6,7 @@ export const TOKENS_PER_DOLLAR = 10; // 10 tokens = $1
 export const WELCOME_BONUS_TOKENS = 5; // 5 tokens ($0.50) for new users
 export const REFERRAL_REWARD_TOKENS = 10; // 10 tokens ($1) for referrer
 export const ENGAGEMENT_BONUS_TOKENS = 1; // 1 token for posting daily update
+export const PROFILE_COMPLETION_TOKENS = 10; // 10 tokens ($1) for 100% profile completion
 export const STREAK_MILESTONES = {
   7: 5,   // 7-day streak: 5 tokens
   30: 20, // 30-day streak: 20 tokens
@@ -108,11 +109,12 @@ export async function grantTokens(
       },
     });
 
-    // Update the user's balance
+    // Update the user's balance and lifetime tokens earned
     const user = await tx.user.update({
       where: { id: userId },
       data: {
         tokenBalance: { increment: amount },
+        lifetimeTokensEarned: { increment: amount },
       },
       select: { tokenBalance: true },
     });
@@ -357,6 +359,35 @@ export async function checkAndGrantStreakBonus(
   );
 
   return { granted: true, amount, milestone };
+}
+
+/**
+ * Grant profile completion bonus when user reaches 100% profile completeness
+ * Only grants once per user - checks if user has already received this bonus
+ */
+export async function grantProfileCompletionBonus(
+  userId: string
+): Promise<{ granted: boolean; amount: number }> {
+  // Check if user already received profile completion bonus
+  const existingBonus = await prisma.tokenTransaction.findFirst({
+    where: {
+      userId,
+      type: "PROFILE_COMPLETION",
+    },
+  });
+
+  if (existingBonus) {
+    return { granted: false, amount: 0 }; // Already received this bonus
+  }
+
+  await grantTokens(
+    userId,
+    PROFILE_COMPLETION_TOKENS,
+    "PROFILE_COMPLETION",
+    "Profile 100% complete! 🎉"
+  );
+
+  return { granted: true, amount: PROFILE_COMPLETION_TOKENS };
 }
 
 /**

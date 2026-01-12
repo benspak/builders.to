@@ -74,11 +74,16 @@ export async function generateMetadata({ params }: UpdatePageProps): Promise<Met
 }
 
 async function TopBuildersSection() {
-  const buildersWithCounts = await prisma.user.findMany({
+  // Fetch top builders with ranking based on:
+  // 1. LAUNCHED projects (owned) - highest weight
+  // 2. LAUNCHED projects (co-built) - medium weight
+  // 3. Lifetime tokens earned - rewards engagement & profile completion
+  const buildersWithStats = await prisma.user.findMany({
     where: {
       OR: [
         { projects: { some: {} } },
         { coBuilderOn: { some: {} } },
+        { lifetimeTokensEarned: { gt: 0 } },
       ],
     },
     select: {
@@ -89,6 +94,15 @@ async function TopBuildersSection() {
       image: true,
       slug: true,
       headline: true,
+      lifetimeTokensEarned: true,
+      projects: {
+        where: { status: "LAUNCHED" },
+        select: { id: true },
+      },
+      coBuilderOn: {
+        where: { project: { status: "LAUNCHED" } },
+        select: { id: true },
+      },
       _count: {
         select: {
           projects: true,
@@ -98,12 +112,34 @@ async function TopBuildersSection() {
     },
   });
 
-  const topBuilders = buildersWithCounts
-    .map(builder => ({
-      ...builder,
-      totalProjects: builder._count.projects + builder._count.coBuilderOn,
-    }))
-    .sort((a, b) => b.totalProjects - a.totalProjects)
+  // Calculate ranking score and sort
+  const topBuilders = buildersWithStats
+    .map(builder => {
+      const launchedProjects = builder.projects.length;
+      const coLaunchedProjects = builder.coBuilderOn.length;
+      const rankingScore =
+        (launchedProjects * 10) +
+        (coLaunchedProjects * 5) +
+        builder.lifetimeTokensEarned;
+
+      return {
+        id: builder.id,
+        name: builder.name,
+        firstName: builder.firstName,
+        lastName: builder.lastName,
+        image: builder.image,
+        slug: builder.slug,
+        headline: builder.headline,
+        lifetimeTokensEarned: builder.lifetimeTokensEarned,
+        launchedProjects,
+        coLaunchedProjects,
+        totalProjects: builder._count.projects + builder._count.coBuilderOn,
+        rankingScore,
+        _count: builder._count,
+      };
+    })
+    .filter(builder => builder.rankingScore > 0)
+    .sort((a, b) => b.rankingScore - a.rankingScore)
     .slice(0, 5);
 
   return <TopBuilders builders={topBuilders} />;

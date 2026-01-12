@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { generateLocationSlug } from "@/lib/utils";
+import { calculateProfileCompleteness } from "@/lib/profile-completeness";
+import { grantProfileCompletionBonus } from "@/lib/tokens";
 
 function generateSlug(name: string): string {
   return name
@@ -300,6 +302,32 @@ export async function PATCH(
           ...(typeof milestoneNotifications === "boolean" && { milestoneNotifications }),
         },
       });
+    }
+
+    // Check profile completeness and grant bonus if 100%
+    const profileCompleteness = calculateProfileCompleteness({
+      displayName: user.displayName,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      city: user.city,
+      country: user.country,
+      headline: user.headline,
+      bio: user.bio,
+      websiteUrl: user.websiteUrl,
+      twitterUrl: user.twitterUrl,
+      youtubeUrl: user.youtubeUrl,
+      linkedinUrl: user.linkedinUrl,
+      twitchUrl: user.twitchUrl,
+      featuredVideoUrl: user.featuredVideoUrl,
+      status: user.status,
+      openToWork: user.openToWork,
+      lookingForCofounder: user.lookingForCofounder,
+      availableForContract: user.availableForContract,
+    });
+
+    // Grant 10 tokens if profile is 100% complete (only once per user)
+    if (profileCompleteness.score >= 100) {
+      await grantProfileCompletionBonus(id);
     }
 
     return NextResponse.json(user);

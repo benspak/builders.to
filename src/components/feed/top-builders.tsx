@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Trophy, User, Rocket, Users } from "lucide-react";
+import { Trophy, User, Rocket, Users, Coins } from "lucide-react";
 
 interface TopBuilder {
   id: string;
@@ -13,6 +13,10 @@ interface TopBuilder {
   slug: string | null;
   headline: string | null;
   totalProjects: number;
+  lifetimeTokensEarned: number;
+  launchedProjects: number;
+  coLaunchedProjects: number;
+  rankingScore: number;
   _count: {
     projects: number;
     coBuilderOn: number;
@@ -73,7 +77,7 @@ export function TopBuilders({ builders }: TopBuildersProps) {
         </div>
         <div>
           <h3 className="text-sm font-semibold text-white">Top Builders</h3>
-          <p className="text-[10px] text-zinc-500">Projects built & collaborations</p>
+          <p className="text-[10px] text-zinc-500">Launches, collabs & engagement</p>
         </div>
       </div>
 
@@ -121,19 +125,30 @@ export function TopBuilders({ builders }: TopBuildersProps) {
                 )}
               </div>
 
-              {/* Project Count */}
-              <div className="flex items-center gap-1.5 shrink-0" title={`${builder._count.projects} owned, ${builder._count.coBuilderOn} as co-builder`}>
+              {/* Stats */}
+              <div className="flex items-center gap-1.5 shrink-0" title={`${builder.launchedProjects} launched, ${builder.coLaunchedProjects} co-launched, ${builder.lifetimeTokensEarned} tokens`}>
+                {/* Launched Projects */}
                 <div className="flex items-center gap-0.5">
-                  <Rocket className="h-3 w-3 text-zinc-500" />
-                  <span className="text-xs font-semibold text-zinc-400">
-                    {builder.totalProjects}
+                  <Rocket className="h-3 w-3 text-emerald-500" />
+                  <span className="text-xs font-semibold text-emerald-400">
+                    {builder.launchedProjects}
                   </span>
                 </div>
-                {builder._count.coBuilderOn > 0 && (
+                {/* Co-launched Projects */}
+                {builder.coLaunchedProjects > 0 && (
                   <div className="flex items-center gap-0.5 pl-1 border-l border-zinc-700">
                     <Users className="h-2.5 w-2.5 text-violet-400" />
                     <span className="text-[10px] text-violet-400">
-                      {builder._count.coBuilderOn}
+                      {builder.coLaunchedProjects}
+                    </span>
+                  </div>
+                )}
+                {/* Lifetime Tokens */}
+                {builder.lifetimeTokensEarned > 0 && (
+                  <div className="flex items-center gap-0.5 pl-1 border-l border-zinc-700">
+                    <Coins className="h-2.5 w-2.5 text-amber-400" />
+                    <span className="text-[10px] text-amber-400">
+                      {builder.lifetimeTokensEarned}
                     </span>
                   </div>
                 )}
