@@ -40,7 +40,7 @@ databases:
   # PostgreSQL Database
   - name: builders-to-db
     region: oregon # Should match web service region
-    plan: free # free, starter, standard, pro
+    plan: Basic-256mb # free, starter, standard, pro
     databaseName: builders_to
     user: builders_to_user
     ipAllowList: [] # Allow all IPs (Render services connect internally)

@@ -1,0 +1,40 @@
+# Builders.to
+
+> A members-only project launchpad for builders. Share your work in progress, get feedback from the community, and find your first users.
+
+Builders.to is a community platform where indie hackers, solopreneurs, and developers share their projects at any stage—from idea to launched product. Members can upvote, comment, and provide feedback to help each other succeed.
+
+## Features
+
+- **Project Sharing**: Post your work at any stage (Idea → Building → Beta → Launched)
+- **Community Feedback**: Get constructive feedback from fellow builders
+- **Upvoting System**: Support projects you love and help them gain visibility
+- **Builder Profiles**: Showcase your work and connect with other makers
+- **Company Pages**: Create and manage company profiles
+- **Local Listings**: Discover builders and services in your area
+- **Services Marketplace**: Offer and find builder services
+- **Live Streamers**: Discover builders who stream their work
+
+## Public Pages
+
+- `/feed` - Main community feed with recent projects and updates
+- `/projects` - Browse all projects shared by the community
+- `/companies` - Discover companies built by community members
+- `/services` - Marketplace for builder services
+- `/local` - Find builders and listings by location
+- `/streamers` - Builders who live-stream their work
+- `/privacy` - Privacy policy
+- `/terms` - Terms of service
+
+## Community
+
+Part of the Builders.to community on X/Twitter: https://x.com/i/communities/1943895831322439993
+
+## Contact
+
+For questions about Builders.to, reach out through the X community or create an account to connect with the team directly.
+
+## Optional
+
+- Logo: https://builders.to/logo.svg
+- Favicon: https://builders.to/favicon.svg

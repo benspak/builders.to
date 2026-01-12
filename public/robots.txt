@@ -1,0 +1,29 @@
+# Robots.txt for Builders.to
+# https://builders.to
+
+User-agent: *
+Allow: /
+Allow: /feed
+Allow: /projects
+Allow: /companies
+Allow: /services
+Allow: /local
+Allow: /streamers
+Allow: /privacy
+Allow: /terms
+
+# Protect user-specific and authenticated pages
+Disallow: /api/
+Disallow: /signin
+Disallow: /settings
+Disallow: /notifications
+Disallow: /my-companies
+Disallow: /my-listings
+Disallow: /purchases
+Disallow: /referrals
+Disallow: /tokens
+Disallow: /updates
+Disallow: /ads/
+
+# Sitemap
+Sitemap: https://builders.to/sitemap.xml
