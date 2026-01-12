@@ -57,13 +57,21 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-8 flex justify-center">
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
           <a href="https://startupfa.me/s/buildersto?utm_source=builders.to" target="_blank" rel="noopener noreferrer">
             <img
               src="https://startupfa.me/badges/featured-badge-small.webp"
               alt="Builders.to - Featured on Startup Fame"
               width={224}
               height={36}
+              className="opacity-80 hover:opacity-100 transition-opacity"
+            />
+          </a>
+          <a href="https://turbo0.com/item/buildersto" target="_blank" rel="noopener noreferrer">
+            <img
+              src="https://img.turbo0.com/badge-listed-light.svg"
+              alt="Listed on Turbo0"
+              style={{ height: 54, width: "auto" }}
               className="opacity-80 hover:opacity-100 transition-opacity"
             />
           </a>
