@@ -9,3 +9,4 @@ export { TopBuilders } from "./top-builders";
 export { OpenJobs } from "./open-jobs";
 export { FeaturedServices } from "./featured-services";
 export { FeedEventComments } from "./feed-event-comments";
+export { EditorsPick } from "./editors-pick";

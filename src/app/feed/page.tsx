@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { Loader2, Sparkles } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
-import { CombinedFeed, TopBuilders, OpenJobs, FeaturedServices } from "@/components/feed";
+import { CombinedFeed, TopBuilders, OpenJobs, FeaturedServices, EditorsPick } from "@/components/feed";
 import { SiteViewsCounter } from "@/components/analytics/site-views-counter";
 import { SidebarAd } from "@/components/ads";
 import { ProductHuntBadge } from "@/components/ui/product-hunt-badge";
@@ -362,6 +362,43 @@ async function FeaturedServicesSection() {
   return <FeaturedServices services={shuffledServices} />;
 }
 
+async function EditorsPickSection() {
+  // Fetch the featured project by slug
+  const featuredProject = await prisma.project.findUnique({
+    where: { slug: "distributionkit" },
+    select: {
+      id: true,
+      slug: true,
+      title: true,
+      tagline: true,
+      imageUrl: true,
+      status: true,
+      url: true,
+      user: {
+        select: {
+          id: true,
+          name: true,
+          firstName: true,
+          lastName: true,
+          image: true,
+          slug: true,
+        },
+      },
+      _count: {
+        select: {
+          upvotes: true,
+        },
+      },
+    },
+  });
+
+  if (!featuredProject) {
+    return null;
+  }
+
+  return <EditorsPick project={featuredProject} />;
+}
+
 export default function FeedPage() {
   return (
     <div className="relative min-h-screen" style={{ background: "var(--background)" }}>
@@ -478,6 +515,32 @@ export default function FeedPage() {
               <div className="flex justify-center">
                 <ProductHuntBadge />
               </div>
+
+              {/* Editor's Pick Section */}
+              <Suspense
+                fallback={
+                  <div className="rounded-xl border border-amber-500/20 bg-zinc-900/50 overflow-hidden animate-pulse">
+                    <div className="flex items-center gap-2.5 px-4 py-3 border-b border-amber-500/20">
+                      <div className="h-8 w-8 bg-zinc-800 rounded-lg" />
+                      <div className="flex-1">
+                        <div className="h-4 w-20 bg-zinc-800 rounded mb-1" />
+                        <div className="h-2.5 w-16 bg-zinc-800 rounded" />
+                      </div>
+                    </div>
+                    <div className="h-36 bg-zinc-800" />
+                    <div className="p-4">
+                      <div className="h-5 w-3/4 bg-zinc-800 rounded mb-2" />
+                      <div className="h-3 w-full bg-zinc-800 rounded mb-3" />
+                      <div className="flex items-center gap-2">
+                        <div className="h-5 w-5 bg-zinc-800 rounded-full" />
+                        <div className="h-3 w-20 bg-zinc-800 rounded" />
+                      </div>
+                    </div>
+                  </div>
+                }
+              >
+                <EditorsPickSection />
+              </Suspense>
 
               {/* Sidebar Ad Section */}
               <Suspense
