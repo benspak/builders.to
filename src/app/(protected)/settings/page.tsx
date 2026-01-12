@@ -3,6 +3,8 @@ import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ProfileForm } from "@/components/profile/profile-form";
+import { ProfileCompleteness } from "@/components/profile/profile-completeness";
+import { calculateProfileCompleteness } from "@/lib/profile-completeness";
 import { Settings, User, ArrowLeft } from "lucide-react";
 
 export const metadata = {
@@ -62,6 +64,28 @@ export default async function SettingsPage() {
     redirect("/signin");
   }
 
+  // Calculate profile completeness
+  const completeness = calculateProfileCompleteness({
+    displayName: user.displayName,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    zipCode: user.zipCode,
+    city: user.city,
+    state: user.state,
+    headline: user.headline,
+    bio: user.bio,
+    websiteUrl: user.websiteUrl,
+    twitterUrl: user.twitterUrl,
+    youtubeUrl: user.youtubeUrl,
+    linkedinUrl: user.linkedinUrl,
+    twitchUrl: user.twitchUrl,
+    featuredVideoUrl: user.featuredVideoUrl,
+    status: user.status,
+    openToWork: user.openToWork,
+    lookingForCofounder: user.lookingForCofounder,
+    availableForContract: user.availableForContract,
+  });
+
   return (
     <div className="relative min-h-screen bg-zinc-950">
       {/* Background decorations */}
@@ -81,17 +105,26 @@ export default async function SettingsPage() {
         </Link>
 
         {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 shadow-lg shadow-orange-500/25">
-            <Settings className="h-6 w-6 text-white" />
+        <div className="flex items-center justify-between gap-4 mb-8">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 shadow-lg shadow-orange-500/25">
+              <Settings className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-white">Profile Settings</h1>
+              <p className="text-zinc-400">
+                Customize your public profile
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-2xl font-bold text-white">Profile Settings</h1>
-            <p className="text-zinc-400">
-              Customize your public profile
-            </p>
-          </div>
+          {/* Compact score indicator */}
+          <ProfileCompleteness result={completeness} compact />
         </div>
+
+        {/* Profile Completeness - show prominently if not complete */}
+        {completeness.score < 100 && (
+          <ProfileCompleteness result={completeness} className="mb-8" />
+        )}
 
         {/* Settings Card */}
         <div className="rounded-2xl border border-white/10 bg-zinc-900/50 backdrop-blur-sm p-6 sm:p-8">
