@@ -171,7 +171,7 @@ export default function TokensPage() {
 
   return (
     <div className="py-8">
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="mb-8">
             <Link
@@ -442,6 +442,7 @@ export default function TokensPage() {
             </div>
           )}
         </div>
+      </div>
     </div>
   );
 }
