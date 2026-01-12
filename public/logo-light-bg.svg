@@ -1,0 +1,20 @@
+<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="lightGradient" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#c2410c"/>
+      <stop offset="50%" stop-color="#ea580c"/>
+      <stop offset="100%" stop-color="#f97316"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Base rounded square background - slightly darker for light mode -->
+  <rect x="2" y="2" width="36" height="36" rx="10" fill="url(#lightGradient)"/>
+
+  <!-- Stacked blocks -->
+  <rect x="9" y="26" width="22" height="6" rx="1.5" fill="white"/>
+  <rect x="9" y="18" width="17" height="6" rx="1.5" fill="white" opacity="0.95"/>
+  <rect x="9" y="10" width="12" height="6" rx="1.5" fill="white" opacity="0.9"/>
+
+  <!-- Accent dot -->
+  <circle cx="28" cy="13" r="3" fill="white"/>
+</svg>

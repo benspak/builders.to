@@ -1,0 +1,22 @@
+<svg width="180" height="40" viewBox="0 0 180 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="fullGradient" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ea580c"/>
+      <stop offset="50%" stop-color="#f97316"/>
+      <stop offset="100%" stop-color="#fb923c"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Icon -->
+  <rect x="2" y="2" width="36" height="36" rx="10" fill="url(#fullGradient)"/>
+  <rect x="9" y="26" width="22" height="6" rx="1.5" fill="white"/>
+  <rect x="9" y="18" width="17" height="6" rx="1.5" fill="white" opacity="0.9"/>
+  <rect x="9" y="10" width="12" height="6" rx="1.5" fill="white" opacity="0.8"/>
+  <circle cx="28" cy="13" r="3" fill="white" opacity="0.95"/>
+
+  <!-- Wordmark "Builders" -->
+  <text x="48" y="28" font-family="Outfit, system-ui, sans-serif" font-size="22" font-weight="700" fill="#fafafa">Builders</text>
+
+  <!-- ".to" in accent color -->
+  <text x="138" y="28" font-family="Outfit, system-ui, sans-serif" font-size="22" font-weight="700" fill="#f97316">.to</text>
+</svg>

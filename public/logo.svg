@@ -1,0 +1,29 @@
+<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="builderGradient" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ea580c"/>
+      <stop offset="50%" stop-color="#f97316"/>
+      <stop offset="100%" stop-color="#fb923c"/>
+    </linearGradient>
+    <linearGradient id="glowGradient" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ea580c" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#fb923c" stop-opacity="0.2"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Base rounded square background -->
+  <rect x="2" y="2" width="36" height="36" rx="10" fill="url(#builderGradient)"/>
+
+  <!-- Stacked blocks forming an abstract "B" / building shape -->
+  <!-- Bottom block - widest, foundation -->
+  <rect x="9" y="26" width="22" height="6" rx="1.5" fill="white" opacity="1"/>
+
+  <!-- Middle block - medium -->
+  <rect x="9" y="18" width="17" height="6" rx="1.5" fill="white" opacity="0.9"/>
+
+  <!-- Top block - narrowest, with ascending arrow feel -->
+  <rect x="9" y="10" width="12" height="6" rx="1.5" fill="white" opacity="0.8"/>
+
+  <!-- Accent dot - represents the destination/completion -->
+  <circle cx="28" cy="13" r="3" fill="white" opacity="0.95"/>
+</svg>

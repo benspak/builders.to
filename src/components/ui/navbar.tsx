@@ -8,6 +8,7 @@ import { NotificationDropdown } from "@/components/notifications";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { SearchCommand } from "@/components/ui/search-command";
 import { Plus, Rocket, ChevronDown, Sparkles, Menu, X, MapPin, Video } from "lucide-react";
+import { BuildersLogo } from "@/components/ui/builders-logo";
 import { cn } from "@/lib/utils";
 
 export function Navbar() {
@@ -111,8 +112,8 @@ export function Navbar() {
 
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group flex-shrink-0">
-            <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full sm:rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 shadow-lg shadow-orange-500/25 group-hover:shadow-orange-500/40 transition-shadow">
-              <Rocket className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+            <div className="shadow-lg shadow-orange-500/25 group-hover:shadow-orange-500/40 transition-shadow rounded-lg">
+              <BuildersLogo size={32} className="sm:w-9 sm:h-9" />
             </div>
             <span className="hidden sm:inline text-xl font-bold" style={{ color: "var(--foreground)" }}>
               Builders<span className="text-orange-500">.to</span>

@@ -170,10 +170,10 @@ export function ServiceCard({ listing, isOwner = false }: ServiceCardProps) {
     : null;
 
   return (
-    <div className="rounded-xl border border-zinc-800/50 bg-zinc-900/50 overflow-hidden hover:border-amber-500/30 transition-colors">
+    <div className="relative rounded-xl border border-zinc-800/50 bg-zinc-900/50 hover:border-amber-500/30 transition-colors">
       <div className="p-4">
         <div className="flex items-start justify-between gap-4">
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 overflow-hidden">
             {/* Header */}
             <div className="flex items-center gap-2 mb-2 flex-wrap">
               <span
@@ -281,7 +281,7 @@ export function ServiceCard({ listing, isOwner = false }: ServiceCardProps) {
               </button>
 
               {menuOpen && (
-                <div className="absolute right-0 top-full mt-1 w-48 rounded-lg border border-zinc-700 bg-zinc-800 shadow-xl z-10">
+                <div className="absolute right-0 top-full mt-1 w-48 rounded-lg border border-zinc-700 bg-zinc-800 shadow-xl z-50">
                   <div className="py-1">
                     <Link
                       href={`/services/${listing.slug || listing.id}`}
