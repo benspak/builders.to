@@ -83,7 +83,7 @@ interface FeedEventCommentsProps {
   currentUserId?: string;
   initialCommentsCount?: number;
   /** Color accent for the expand button - matches the card's color theme */
-  accentColor?: "amber" | "emerald" | "orange" | "violet";
+  accentColor?: "amber" | "emerald" | "orange" | "violet" | "cyan";
 }
 
 export function FeedEventComments({
@@ -121,6 +121,11 @@ export function FeedEventComments({
       icon: "text-violet-400",
       button: "hover:text-violet-400",
       submit: "bg-violet-500/20 text-violet-400 hover:bg-violet-500/30",
+    },
+    cyan: {
+      icon: "text-cyan-400",
+      button: "hover:text-cyan-400",
+      submit: "bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30",
     },
   };
 
