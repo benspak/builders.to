@@ -2,7 +2,7 @@
 -- This safely adds the token system columns and constraints before prisma db push
 
 -- Add tokenBalance column if it doesn't exist
-DO $$ 
+DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'User' AND column_name = 'tokenBalance') THEN
         ALTER TABLE "User" ADD COLUMN "tokenBalance" INTEGER NOT NULL DEFAULT 0;
@@ -10,7 +10,7 @@ BEGIN
 END $$;
 
 -- Add referralCode column if it doesn't exist
-DO $$ 
+DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'User' AND column_name = 'referralCode') THEN
         ALTER TABLE "User" ADD COLUMN "referralCode" TEXT;
@@ -18,7 +18,7 @@ BEGIN
 END $$;
 
 -- Add referredById column if it doesn't exist
-DO $$ 
+DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'User' AND column_name = 'referredById') THEN
         ALTER TABLE "User" ADD COLUMN "referredById" TEXT;
@@ -34,7 +34,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = 'User_referralCode_key') THEN
         -- Get PostgreSQL major version
         SELECT current_setting('server_version_num')::INTEGER / 10000 INTO pg_version;
-        
+
         IF pg_version >= 15 THEN
             -- PostgreSQL 15+ supports NULLS NOT DISTINCT natively
             CREATE UNIQUE INDEX "User_referralCode_key" ON "User"("referralCode");
