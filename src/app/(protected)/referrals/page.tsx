@@ -13,8 +13,6 @@ import {
   ArrowLeft,
   ExternalLink
 } from "lucide-react";
-import { Navbar } from "@/components/ui/navbar";
-import { Footer } from "@/components/ui/footer";
 import { REFERRAL_REWARD_TOKENS } from "@/lib/tokens";
 
 interface ReferralData {
@@ -73,11 +71,8 @@ export default function ReferralsPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: "var(--background)" }}>
-      <Navbar />
-
-      <main className="flex-1 py-8">
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+    <div className="py-8">
+      <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="mb-8">
             <Link
@@ -370,9 +365,6 @@ export default function ReferralsPage() {
             </div>
           )}
         </div>
-      </main>
-
-      <Footer />
-    </div>
+      </div>
   );
 }
