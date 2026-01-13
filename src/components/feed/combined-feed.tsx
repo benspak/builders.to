@@ -16,6 +16,8 @@ interface DailyUpdate {
   id: string;
   content: string;
   imageUrl?: string | null;
+  gifUrl?: string | null;
+  videoUrl?: string | null;
   createdAt: Date | string;
   likesCount: number;
   commentsCount: number;

@@ -557,6 +557,7 @@ model DailyUpdate {
   content   String   @db.Text  // The update content
   imageUrl  String?  // Optional image attachment
   gifUrl    String?  // Optional GIF attachment from Giphy
+  videoUrl  String?  // Optional YouTube video URL
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

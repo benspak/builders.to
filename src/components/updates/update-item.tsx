@@ -8,6 +8,7 @@ import { User, Trash2, Loader2, MoreHorizontal, Heart, ExternalLink, Link2, Chec
 import { formatRelativeTime, cn, MENTION_REGEX } from "@/lib/utils";
 import { UpdateComments } from "./update-comments";
 import { ImageLightbox } from "@/components/ui/image-lightbox";
+import { YouTubeEmbed } from "@/components/ui/youtube-embed";
 
 const FEED_TRUNCATE_LENGTH = 500;
 
@@ -84,6 +85,7 @@ interface UpdateItemProps {
     content: string;
     imageUrl?: string | null;
     gifUrl?: string | null;
+    videoUrl?: string | null;
     createdAt: string | Date;
     likesCount?: number;
     isLiked?: boolean;
@@ -290,6 +292,11 @@ export function UpdateItem({ update, currentUserId, showAuthor = true }: UpdateI
               </div>
             )}
 
+            {/* Video attachment */}
+            {update.videoUrl && (
+              <YouTubeEmbed url={update.videoUrl} />
+            )}
+
             <div className="p-4">
               <div className="text-zinc-300 whitespace-pre-wrap text-sm leading-relaxed">
                 <ContentWithMentions content={displayContent} />
@@ -390,6 +397,11 @@ export function UpdateItem({ update, currentUserId, showAuthor = true }: UpdateI
                             <div className="absolute bottom-2 left-2 px-2 py-1 rounded-md bg-black/60 text-xs text-fuchsia-300 font-medium">
                               GIF
                             </div>
+                          </div>
+                        )}
+                        {update.videoUrl && (
+                          <div className="mt-3">
+                            <YouTubeEmbed url={update.videoUrl} />
                           </div>
                         )}
                       </div>

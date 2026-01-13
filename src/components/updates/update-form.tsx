@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Send, Loader2, ImagePlus, X, User } from "lucide-react";
 import { GiphyPicker, GifButton, GifPreview } from "@/components/ui/giphy-picker";
+import { VideoButton, VideoUrlInput, VideoPreview } from "@/components/ui/youtube-embed";
 
 interface MentionUser {
   id: string;
@@ -25,10 +26,12 @@ export function UpdateForm({ onSuccess }: UpdateFormProps) {
   const [content, setContent] = useState("");
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [gifUrl, setGifUrl] = useState<string | null>(null);
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showGifPicker, setShowGifPicker] = useState(false);
+  const [showVideoInput, setShowVideoInput] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -206,12 +209,24 @@ export function UpdateForm({ onSuccess }: UpdateFormProps) {
 
   function handleGifSelect(gif: { url: string; width: number; height: number }) {
     setGifUrl(gif.url);
-    // Remove image if a GIF is selected (can only have one)
+    // Remove image and video if a GIF is selected (can only have one media type)
     setImageUrl(null);
+    setVideoUrl(null);
   }
 
   function removeGif() {
     setGifUrl(null);
+  }
+
+  function handleVideoSelect(url: string) {
+    setVideoUrl(url);
+    // Remove image and GIF if a video is selected (can only have one media type)
+    setImageUrl(null);
+    setGifUrl(null);
+  }
+
+  function removeVideo() {
+    setVideoUrl(null);
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -233,6 +248,7 @@ export function UpdateForm({ onSuccess }: UpdateFormProps) {
           content: content.trim(),
           imageUrl: imageUrl,
           gifUrl: gifUrl,
+          videoUrl: videoUrl,
         }),
       });
 
@@ -244,6 +260,7 @@ export function UpdateForm({ onSuccess }: UpdateFormProps) {
       setContent("");
       setImageUrl(null);
       setGifUrl(null);
+      setVideoUrl(null);
       router.refresh();
       onSuccess?.();
     } catch (err) {
@@ -362,6 +379,11 @@ export function UpdateForm({ onSuccess }: UpdateFormProps) {
         <GifPreview gifUrl={gifUrl} onRemove={removeGif} />
       )}
 
+      {/* Video preview */}
+      {videoUrl && (
+        <VideoPreview url={videoUrl} onRemove={removeVideo} />
+      )}
+
       {error && (
         <p className="text-sm text-red-400">{error}</p>
       )}
@@ -380,7 +402,7 @@ export function UpdateForm({ onSuccess }: UpdateFormProps) {
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            disabled={isSubmitting || isUploading || !!imageUrl || !!gifUrl}
+            disabled={isSubmitting || isUploading || !!imageUrl || !!gifUrl || !!videoUrl}
             className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-zinc-400 hover:text-white hover:bg-zinc-800/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isUploading ? (
@@ -398,7 +420,13 @@ export function UpdateForm({ onSuccess }: UpdateFormProps) {
 
           <GifButton
             onClick={() => setShowGifPicker(true)}
-            disabled={isSubmitting || isUploading || !!imageUrl || !!gifUrl}
+            disabled={isSubmitting || isUploading || !!imageUrl || !!gifUrl || !!videoUrl}
+          />
+
+          <VideoButton
+            onClick={() => setShowVideoInput(true)}
+            disabled={isSubmitting || isUploading || !!imageUrl || !!gifUrl || !!videoUrl}
+            hasVideo={!!videoUrl}
           />
         </div>
 
@@ -427,6 +455,14 @@ export function UpdateForm({ onSuccess }: UpdateFormProps) {
         isOpen={showGifPicker}
         onClose={() => setShowGifPicker(false)}
         onSelect={handleGifSelect}
+      />
+
+      {/* Video URL Input Modal */}
+      <VideoUrlInput
+        isOpen={showVideoInput}
+        onClose={() => setShowVideoInput(false)}
+        onSubmit={handleVideoSelect}
+        initialUrl={videoUrl || ""}
       />
     </form>
   );

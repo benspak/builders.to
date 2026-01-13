@@ -335,6 +335,7 @@ export default async function SlugPage({ params }: PageProps) {
           content: true,
           imageUrl: true,
           gifUrl: true,
+          videoUrl: true,
           createdAt: true,
           likes: {
             select: {

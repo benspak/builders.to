@@ -19,6 +19,7 @@ export async function GET(
         content: true,
         imageUrl: true,
         gifUrl: true,
+        videoUrl: true,
         createdAt: true,
         updatedAt: true,
         user: {
