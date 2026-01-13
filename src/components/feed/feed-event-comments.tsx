@@ -8,6 +8,7 @@ import Link from "next/link";
 import { User, Send, Loader2, MoreHorizontal, Trash2, Pencil, X, MessageCircle } from "lucide-react";
 import { formatRelativeTime, MENTION_REGEX, cn } from "@/lib/utils";
 import { MentionInput } from "@/components/ui/mention-input";
+import { GiphyPicker, GifButton, GifPreview } from "@/components/ui/giphy-picker";
 
 // Component to render content with clickable @mentions
 function ContentWithMentions({ content }: { content: string }) {
@@ -68,6 +69,7 @@ function ContentWithMentions({ content }: { content: string }) {
 interface Comment {
   id: string;
   content: string;
+  gifUrl?: string | null;
   createdAt: string | Date;
   updatedAt?: string | Date;
   user: {
@@ -102,6 +104,8 @@ export function FeedEventComments({
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [newComment, setNewComment] = useState("");
+  const [selectedGifUrl, setSelectedGifUrl] = useState<string | null>(null);
+  const [showGifPicker, setShowGifPicker] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [commentsCount, setCommentsCount] = useState(initialCommentsCount);
   const [mounted, setMounted] = useState(false);
@@ -201,14 +205,18 @@ export function FeedEventComments({
       return;
     }
 
-    if (!newComment.trim()) return;
+    // Allow submit if there's text OR a gif
+    if (!newComment.trim() && !selectedGifUrl) return;
 
     setIsSubmitting(true);
     try {
       const response = await fetch(`/api/feed-events/${feedEventId}/comments`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: newComment.trim() }),
+        body: JSON.stringify({
+          content: newComment.trim() || " ", // Need at least a space for DB
+          gifUrl: selectedGifUrl,
+        }),
       });
 
       if (response.ok) {
@@ -216,12 +224,17 @@ export function FeedEventComments({
         setComments(prev => [...prev, comment]);
         setCommentsCount(prev => prev + 1);
         setNewComment("");
+        setSelectedGifUrl(null);
       }
     } catch (error) {
       console.error("Error posting comment:", error);
     } finally {
       setIsSubmitting(false);
     }
+  }
+
+  function handleGifSelect(gif: { url: string; width: number; height: number }) {
+    setSelectedGifUrl(gif.url);
   }
 
   async function handleDelete(commentId: string) {
@@ -327,20 +340,38 @@ export function FeedEventComments({
 
         {/* Comment form - fixed at bottom */}
         <div className="border-t border-white/10 p-4 bg-zinc-900/95">
+          {/* Selected GIF preview */}
+          {selectedGifUrl && (
+            <div className="mb-3">
+              <GifPreview
+                gifUrl={selectedGifUrl}
+                onRemove={() => setSelectedGifUrl(null)}
+                className="max-w-xs"
+              />
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="flex gap-3">
-            <MentionInput
-              value={newComment}
-              onChange={setNewComment}
-              placeholder={currentUserId ? "Write a comment... Use @ to mention" : "Sign in to comment"}
-              disabled={!currentUserId || isSubmitting}
-              maxLength={1000}
-              onSubmit={handleSubmit}
-            />
+            <div className="flex-1 flex gap-2 items-center">
+              <MentionInput
+                value={newComment}
+                onChange={setNewComment}
+                placeholder={currentUserId ? "Write a comment... Use @ to mention" : "Sign in to comment"}
+                disabled={!currentUserId || isSubmitting}
+                maxLength={1000}
+                onSubmit={handleSubmit}
+              />
+              <GifButton
+                onClick={() => setShowGifPicker(true)}
+                disabled={!currentUserId || isSubmitting || !!selectedGifUrl}
+                className="shrink-0"
+              />
+            </div>
             <button
               type="submit"
-              disabled={!currentUserId || isSubmitting || !newComment.trim()}
+              disabled={!currentUserId || isSubmitting || (!newComment.trim() && !selectedGifUrl)}
               className={cn(
-                "rounded-xl px-4 py-3 transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
+                "rounded-xl px-4 py-3 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0",
                 colors.submit
               )}
             >
@@ -351,6 +382,13 @@ export function FeedEventComments({
               )}
             </button>
           </form>
+
+          {/* GIF Picker Modal */}
+          <GiphyPicker
+            isOpen={showGifPicker}
+            onClose={() => setShowGifPicker(false)}
+            onSelect={handleGifSelect}
+          />
         </div>
       </div>
     </div>
@@ -524,9 +562,24 @@ function CommentItem({ comment, currentUserId, onDelete, onEdit, accentColor = "
               </div>
             </div>
           ) : (
-            <p className="text-sm text-zinc-300 whitespace-pre-wrap break-words leading-relaxed">
-              <ContentWithMentions content={comment.content} />
-            </p>
+            <>
+              {comment.content && comment.content.trim() && (
+                <p className="text-sm text-zinc-300 whitespace-pre-wrap break-words leading-relaxed">
+                  <ContentWithMentions content={comment.content} />
+                </p>
+              )}
+              {/* Display GIF if present */}
+              {comment.gifUrl && (
+                <div className="mt-2 rounded-lg overflow-hidden max-w-xs">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={comment.gifUrl}
+                    alt="GIF"
+                    className="w-full h-auto max-h-48 object-contain rounded-lg"
+                  />
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

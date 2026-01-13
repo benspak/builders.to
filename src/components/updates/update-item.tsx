@@ -83,6 +83,7 @@ interface UpdateItemProps {
     id: string;
     content: string;
     imageUrl?: string | null;
+    gifUrl?: string | null;
     createdAt: string | Date;
     likesCount?: number;
     isLiked?: boolean;
@@ -258,6 +259,21 @@ export function UpdateItem({ update, currentUserId, showAuthor = true }: UpdateI
               />
             )}
 
+            {/* GIF attachment */}
+            {update.gifUrl && (
+              <div className="relative max-h-80 bg-zinc-900 overflow-hidden">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={update.gifUrl}
+                  alt="GIF"
+                  className="w-full h-auto max-h-80 object-contain"
+                />
+                <div className="absolute bottom-2 left-2 px-2 py-1 rounded-md bg-black/60 text-xs text-fuchsia-300 font-medium">
+                  GIF
+                </div>
+              </div>
+            )}
+
             <div className="p-4">
               <div className="text-zinc-300 whitespace-pre-wrap text-sm leading-relaxed">
                 <ContentWithMentions content={displayContent} />
@@ -345,6 +361,19 @@ export function UpdateItem({ update, currentUserId, showAuthor = true }: UpdateI
                               height={300}
                               className="w-full object-cover max-h-64"
                             />
+                          </div>
+                        )}
+                        {update.gifUrl && (
+                          <div className="mt-3 rounded-xl overflow-hidden border border-white/10 relative">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={update.gifUrl}
+                              alt="GIF"
+                              className="w-full object-contain max-h-64"
+                            />
+                            <div className="absolute bottom-2 left-2 px-2 py-1 rounded-md bg-black/60 text-xs text-fuchsia-300 font-medium">
+                              GIF
+                            </div>
                           </div>
                         )}
                       </div>

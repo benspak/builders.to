@@ -190,6 +190,7 @@ export default async function UpdatePage({ params }: UpdatePageProps) {
       id: true,
       content: true,
       imageUrl: true,
+      gifUrl: true,
       createdAt: true,
       user: {
         select: {
@@ -344,6 +345,21 @@ export default async function UpdatePage({ params }: UpdatePageProps) {
                     className="object-cover"
                     priority
                   />
+                </div>
+              )}
+
+              {/* GIF attachment */}
+              {update.gifUrl && (
+                <div className="relative max-h-96 bg-zinc-900 overflow-hidden">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={update.gifUrl}
+                    alt="GIF"
+                    className="w-full h-auto max-h-96 object-contain"
+                  />
+                  <div className="absolute bottom-2 left-2 px-2 py-1 rounded-md bg-black/60 text-xs text-fuchsia-300 font-medium">
+                    GIF
+                  </div>
                 </div>
               )}
 

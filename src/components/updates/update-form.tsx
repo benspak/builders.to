@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Send, Loader2, ImagePlus, X, User } from "lucide-react";
+import { GiphyPicker, GifButton, GifPreview } from "@/components/ui/giphy-picker";
 
 interface MentionUser {
   id: string;
@@ -23,9 +24,11 @@ export function UpdateForm({ onSuccess }: UpdateFormProps) {
   const router = useRouter();
   const [content, setContent] = useState("");
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [gifUrl, setGifUrl] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showGifPicker, setShowGifPicker] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -201,6 +204,16 @@ export function UpdateForm({ onSuccess }: UpdateFormProps) {
     setImageUrl(null);
   }
 
+  function handleGifSelect(gif: { url: string; width: number; height: number }) {
+    setGifUrl(gif.url);
+    // Remove image if a GIF is selected (can only have one)
+    setImageUrl(null);
+  }
+
+  function removeGif() {
+    setGifUrl(null);
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
@@ -219,6 +232,7 @@ export function UpdateForm({ onSuccess }: UpdateFormProps) {
         body: JSON.stringify({
           content: content.trim(),
           imageUrl: imageUrl,
+          gifUrl: gifUrl,
         }),
       });
 
@@ -229,6 +243,7 @@ export function UpdateForm({ onSuccess }: UpdateFormProps) {
 
       setContent("");
       setImageUrl(null);
+      setGifUrl(null);
       router.refresh();
       onSuccess?.();
     } catch (err) {
@@ -342,13 +357,18 @@ export function UpdateForm({ onSuccess }: UpdateFormProps) {
         </div>
       )}
 
+      {/* GIF preview */}
+      {gifUrl && (
+        <GifPreview gifUrl={gifUrl} onRemove={removeGif} />
+      )}
+
       {error && (
         <p className="text-sm text-red-400">{error}</p>
       )}
 
       <div className="flex items-center justify-between">
-        {/* Image upload button */}
-        <div>
+        {/* Media buttons */}
+        <div className="flex items-center gap-1">
           <input
             ref={fileInputRef}
             type="file"
@@ -360,7 +380,7 @@ export function UpdateForm({ onSuccess }: UpdateFormProps) {
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            disabled={isSubmitting || isUploading || !!imageUrl}
+            disabled={isSubmitting || isUploading || !!imageUrl || !!gifUrl}
             className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-zinc-400 hover:text-white hover:bg-zinc-800/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isUploading ? (
@@ -371,10 +391,15 @@ export function UpdateForm({ onSuccess }: UpdateFormProps) {
             ) : (
               <>
                 <ImagePlus className="h-4 w-4" />
-                Add image
+                <span className="hidden sm:inline">Image</span>
               </>
             )}
           </button>
+
+          <GifButton
+            onClick={() => setShowGifPicker(true)}
+            disabled={isSubmitting || isUploading || !!imageUrl || !!gifUrl}
+          />
         </div>
 
         {/* Submit button */}
@@ -396,6 +421,13 @@ export function UpdateForm({ onSuccess }: UpdateFormProps) {
           )}
         </button>
       </div>
+
+      {/* GIF Picker Modal */}
+      <GiphyPicker
+        isOpen={showGifPicker}
+        onClose={() => setShowGifPicker(false)}
+        onSelect={handleGifSelect}
+      />
     </form>
   );
 }

@@ -18,6 +18,7 @@ export async function GET(
       select: {
         id: true,
         content: true,
+        gifUrl: true,
         createdAt: true,
         updatedAt: true,
         user: {
@@ -66,7 +67,7 @@ export async function POST(
 
     const { id: feedEventId } = await params;
     const body = await request.json();
-    const { content } = body;
+    const { content, gifUrl } = body;
 
     if (!content || content.trim().length === 0) {
       return NextResponse.json(
@@ -124,12 +125,14 @@ export async function POST(
     const comment = await prisma.feedEventComment.create({
       data: {
         content: content.trim(),
+        gifUrl: gifUrl || null,
         userId: session.user.id,
         feedEventId,
       },
       select: {
         id: true,
         content: true,
+        gifUrl: true,
         createdAt: true,
         updatedAt: true,
         user: {

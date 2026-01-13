@@ -720,3 +720,23 @@ nav,
 footer {
   transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
+
+/* Giphy Grid Styles */
+.giphy-grid {
+  width: 100% !important;
+}
+
+.giphy-grid > div {
+  width: 100% !important;
+}
+
+.giphy-grid img {
+  cursor: pointer;
+  border-radius: 8px;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.giphy-grid img:hover {
+  transform: scale(1.02);
+  opacity: 0.9;
+}

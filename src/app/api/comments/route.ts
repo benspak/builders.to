@@ -102,6 +102,7 @@ export async function GET(request: NextRequest) {
       select: {
         id: true,
         content: true,
+        gifUrl: true,
         createdAt: true,
         updatedAt: true,
         userId: true,
@@ -167,7 +168,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { projectId, content } = body;
+    const { projectId, content, gifUrl } = body;
 
     if (!projectId || !content) {
       return NextResponse.json(
@@ -219,12 +220,14 @@ export async function POST(request: NextRequest) {
     const comment = await prisma.feedEventComment.create({
       data: {
         content: content.trim(),
+        gifUrl: gifUrl || null,
         userId: session.user.id,
         feedEventId: feedEvent.id,
       },
       select: {
         id: true,
         content: true,
+        gifUrl: true,
         createdAt: true,
         updatedAt: true,
         userId: true,

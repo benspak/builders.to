@@ -1,0 +1,184 @@
+import { ImageResponse } from 'next/og'
+
+export const runtime = 'nodejs'
+
+export const alt = 'Services Marketplace - Builders.to'
+export const size = {
+  width: 1200,
+  height: 628,
+}
+export const contentType = 'image/png'
+
+export default async function Image() {
+  return new ImageResponse(
+    (
+      <div
+        style={{
+          height: '100%',
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: '#09090b',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+
+        {/* Amber glow - center */}
+        <div
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: '700px',
+            height: '700px',
+            background: 'radial-gradient(circle, rgba(245, 158, 11, 0.25) 0%, transparent 60%)',
+            borderRadius: '50%',
+          }}
+        />
+
+        {/* Main content */}
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 10,
+            padding: '40px',
+          }}
+        >
+          {/* Logo / Brand */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '16px',
+              marginBottom: '40px',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '64px',
+                height: '64px',
+                borderRadius: '16px',
+                background: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)',
+                boxShadow: '0 0 50px rgba(249, 115, 22, 0.4)',
+              }}
+            >
+              <svg
+                width="36"
+                height="36"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
+                <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
+                <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" />
+                <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
+              </svg>
+            </div>
+            <span style={{ color: '#71717a', fontSize: '24px', fontWeight: 600 }}>
+              Builders.to
+            </span>
+          </div>
+
+          {/* Main headline */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '16px',
+              marginBottom: '16px',
+            }}
+          >
+            <span style={{ fontSize: '72px' }}>🛒</span>
+            <div
+              style={{
+                fontSize: '68px',
+                fontWeight: 800,
+                color: 'white',
+                letterSpacing: '-0.02em',
+              }}
+            >
+              Services
+            </div>
+          </div>
+
+          {/* Subtitle */}
+          <div
+            style={{
+              fontSize: '32px',
+              color: '#a1a1aa',
+              textAlign: 'center',
+              maxWidth: '800px',
+              lineHeight: 1.4,
+            }}
+          >
+            Hire verified builders with proven track records
+          </div>
+
+          {/* Category badges */}
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+              gap: '12px',
+              marginTop: '48px',
+              maxWidth: '900px',
+            }}
+          >
+            {[
+              { label: 'MVP Build', color: '#f97316' },
+              { label: 'Design', color: '#ec4899' },
+              { label: 'Marketing', color: '#3b82f6' },
+              { label: 'AI Integration', color: '#8b5cf6' },
+              { label: 'DevOps', color: '#10b981' },
+              { label: 'Audit', color: '#f59e0b' },
+            ].map((cat) => (
+              <div
+                key={cat.label}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  padding: '10px 20px',
+                  borderRadius: '999px',
+                  backgroundColor: `${cat.color}15`,
+                  border: `1px solid ${cat.color}40`,
+                }}
+              >
+                <span style={{ color: cat.color, fontSize: '16px', fontWeight: 600 }}>
+                  {cat.label}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Bottom gradient bar */}
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: '4px',
+            background: 'linear-gradient(90deg, #f59e0b, #f97316, #ec4899, #f59e0b)',
+          }}
+        />
+      </div>
+    ),
+    { ...size }
+  )
+}

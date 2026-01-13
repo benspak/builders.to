@@ -18,6 +18,7 @@ export async function GET(
         id: true,
         content: true,
         imageUrl: true,
+        gifUrl: true,
         createdAt: true,
         updatedAt: true,
         user: {
@@ -49,6 +50,7 @@ export async function GET(
           select: {
             id: true,
             content: true,
+            gifUrl: true,
             createdAt: true,
             user: {
               select: {

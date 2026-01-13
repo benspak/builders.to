@@ -10,6 +10,9 @@
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
+    "@giphy/js-fetch-api": "^5.7.0",
+    "@giphy/js-types": "^5.1.0",
+    "@giphy/react-components": "^10.1.1",
     "@prisma/client": "^6.19.1",
     "@tailwindcss/typography": "^0.5.19",
     "clsx": "^2.1.1",

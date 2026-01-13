@@ -66,6 +66,7 @@ function ContentWithMentions({ content }: { content: string }) {
 interface Comment {
   id: string;
   content: string;
+  gifUrl?: string | null;
   createdAt: string | Date;
   user: {
     id: string;
@@ -312,9 +313,23 @@ export function CommentItem({ comment, onDeleted, onUpdated }: CommentItemProps)
             </div>
           ) : (
             <>
-              <p className="mt-2 text-zinc-300 whitespace-pre-wrap break-words">
-                <ContentWithMentions content={comment.content} />
-              </p>
+              {comment.content && comment.content.trim() && (
+                <p className="mt-2 text-zinc-300 whitespace-pre-wrap break-words">
+                  <ContentWithMentions content={comment.content} />
+                </p>
+              )}
+
+              {/* Display GIF if present */}
+              {comment.gifUrl && (
+                <div className="mt-2 rounded-lg overflow-hidden max-w-xs">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={comment.gifUrl}
+                    alt="GIF"
+                    className="w-full h-auto max-h-48 object-contain rounded-lg"
+                  />
+                </div>
+              )}
 
               {/* Like button */}
               <div className="mt-3 flex items-center gap-1">

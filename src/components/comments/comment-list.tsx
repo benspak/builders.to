@@ -8,6 +8,7 @@ import { MessageSquare, Loader2 } from "lucide-react";
 interface Comment {
   id: string;
   content: string;
+  gifUrl?: string | null;
   createdAt: string;
   user: {
     id: string;

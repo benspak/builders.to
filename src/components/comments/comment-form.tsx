@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Send, User, Loader2 } from "lucide-react";
+import { GiphyPicker, GifButton, GifPreview } from "@/components/ui/giphy-picker";
 
 interface MentionUser {
   id: string;
@@ -25,6 +26,8 @@ export function CommentForm({ projectId, onCommentAdded }: CommentFormProps) {
   const { data: session } = useSession();
   const router = useRouter();
   const [content, setContent] = useState("");
+  const [selectedGifUrl, setSelectedGifUrl] = useState<string | null>(null);
+  const [showGifPicker, setShowGifPicker] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -162,7 +165,8 @@ export function CommentForm({ projectId, onCommentAdded }: CommentFormProps) {
       return;
     }
 
-    if (!content.trim()) return;
+    // Allow submit if there's text OR a gif
+    if (!content.trim() && !selectedGifUrl) return;
 
     setLoading(true);
     setError("");
@@ -171,7 +175,11 @@ export function CommentForm({ projectId, onCommentAdded }: CommentFormProps) {
       const response = await fetch("/api/comments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ projectId, content: content.trim() }),
+        body: JSON.stringify({
+          projectId,
+          content: content.trim() || " ", // Need at least a space for DB
+          gifUrl: selectedGifUrl,
+        }),
       });
 
       if (!response.ok) {
@@ -180,6 +188,7 @@ export function CommentForm({ projectId, onCommentAdded }: CommentFormProps) {
       }
 
       setContent("");
+      setSelectedGifUrl(null);
       onCommentAdded?.();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
@@ -187,6 +196,10 @@ export function CommentForm({ projectId, onCommentAdded }: CommentFormProps) {
       setLoading(false);
     }
   };
+
+  function handleGifSelect(gif: { url: string; width: number; height: number }) {
+    setSelectedGifUrl(gif.url);
+  }
 
   if (!session) {
     return (
@@ -235,6 +248,17 @@ export function CommentForm({ projectId, onCommentAdded }: CommentFormProps) {
             rows={3}
             className="textarea"
           />
+
+          {/* Selected GIF preview */}
+          {selectedGifUrl && (
+            <div className="mb-3">
+              <GifPreview
+                gifUrl={selectedGifUrl}
+                onRemove={() => setSelectedGifUrl(null)}
+                className="max-w-xs"
+              />
+            </div>
+          )}
 
           {/* Mention autocomplete dropdown */}
           {(mentionUsers.length > 0 || isSearching) && mentionQuery !== null && (
@@ -293,12 +317,18 @@ export function CommentForm({ projectId, onCommentAdded }: CommentFormProps) {
           )}
 
           <div className="mt-3 flex items-center justify-between">
-            <span className="text-xs text-zinc-500">
-              Be constructive and supportive
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-zinc-500">
+                Be constructive and supportive
+              </span>
+              <GifButton
+                onClick={() => setShowGifPicker(true)}
+                disabled={loading || !!selectedGifUrl}
+              />
+            </div>
             <button
               type="submit"
-              disabled={loading || !content.trim()}
+              disabled={loading || (!content.trim() && !selectedGifUrl)}
               className="btn-primary py-2 px-4"
             >
               {loading ? (
@@ -311,6 +341,13 @@ export function CommentForm({ projectId, onCommentAdded }: CommentFormProps) {
               )}
             </button>
           </div>
+
+          {/* GIF Picker Modal */}
+          <GiphyPicker
+            isOpen={showGifPicker}
+            onClose={() => setShowGifPicker(false)}
+            onSelect={handleGifSelect}
+          />
         </div>
       </div>
     </form>

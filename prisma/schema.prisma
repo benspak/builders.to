@@ -554,6 +554,7 @@ model DailyUpdate {
   id        String   @id @default(cuid())
   content   String   @db.Text  // The update content
   imageUrl  String?  // Optional image attachment
+  gifUrl    String?  // Optional GIF attachment from Giphy
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -586,6 +587,7 @@ model UpdateLike {
 model UpdateComment {
   id        String   @id @default(cuid())
   content   String   @db.Text
+  gifUrl    String?  // Optional GIF attachment from Giphy
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -699,6 +701,7 @@ model FeedEventLike {
 model FeedEventComment {
   id          String    @id @default(cuid())
   content     String    @db.Text
+  gifUrl      String?   // Optional GIF attachment from Giphy
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
