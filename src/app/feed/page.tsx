@@ -15,73 +15,46 @@ export const metadata = {
 export const dynamic = "force-dynamic";
 
 async function FeedContent() {
-  let session;
-  try {
-    session = await auth();
-  } catch (error) {
-    console.error("Error getting session:", error);
-    session = null;
-  }
+  const session = await auth();
 
   // Fetch both daily updates and feed events (milestones)
   // Fetch all for SEO indexability - the CombinedFeed component handles "load more" UX
-  let updates: Awaited<ReturnType<typeof prisma.dailyUpdate.findMany>> = [];
-  let feedEvents: Array<{
-    id: string;
-    type: string;
-    content: string | null;
-    status: string | null;
-    userId: string;
-    projectId: string | null;
-    companyRoleId: string | null;
-    localListingId: string | null;
-    createdAt: Date;
-    milestone: unknown;
-    likes: { userId: string }[];
-    _count: { likes: number; comments: number };
-    user?: unknown;
-    project?: unknown;
-    companyRole?: unknown;
-    localListing?: unknown;
-  }> = [];
-
-  try {
-    [updates, feedEvents] = await Promise.all([
-      prisma.dailyUpdate.findMany({
-        orderBy: { createdAt: "desc" },
-        // Fetch more items for SEO - component will handle pagination UX
-        take: 100,
-        select: {
-          id: true,
-          content: true,
-          imageUrl: true,
-          gifUrl: true,
-          createdAt: true,
-          user: {
-            select: {
-              id: true,
-              name: true,
-              firstName: true,
-              lastName: true,
-              image: true,
-              slug: true,
-              headline: true,
-            },
-          },
-          likes: {
-            select: {
-              userId: true,
-            },
-          },
-          _count: {
-            select: {
-              likes: true,
-              comments: true,
-            },
+  const [updates, feedEvents] = await Promise.all([
+    prisma.dailyUpdate.findMany({
+      orderBy: { createdAt: "desc" },
+      // Fetch more items for SEO - component will handle pagination UX
+      take: 100,
+      select: {
+        id: true,
+        content: true,
+        imageUrl: true,
+        gifUrl: true,
+        createdAt: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            firstName: true,
+            lastName: true,
+            image: true,
+            slug: true,
+            headline: true,
           },
         },
-      }),
-      prisma.feedEvent.findMany({
+        likes: {
+          select: {
+            userId: true,
+          },
+        },
+        _count: {
+          select: {
+            likes: true,
+            comments: true,
+          },
+        },
+      },
+    }),
+    prisma.feedEvent.findMany({
       orderBy: { createdAt: "desc" },
       // Fetch more items for SEO
       take: 50,
@@ -277,10 +250,6 @@ async function FeedContent() {
       }));
     }),
   ]);
-  } catch (error) {
-    console.error("Error fetching feed content:", error);
-    // Return empty arrays on error - page will render with empty state
-  }
 
   // Transform updates to include like and comment info
   const updatesWithLikes = updates.map(update => ({
@@ -391,95 +360,80 @@ async function TopBuildersSection() {
 }
 
 async function OpenJobsSection() {
-  try {
-    // Fetch latest open roles from companies
-    const openRoles = await prisma.companyRole.findMany({
-      where: {
-        isActive: true,
-      },
-      select: {
-        id: true,
-        title: true,
-        type: true,
-        location: true,
-        isRemote: true,
-        salaryMin: true,
-        salaryMax: true,
-        currency: true,
-        company: {
-          select: {
-            id: true,
-            slug: true,
-            name: true,
-            logo: true,
-          },
+  // Fetch latest open roles from companies
+  const openRoles = await prisma.companyRole.findMany({
+    where: {
+      isActive: true,
+    },
+    select: {
+      id: true,
+      title: true,
+      type: true,
+      location: true,
+      isRemote: true,
+      salaryMin: true,
+      salaryMax: true,
+      currency: true,
+      company: {
+        select: {
+          id: true,
+          slug: true,
+          name: true,
+          logo: true,
         },
       },
-      orderBy: { createdAt: "desc" },
-      take: 6,
-    });
+    },
+    orderBy: { createdAt: "desc" },
+    take: 6,
+  });
 
-    return <OpenJobs jobs={openRoles} />;
-  } catch (error) {
-    console.error("Error fetching open jobs:", error);
-    return null;
-  }
+  return <OpenJobs jobs={openRoles} />;
 }
 
 async function SidebarAdSection() {
-  try {
-    const session = await auth();
-    const isAuthenticated = !!session?.user;
+  const session = await auth();
+  const isAuthenticated = !!session?.user;
 
-    return <SidebarAd isAuthenticated={isAuthenticated} />;
-  } catch (error) {
-    console.error("Error fetching sidebar ad:", error);
-    return null;
-  }
+  return <SidebarAd isAuthenticated={isAuthenticated} />;
 }
 
 async function FeaturedServicesSection() {
-  try {
-    // Fetch active services and randomize order for each page view
-    const services = await prisma.serviceListing.findMany({
-      where: {
-        status: "ACTIVE",
-        expiresAt: { gt: new Date() },
-      },
-      select: {
-        id: true,
-        slug: true,
-        title: true,
-        description: true,
-        category: true,
-        priceInCents: true,
-        deliveryDays: true,
-        user: {
-          select: {
-            id: true,
-            name: true,
-            displayName: true,
-            firstName: true,
-            lastName: true,
-            image: true,
-            slug: true,
-          },
+  // Fetch active services and randomize order for each page view
+  const services = await prisma.serviceListing.findMany({
+    where: {
+      status: "ACTIVE",
+      expiresAt: { gt: new Date() },
+    },
+    select: {
+      id: true,
+      slug: true,
+      title: true,
+      description: true,
+      category: true,
+      priceInCents: true,
+      deliveryDays: true,
+      user: {
+        select: {
+          id: true,
+          name: true,
+          displayName: true,
+          firstName: true,
+          lastName: true,
+          image: true,
+          slug: true,
         },
       },
-    });
+    },
+  });
 
-    // Shuffle services for random rotation on each page view
-    const shuffledServices = services
-      .map(service => ({ service, sort: Math.random() }))
-      .sort((a, b) => a.sort - b.sort)
-      .map(({ service }) => service)
-      .slice(0, 4);
+  // Shuffle services for random rotation on each page view
+  const shuffledServices = services
+    .map(service => ({ service, sort: Math.random() }))
+    .sort((a, b) => a.sort - b.sort)
+    .map(({ service }) => service)
+    .slice(0, 4);
 
-    return <FeaturedServices services={shuffledServices} />;
-  } catch (error) {
-    console.error("Error fetching featured services:", error);
-    return null;
-  }
+  return <FeaturedServices services={shuffledServices} />;
 }
 
 
