@@ -26,7 +26,6 @@ export async function GET(request: NextRequest) {
         content: true,
         imageUrl: true,
         gifUrl: true,
-        videoUrl: true,
         createdAt: true,
         user: {
           select: {
@@ -76,7 +75,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { content, imageUrl, gifUrl, videoUrl } = body;
+    const { content, imageUrl, gifUrl } = body;
 
     if (!content || content.trim().length === 0) {
       return NextResponse.json(
@@ -131,7 +130,6 @@ export async function POST(request: NextRequest) {
           content: content.trim(),
           imageUrl: imageUrl || null,
           gifUrl: gifUrl || null,
-          videoUrl: videoUrl || null,
           userId: session.user.id,
         },
         include: {

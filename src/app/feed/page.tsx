@@ -29,7 +29,6 @@ async function FeedContent() {
         content: true,
         imageUrl: true,
         gifUrl: true,
-        videoUrl: true,
         createdAt: true,
         user: {
           select: {

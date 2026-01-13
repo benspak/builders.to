@@ -8,7 +8,7 @@ import { User, Trash2, Loader2, MoreHorizontal, Heart, ExternalLink, Link2, Chec
 import { formatRelativeTime, cn, MENTION_REGEX } from "@/lib/utils";
 import { UpdateComments } from "./update-comments";
 import { ImageLightbox } from "@/components/ui/image-lightbox";
-import { YouTubeEmbed } from "@/components/ui/youtube-embed";
+import { YouTubeEmbed, extractYouTubeUrlFromText } from "@/components/ui/youtube-embed";
 
 const FEED_TRUNCATE_LENGTH = 500;
 
@@ -85,7 +85,6 @@ interface UpdateItemProps {
     content: string;
     imageUrl?: string | null;
     gifUrl?: string | null;
-    videoUrl?: string | null;
     createdAt: string | Date;
     likesCount?: number;
     isLiked?: boolean;
@@ -126,6 +125,9 @@ export function UpdateItem({ update, currentUserId, showAuthor = true }: UpdateI
   const displayContent = isTruncated
     ? update.content.slice(0, FEED_TRUNCATE_LENGTH)
     : update.content;
+
+  // Auto-detect YouTube video URL from content
+  const detectedVideoUrl = useMemo(() => extractYouTubeUrlFromText(update.content), [update.content]);
 
   // Build the update URL for linking
   const updateUrl = update.user.slug ? `/${update.user.slug}/updates/${update.id}` : null;
@@ -292,9 +294,9 @@ export function UpdateItem({ update, currentUserId, showAuthor = true }: UpdateI
               </div>
             )}
 
-            {/* Video attachment */}
-            {update.videoUrl && (
-              <YouTubeEmbed url={update.videoUrl} />
+            {/* Auto-detected YouTube video from content */}
+            {detectedVideoUrl && (
+              <YouTubeEmbed url={detectedVideoUrl} />
             )}
 
             <div className="p-4">
@@ -399,9 +401,9 @@ export function UpdateItem({ update, currentUserId, showAuthor = true }: UpdateI
                             </div>
                           </div>
                         )}
-                        {update.videoUrl && (
+                        {detectedVideoUrl && (
                           <div className="mt-3">
-                            <YouTubeEmbed url={update.videoUrl} />
+                            <YouTubeEmbed url={detectedVideoUrl} />
                           </div>
                         )}
                       </div>

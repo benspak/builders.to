@@ -17,7 +17,7 @@ import { TopBuilders, OpenJobs } from "@/components/feed";
 import { SidebarAd } from "@/components/ads";
 import { EntityViewTracker } from "@/components/analytics/entity-view-tracker";
 import { ViewStatsDisplay } from "@/components/analytics/view-stats";
-import { YouTubeEmbed } from "@/components/ui/youtube-embed";
+import { YouTubeEmbed, extractYouTubeUrlFromText } from "@/components/ui/youtube-embed";
 
 interface UpdatePageProps {
   params: Promise<{ slug: string; id: string }>;
@@ -194,7 +194,6 @@ export default async function UpdatePage({ params }: UpdatePageProps) {
       content: true,
       imageUrl: true,
       gifUrl: true,
-      videoUrl: true,
       createdAt: true,
       user: {
         select: {
@@ -381,10 +380,10 @@ export default async function UpdatePage({ params }: UpdatePageProps) {
                 </div>
               )}
 
-              {/* Video attachment */}
-              {update.videoUrl && (
+              {/* Auto-detected YouTube video from content */}
+              {extractYouTubeUrlFromText(update.content) && (
                 <div className="p-4 bg-zinc-900/50">
-                  <YouTubeEmbed url={update.videoUrl} />
+                  <YouTubeEmbed url={extractYouTubeUrlFromText(update.content)!} />
                 </div>
               )}
 
