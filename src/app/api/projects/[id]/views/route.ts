@@ -2,20 +2,20 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 interface RouteParams {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ id: string }>;
 }
 
-// GET /api/projects/[slug]/views - Get view and click stats for a project
+// GET /api/projects/[id]/views - Get view and click stats for a project
 export async function GET(
   request: NextRequest,
   { params }: RouteParams
 ) {
   try {
-    const { slug } = await params;
+    const { id } = await params;
 
     // Find the project
     const project = await prisma.project.findUnique({
-      where: { slug },
+      where: { id },
       select: { id: true },
     });
 
@@ -61,19 +61,19 @@ export async function GET(
   }
 }
 
-// POST /api/projects/[slug]/views - Track a view
+// POST /api/projects/[id]/views - Track a view
 export async function POST(
   request: NextRequest,
   { params }: RouteParams
 ) {
   try {
-    const { slug } = await params;
+    const { id } = await params;
     const body = await request.json();
     const { visitorId } = body;
 
     // Find the project
     const project = await prisma.project.findUnique({
-      where: { slug },
+      where: { id },
       select: { id: true },
     });
 

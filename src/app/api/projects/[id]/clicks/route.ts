@@ -2,22 +2,22 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 interface RouteParams {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ id: string }>;
 }
 
-// POST /api/projects/[slug]/clicks - Track a click
+// POST /api/projects/[id]/clicks - Track a click
 export async function POST(
   request: NextRequest,
   { params }: RouteParams
 ) {
   try {
-    const { slug } = await params;
+    const { id } = await params;
     const body = await request.json();
     const { visitorId, clickType = "url" } = body;
 
     // Find the project
     const project = await prisma.project.findUnique({
-      where: { slug },
+      where: { id },
       select: { id: true },
     });
 

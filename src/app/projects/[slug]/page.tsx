@@ -112,7 +112,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
       {/* Track page view */}
-      {project.slug && <EntityViewTracker entityType="project" entityId={project.slug} />}
+      <EntityViewTracker entityType="project" entityId={project.id} />
 
       <Link
         href="/projects"
@@ -231,11 +231,11 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
               </div>
 
               {/* View Stats - Only show to owner */}
-              {isOwner && project.slug && (
+              {isOwner && (
                 <div className="mt-4 pt-4 border-t border-zinc-700/50">
                   <ViewStatsDisplay
                     entityType="project"
-                    entityId={project.slug}
+                    entityId={project.id}
                     showCtr={true}
                   />
                 </div>
@@ -302,16 +302,14 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
               )}
 
               {/* Links with click tracking */}
-              {project.slug && (
-                <ProjectExternalLinks
-                  projectSlug={project.slug}
-                  url={project.url}
-                  githubUrl={project.githubUrl}
-                  demoUrl={project.demoUrl}
-                  docsUrl={project.docsUrl}
-                  changelogUrl={project.changelogUrl}
-                />
-              )}
+              <ProjectExternalLinks
+                projectId={project.id}
+                url={project.url}
+                githubUrl={project.githubUrl}
+                demoUrl={project.demoUrl}
+                docsUrl={project.docsUrl}
+                changelogUrl={project.changelogUrl}
+              />
             </div>
           </div>
         </header>

@@ -4,7 +4,7 @@ import { ExternalLink, Github, Play, FileText, ScrollText } from "lucide-react";
 import { useClickTracker } from "@/components/analytics/entity-view-tracker";
 
 interface ProjectExternalLinksProps {
-  projectSlug: string;
+  projectId: string;
   url?: string | null;
   githubUrl?: string | null;
   demoUrl?: string | null;
@@ -13,14 +13,14 @@ interface ProjectExternalLinksProps {
 }
 
 export function ProjectExternalLinks({
-  projectSlug,
+  projectId,
   url,
   githubUrl,
   demoUrl,
   docsUrl,
   changelogUrl,
 }: ProjectExternalLinksProps) {
-  const { trackClick } = useClickTracker("project", projectSlug);
+  const { trackClick } = useClickTracker("project", projectId);
 
   const handleClick = (clickType: string) => {
     trackClick(clickType);
