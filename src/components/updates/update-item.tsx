@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { User, Trash2, Loader2, MoreHorizontal, Heart, ExternalLink } from "lucide-react";
+import { User, Trash2, Loader2, MoreHorizontal, Heart, ExternalLink, Link2, Check } from "lucide-react";
 import { formatRelativeTime, cn, MENTION_REGEX } from "@/lib/utils";
 import { UpdateComments } from "./update-comments";
 import { ImageLightbox } from "@/components/ui/image-lightbox";
@@ -110,6 +110,7 @@ export function UpdateItem({ update, currentUserId, showAuthor = true }: UpdateI
   const [isLiked, setIsLiked] = useState(update.isLiked ?? false);
   const [likesCount, setLikesCount] = useState(update.likesCount ?? 0);
   const [isLiking, setIsLiking] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const isOwner = currentUserId === update.user.id;
   // Priority: displayName > firstName+lastName > name
@@ -204,6 +205,21 @@ export function UpdateItem({ update, currentUserId, showAuthor = true }: UpdateI
 
     // Open in new window
     window.open(shareUrl, "_blank", "width=550,height=420");
+  }
+
+  async function handleCopyUrl() {
+    if (!updateUrl) return;
+
+    const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+    const fullUrl = `${baseUrl}${updateUrl}`;
+
+    try {
+      await navigator.clipboard.writeText(fullUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      console.error("Failed to copy URL:", error);
+    }
   }
 
   return (
@@ -386,6 +402,22 @@ export function UpdateItem({ update, currentUserId, showAuthor = true }: UpdateI
                 </div>
 
                 <div className="flex items-center gap-1">
+                  {/* Copy URL button */}
+                  {updateUrl && (
+                    <button
+                      onClick={handleCopyUrl}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs text-zinc-400 hover:text-white hover:bg-zinc-700/50 transition-colors"
+                      title={copied ? "Copied!" : "Copy link"}
+                    >
+                      {copied ? (
+                        <Check className="h-3.5 w-3.5 text-green-400" />
+                      ) : (
+                        <Link2 className="h-3.5 w-3.5" />
+                      )}
+                      <span className="hidden sm:inline">{copied ? "Copied!" : "Copy"}</span>
+                    </button>
+                  )}
+
                   {/* Share to X button */}
                   <button
                     onClick={handleShareToX}
