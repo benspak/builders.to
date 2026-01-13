@@ -1,14 +1,16 @@
 import { NextResponse } from "next/server";
-import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { getStripe, SIDEBAR_AD_DURATION_DAYS, SERVICE_LISTING_DURATION_DAYS, LOCAL_LISTING_PAID_DURATION_DAYS } from "@/lib/stripe";
 import Stripe from "stripe";
 
+// Ensure webhook is always dynamic and uses Node.js runtime
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
 // POST /api/ads/webhook - Handle Stripe webhook events for ads
 export async function POST(request: Request) {
   const body = await request.text();
-  const headersList = await headers();
-  const signature = headersList.get("stripe-signature");
+  const signature = request.headers.get("stripe-signature");
 
   if (!signature) {
     return NextResponse.json(

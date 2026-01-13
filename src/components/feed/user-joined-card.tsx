@@ -190,34 +190,79 @@ export function UserJoinedCard({ event, currentUserId }: UserJoinedCardProps) {
           )}
           {!userUrl && <div />}
 
-          {/* Welcome button */}
-          <button
-            onClick={handleLike}
-            disabled={!currentUserId || loading}
-            className={cn(
-              "inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all",
-              liked
-                ? "bg-violet-500/20 text-violet-400 border border-violet-500/30"
-                : "bg-zinc-800/50 text-zinc-400 border border-zinc-700/50 hover:bg-zinc-800 hover:text-white hover:border-zinc-600",
-              (!currentUserId || loading) && "opacity-50 cursor-not-allowed"
-            )}
-          >
-            {loading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <PartyPopper className={cn("h-4 w-4", liked && "text-violet-400")} />
-            )}
-            <span>{likesCount > 0 ? likesCount : "Welcome!"}</span>
-          </button>
-        </div>
+          {/* Actions */}
+          <div className="flex items-center gap-2">
+            {/* Comments button */}
+            <FeedEventComments
+              feedEventId={event.id}
+              currentUserId={currentUserId}
+              initialCommentsCount={event.commentsCount ?? 0}
+              accentColor="violet"
+            >
+              {/* Original content for modal */}
+              <div className="flex items-start gap-4">
+                {/* User avatar */}
+                {user.image ? (
+                  <Image
+                    src={user.image}
+                    alt={displayName}
+                    width={64}
+                    height={64}
+                    className="rounded-xl ring-2 ring-white/10"
+                  />
+                ) : (
+                  <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-pink-500">
+                    <User className="h-8 w-8 text-white" />
+                  </div>
+                )}
 
-        {/* Comments Section */}
-        <FeedEventComments
-          feedEventId={event.id}
-          currentUserId={currentUserId}
-          initialCommentsCount={event.commentsCount ?? 0}
-          accentColor="violet"
-        />
+                {/* Content */}
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-lg text-white">
+                    {displayName}
+                  </h3>
+
+                  {/* Headline */}
+                  {user.headline && (
+                    <p className="mt-1 text-sm text-zinc-400">
+                      {user.headline}
+                    </p>
+                  )}
+
+                  {/* Location badge */}
+                  {location && (
+                    <div className="mt-3 flex items-center gap-2">
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-violet-500/10 px-3 py-1.5 text-sm font-medium text-violet-300 border border-violet-500/20">
+                        <MapPin className="h-3.5 w-3.5" />
+                        {location}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </FeedEventComments>
+
+            {/* Welcome button */}
+            <button
+              onClick={handleLike}
+              disabled={!currentUserId || loading}
+              className={cn(
+                "inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all",
+                liked
+                  ? "bg-violet-500/20 text-violet-400 border border-violet-500/30"
+                  : "bg-zinc-800/50 text-zinc-400 border border-zinc-700/50 hover:bg-zinc-800 hover:text-white hover:border-zinc-600",
+                (!currentUserId || loading) && "opacity-50 cursor-not-allowed"
+              )}
+            >
+              {loading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <PartyPopper className={cn("h-4 w-4", liked && "text-violet-400")} />
+              )}
+              <span>{likesCount > 0 ? likesCount : "Welcome!"}</span>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

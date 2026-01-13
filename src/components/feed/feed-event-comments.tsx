@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -84,18 +84,21 @@ interface FeedEventCommentsProps {
   initialCommentsCount?: number;
   /** Color accent for the expand button - matches the card's color theme */
   accentColor?: "amber" | "emerald" | "orange" | "violet" | "cyan";
+  /** Original content to display in the modal */
+  children?: ReactNode;
 }
 
 export function FeedEventComments({
   feedEventId,
   currentUserId,
   initialCommentsCount = 0,
-  accentColor = "orange"
+  accentColor = "orange",
+  children
 }: FeedEventCommentsProps) {
   const router = useRouter();
   const [comments, setComments] = useState<Comment[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const [newComment, setNewComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [commentsCount, setCommentsCount] = useState(initialCommentsCount);
@@ -104,40 +107,67 @@ export function FeedEventComments({
   const accentClasses = {
     amber: {
       icon: "text-amber-400",
-      button: "hover:text-amber-400",
+      iconHover: "hover:text-amber-400",
+      button: "hover:text-amber-400 hover:bg-amber-500/10",
       submit: "bg-amber-500/20 text-amber-400 hover:bg-amber-500/30",
+      border: "border-amber-500/30",
+      gradient: "from-amber-500/10 via-orange-500/10 to-pink-500/10",
     },
     emerald: {
       icon: "text-emerald-400",
-      button: "hover:text-emerald-400",
+      iconHover: "hover:text-emerald-400",
+      button: "hover:text-emerald-400 hover:bg-emerald-500/10",
       submit: "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30",
+      border: "border-emerald-500/30",
+      gradient: "from-emerald-500/10 via-teal-500/10 to-cyan-500/10",
     },
     orange: {
       icon: "text-orange-400",
-      button: "hover:text-orange-400",
+      iconHover: "hover:text-orange-400",
+      button: "hover:text-orange-400 hover:bg-orange-500/10",
       submit: "bg-orange-500/20 text-orange-400 hover:bg-orange-500/30",
+      border: "border-orange-500/30",
+      gradient: "from-orange-500/10 via-cyan-500/10 to-violet-500/10",
     },
     violet: {
       icon: "text-violet-400",
-      button: "hover:text-violet-400",
+      iconHover: "hover:text-violet-400",
+      button: "hover:text-violet-400 hover:bg-violet-500/10",
       submit: "bg-violet-500/20 text-violet-400 hover:bg-violet-500/30",
+      border: "border-violet-500/30",
+      gradient: "from-violet-500/10 via-purple-500/10 to-pink-500/10",
     },
     cyan: {
       icon: "text-cyan-400",
-      button: "hover:text-cyan-400",
+      iconHover: "hover:text-cyan-400",
+      button: "hover:text-cyan-400 hover:bg-cyan-500/10",
       submit: "bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30",
+      border: "border-cyan-500/30",
+      gradient: "from-cyan-500/10 via-teal-500/10 to-emerald-500/10",
     },
   };
 
   const colors = accentClasses[accentColor];
 
-  // Fetch comments when expanded
+  // Fetch comments when modal opens
   useEffect(() => {
-    if (isExpanded && comments.length === 0) {
+    if (isOpen && comments.length === 0) {
       fetchComments();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isExpanded]);
+  }, [isOpen]);
+
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
 
   async function fetchComments() {
     setIsLoading(true);
@@ -221,77 +251,118 @@ export function FeedEventComments({
   }
 
   return (
-    <div className="border-t border-white/5 pt-3 mt-3">
-      {/* Toggle comments button */}
+    <>
+      {/* Comment trigger button - just icon and count */}
       <button
-        onClick={() => setIsExpanded(!isExpanded)}
+        onClick={() => setIsOpen(true)}
         className={cn(
-          "inline-flex items-center gap-1.5 text-xs text-zinc-500 transition-colors",
+          "inline-flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-xs text-zinc-500 transition-all",
           colors.button
         )}
       >
-        <MessageCircle className={cn("h-3.5 w-3.5", isExpanded && colors.icon)} />
-        {isExpanded ? "Hide comments" : "Comments"} {commentsCount > 0 && `(${commentsCount})`}
+        <MessageCircle className="h-4 w-4" />
+        {commentsCount > 0 && <span className="font-medium">{commentsCount}</span>}
       </button>
 
-      {isExpanded && (
-        <div className="mt-3 space-y-3">
-          {/* Loading state */}
-          {isLoading && (
-            <div className="flex items-center justify-center py-4">
-              <Loader2 className="h-5 w-5 animate-spin text-zinc-500" />
+      {/* Modal overlay */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+          onClick={() => setIsOpen(false)}
+        >
+          {/* Modal content */}
+          <div
+            className="relative w-full max-w-2xl max-h-[85vh] flex flex-col rounded-2xl border border-white/10 bg-zinc-900 shadow-2xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className={cn("flex items-center justify-between px-6 py-4 border-b border-white/10 bg-gradient-to-r", colors.gradient)}>
+              <h2 className="text-lg font-semibold text-white">Comments</h2>
+              <button
+                onClick={() => setIsOpen(false)}
+                className="p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
             </div>
-          )}
 
-          {/* Comments list */}
-          {!isLoading && comments.length > 0 && (
-            <div className="space-y-3">
-              {comments.map(comment => (
-                <CommentItem
-                  key={comment.id}
-                  comment={comment}
-                  currentUserId={currentUserId}
-                  onDelete={handleDelete}
-                  onEdit={handleEdit}
+            {/* Scrollable content area */}
+            <div className="flex-1 overflow-y-auto">
+              {/* Original content */}
+              {children && (
+                <div className="p-6 border-b border-white/5">
+                  {children}
+                </div>
+              )}
+
+              {/* Comments section */}
+              <div className="p-6 space-y-4">
+                {/* Loading state */}
+                {isLoading && (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin text-zinc-500" />
+                  </div>
+                )}
+
+                {/* Comments list */}
+                {!isLoading && comments.length > 0 && (
+                  <div className="space-y-4">
+                    {comments.map(comment => (
+                      <CommentItem
+                        key={comment.id}
+                        comment={comment}
+                        currentUserId={currentUserId}
+                        onDelete={handleDelete}
+                        onEdit={handleEdit}
+                        accentColor={accentColor}
+                      />
+                    ))}
+                  </div>
+                )}
+
+                {/* Empty state */}
+                {!isLoading && comments.length === 0 && (
+                  <div className="text-center py-8">
+                    <MessageCircle className={cn("h-12 w-12 mx-auto mb-3 opacity-30", colors.icon)} />
+                    <p className="text-sm text-zinc-500">No comments yet</p>
+                    <p className="text-xs text-zinc-600 mt-1">Be the first to comment!</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Comment form - fixed at bottom */}
+            <div className="border-t border-white/10 p-4 bg-zinc-900/95">
+              <form onSubmit={handleSubmit} className="flex gap-3">
+                <input
+                  type="text"
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  placeholder={currentUserId ? "Write a comment..." : "Sign in to comment"}
+                  disabled={!currentUserId || isSubmitting}
+                  maxLength={1000}
+                  className="flex-1 rounded-xl border border-white/10 bg-zinc-800/50 px-4 py-3 text-sm text-white placeholder:text-zinc-500 focus:border-white/20 focus:outline-none disabled:opacity-50"
                 />
-              ))}
+                <button
+                  type="submit"
+                  disabled={!currentUserId || isSubmitting || !newComment.trim()}
+                  className={cn(
+                    "rounded-xl px-4 py-3 transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
+                    colors.submit
+                  )}
+                >
+                  {isSubmitting ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <Send className="h-5 w-5" />
+                  )}
+                </button>
+              </form>
             </div>
-          )}
-
-          {/* Empty state */}
-          {!isLoading && comments.length === 0 && (
-            <p className="text-xs text-zinc-500 py-2">No comments yet. Be the first to comment!</p>
-          )}
-
-          {/* Comment form */}
-          <form onSubmit={handleSubmit} className="flex gap-2">
-            <input
-              type="text"
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              placeholder={currentUserId ? "Add a comment..." : "Sign in to comment"}
-              disabled={!currentUserId || isSubmitting}
-              maxLength={1000}
-              className="flex-1 rounded-lg border border-white/10 bg-zinc-800/50 px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:border-orange-500/50 focus:outline-none disabled:opacity-50"
-            />
-            <button
-              type="submit"
-              disabled={!currentUserId || isSubmitting || !newComment.trim()}
-              className={cn(
-                "rounded-lg px-3 py-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
-                colors.submit
-              )}
-            >
-              {isSubmitting ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Send className="h-4 w-4" />
-              )}
-            </button>
-          </form>
+          </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
 
@@ -301,9 +372,10 @@ interface CommentItemProps {
   currentUserId?: string;
   onDelete: (id: string) => void;
   onEdit: (id: string, content: string) => void;
+  accentColor?: "amber" | "emerald" | "orange" | "violet" | "cyan";
 }
 
-function CommentItem({ comment, currentUserId, onDelete, onEdit }: CommentItemProps) {
+function CommentItem({ comment, currentUserId, onDelete, onEdit, accentColor = "orange" }: CommentItemProps) {
   const [showMenu, setShowMenu] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(comment.content);
@@ -316,6 +388,14 @@ function CommentItem({ comment, currentUserId, onDelete, onEdit }: CommentItemPr
   const isEdited = comment.updatedAt &&
     new Date(comment.updatedAt).getTime() - new Date(comment.createdAt).getTime() > 1000;
 
+  const accentColors = {
+    amber: "text-amber-400 hover:text-amber-300",
+    emerald: "text-emerald-400 hover:text-emerald-300",
+    orange: "text-orange-400 hover:text-orange-300",
+    violet: "text-violet-400 hover:text-violet-300",
+    cyan: "text-cyan-400 hover:text-cyan-300",
+  };
+
   async function handleSaveEdit() {
     if (!editContent.trim()) return;
     setIsLoading(true);
@@ -325,38 +405,38 @@ function CommentItem({ comment, currentUserId, onDelete, onEdit }: CommentItemPr
   }
 
   return (
-    <div className="group flex gap-2">
+    <div className="group flex gap-3">
       {/* Avatar */}
       <Link href={comment.user.slug ? `/${comment.user.slug}` : "#"} className="flex-shrink-0">
         {comment.user.image ? (
           <Image
             src={comment.user.image}
             alt={displayName}
-            width={24}
-            height={24}
-            className="h-6 w-6 rounded-full object-cover"
+            width={36}
+            height={36}
+            className="h-9 w-9 rounded-full object-cover ring-2 ring-white/5"
           />
         ) : (
-          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-pink-500">
-            <User className="h-3 w-3 text-white" />
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-pink-500">
+            <User className="h-4 w-4 text-white" />
           </div>
         )}
       </Link>
 
       {/* Content */}
       <div className="flex-1 min-w-0">
-        <div className="rounded-lg bg-zinc-800/50 px-3 py-2">
+        <div className="rounded-2xl bg-zinc-800/50 px-4 py-3">
           <div className="flex items-center justify-between gap-2 mb-1">
             <div className="flex items-center gap-2">
               <Link
                 href={comment.user.slug ? `/${comment.user.slug}` : "#"}
-                className="text-xs font-medium text-white hover:text-orange-400 transition-colors"
+                className={cn("text-sm font-medium text-white transition-colors", accentColors[accentColor])}
               >
                 {displayName}
               </Link>
-              <span className="text-[10px] text-zinc-500">
+              <span className="text-xs text-zinc-500">
                 {formatRelativeTime(comment.createdAt)}
-                {isEdited && " (edited)"}
+                {isEdited && " · edited"}
               </span>
             </div>
 
@@ -365,23 +445,23 @@ function CommentItem({ comment, currentUserId, onDelete, onEdit }: CommentItemPr
               <div className="relative">
                 <button
                   onClick={() => setShowMenu(!showMenu)}
-                  className="opacity-0 group-hover:opacity-100 p-0.5 rounded text-zinc-500 hover:text-zinc-300 transition-all"
+                  className="opacity-0 group-hover:opacity-100 p-1 rounded-lg text-zinc-500 hover:text-zinc-300 hover:bg-zinc-700/50 transition-all"
                 >
-                  <MoreHorizontal className="h-3 w-3" />
+                  <MoreHorizontal className="h-4 w-4" />
                 </button>
 
                 {showMenu && (
                   <>
                     <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
-                    <div className="absolute right-0 top-full mt-1 z-20 w-24 rounded-lg border border-white/10 bg-zinc-800 shadow-xl py-1">
+                    <div className="absolute right-0 top-full mt-1 z-20 w-28 rounded-xl border border-white/10 bg-zinc-800 shadow-xl py-1 overflow-hidden">
                       <button
                         onClick={() => {
                           setIsEditing(true);
                           setShowMenu(false);
                         }}
-                        className="flex w-full items-center gap-1.5 px-2 py-1 text-xs text-zinc-300 hover:bg-zinc-700/50"
+                        className="flex w-full items-center gap-2 px-3 py-2 text-sm text-zinc-300 hover:bg-zinc-700/50 transition-colors"
                       >
-                        <Pencil className="h-3 w-3" />
+                        <Pencil className="h-3.5 w-3.5" />
                         Edit
                       </button>
                       <button
@@ -389,9 +469,9 @@ function CommentItem({ comment, currentUserId, onDelete, onEdit }: CommentItemPr
                           onDelete(comment.id);
                           setShowMenu(false);
                         }}
-                        className="flex w-full items-center gap-1.5 px-2 py-1 text-xs text-red-400 hover:bg-red-500/10"
+                        className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-colors"
                       >
-                        <Trash2 className="h-3 w-3" />
+                        <Trash2 className="h-3.5 w-3.5" />
                         Delete
                       </button>
                     </div>
@@ -406,35 +486,35 @@ function CommentItem({ comment, currentUserId, onDelete, onEdit }: CommentItemPr
               <textarea
                 value={editContent}
                 onChange={(e) => setEditContent(e.target.value)}
-                className="w-full rounded-lg border border-white/10 bg-zinc-700/50 px-2 py-1 text-xs text-white focus:border-orange-500/50 focus:outline-none resize-none"
-                rows={2}
+                className="w-full rounded-xl border border-white/10 bg-zinc-700/50 px-3 py-2 text-sm text-white focus:border-white/20 focus:outline-none resize-none"
+                rows={3}
                 maxLength={1000}
               />
-              <div className="flex items-center justify-end gap-1">
+              <div className="flex items-center justify-end gap-2">
                 <button
                   onClick={() => {
                     setIsEditing(false);
                     setEditContent(comment.content);
                   }}
-                  className="p-1 rounded text-zinc-400 hover:text-white hover:bg-zinc-700/50 transition-colors"
+                  className="px-3 py-1.5 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-zinc-700/50 transition-colors"
                 >
-                  <X className="h-3 w-3" />
+                  Cancel
                 </button>
                 <button
                   onClick={handleSaveEdit}
                   disabled={isLoading || !editContent.trim()}
-                  className="p-1 rounded text-orange-400 hover:text-orange-300 hover:bg-orange-500/10 transition-colors disabled:opacity-50"
+                  className="px-3 py-1.5 rounded-lg text-sm bg-orange-500/20 text-orange-400 hover:bg-orange-500/30 transition-colors disabled:opacity-50"
                 >
                   {isLoading ? (
-                    <Loader2 className="h-3 w-3 animate-spin" />
+                    <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
-                    <Check className="h-3 w-3" />
+                    "Save"
                   )}
                 </button>
               </div>
             </div>
           ) : (
-            <p className="text-xs text-zinc-300 whitespace-pre-wrap break-words">
+            <p className="text-sm text-zinc-300 whitespace-pre-wrap break-words leading-relaxed">
               <ContentWithMentions content={comment.content} />
             </p>
           )}

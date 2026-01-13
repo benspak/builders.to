@@ -4,6 +4,10 @@ import { verifyWebhookSignature } from "@/lib/stripe-connect";
 import { SERVICE_LISTING_DURATION_DAYS } from "@/lib/stripe";
 import type Stripe from "stripe";
 
+// Ensure webhook is always dynamic and uses Node.js runtime
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
 /**
  * POST /api/stripe-connect/webhook
  * Handle Stripe Connect webhooks

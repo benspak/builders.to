@@ -211,7 +211,60 @@ export function ProjectCreatedCard({ event, currentUserId }: ProjectCreatedCardP
           )}
 
           {/* Actions */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            {/* Comments button */}
+            <FeedEventComments
+              feedEventId={event.id}
+              currentUserId={currentUserId}
+              initialCommentsCount={event.commentsCount ?? 0}
+              accentColor="emerald"
+            >
+              {/* Original content for modal */}
+              <div className="flex gap-4">
+                {/* Project thumbnail */}
+                <div className="relative h-20 w-28 rounded-xl overflow-hidden bg-zinc-800 border border-white/10 flex-shrink-0">
+                  {project.imageUrl ? (
+                    <Image
+                      src={project.imageUrl}
+                      alt={project.title}
+                      fill
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center">
+                      <Rocket className="h-8 w-8 text-zinc-600" />
+                    </div>
+                  )}
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-white truncate">
+                    {project.title}
+                  </h3>
+
+                  {/* Tagline */}
+                  {project.tagline && (
+                    <p className="mt-1 text-sm text-zinc-400">
+                      {project.tagline}
+                    </p>
+                  )}
+
+                  {/* Status badge */}
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    <span
+                      className={cn(
+                        "inline-flex items-center rounded-full px-3 py-1 text-sm font-medium border",
+                        getStatusColor(project.status)
+                      )}
+                    >
+                      {getStatusLabel(project.status)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </FeedEventComments>
+
             {/* Celebrate button */}
             <button
               onClick={handleLike}
@@ -244,14 +297,6 @@ export function ProjectCreatedCard({ event, currentUserId }: ProjectCreatedCardP
             )}
           </div>
         </div>
-
-        {/* Comments Section */}
-        <FeedEventComments
-          feedEventId={event.id}
-          currentUserId={currentUserId}
-          initialCommentsCount={event.commentsCount ?? 0}
-          accentColor="emerald"
-        />
       </div>
     </div>
   );

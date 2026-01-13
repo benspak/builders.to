@@ -231,7 +231,51 @@ export function ListingCreatedCard({ event, currentUserId }: ListingCreatedCardP
           )}
 
           {/* Actions */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            {/* Comments button */}
+            <FeedEventComments
+              feedEventId={event.id}
+              currentUserId={currentUserId}
+              initialCommentsCount={event.commentsCount ?? 0}
+              accentColor="cyan"
+            >
+              {/* Original content for modal */}
+              <div className="space-y-3">
+                {/* Category and location */}
+                <div className="flex flex-wrap items-center gap-2">
+                  <span
+                    className={cn(
+                      "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium border",
+                      CATEGORY_COLORS[listing.category] || "bg-zinc-500/10 text-zinc-400 border-zinc-500/20"
+                    )}
+                  >
+                    <CategoryIcon className="h-3.5 w-3.5" />
+                    {CATEGORY_LABELS[listing.category] || listing.category}
+                  </span>
+                  <span className="inline-flex items-center gap-1 text-sm text-zinc-400">
+                    <MapPin className="h-3.5 w-3.5" />
+                    {listing.city}, {listing.state}
+                  </span>
+                  {listing.category === "SERVICES" && listing.priceInCents && (
+                    <span className="inline-flex items-center gap-1 text-sm text-emerald-400 font-semibold">
+                      <DollarSign className="h-3.5 w-3.5" />
+                      {(listing.priceInCents / 100).toLocaleString("en-US", { minimumFractionDigits: 0 })}
+                    </span>
+                  )}
+                </div>
+
+                {/* Title */}
+                <h3 className="text-lg font-semibold text-white">
+                  {listing.title}
+                </h3>
+
+                {/* Description */}
+                <p className="text-sm text-zinc-400">
+                  {listing.description}
+                </p>
+              </div>
+            </FeedEventComments>
+
             {/* Celebrate button */}
             <button
               onClick={handleLike}
@@ -264,14 +308,6 @@ export function ListingCreatedCard({ event, currentUserId }: ListingCreatedCardP
             )}
           </div>
         </div>
-
-        {/* Comments Section */}
-        <FeedEventComments
-          feedEventId={event.id}
-          currentUserId={currentUserId}
-          initialCommentsCount={event.commentsCount ?? 0}
-          accentColor="cyan"
-        />
       </div>
     </div>
   );
