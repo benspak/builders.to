@@ -6,7 +6,7 @@ type EntityType = "project" | "update" | "listing";
 
 interface EntityViewTrackerProps {
   entityType: EntityType;
-  entitySlug: string; // For projects and listings, use slug. For updates, use id.
+  entityId: string; // For projects use slug, for updates and listings use id
 }
 
 function getVisitorId(): string {
@@ -26,14 +26,14 @@ const apiPaths: Record<EntityType, string> = {
   listing: "/api/local-listings",
 };
 
-export function EntityViewTracker({ entityType, entitySlug }: EntityViewTrackerProps) {
+export function EntityViewTracker({ entityType, entityId }: EntityViewTrackerProps) {
   useEffect(() => {
     // Small delay to ensure page is actually loaded
     const timer = setTimeout(() => {
       const visitorId = getVisitorId();
       const basePath = apiPaths[entityType];
 
-      fetch(`${basePath}/${entitySlug}/views`, {
+      fetch(`${basePath}/${entityId}/views`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -46,18 +46,18 @@ export function EntityViewTracker({ entityType, entitySlug }: EntityViewTrackerP
     }, 100);
 
     return () => clearTimeout(timer);
-  }, [entityType, entitySlug]);
+  }, [entityType, entityId]);
 
   return null;
 }
 
 // Hook for tracking clicks
-export function useClickTracker(entityType: EntityType, entitySlug: string) {
+export function useClickTracker(entityType: EntityType, entityId: string) {
   const trackClick = (clickType?: string) => {
     const visitorId = getVisitorId();
     const basePath = apiPaths[entityType];
 
-    fetch(`${basePath}/${entitySlug}/clicks`, {
+    fetch(`${basePath}/${entityId}/clicks`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

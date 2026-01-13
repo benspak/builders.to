@@ -2,20 +2,20 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 interface RouteParams {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ id: string }>;
 }
 
-// GET /api/local-listings/[slug]/views - Get view and click stats for a listing
+// GET /api/local-listings/[id]/views - Get view and click stats for a listing
 export async function GET(
   request: NextRequest,
   { params }: RouteParams
 ) {
   try {
-    const { slug } = await params;
+    const { id } = await params;
 
     // Find the listing
     const listing = await prisma.localListing.findUnique({
-      where: { slug },
+      where: { id },
       select: { id: true },
     });
 
@@ -61,19 +61,19 @@ export async function GET(
   }
 }
 
-// POST /api/local-listings/[slug]/views - Track a view
+// POST /api/local-listings/[id]/views - Track a view
 export async function POST(
   request: NextRequest,
   { params }: RouteParams
 ) {
   try {
-    const { slug } = await params;
+    const { id } = await params;
     const body = await request.json();
     const { visitorId } = body;
 
     // Find the listing
     const listing = await prisma.localListing.findUnique({
-      where: { slug },
+      where: { id },
       select: { id: true },
     });
 

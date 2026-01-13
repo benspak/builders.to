@@ -250,7 +250,7 @@ export default async function UpdatePage({ params }: UpdatePageProps) {
 
       <div className="relative mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Track page view */}
-        <EntityViewTracker entityType="update" entitySlug={update.id} />
+        <EntityViewTracker entityType="update" entityId={update.id} />
 
         {/* Back button */}
         <Link
@@ -344,7 +344,7 @@ export default async function UpdatePage({ params }: UpdatePageProps) {
                   <div className="mt-3 pt-3 border-t border-white/5">
                     <ViewStatsDisplay
                       entityType="update"
-                      entitySlug={update.id}
+                      entityId={update.id}
                       showCtr={false}
                     />
                   </div>

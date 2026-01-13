@@ -134,7 +134,7 @@ export default async function ListingDetailPage({ params }: PageProps) {
 
       <div className="relative mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Track page view */}
-        <EntityViewTracker entityType="listing" entitySlug={listing.slug} />
+        <EntityViewTracker entityType="listing" entityId={listing.id} />
 
         {/* Back link */}
         <Link
@@ -252,7 +252,7 @@ export default async function ListingDetailPage({ params }: PageProps) {
                   {/* View Stats */}
                   <ViewStatsDisplay
                     entityType="listing"
-                    entitySlug={listing.slug}
+                    entityId={listing.id}
                     showCtr={true}
                   />
 
@@ -327,7 +327,7 @@ export default async function ListingDetailPage({ params }: PageProps) {
               <div className="space-y-3">
                 {listing.contactUrl ? (
                   <ListingContactLink
-                    listingSlug={listing.slug}
+                    listingId={listing.id}
                     contactUrl={listing.contactUrl}
                   />
                 ) : (

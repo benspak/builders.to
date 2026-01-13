@@ -4,12 +4,12 @@ import { ExternalLink } from "lucide-react";
 import { useClickTracker } from "@/components/analytics/entity-view-tracker";
 
 interface ListingContactLinkProps {
-  listingSlug: string;
+  listingId: string;
   contactUrl: string;
 }
 
-export function ListingContactLink({ listingSlug, contactUrl }: ListingContactLinkProps) {
-  const { trackClick } = useClickTracker("listing", listingSlug);
+export function ListingContactLink({ listingId, contactUrl }: ListingContactLinkProps) {
+  const { trackClick } = useClickTracker("listing", listingId);
 
   const handleClick = () => {
     trackClick("url");

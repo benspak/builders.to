@@ -14,7 +14,7 @@ type EntityType = "project" | "update" | "listing";
 
 interface ViewStatsDisplayProps {
   entityType: EntityType;
-  entitySlug: string;
+  entityId: string; // For projects use slug, for updates and listings use id
   showCtr?: boolean;
   className?: string;
   compact?: boolean;
@@ -38,7 +38,7 @@ function formatNumber(num: number): string {
 
 export function ViewStatsDisplay({
   entityType,
-  entitySlug,
+  entityId,
   showCtr = true,
   className = "",
   compact = false,
@@ -50,7 +50,7 @@ export function ViewStatsDisplay({
     const fetchStats = async () => {
       try {
         const basePath = apiPaths[entityType];
-        const response = await fetch(`${basePath}/${entitySlug}/views`);
+        const response = await fetch(`${basePath}/${entityId}/views`);
 
         if (response.ok) {
           const data = await response.json();
@@ -64,7 +64,7 @@ export function ViewStatsDisplay({
     };
 
     fetchStats();
-  }, [entityType, entitySlug]);
+  }, [entityType, entityId]);
 
   if (loading) {
     return (
