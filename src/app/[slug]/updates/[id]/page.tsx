@@ -15,6 +15,8 @@ import { UpdateActions } from "./update-actions";
 import { UpdateComments } from "@/components/updates/update-comments";
 import { TopBuilders, OpenJobs } from "@/components/feed";
 import { SidebarAd } from "@/components/ads";
+import { EntityViewTracker } from "@/components/analytics/entity-view-tracker";
+import { ViewStatsDisplay } from "@/components/analytics/view-stats";
 
 interface UpdatePageProps {
   params: Promise<{ slug: string; id: string }>;
@@ -247,6 +249,9 @@ export default async function UpdatePage({ params }: UpdatePageProps) {
       </div>
 
       <div className="relative mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        {/* Track page view */}
+        <EntityViewTracker entityType="update" entitySlug={update.id} />
+
         {/* Back button */}
         <Link
           href={`/${slug}`}
@@ -333,6 +338,17 @@ export default async function UpdatePage({ params }: UpdatePageProps) {
                     </time>
                   </div>
                 </div>
+
+                {/* View stats - only shown to owner */}
+                {isOwner && (
+                  <div className="mt-3 pt-3 border-t border-white/5">
+                    <ViewStatsDisplay
+                      entityType="update"
+                      entitySlug={update.id}
+                      showCtr={false}
+                    />
+                  </div>
+                )}
               </div>
 
               {/* Image attachment */}

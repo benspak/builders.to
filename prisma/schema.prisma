@@ -181,6 +181,8 @@ model Project {
   coBuilders        ProjectCoBuilder[]
   notifications     Notification[]
   servicePortfolios ServicePortfolio[]  // Projects linked as proof-of-work for services
+  views             ProjectView[]       // View tracking
+  clicks            ProjectClick[]      // Click tracking
 
   @@index([userId])
   @@index([createdAt])
@@ -563,6 +565,7 @@ model DailyUpdate {
   likes     UpdateLike[]
   comments  UpdateComment[]
   notifications Notification[]
+  views     UpdateView[]     // View tracking
 
   @@index([userId])
   @@index([createdAt])
@@ -1018,6 +1021,8 @@ model LocalListing {
   comments        LocalListingComment[]
   flags           LocalListingFlag[]
   feedEvents      FeedEvent[]
+  views           LocalListingView[]   // View tracking
+  clicks          LocalListingClick[]  // Click tracking
 
   createdAt       DateTime             @default(now())
   updatedAt       DateTime             @updatedAt
@@ -1140,4 +1145,78 @@ model TokenTransaction {
   @@index([userId])
   @@index([createdAt])
   @@index([type])
+}
+
+// ============================================
+// View & Click Tracking - Analytics
+// ============================================
+
+// Project views - track when someone views a project page
+model ProjectView {
+  id          String   @id @default(cuid())
+  projectId   String
+  visitorId   String?  // Anonymous session identifier
+  createdAt   DateTime @default(now())
+
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([createdAt])
+  @@index([projectId, visitorId])
+}
+
+// Project clicks - track when someone clicks through to project URL
+model ProjectClick {
+  id          String   @id @default(cuid())
+  projectId   String
+  visitorId   String?  // Anonymous session identifier
+  clickType   String   @default("url") // "url", "github", "demo", "docs"
+  createdAt   DateTime @default(now())
+
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([createdAt])
+}
+
+// Update views - track when someone views an update
+model UpdateView {
+  id          String      @id @default(cuid())
+  updateId    String
+  visitorId   String?     // Anonymous session identifier
+  createdAt   DateTime    @default(now())
+
+  update      DailyUpdate @relation(fields: [updateId], references: [id], onDelete: Cascade)
+
+  @@index([updateId])
+  @@index([createdAt])
+  @@index([updateId, visitorId])
+}
+
+// Local listing views - track when someone views a listing
+model LocalListingView {
+  id          String       @id @default(cuid())
+  listingId   String
+  visitorId   String?      // Anonymous session identifier
+  createdAt   DateTime     @default(now())
+
+  listing     LocalListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@index([listingId])
+  @@index([createdAt])
+  @@index([listingId, visitorId])
+}
+
+// Local listing clicks - track when someone clicks contact info
+model LocalListingClick {
+  id          String       @id @default(cuid())
+  listingId   String
+  visitorId   String?      // Anonymous session identifier
+  clickType   String       @default("contact") // "email", "phone", "url"
+  createdAt   DateTime     @default(now())
+
+  listing     LocalListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@index([listingId])
+  @@index([createdAt])
 }

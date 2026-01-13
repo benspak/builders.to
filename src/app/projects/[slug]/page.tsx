@@ -7,18 +7,16 @@ import { CommentList } from "@/components/comments/comment-list";
 import { UpvoteButton } from "@/components/projects/upvote-button";
 import { ImageGallery } from "@/components/ui/image-gallery";
 import { MilestoneSectionWrapper } from "@/components/projects/milestone-section-wrapper";
+import { EntityViewTracker } from "@/components/analytics/entity-view-tracker";
+import { ViewStatsDisplay } from "@/components/analytics/view-stats";
+import { ProjectExternalLinks } from "@/components/projects/project-external-links";
 import { cn, formatRelativeTime, getStatusColor, getStatusLabel } from "@/lib/utils";
 import {
   ArrowLeft,
-  ExternalLink,
-  Github,
   User,
   Calendar,
   Pencil,
   Images,
-  Play,
-  FileText,
-  ScrollText,
   Users
 } from "lucide-react";
 import { DeleteProjectButton } from "@/components/projects/delete-project-button";
@@ -113,6 +111,9 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
+      {/* Track page view */}
+      {project.slug && <EntityViewTracker entityType="project" entitySlug={project.slug} />}
+
       <Link
         href="/projects"
         className="inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors mb-8"
@@ -229,6 +230,17 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                 </div>
               </div>
 
+              {/* View Stats - Only show to owner */}
+              {isOwner && project.slug && (
+                <div className="mt-4 pt-4 border-t border-zinc-700/50">
+                  <ViewStatsDisplay
+                    entityType="project"
+                    entitySlug={project.slug}
+                    showCtr={true}
+                  />
+                </div>
+              )}
+
               {/* Co-Builders */}
               {project.coBuilders && project.coBuilders.length > 0 && (
                 <div className="mt-4 flex items-center gap-3">
@@ -289,64 +301,17 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                 </div>
               )}
 
-              {/* Links */}
-              <div className="mt-6 flex flex-wrap gap-3">
-                {project.url && (
-                  <a
-                    href={project.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 rounded-lg bg-orange-500 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-600 transition-colors"
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                    Visit Project
-                  </a>
-                )}
-                {project.githubUrl && (
-                  <a
-                    href={project.githubUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 rounded-lg bg-zinc-800 px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-700 transition-colors"
-                  >
-                    <Github className="h-4 w-4" />
-                    View Source
-                  </a>
-                )}
-                {project.demoUrl && (
-                  <a
-                    href={project.demoUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 rounded-lg bg-cyan-600 px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-500 transition-colors"
-                  >
-                    <Play className="h-4 w-4" />
-                    Live Demo
-                  </a>
-                )}
-                {project.docsUrl && (
-                  <a
-                    href={project.docsUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500 transition-colors"
-                  >
-                    <FileText className="h-4 w-4" />
-                    Documentation
-                  </a>
-                )}
-                {project.changelogUrl && (
-                  <a
-                    href={project.changelogUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 rounded-lg bg-zinc-700 px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-600 transition-colors"
-                  >
-                    <ScrollText className="h-4 w-4" />
-                    Changelog
-                  </a>
-                )}
-              </div>
+              {/* Links with click tracking */}
+              {project.slug && (
+                <ProjectExternalLinks
+                  projectSlug={project.slug}
+                  url={project.url}
+                  githubUrl={project.githubUrl}
+                  demoUrl={project.demoUrl}
+                  docsUrl={project.docsUrl}
+                  changelogUrl={project.changelogUrl}
+                />
+              )}
             </div>
           </div>
         </header>

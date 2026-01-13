@@ -5,12 +5,15 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import {
   MapPin, ArrowLeft, Clock, Edit, DollarSign,
-  User, MessageSquare, Users, Wrench, Home, ShoppingBag, Calendar, AlertCircle, ExternalLink
+  User, MessageSquare, Users, Wrench, Home, ShoppingBag, Calendar, AlertCircle
 } from "lucide-react";
 import { formatRelativeTime, cn } from "@/lib/utils";
 import { LocalListingComments } from "@/components/local/local-listing-comments";
 import { LocalFlagButton } from "@/components/local/local-flag-button";
 import { LocalRating } from "@/components/local/local-rating";
+import { EntityViewTracker } from "@/components/analytics/entity-view-tracker";
+import { ViewStatsDisplay } from "@/components/analytics/view-stats";
+import { ListingContactLink } from "@/components/local/listing-contact-link";
 import {
   CATEGORY_LABELS, CATEGORY_COLORS, STATUS_LABELS, STATUS_COLORS,
   LocalListingCategory, LocalListingStatus
@@ -130,6 +133,9 @@ export default async function ListingDetailPage({ params }: PageProps) {
       </div>
 
       <div className="relative mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
+        {/* Track page view */}
+        <EntityViewTracker entityType="listing" entitySlug={listing.slug} />
+
         {/* Back link */}
         <Link
           href={`/${listing.locationSlug}`}
@@ -240,16 +246,25 @@ export default async function ListingDetailPage({ params }: PageProps) {
                 )}
               </div>
 
-              {/* Owner actions */}
+              {/* Owner actions and stats */}
               {isOwner && (
-                <div className="mt-4 pt-4 border-t border-zinc-800 flex items-center gap-3">
-                  <Link
-                    href={`/my-listings/${listing.id}/edit`}
-                    className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-300 rounded-lg border border-zinc-700 hover:bg-zinc-800 transition-colors"
-                  >
-                    <Edit className="h-4 w-4" />
-                    Edit Listing
-                  </Link>
+                <div className="mt-4 pt-4 border-t border-zinc-800 space-y-4">
+                  {/* View Stats */}
+                  <ViewStatsDisplay
+                    entityType="listing"
+                    entitySlug={listing.slug}
+                    showCtr={true}
+                  />
+
+                  <div className="flex items-center gap-3">
+                    <Link
+                      href={`/my-listings/${listing.id}/edit`}
+                      className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-300 rounded-lg border border-zinc-700 hover:bg-zinc-800 transition-colors"
+                    >
+                      <Edit className="h-4 w-4" />
+                      Edit Listing
+                    </Link>
+                  </div>
                 </div>
               )}
             </div>
@@ -311,17 +326,10 @@ export default async function ListingDetailPage({ params }: PageProps) {
               <h3 className="text-lg font-semibold text-white mb-4">Contact</h3>
               <div className="space-y-3">
                 {listing.contactUrl ? (
-                  <a
-                    href={listing.contactUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-3 rounded-lg border border-zinc-700/50 bg-zinc-800/30 hover:bg-zinc-800/50 transition-colors"
-                  >
-                    <ExternalLink className="h-5 w-5 text-cyan-400" />
-                    <span className="text-sm text-zinc-300 truncate">
-                      {listing.contactUrl.replace(/^https?:\/\//, "")}
-                    </span>
-                  </a>
+                  <ListingContactLink
+                    listingSlug={listing.slug}
+                    contactUrl={listing.contactUrl}
+                  />
                 ) : (
                   <p className="text-sm text-zinc-500">
                     No contact link provided. Use comments to reach out.
