@@ -26,6 +26,7 @@ import {
   Coins,
 } from "lucide-react";
 import { FollowButton, FollowStats, GiftTokensButton, GiftSuccessToast } from "@/components/profile";
+import { ReportButton } from "@/components/ui/report-button";
 import { Suspense } from "react";
 import { formatRelativeTime, getStatusColor, getStatusLabel, getCategoryColor, getCategoryLabel, getMemberRoleLabel, getMemberRoleColor, getCompanyUrl, formatLocationSlug } from "@/lib/utils";
 import { cn } from "@/lib/utils";
@@ -669,6 +670,13 @@ export default async function SlugPage({ params }: PageProps) {
                           isFollowing={isFollowing}
                           currentUserId={session?.user?.id}
                         />
+                        {session?.user && (
+                          <ReportButton
+                            contentType="USER"
+                            contentId={user.id}
+                            variant="icon"
+                          />
+                        )}
                       </>
                     )}
                   </div>

@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import type { ServiceCategory } from "@prisma/client";
 import { PurchaseButton } from "@/components/services/purchase-button";
+import { ReportButton } from "@/components/ui/report-button";
 
 interface ServicePageProps {
   params: Promise<{ id: string }>;
@@ -462,6 +463,17 @@ export default async function ServicePage({ params }: ServicePageProps) {
               >
                 View full profile →
               </Link>
+
+              {/* Report this listing */}
+              {!isOwner && session?.user && (
+                <div className="mt-4 pt-4 border-t border-zinc-800/50">
+                  <ReportButton
+                    contentType="SERVICE_LISTING"
+                    contentId={service.id}
+                    variant="full"
+                  />
+                </div>
+              )}
             </div>
 
             {/* Mobile Purchase Button */}

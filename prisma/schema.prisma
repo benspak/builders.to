@@ -1225,3 +1225,56 @@ model LocalListingClick {
   @@index([listingId])
   @@index([createdAt])
 }
+
+// ============================================
+// Content Reporting System
+// ============================================
+
+enum ReportContentType {
+  USER              // Report a user profile
+  PROJECT           // Report a project
+  SERVICE_LISTING   // Report a service listing
+  LOCAL_LISTING     // Report a local listing
+  DAILY_UPDATE      // Report a daily update
+  COMMENT           // Report a comment
+}
+
+enum ReportReason {
+  SPAM              // Spam or misleading content
+  INAPPROPRIATE     // Inappropriate or offensive content
+  HARASSMENT        // Harassment or bullying
+  IMPERSONATION     // Fake identity or impersonation
+  SCAM              // Fraudulent or scam content
+  COPYRIGHT         // Copyright violation
+  OTHER             // Other reason (requires description)
+}
+
+enum ReportStatus {
+  PENDING           // Not yet reviewed
+  REVIEWED          // Admin has reviewed
+  RESOLVED          // Issue resolved
+  DISMISSED         // Report dismissed as invalid
+}
+
+// Content reports - allows users to report inappropriate content
+model Report {
+  id              String            @id @default(cuid())
+  contentType     ReportContentType
+  contentId       String            // ID of the reported content
+  reason          ReportReason
+  description     String?           @db.Text  // Additional details from reporter
+  status          ReportStatus      @default(PENDING)
+  adminNotes      String?           @db.Text  // Internal notes for admin
+  resolvedAt      DateTime?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  // Reporter
+  reporterId      String
+  reporterEmail   String?           // Cached for notification if user is deleted
+
+  @@unique([reporterId, contentType, contentId])  // One report per user per content
+  @@index([contentType, contentId])
+  @@index([status])
+  @@index([createdAt])
+}

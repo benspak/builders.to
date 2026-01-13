@@ -20,6 +20,7 @@ import {
   Users
 } from "lucide-react";
 import { DeleteProjectButton } from "@/components/projects/delete-project-button";
+import { ReportButton } from "@/components/ui/report-button";
 import ReactMarkdown from "react-markdown";
 
 interface ProjectPageProps {
@@ -158,7 +159,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                 </div>
 
                 {/* Owner Actions */}
-                {isOwner && (
+                {isOwner ? (
                   <div className="flex items-center gap-2">
                     <Link
                       href={`/projects/${project.slug}/edit`}
@@ -169,6 +170,12 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                     </Link>
                     <DeleteProjectButton projectId={project.id} />
                   </div>
+                ) : session?.user && (
+                  <ReportButton
+                    contentType="PROJECT"
+                    contentId={project.id}
+                    variant="icon"
+                  />
                 )}
               </div>
 

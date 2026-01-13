@@ -4,11 +4,12 @@ import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { User, Trash2, Loader2, MoreHorizontal, Heart, ExternalLink, Link2, Check } from "lucide-react";
+import { User, Trash2, Loader2, MoreHorizontal, Heart, ExternalLink, Link2, Check, Flag } from "lucide-react";
 import { formatRelativeTime, cn, MENTION_REGEX } from "@/lib/utils";
 import { UpdateComments } from "./update-comments";
 import { ImageLightbox } from "@/components/ui/image-lightbox";
 import { YouTubeEmbed, extractYouTubeUrlFromText } from "@/components/ui/youtube-embed";
+import { ReportButton } from "@/components/ui/report-button";
 
 const FEED_TRUNCATE_LENGTH = 500;
 
@@ -475,6 +476,16 @@ export function UpdateItem({ update, currentUserId, showAuthor = true }: UpdateI
                         </>
                       )}
                     </div>
+                  )}
+
+                  {/* Report button for non-owners */}
+                  {!isOwner && currentUserId && (
+                    <ReportButton
+                      contentType="DAILY_UPDATE"
+                      contentId={update.id}
+                      variant="icon"
+                      className="opacity-0 group-hover:opacity-100"
+                    />
                   )}
                 </div>
               </div>
