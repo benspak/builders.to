@@ -5,8 +5,47 @@ import { generateLocationSlug } from "@/lib/utils";
 import { calculateProfileCompleteness } from "@/lib/profile-completeness";
 import { grantProfileCompletionBonus } from "@/lib/tokens";
 
+// Helper to transliterate special characters for URL-safe slugs
+function transliterateForSlug(str: string): string {
+  // Common transliterations for European characters
+  const transliterations: Record<string, string> = {
+    'ü': 'ue', 'ö': 'oe', 'ä': 'ae', 'ß': 'ss',
+    'Ü': 'ue', 'Ö': 'oe', 'Ä': 'ae',
+    'ñ': 'n', 'Ñ': 'n',
+    'ç': 'c', 'Ç': 'c',
+    'á': 'a', 'à': 'a', 'â': 'a', 'ã': 'a', 'å': 'a',
+    'Á': 'a', 'À': 'a', 'Â': 'a', 'Ã': 'a', 'Å': 'a',
+    'é': 'e', 'è': 'e', 'ê': 'e', 'ë': 'e',
+    'É': 'e', 'È': 'e', 'Ê': 'e', 'Ë': 'e',
+    'í': 'i', 'ì': 'i', 'î': 'i', 'ï': 'i',
+    'Í': 'i', 'Ì': 'i', 'Î': 'i', 'Ï': 'i',
+    'ó': 'o', 'ò': 'o', 'ô': 'o', 'õ': 'o', 'ø': 'o',
+    'Ó': 'o', 'Ò': 'o', 'Ô': 'o', 'Õ': 'o', 'Ø': 'o',
+    'ú': 'u', 'ù': 'u', 'û': 'u',
+    'Ú': 'u', 'Ù': 'u', 'Û': 'u',
+    'ý': 'y', 'ÿ': 'y', 'Ý': 'y',
+    'æ': 'ae', 'Æ': 'ae',
+    'œ': 'oe', 'Œ': 'oe',
+    'ł': 'l', 'Ł': 'l',
+    'ž': 'z', 'Ž': 'z', 'ź': 'z', 'Ź': 'z',
+    'ś': 's', 'Ś': 's', 'š': 's', 'Š': 's',
+    'č': 'c', 'Č': 'c', 'ć': 'c', 'Ć': 'c',
+    'ř': 'r', 'Ř': 'r',
+    'ň': 'n', 'Ň': 'n', 'ń': 'n', 'Ń': 'n',
+    'ď': 'd', 'Ď': 'd',
+    'ť': 't', 'Ť': 't',
+    'ě': 'e', 'Ě': 'e',
+  };
+
+  let result = '';
+  for (const char of str) {
+    result += transliterations[char] || char;
+  }
+  return result;
+}
+
 function generateSlug(name: string): string {
-  return name
+  return transliterateForSlug(name)
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
@@ -106,6 +145,7 @@ export async function PATCH(
     const body = await request.json();
     const {
       email,
+      slug: customSlug,
       displayName,
       firstName,
       lastName,
@@ -131,14 +171,63 @@ export async function PATCH(
       milestoneNotifications,
     } = body;
 
-    // Generate slug from name if not exists, and get current status for comparison
+    // Get current user data for comparison
     const currentUser = await prisma.user.findUnique({
       where: { id },
       select: { slug: true, name: true, username: true, status: true },
     });
 
     let slug = currentUser?.slug;
-    if (!slug) {
+
+    // Handle custom slug if provided
+    if (customSlug !== undefined) {
+      const trimmedSlug = customSlug?.trim().toLowerCase();
+
+      if (trimmedSlug) {
+        // Validate slug format: only lowercase letters, numbers, and hyphens
+        // Must start and end with alphanumeric character
+        const slugRegex = /^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$/;
+        if (!slugRegex.test(trimmedSlug)) {
+          return NextResponse.json(
+            { error: "Profile URL can only contain lowercase letters, numbers, and hyphens, and must start and end with a letter or number" },
+            { status: 400 }
+          );
+        }
+
+        // Check minimum length
+        if (trimmedSlug.length < 2) {
+          return NextResponse.json(
+            { error: "Profile URL must be at least 2 characters long" },
+            { status: 400 }
+          );
+        }
+
+        // Check maximum length
+        if (trimmedSlug.length > 50) {
+          return NextResponse.json(
+            { error: "Profile URL must be 50 characters or less" },
+            { status: 400 }
+          );
+        }
+
+        // Check for uniqueness (only if different from current)
+        if (trimmedSlug !== currentUser?.slug) {
+          const existingUser = await prisma.user.findUnique({
+            where: { slug: trimmedSlug },
+          });
+
+          if (existingUser && existingUser.id !== id) {
+            return NextResponse.json(
+              { error: "This profile URL is already taken" },
+              { status: 400 }
+            );
+          }
+        }
+
+        slug = trimmedSlug;
+      }
+    } else if (!slug) {
+      // Generate slug automatically if not exists and no custom slug provided
       // Priority for slug: username > displayName > firstName+lastName > name > id
       const baseName = currentUser?.username
         || displayName

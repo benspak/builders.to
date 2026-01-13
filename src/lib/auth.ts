@@ -14,9 +14,49 @@ import { generateMagicLinkEmail } from "@/lib/magic-link-email";
 // This is needed because the adapter doesn't pass custom fields
 const pendingUsernames = new Map<string, string>();
 
+// Helper to transliterate special characters for URL-safe slugs
+function transliterateForSlug(str: string): string {
+  // Common transliterations for European characters
+  const transliterations: Record<string, string> = {
+    'ü': 'ue', 'ö': 'oe', 'ä': 'ae', 'ß': 'ss',
+    'Ü': 'ue', 'Ö': 'oe', 'Ä': 'ae',
+    'ñ': 'n', 'Ñ': 'n',
+    'ç': 'c', 'Ç': 'c',
+    'á': 'a', 'à': 'a', 'â': 'a', 'ã': 'a', 'å': 'a',
+    'Á': 'a', 'À': 'a', 'Â': 'a', 'Ã': 'a', 'Å': 'a',
+    'é': 'e', 'è': 'e', 'ê': 'e', 'ë': 'e',
+    'É': 'e', 'È': 'e', 'Ê': 'e', 'Ë': 'e',
+    'í': 'i', 'ì': 'i', 'î': 'i', 'ï': 'i',
+    'Í': 'i', 'Ì': 'i', 'Î': 'i', 'Ï': 'i',
+    'ó': 'o', 'ò': 'o', 'ô': 'o', 'õ': 'o', 'ø': 'o',
+    'Ó': 'o', 'Ò': 'o', 'Ô': 'o', 'Õ': 'o', 'Ø': 'o',
+    'ú': 'u', 'ù': 'u', 'û': 'u',
+    'Ú': 'u', 'Ù': 'u', 'Û': 'u',
+    'ý': 'y', 'ÿ': 'y', 'Ý': 'y',
+    'æ': 'ae', 'Æ': 'ae',
+    'œ': 'oe', 'Œ': 'oe',
+    'ł': 'l', 'Ł': 'l',
+    'ž': 'z', 'Ž': 'z', 'ź': 'z', 'Ź': 'z',
+    'ś': 's', 'Ś': 's', 'š': 's', 'Š': 's',
+    'č': 'c', 'Č': 'c', 'ć': 'c', 'Ć': 'c',
+    'ř': 'r', 'Ř': 'r',
+    'ň': 'n', 'Ň': 'n', 'ń': 'n', 'Ń': 'n',
+    'ď': 'd', 'Ď': 'd',
+    'ť': 't', 'Ť': 't',
+    'ě': 'e', 'Ě': 'e',
+  };
+
+  let result = '';
+  for (const char of str) {
+    result += transliterations[char] || char;
+  }
+  return result;
+}
+
 // Helper to generate a unique slug from username
 async function getUniqueSlug(baseSlug: string): Promise<string> {
-  let slug = baseSlug.toLowerCase().replace(/[^a-z0-9-]/g, "");
+  // First transliterate, then clean up
+  let slug = transliterateForSlug(baseSlug).toLowerCase().replace(/[^a-z0-9-]/g, "");
   let counter = 1;
 
   while (true) {

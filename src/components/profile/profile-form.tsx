@@ -16,6 +16,7 @@ import {
   X,
   Mail,
   Bell,
+  AtSign,
 } from "lucide-react";
 import Image from "next/image";
 
@@ -89,6 +90,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
 
   const [formData, setFormData] = useState({
     email: user.email || "",
+    slug: user.slug || "",
     displayName: user.displayName || "",
     firstName: user.firstName || "",
     lastName: user.lastName || "",
@@ -202,6 +204,34 @@ export function ProfileForm({ user }: ProfileFormProps) {
         </div>
         <p className="mt-2 text-xs text-zinc-500">
           Your email is used for notifications and Stripe Connect payouts. It will not be displayed publicly.
+        </p>
+      </div>
+
+      {/* Profile URL (Slug) */}
+      <div>
+        <label htmlFor="slug" className="block text-sm font-medium text-zinc-300 mb-2">
+          Profile URL
+        </label>
+        <div className="relative">
+          <AtSign className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
+          <input
+            id="slug"
+            type="text"
+            maxLength={50}
+            placeholder="your-username"
+            value={formData.slug}
+            onChange={(e) => {
+              // Auto-format: lowercase, only allow valid characters
+              const value = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '');
+              setFormData({ ...formData, slug: value });
+            }}
+            className="input pl-11"
+          />
+        </div>
+        <p className="mt-2 text-xs text-zinc-500">
+          Your profile will be available at builders.to/<span className="text-orange-400">{formData.slug || "your-username"}</span>
+          <br />
+          Only lowercase letters, numbers, and hyphens allowed.
         </p>
       </div>
 
