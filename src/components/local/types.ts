@@ -1,7 +1,9 @@
 export interface LocalListingUser {
   id: string;
   name: string | null;
-  displayName: string | null;
+  displayName?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
   image: string | null;
   slug: string | null;
   headline?: string | null;

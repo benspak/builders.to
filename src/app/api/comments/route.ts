@@ -4,7 +4,64 @@ import { prisma } from "@/lib/prisma";
 import { rateLimit, RATE_LIMITS, rateLimitResponse } from "@/lib/rate-limit";
 import { extractMentions } from "@/lib/utils";
 
-// GET /api/comments - Get comments for a project
+/**
+ * Helper to find or create a FeedEvent for a project.
+ * Uses the PROJECT_CREATED event as the canonical feed event for project comments.
+ */
+async function getOrCreateFeedEventForProject(projectId: string) {
+  // First, try to find an existing PROJECT_CREATED feed event for this project
+  let feedEvent = await prisma.feedEvent.findFirst({
+    where: {
+      projectId,
+      type: "PROJECT_CREATED",
+    },
+    select: {
+      id: true,
+      userId: true,
+      type: true,
+      title: true,
+    },
+  });
+
+  // If no PROJECT_CREATED feed event exists, create one
+  if (!feedEvent) {
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+      select: {
+        id: true,
+        title: true,
+        tagline: true,
+        userId: true,
+        createdAt: true,
+      },
+    });
+
+    if (!project) {
+      return null;
+    }
+
+    feedEvent = await prisma.feedEvent.create({
+      data: {
+        type: "PROJECT_CREATED",
+        title: `New project: ${project.title}`,
+        description: project.tagline || null,
+        userId: project.userId,
+        projectId: project.id,
+        createdAt: project.createdAt, // Preserve original timestamp
+      },
+      select: {
+        id: true,
+        userId: true,
+        type: true,
+        title: true,
+      },
+    });
+  }
+
+  return feedEvent;
+}
+
+// GET /api/comments - Get comments for a project (via FeedEventComment)
 export async function GET(request: NextRequest) {
   try {
     const session = await auth();
@@ -18,44 +75,67 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const comments = await prisma.comment.findMany({
-      where: { projectId },
+    // Verify project exists
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+      select: { id: true },
+    });
+
+    if (!project) {
+      return NextResponse.json(
+        { error: "Project not found" },
+        { status: 404 }
+      );
+    }
+
+    // Get or create the feed event for this project
+    const feedEvent = await getOrCreateFeedEventForProject(projectId);
+
+    if (!feedEvent) {
+      return NextResponse.json([]);
+    }
+
+    // Fetch comments from FeedEventComment
+    const comments = await prisma.feedEventComment.findMany({
+      where: { feedEventId: feedEvent.id },
       orderBy: { createdAt: "desc" },
-      include: {
+      select: {
+        id: true,
+        content: true,
+        createdAt: true,
+        updatedAt: true,
+        userId: true,
+        feedEventId: true,
         user: {
           select: {
             id: true,
             name: true,
+            firstName: true,
+            lastName: true,
             image: true,
             slug: true,
-          },
-        },
-        likes: {
-          select: {
-            userId: true,
-          },
-        },
-        _count: {
-          select: {
-            likes: true,
           },
         },
       },
     });
 
-    // Transform to include like status for current user
+    // Transform to match the expected format (with placeholder like data for compatibility)
     const commentsWithLikeStatus = comments.map(comment => ({
       id: comment.id,
       content: comment.content,
       createdAt: comment.createdAt,
       updatedAt: comment.updatedAt,
       userId: comment.userId,
-      projectId: comment.projectId,
-      user: comment.user,
-      likesCount: comment._count.likes,
-      isLiked: session?.user?.id
-        ? comment.likes.some(like => like.userId === session.user.id)
-        : false,
+      projectId: projectId, // Add projectId for compatibility
+      user: {
+        ...comment.user,
+        // Compute display name for compatibility
+        name: comment.user.firstName && comment.user.lastName
+          ? `${comment.user.firstName} ${comment.user.lastName}`
+          : comment.user.name,
+      },
+      likesCount: 0, // FeedEventComment doesn't have likes, set to 0 for compatibility
+      isLiked: false,
     }));
 
     return NextResponse.json(commentsWithLikeStatus);
@@ -68,7 +148,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/comments - Create a new comment
+// POST /api/comments - Create a new comment on a project (via FeedEventComment)
 export async function POST(request: NextRequest) {
   try {
     // Rate limit check
@@ -114,26 +194,46 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Get or create the feed event for this project
+    const feedEvent = await getOrCreateFeedEventForProject(projectId);
+
+    if (!feedEvent) {
+      return NextResponse.json(
+        { error: "Failed to process comment" },
+        { status: 500 }
+      );
+    }
+
     // Get current user info for notification
     const currentUser = await prisma.user.findUnique({
       where: { id: session.user.id },
       select: {
         name: true,
+        firstName: true,
+        lastName: true,
         image: true,
       },
     });
 
-    const comment = await prisma.comment.create({
+    // Create comment in FeedEventComment
+    const comment = await prisma.feedEventComment.create({
       data: {
-        content,
+        content: content.trim(),
         userId: session.user.id,
-        projectId,
+        feedEventId: feedEvent.id,
       },
-      include: {
+      select: {
+        id: true,
+        content: true,
+        createdAt: true,
+        updatedAt: true,
+        userId: true,
         user: {
           select: {
             id: true,
             name: true,
+            firstName: true,
+            lastName: true,
             image: true,
             slug: true,
           },
@@ -141,22 +241,28 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    const commenterName = currentUser?.firstName && currentUser?.lastName
+      ? `${currentUser.firstName} ${currentUser.lastName}`
+      : currentUser?.name || "Someone";
+
+    // Truncate comment content for notification message
+    const truncatedContent = content.length > 100
+      ? content.substring(0, 100) + "..."
+      : content;
+
     // Create notification for project owner (if not self-comment)
     if (project.userId !== session.user.id) {
-      // Truncate comment content for notification message
-      const truncatedContent = content.length > 100
-        ? content.substring(0, 100) + "..."
-        : content;
-
       await prisma.notification.create({
         data: {
-          type: "PROJECT_COMMENTED",
-          title: `${currentUser?.name || "Someone"} commented on your project`,
+          type: "FEED_EVENT_COMMENTED",
+          title: `${commenterName} commented on your project`,
           message: truncatedContent,
           userId: project.userId,
           projectId: project.id,
+          feedEventId: feedEvent.id,
+          feedEventCommentId: comment.id,
           actorId: session.user.id,
-          actorName: currentUser?.name,
+          actorName: commenterName,
           actorImage: currentUser?.image,
         },
       });
@@ -181,12 +287,14 @@ export async function POST(request: NextRequest) {
         .filter(user => user.id !== project.userId)
         .map(mentionedUser => ({
           type: "USER_MENTIONED" as const,
-          title: `${currentUser?.name || "Someone"} mentioned you in a comment`,
-          message: content.length > 100 ? content.substring(0, 100) + "..." : content,
+          title: `${commenterName} mentioned you in a comment`,
+          message: truncatedContent,
           userId: mentionedUser.id,
           projectId: project.id,
+          feedEventId: feedEvent.id,
+          feedEventCommentId: comment.id,
           actorId: session.user.id,
-          actorName: currentUser?.name,
+          actorName: commenterName,
           actorImage: currentUser?.image,
         }));
 
@@ -197,7 +305,25 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    return NextResponse.json(comment, { status: 201 });
+    // Return in the expected format for compatibility
+    const responseComment = {
+      id: comment.id,
+      content: comment.content,
+      createdAt: comment.createdAt,
+      updatedAt: comment.updatedAt,
+      userId: comment.userId,
+      projectId: projectId,
+      user: {
+        ...comment.user,
+        name: comment.user.firstName && comment.user.lastName
+          ? `${comment.user.firstName} ${comment.user.lastName}`
+          : comment.user.name,
+      },
+      likesCount: 0,
+      isLiked: false,
+    };
+
+    return NextResponse.json(responseComment, { status: 201 });
   } catch (error) {
     console.error("Error creating comment:", error);
     return NextResponse.json(

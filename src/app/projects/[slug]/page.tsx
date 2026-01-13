@@ -66,12 +66,30 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
       _count: {
         select: {
           upvotes: true,
-          comments: true,
           milestones: true,
         },
       },
     },
   });
+
+  // Get comment count from feed event (unified comment system)
+  let feedEventCommentCount = 0;
+  if (project) {
+    const feedEvent = await prisma.feedEvent.findFirst({
+      where: {
+        projectId: project.id,
+        type: "PROJECT_CREATED",
+      },
+      include: {
+        _count: {
+          select: {
+            comments: true,
+          },
+        },
+      },
+    });
+    feedEventCommentCount = feedEvent?._count?.comments ?? 0;
+  }
 
   if (!project) {
     notFound();
@@ -367,7 +385,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
         <section className="card p-8">
           <CommentList
             projectId={project.id}
-            initialCommentCount={project._count.comments}
+            initialCommentCount={feedEventCommentCount}
           />
         </section>
       </article>

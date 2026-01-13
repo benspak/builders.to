@@ -76,9 +76,18 @@ export default async function ListingDetailPage({ params }: PageProps) {
       images: {
         orderBy: { order: "asc" },
       },
+      feedEvents: {
+        take: 1,
+        include: {
+          _count: {
+            select: {
+              comments: true,
+            },
+          },
+        },
+      },
       _count: {
         select: {
-          comments: true,
           flags: true,
         },
       },
@@ -290,7 +299,7 @@ export default async function ListingDetailPage({ params }: PageProps) {
             <div className="rounded-xl border border-zinc-800/50 bg-zinc-900/50 p-6">
               <LocalListingComments
                 listingId={listing.id}
-                initialCommentCount={listing._count.comments}
+                initialCommentCount={listing.feedEvents[0]?._count?.comments ?? 0}
               />
             </div>
           </div>

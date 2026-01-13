@@ -178,7 +178,9 @@ export function LocalListingComments({ listingId, initialCommentCount = 0 }: Loc
                     href={comment.user.slug ? `/${comment.user.slug}` : "#"}
                     className="font-medium text-white hover:text-orange-400 transition-colors"
                   >
-                    {comment.user.displayName || comment.user.name || "Anonymous"}
+                    {comment.user.firstName && comment.user.lastName
+                      ? `${comment.user.firstName} ${comment.user.lastName}`
+                      : comment.user.displayName || comment.user.name || "Anonymous"}
                   </Link>
                   <span className="text-xs text-zinc-500">
                     {formatRelativeTime(comment.createdAt)}

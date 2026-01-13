@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-// PATCH /api/comments/[id] - Update a comment
+// PATCH /api/comments/[id] - Update a comment (now uses FeedEventComment)
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -19,8 +19,8 @@ export async function PATCH(
 
     const { id } = await params;
 
-    // Check ownership
-    const existingComment = await prisma.comment.findUnique({
+    // Check ownership in FeedEventComment
+    const existingComment = await prisma.feedEventComment.findUnique({
       where: { id },
       select: { userId: true },
     });
@@ -49,21 +49,38 @@ export async function PATCH(
       );
     }
 
-    const comment = await prisma.comment.update({
+    const comment = await prisma.feedEventComment.update({
       where: { id },
-      data: { content },
-      include: {
+      data: { content: content.trim() },
+      select: {
+        id: true,
+        content: true,
+        createdAt: true,
+        updatedAt: true,
+        userId: true,
         user: {
           select: {
             id: true,
             name: true,
+            firstName: true,
+            lastName: true,
             image: true,
+            slug: true,
           },
         },
       },
     });
 
-    return NextResponse.json(comment);
+    // Return in expected format
+    return NextResponse.json({
+      ...comment,
+      user: {
+        ...comment.user,
+        name: comment.user.firstName && comment.user.lastName
+          ? `${comment.user.firstName} ${comment.user.lastName}`
+          : comment.user.name,
+      },
+    });
   } catch (error) {
     console.error("Error updating comment:", error);
     return NextResponse.json(
@@ -73,7 +90,7 @@ export async function PATCH(
   }
 }
 
-// DELETE /api/comments/[id] - Delete a comment
+// DELETE /api/comments/[id] - Delete a comment (now uses FeedEventComment)
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -90,8 +107,8 @@ export async function DELETE(
 
     const { id } = await params;
 
-    // Check ownership
-    const existingComment = await prisma.comment.findUnique({
+    // Check ownership in FeedEventComment
+    const existingComment = await prisma.feedEventComment.findUnique({
       where: { id },
       select: { userId: true },
     });
@@ -110,7 +127,7 @@ export async function DELETE(
       );
     }
 
-    await prisma.comment.delete({
+    await prisma.feedEventComment.delete({
       where: { id },
     });
 
