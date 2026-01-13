@@ -152,80 +152,102 @@ async function TopBuildersSection() {
 }
 
 async function OpenJobsSection() {
-  const openRoles = await prisma.companyRole.findMany({
-    where: {
-      isActive: true,
-    },
-    select: {
-      id: true,
-      title: true,
-      type: true,
-      location: true,
-      isRemote: true,
-      salaryMin: true,
-      salaryMax: true,
-      currency: true,
-      company: {
-        select: {
-          id: true,
-          slug: true,
-          name: true,
-          logo: true,
+  try {
+    const openRoles = await prisma.companyRole.findMany({
+      where: {
+        isActive: true,
+      },
+      select: {
+        id: true,
+        title: true,
+        type: true,
+        location: true,
+        isRemote: true,
+        salaryMin: true,
+        salaryMax: true,
+        currency: true,
+        company: {
+          select: {
+            id: true,
+            slug: true,
+            name: true,
+            logo: true,
+          },
         },
       },
-    },
-    orderBy: { createdAt: "desc" },
-    take: 6,
-  });
+      orderBy: { createdAt: "desc" },
+      take: 6,
+    });
 
-  return <OpenJobs jobs={openRoles} />;
+    return <OpenJobs jobs={openRoles} />;
+  } catch (error) {
+    console.error("Error fetching open jobs:", error);
+    return null;
+  }
 }
 
 async function SidebarAdSection() {
-  const session = await auth();
-  const isAuthenticated = !!session?.user;
+  try {
+    const session = await auth();
+    const isAuthenticated = !!session?.user;
 
-  return <SidebarAd isAuthenticated={isAuthenticated} />;
+    return <SidebarAd isAuthenticated={isAuthenticated} />;
+  } catch (error) {
+    console.error("Error fetching sidebar ad:", error);
+    return null;
+  }
 }
 
 export default async function UpdatePage({ params }: UpdatePageProps) {
   const { slug, id } = await params;
-  const session = await auth();
+  
+  let session = null;
+  try {
+    session = await auth();
+  } catch {
+    // Continue without session
+  }
 
-  const update = await prisma.dailyUpdate.findUnique({
-    where: { id },
-    select: {
-      id: true,
-      content: true,
-      imageUrl: true,
-      gifUrl: true,
-      createdAt: true,
-      user: {
-        select: {
-          id: true,
-          name: true,
-          displayName: true,
-          firstName: true,
-          lastName: true,
-          image: true,
-          slug: true,
-          headline: true,
+  let update;
+  try {
+    update = await prisma.dailyUpdate.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        content: true,
+        imageUrl: true,
+        gifUrl: true,
+        createdAt: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            displayName: true,
+            firstName: true,
+            lastName: true,
+            image: true,
+            slug: true,
+            headline: true,
+          },
         },
-      },
-      _count: {
-        select: {
-          likes: true,
-          comments: true,
+        _count: {
+          select: {
+            likes: true,
+            comments: true,
+          },
         },
+        likes: session?.user?.id
+          ? {
+              where: { userId: session.user.id },
+              select: { id: true },
+            }
+          : false,
       },
-      likes: session?.user?.id
-        ? {
-            where: { userId: session.user.id },
-            select: { id: true },
-          }
-        : false,
-    },
-  });
+    });
+  } catch (error) {
+    console.error("Error fetching update:", error);
+    notFound();
+  }
 
   // Verify the update exists and belongs to the user with this slug
   if (!update || update.user.slug !== slug) {
