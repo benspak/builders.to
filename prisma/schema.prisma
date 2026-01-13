@@ -1128,6 +1128,9 @@ enum TokenTransactionType {
   AD_REDEMPTION             // Spent tokens to unlock an advertisement
   SERVICE_REDEMPTION        // Spent tokens to unlock a service listing
   LOCAL_LISTING_REDEMPTION  // Spent tokens to unlock a local listing
+  GIFT_SENT                 // Tokens sent as a gift to another user
+  GIFT_RECEIVED             // Tokens received as a gift from another user
+  GIFT_PURCHASED            // Tokens purchased to gift (paid with Stripe)
   ADMIN_ADJUSTMENT          // Manual adjustment by admin
 }
 

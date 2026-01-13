@@ -18,6 +18,24 @@ export const AD_REDEMPTION_COST = 50; // 50 tokens = $5 (sidebar ad)
 export const SERVICE_REDEMPTION_COST = 10; // 10 tokens = $1 (service listing)
 export const LOCAL_LISTING_REDEMPTION_COST = 10; // 10 tokens = $1 (local listing)
 
+// Gift token packages
+export const GIFT_PACKAGES = [
+  {
+    id: "service_listing",
+    tokens: 10,
+    priceInCents: 100,
+    label: "Service Listing",
+    description: "Gift tokens so they can list a service"
+  },
+  {
+    id: "ad_month",
+    tokens: 50,
+    priceInCents: 500,
+    label: "Ad for 1 Month",
+    description: "Gift tokens so they can display an ad for 1 month"
+  },
+] as const;
+
 /**
  * Generate a unique referral code for a user
  * Format: XXXX-XXXXXX (4 chars from slug + 6 random chars)
@@ -443,4 +461,74 @@ export function tokensToDollars(tokens: number): number {
  */
 export function dollarsToTokens(dollars: number): number {
   return Math.ceil(dollars * TOKENS_PER_DOLLAR);
+}
+
+/**
+ * Gift tokens from one user to another
+ * This is for when a user pays to gift tokens to another user
+ */
+export async function giftTokens(
+  senderId: string,
+  recipientId: string,
+  amount: number,
+  senderName?: string,
+  recipientName?: string,
+  stripePaymentId?: string
+): Promise<{ senderTransactionId: string; recipientTransactionId: string }> {
+  if (amount <= 0) {
+    throw new Error("Gift amount must be positive");
+  }
+
+  if (senderId === recipientId) {
+    throw new Error("Cannot gift tokens to yourself");
+  }
+
+  // Use a transaction to ensure atomicity
+  const result = await prisma.$transaction(async (tx) => {
+    // Create transaction for sender (tokens they purchased to gift)
+    const senderTransaction = await tx.tokenTransaction.create({
+      data: {
+        userId: senderId,
+        amount: -amount, // Negative for spending/gifting
+        type: "GIFT_SENT",
+        description: `Gifted ${amount} tokens to ${recipientName || "another builder"}`,
+        metadata: {
+          recipientId,
+          recipientName,
+          stripePaymentId,
+        },
+      },
+    });
+
+    // Create transaction for recipient
+    const recipientTransaction = await tx.tokenTransaction.create({
+      data: {
+        userId: recipientId,
+        amount: amount, // Positive for receiving
+        type: "GIFT_RECEIVED",
+        description: `Received ${amount} tokens from ${senderName || "another builder"}`,
+        metadata: {
+          senderId,
+          senderName,
+          stripePaymentId,
+        },
+      },
+    });
+
+    // Update recipient's balance and lifetime tokens
+    await tx.user.update({
+      where: { id: recipientId },
+      data: {
+        tokenBalance: { increment: amount },
+        lifetimeTokensEarned: { increment: amount },
+      },
+    });
+
+    return {
+      senderTransactionId: senderTransaction.id,
+      recipientTransactionId: recipientTransaction.id,
+    };
+  });
+
+  return result;
 }

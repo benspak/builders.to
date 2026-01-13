@@ -97,6 +97,24 @@ const transactionTypeConfig: Record<string, {
     bgClass: "bg-emerald-500/20",
     label: "Listing Unlocked",
   },
+  GIFT_SENT: {
+    icon: Gift,
+    colorClass: "text-pink-400",
+    bgClass: "bg-pink-500/20",
+    label: "Gift Sent",
+  },
+  GIFT_RECEIVED: {
+    icon: Gift,
+    colorClass: "text-pink-400",
+    bgClass: "bg-pink-500/20",
+    label: "Gift Received",
+  },
+  GIFT_PURCHASED: {
+    icon: Gift,
+    colorClass: "text-pink-400",
+    bgClass: "bg-pink-500/20",
+    label: "Tokens Purchased",
+  },
   ADMIN_ADJUSTMENT: {
     icon: Settings,
     colorClass: "text-zinc-400",

@@ -23,8 +23,10 @@ import {
   DollarSign,
   Clock,
   ArrowLeft,
+  Coins,
 } from "lucide-react";
-import { FollowButton, FollowStats } from "@/components/profile";
+import { FollowButton, FollowStats, GiftTokensButton, GiftSuccessToast } from "@/components/profile";
+import { Suspense } from "react";
 import { formatRelativeTime, getStatusColor, getStatusLabel, getCategoryColor, getCategoryLabel, getMemberRoleLabel, getMemberRoleColor, getCompanyUrl, formatLocationSlug } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { UpdateForm, UpdateTimeline } from "@/components/updates";
@@ -260,6 +262,9 @@ export default async function SlugPage({ params }: PageProps) {
       // Streak tracking
       currentStreak: true,
       longestStreak: true,
+      // Token system
+      tokenBalance: true,
+      lifetimeTokensEarned: true,
       // Follow counts
       _count: {
         select: {
@@ -561,6 +566,11 @@ export default async function SlugPage({ params }: PageProps) {
 
   return (
     <div className="relative min-h-screen bg-zinc-950">
+      {/* Gift Success Toast */}
+      <Suspense fallback={null}>
+        <GiftSuccessToast />
+      </Suspense>
+
       {/* Background decorations */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 h-[500px] w-[500px] rounded-full bg-orange-500/10 blur-3xl" />
@@ -648,11 +658,18 @@ export default async function SlugPage({ params }: PageProps) {
                         Edit Profile
                       </Link>
                     ) : (
-                      <FollowButton
-                        userId={user.id}
-                        isFollowing={isFollowing}
-                        currentUserId={session?.user?.id}
-                      />
+                      <>
+                        <GiftTokensButton
+                          recipientId={user.id}
+                          recipientName={displayName}
+                          currentUserId={session?.user?.id}
+                        />
+                        <FollowButton
+                          userId={user.id}
+                          isFollowing={isFollowing}
+                          currentUserId={session?.user?.id}
+                        />
+                      </>
                     )}
                   </div>
                 </div>
@@ -777,6 +794,27 @@ export default async function SlugPage({ params }: PageProps) {
                           {totalUpvotes} upvote{totalUpvotes !== 1 ? "s" : ""}
                         </div>
                         <div className="text-xs text-zinc-500">Community support</div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Token Balance */}
+                  {user.tokenBalance > 0 && (
+                    <div className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-amber-500/10 to-transparent border border-amber-500/20">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/20">
+                        <Coins className="h-4 w-4 text-amber-400" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium text-white">
+                          {user.tokenBalance} token{user.tokenBalance !== 1 ? "s" : ""}
+                        </div>
+                        <div className="text-xs text-zinc-500">
+                          {isOwnProfile ? (
+                            <a href="/tokens" className="text-amber-400 hover:underline">Manage tokens →</a>
+                          ) : (
+                            "Available balance"
+                          )}
+                        </div>
                       </div>
                     </div>
                   )}

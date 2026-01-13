@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getStripe, SIDEBAR_AD_DURATION_DAYS, SERVICE_LISTING_DURATION_DAYS, LOCAL_LISTING_PAID_DURATION_DAYS } from "@/lib/stripe";
+import { giftTokens } from "@/lib/tokens";
 import Stripe from "stripe";
 
 // Ensure webhook is always dynamic and uses Node.js runtime
@@ -258,6 +259,43 @@ export async function POST(request: Request) {
         console.error("[Webhook] Error updating service order:", error);
         return NextResponse.json(
           { error: "Failed to update service order" },
+          { status: 500 }
+        );
+      }
+    }
+
+    // Handle token_gift payments (when someone gifts tokens to another user)
+    if (paymentType === "token_gift") {
+      const senderId = session.metadata?.senderId;
+      const recipientId = session.metadata?.recipientId;
+      const tokenAmount = parseInt(session.metadata?.tokenAmount || "0", 10);
+      const senderName = session.metadata?.senderName;
+      const recipientName = session.metadata?.recipientName;
+
+      if (!senderId || !recipientId || !tokenAmount) {
+        console.error("[Webhook] Missing token gift metadata");
+        return NextResponse.json(
+          { error: "Missing gift metadata" },
+          { status: 400 }
+        );
+      }
+
+      try {
+        // Use the giftTokens helper to handle the transaction
+        await giftTokens(
+          senderId,
+          recipientId,
+          tokenAmount,
+          senderName,
+          recipientName,
+          session.payment_intent as string
+        );
+
+        console.log(`[Webhook] Token gift successful: ${tokenAmount} tokens from ${senderId} to ${recipientId}`);
+      } catch (error) {
+        console.error("[Webhook] Error processing token gift:", error);
+        return NextResponse.json(
+          { error: "Failed to process token gift" },
           { status: 500 }
         );
       }
