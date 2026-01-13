@@ -1,12 +1,69 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { Loader2, Send, User, MessageSquare } from "lucide-react";
-import { formatRelativeTime } from "@/lib/utils";
+import { formatRelativeTime, MENTION_REGEX } from "@/lib/utils";
 import { LocalListingComment } from "./types";
+import { MentionTextarea } from "@/components/ui/mention-textarea";
+
+// Component to render content with clickable @mentions
+function ContentWithMentions({ content }: { content: string }) {
+  const parts = useMemo(() => {
+    const result: Array<{ type: "text" | "mention"; value: string }> = [];
+    let lastIndex = 0;
+
+    const regex = new RegExp(MENTION_REGEX.source, "g");
+    let match;
+
+    while ((match = regex.exec(content)) !== null) {
+      if (match.index > lastIndex) {
+        result.push({
+          type: "text",
+          value: content.slice(lastIndex, match.index),
+        });
+      }
+
+      result.push({
+        type: "mention",
+        value: match[1],
+      });
+
+      lastIndex = match.index + match[0].length;
+    }
+
+    if (lastIndex < content.length) {
+      result.push({
+        type: "text",
+        value: content.slice(lastIndex),
+      });
+    }
+
+    return result;
+  }, [content]);
+
+  return (
+    <>
+      {parts.map((part, index) => {
+        if (part.type === "mention") {
+          return (
+            <Link
+              key={index}
+              href={`/${part.value}`}
+              className="text-orange-400 hover:text-orange-300 hover:underline transition-colors font-medium"
+              onClick={(e) => e.stopPropagation()}
+            >
+              @{part.value}
+            </Link>
+          );
+        }
+        return <span key={index}>{part.value}</span>;
+      })}
+    </>
+  );
+}
 
 interface LocalListingCommentsProps {
   listingId: string;
@@ -108,13 +165,12 @@ export function LocalListingComments({ listingId, initialCommentCount = 0 }: Loc
               )}
             </div>
             <div className="flex-1">
-              <textarea
+              <MentionTextarea
                 value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                placeholder="Write a comment..."
+                onChange={setNewComment}
+                placeholder="Write a comment... Use @ to mention"
                 rows={3}
                 maxLength={2000}
-                className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-4 py-3 text-white placeholder:text-zinc-500 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500 resize-none"
               />
               <div className="mt-2 flex items-center justify-between">
                 <span className="text-xs text-zinc-500">
@@ -187,7 +243,7 @@ export function LocalListingComments({ listingId, initialCommentCount = 0 }: Loc
                   </span>
                 </div>
                 <p className="mt-1 text-sm text-zinc-300 whitespace-pre-wrap break-words">
-                  {comment.content}
+                  <ContentWithMentions content={comment.content} />
                 </p>
               </div>
             </div>

@@ -8,8 +8,6 @@ import { auth } from "@/lib/auth";
 import {
   User,
   ArrowLeft,
-  Heart,
-  MessageCircle,
   Calendar,
 } from "lucide-react";
 import { formatRelativeTime } from "@/lib/utils";
@@ -359,19 +357,7 @@ export default async function UpdatePage({ params }: UpdatePageProps) {
               </div>
 
               {/* Actions */}
-              <div className="px-6 py-4 border-t border-white/5 flex items-center justify-between">
-                <div className="flex items-center gap-6">
-                  {/* Stats */}
-                  <div className="flex items-center gap-1.5 text-sm text-zinc-500">
-                    <Heart className="h-4 w-4" />
-                    <span>{update._count.likes}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-sm text-zinc-500">
-                    <MessageCircle className="h-4 w-4" />
-                    <span>{update._count.comments}</span>
-                  </div>
-                </div>
-
+              <div className="px-6 py-4 border-t border-white/5">
                 {/* Action buttons */}
                 <UpdateActions
                   updateId={update.id}

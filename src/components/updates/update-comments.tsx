@@ -5,8 +5,9 @@ import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { User, Send, Loader2, MoreHorizontal, Trash2, Pencil, X, Check, MessageCircle } from "lucide-react";
+import { User, Send, Loader2, MoreHorizontal, Trash2, Pencil, X, MessageCircle } from "lucide-react";
 import { formatRelativeTime, MENTION_REGEX, cn } from "@/lib/utils";
+import { MentionInput } from "@/components/ui/mention-input";
 
 // Component to render content with clickable @mentions
 function ContentWithMentions({ content }: { content: string }) {
@@ -272,14 +273,13 @@ export function UpdateComments({ updateId, currentUserId, initialCommentsCount =
         {/* Comment form - fixed at bottom */}
         <div className="border-t border-white/10 p-4 bg-zinc-900/95">
           <form onSubmit={handleSubmit} className="flex gap-3">
-            <input
-              type="text"
+            <MentionInput
               value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              placeholder={currentUserId ? "Write a comment..." : "Sign in to comment"}
+              onChange={setNewComment}
+              placeholder={currentUserId ? "Write a comment... Use @ to mention" : "Sign in to comment"}
               disabled={!currentUserId || isSubmitting}
               maxLength={1000}
-              className="flex-1 rounded-xl border border-white/10 bg-zinc-800/50 px-4 py-3 text-sm text-white placeholder:text-zinc-500 focus:border-white/20 focus:outline-none disabled:opacity-50"
+              onSubmit={handleSubmit}
             />
             <button
               type="submit"
