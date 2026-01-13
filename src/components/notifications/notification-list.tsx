@@ -13,7 +13,8 @@ import {
   AtSign,
   Loader2,
   ArrowUp,
-  MessageCircle
+  MessageCircle,
+  Gift
 } from "lucide-react";
 import { cn, formatRelativeTime } from "@/lib/utils";
 
@@ -143,6 +144,8 @@ export function NotificationList({ onItemClick, showMarkAllRead = true }: Notifi
         return <Heart className="h-4 w-4 text-rose-400" />;
       case "FEED_EVENT_COMMENTED":
         return <MessageCircle className="h-4 w-4 text-sky-400" />;
+      case "TOKEN_GIFTED":
+        return <Gift className="h-4 w-4 text-emerald-400" />;
       default:
         return <Bell className="h-4 w-4 text-zinc-400" />;
     }
@@ -177,6 +180,10 @@ export function NotificationList({ onItemClick, showMarkAllRead = true }: Notifi
         return `/projects/${notification.project.slug}`;
       }
       return `/feed`;
+    }
+    // Token gifts link to the tokens page
+    if (notification.type === "TOKEN_GIFTED") {
+      return `/tokens`;
     }
     return null;
   };

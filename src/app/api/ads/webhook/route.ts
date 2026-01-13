@@ -291,6 +291,25 @@ export async function POST(request: Request) {
           session.payment_intent as string
         );
 
+        // Get sender's image for the notification
+        const sender = await prisma.user.findUnique({
+          where: { id: senderId },
+          select: { image: true, slug: true },
+        });
+
+        // Create notification for the recipient
+        await prisma.notification.create({
+          data: {
+            type: "TOKEN_GIFTED",
+            title: `${senderName || "Someone"} gifted you ${tokenAmount} tokens! 🎁`,
+            message: `You received ${tokenAmount} tokens as a gift. Check your token balance!`,
+            userId: recipientId,
+            actorId: senderId,
+            actorName: senderName || null,
+            actorImage: sender?.image || null,
+          },
+        });
+
         console.log(`[Webhook] Token gift successful: ${tokenAmount} tokens from ${senderId} to ${recipientId}`);
       } catch (error) {
         console.error("[Webhook] Error processing token gift:", error);

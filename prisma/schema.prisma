@@ -733,6 +733,7 @@ enum NotificationType {
   PROJECT_COMMENTED     // Someone commented on your project
   COMMENT_LIKED         // Someone liked your comment on a project
   FEED_EVENT_COMMENTED  // Someone commented on your feed event (milestone, project, etc.)
+  TOKEN_GIFTED          // Someone gifted you tokens
 }
 
 // In-app notifications
