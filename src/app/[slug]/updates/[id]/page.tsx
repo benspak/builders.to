@@ -17,7 +17,8 @@ import { TopBuilders, OpenJobs } from "@/components/feed";
 import { SidebarAd } from "@/components/ads";
 import { EntityViewTracker } from "@/components/analytics/entity-view-tracker";
 import { ViewStatsDisplay } from "@/components/analytics/view-stats";
-import { YouTubeEmbed, extractYouTubeUrlFromText } from "@/components/ui/youtube-embed";
+import { YouTubeEmbed } from "@/components/ui/youtube-embed";
+import { extractYouTubeUrlFromText } from "@/lib/youtube";
 
 interface UpdatePageProps {
   params: Promise<{ slug: string; id: string }>;
@@ -200,7 +201,7 @@ async function SidebarAdSection() {
 
 export default async function UpdatePage({ params }: UpdatePageProps) {
   const { slug, id } = await params;
-  
+
   let session = null;
   try {
     session = await auth();
