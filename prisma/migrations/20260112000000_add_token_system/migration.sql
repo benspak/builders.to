@@ -3,6 +3,7 @@ CREATE TYPE "TokenTransactionType" AS ENUM ('WELCOME_BONUS', 'REFERRAL_REWARD', 
 
 -- AlterTable: Add token and referral fields to User
 ALTER TABLE "User" ADD COLUMN "tokenBalance" INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE "User" ADD COLUMN "lifetimeTokensEarned" INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE "User" ADD COLUMN "referralCode" TEXT;
 ALTER TABLE "User" ADD COLUMN "referredById" TEXT;
 
