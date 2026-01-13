@@ -177,8 +177,8 @@ export function LocalListingCard({ listing, showStatus = false, isOwner = false,
 
   // Owner view - with action menu
   return (
-    <div className="group relative rounded-xl border border-zinc-800/50 bg-zinc-900/50 hover:border-orange-500/30 hover:bg-zinc-900/70 transition-all overflow-hidden">
-      <Link href={`/listing/${listing.slug}`} className="block">
+    <div className="group relative rounded-xl border border-zinc-800/50 bg-zinc-900/50 hover:border-orange-500/30 hover:bg-zinc-900/70 transition-all">
+      <Link href={`/listing/${listing.slug}`} className="block overflow-hidden rounded-xl">
         {CardContent}
       </Link>
 
