@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -94,6 +95,12 @@ export function UpdateComments({ updateId, currentUserId, initialCommentsCount =
   const [newComment, setNewComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [commentsCount, setCommentsCount] = useState(initialCommentsCount);
+  const [mounted, setMounted] = useState(false);
+
+  // Track if component is mounted (for portal SSR safety)
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Fetch comments when modal opens
   useEffect(() => {
@@ -196,6 +203,101 @@ export function UpdateComments({ updateId, currentUserId, initialCommentsCount =
     }
   }
 
+  // Modal content to be portaled
+  const modalContent = isOpen && mounted ? (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+      onClick={() => setIsOpen(false)}
+    >
+      {/* Modal content */}
+      <div
+        className="relative w-full max-w-2xl max-h-[85vh] flex flex-col rounded-2xl border border-white/10 bg-zinc-900 shadow-2xl overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-gradient-to-r from-orange-500/10 via-pink-500/10 to-violet-500/10">
+          <h2 className="text-lg font-semibold text-white">Comments</h2>
+          <button
+            onClick={() => setIsOpen(false)}
+            className="p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* Scrollable content area */}
+        <div className="flex-1 overflow-y-auto">
+          {/* Original content */}
+          {children && (
+            <div className="p-6 border-b border-white/5">
+              {children}
+            </div>
+          )}
+
+          {/* Comments section */}
+          <div className="p-6 space-y-4">
+            {/* Loading state */}
+            {isLoading && (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin text-zinc-500" />
+              </div>
+            )}
+
+            {/* Comments list */}
+            {!isLoading && comments.length > 0 && (
+              <div className="space-y-4">
+                {comments.map(comment => (
+                  <CommentItem
+                    key={comment.id}
+                    comment={comment}
+                    currentUserId={currentUserId}
+                    onDelete={handleDelete}
+                    onEdit={handleEdit}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Empty state */}
+            {!isLoading && comments.length === 0 && (
+              <div className="text-center py-8">
+                <MessageCircle className="h-12 w-12 mx-auto mb-3 text-orange-400 opacity-30" />
+                <p className="text-sm text-zinc-500">No comments yet</p>
+                <p className="text-xs text-zinc-600 mt-1">Be the first to comment!</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Comment form - fixed at bottom */}
+        <div className="border-t border-white/10 p-4 bg-zinc-900/95">
+          <form onSubmit={handleSubmit} className="flex gap-3">
+            <input
+              type="text"
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              placeholder={currentUserId ? "Write a comment..." : "Sign in to comment"}
+              disabled={!currentUserId || isSubmitting}
+              maxLength={1000}
+              className="flex-1 rounded-xl border border-white/10 bg-zinc-800/50 px-4 py-3 text-sm text-white placeholder:text-zinc-500 focus:border-white/20 focus:outline-none disabled:opacity-50"
+            />
+            <button
+              type="submit"
+              disabled={!currentUserId || isSubmitting || !newComment.trim()}
+              className="rounded-xl px-4 py-3 bg-orange-500/20 text-orange-400 hover:bg-orange-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSubmitting ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <Send className="h-5 w-5" />
+              )}
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  ) : null;
+
   return (
     <>
       {/* Comment trigger button - just icon and count */}
@@ -207,100 +309,8 @@ export function UpdateComments({ updateId, currentUserId, initialCommentsCount =
         {commentsCount > 0 && <span className="font-medium">{commentsCount}</span>}
       </button>
 
-      {/* Modal overlay */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
-          onClick={() => setIsOpen(false)}
-        >
-          {/* Modal content */}
-          <div
-            className="relative w-full max-w-2xl max-h-[85vh] flex flex-col rounded-2xl border border-white/10 bg-zinc-900 shadow-2xl overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-gradient-to-r from-orange-500/10 via-pink-500/10 to-violet-500/10">
-              <h2 className="text-lg font-semibold text-white">Comments</h2>
-              <button
-                onClick={() => setIsOpen(false)}
-                className="p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            {/* Scrollable content area */}
-            <div className="flex-1 overflow-y-auto">
-              {/* Original content */}
-              {children && (
-                <div className="p-6 border-b border-white/5">
-                  {children}
-                </div>
-              )}
-
-              {/* Comments section */}
-              <div className="p-6 space-y-4">
-                {/* Loading state */}
-                {isLoading && (
-                  <div className="flex items-center justify-center py-8">
-                    <Loader2 className="h-6 w-6 animate-spin text-zinc-500" />
-                  </div>
-                )}
-
-                {/* Comments list */}
-                {!isLoading && comments.length > 0 && (
-                  <div className="space-y-4">
-                    {comments.map(comment => (
-                      <CommentItem
-                        key={comment.id}
-                        comment={comment}
-                        currentUserId={currentUserId}
-                        onDelete={handleDelete}
-                        onEdit={handleEdit}
-                      />
-                    ))}
-                  </div>
-                )}
-
-                {/* Empty state */}
-                {!isLoading && comments.length === 0 && (
-                  <div className="text-center py-8">
-                    <MessageCircle className="h-12 w-12 mx-auto mb-3 text-orange-400 opacity-30" />
-                    <p className="text-sm text-zinc-500">No comments yet</p>
-                    <p className="text-xs text-zinc-600 mt-1">Be the first to comment!</p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Comment form - fixed at bottom */}
-            <div className="border-t border-white/10 p-4 bg-zinc-900/95">
-              <form onSubmit={handleSubmit} className="flex gap-3">
-                <input
-                  type="text"
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  placeholder={currentUserId ? "Write a comment..." : "Sign in to comment"}
-                  disabled={!currentUserId || isSubmitting}
-                  maxLength={1000}
-                  className="flex-1 rounded-xl border border-white/10 bg-zinc-800/50 px-4 py-3 text-sm text-white placeholder:text-zinc-500 focus:border-white/20 focus:outline-none disabled:opacity-50"
-                />
-                <button
-                  type="submit"
-                  disabled={!currentUserId || isSubmitting || !newComment.trim()}
-                  className="rounded-xl px-4 py-3 bg-orange-500/20 text-orange-400 hover:bg-orange-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isSubmitting ? (
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                  ) : (
-                    <Send className="h-5 w-5" />
-                  )}
-                </button>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Portal modal to document.body to avoid backdrop-filter stacking context issues */}
+      {mounted && createPortal(modalContent, document.body)}
     </>
   );
 }
