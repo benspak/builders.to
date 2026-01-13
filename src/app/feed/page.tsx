@@ -7,8 +7,8 @@ import { SiteViewsCounter } from "@/components/analytics/site-views-counter";
 import { SidebarAd } from "@/components/ads";
 
 export const metadata = {
-  title: "Feed - Builders.to",
-  description: "See what builders are working on",
+  title: "Builders.to Feed – Launch Updates, Milestones & Jobs | Builders.to",
+  description: "The launchpad for indie hackers and builders. Share daily updates, celebrate milestones, discover projects, hire verified talent, and get visibility in an ecosystem of builders who ship.",
 };
 
 // Force dynamic rendering since this page requires database access
