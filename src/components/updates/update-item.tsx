@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { User, Trash2, Loader2, MoreHorizontal, Heart, MessageCircle, ExternalLink } from "lucide-react";
+import { User, Trash2, Loader2, MoreHorizontal, Heart, ExternalLink } from "lucide-react";
 import { formatRelativeTime, cn, MENTION_REGEX } from "@/lib/utils";
 import { UpdateComments } from "./update-comments";
 import { ImageLightbox } from "@/components/ui/image-lightbox";
@@ -278,7 +278,7 @@ export function UpdateItem({ update, currentUserId, showAuthor = true }: UpdateI
                 )}
               </div>
               <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/5">
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
                   {/* Like button */}
                   <button
                     onClick={handleLike}
@@ -304,13 +304,52 @@ export function UpdateItem({ update, currentUserId, showAuthor = true }: UpdateI
                     </span>
                   </button>
 
-                  {/* Comment count indicator */}
-                  <span className="inline-flex items-center gap-1.5 text-xs text-zinc-500">
-                    <MessageCircle className="h-4 w-4" />
-                    {(update.commentsCount ?? 0) > 0 && (
-                      <span className="tabular-nums">{update.commentsCount}</span>
-                    )}
-                  </span>
+                  {/* Comments button */}
+                  <UpdateComments
+                    updateId={update.id}
+                    currentUserId={currentUserId}
+                    initialCommentsCount={update.commentsCount ?? 0}
+                  >
+                    {/* Original content for modal */}
+                    <div className="flex items-start gap-3">
+                      {update.user.image ? (
+                        <Image
+                          src={update.user.image}
+                          alt={displayName}
+                          width={40}
+                          height={40}
+                          className="h-10 w-10 rounded-full object-cover ring-2 ring-white/5"
+                        />
+                      ) : (
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-pink-500">
+                          <User className="h-5 w-5 text-white" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="font-medium text-white">{displayName}</span>
+                          <span className="text-xs text-zinc-500">{formatRelativeTime(update.createdAt)}</span>
+                        </div>
+                        {update.user.headline && (
+                          <p className="text-xs text-zinc-500 mb-2">{update.user.headline}</p>
+                        )}
+                        <div className="text-zinc-300 whitespace-pre-wrap text-sm leading-relaxed">
+                          {update.content}
+                        </div>
+                        {update.imageUrl && (
+                          <div className="mt-3 rounded-xl overflow-hidden border border-white/10">
+                            <Image
+                              src={update.imageUrl}
+                              alt="Update image"
+                              width={500}
+                              height={300}
+                              className="w-full object-cover max-h-64"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </UpdateComments>
 
                   <time className="text-xs text-zinc-500">
                     {formatRelativeTime(update.createdAt)}
@@ -364,13 +403,6 @@ export function UpdateItem({ update, currentUserId, showAuthor = true }: UpdateI
                   )}
                 </div>
               </div>
-
-              {/* Comments section */}
-              <UpdateComments
-                updateId={update.id}
-                currentUserId={currentUserId}
-                initialCommentsCount={update.commentsCount ?? 0}
-              />
             </div>
           </div>
         </div>

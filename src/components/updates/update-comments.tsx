@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { User, Send, Loader2, MoreHorizontal, Trash2, Pencil, X, Check } from "lucide-react";
-import { formatRelativeTime, MENTION_REGEX } from "@/lib/utils";
+import { User, Send, Loader2, MoreHorizontal, Trash2, Pencil, X, Check, MessageCircle } from "lucide-react";
+import { formatRelativeTime, MENTION_REGEX, cn } from "@/lib/utils";
 
 // Component to render content with clickable @mentions
 function ContentWithMentions({ content }: { content: string }) {
@@ -82,24 +82,38 @@ interface UpdateCommentsProps {
   updateId: string;
   currentUserId?: string;
   initialCommentsCount?: number;
+  /** Original content to display in the modal */
+  children?: ReactNode;
 }
 
-export function UpdateComments({ updateId, currentUserId, initialCommentsCount = 0 }: UpdateCommentsProps) {
+export function UpdateComments({ updateId, currentUserId, initialCommentsCount = 0, children }: UpdateCommentsProps) {
   const router = useRouter();
   const [comments, setComments] = useState<Comment[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const [newComment, setNewComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [commentsCount, setCommentsCount] = useState(initialCommentsCount);
 
-  // Fetch comments when expanded
+  // Fetch comments when modal opens
   useEffect(() => {
-    if (isExpanded && comments.length === 0) {
+    if (isOpen && comments.length === 0) {
       fetchComments();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isExpanded]);
+  }, [isOpen]);
+
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
 
   async function fetchComments() {
     setIsLoading(true);
@@ -183,70 +197,111 @@ export function UpdateComments({ updateId, currentUserId, initialCommentsCount =
   }
 
   return (
-    <div className="border-t border-white/5 pt-3 mt-3">
-      {/* Toggle comments button */}
+    <>
+      {/* Comment trigger button - just icon and count */}
       <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
+        onClick={() => setIsOpen(true)}
+        className="inline-flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-xs text-zinc-500 hover:text-orange-400 hover:bg-orange-500/10 transition-all"
       >
-        {isExpanded ? "Hide" : "Show"} comments {commentsCount > 0 && `(${commentsCount})`}
+        <MessageCircle className="h-4 w-4" />
+        {commentsCount > 0 && <span className="font-medium">{commentsCount}</span>}
       </button>
 
-      {isExpanded && (
-        <div className="mt-3 space-y-3">
-          {/* Loading state */}
-          {isLoading && (
-            <div className="flex items-center justify-center py-4">
-              <Loader2 className="h-5 w-5 animate-spin text-zinc-500" />
+      {/* Modal overlay */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+          onClick={() => setIsOpen(false)}
+        >
+          {/* Modal content */}
+          <div
+            className="relative w-full max-w-2xl max-h-[85vh] flex flex-col rounded-2xl border border-white/10 bg-zinc-900 shadow-2xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-gradient-to-r from-orange-500/10 via-pink-500/10 to-violet-500/10">
+              <h2 className="text-lg font-semibold text-white">Comments</h2>
+              <button
+                onClick={() => setIsOpen(false)}
+                className="p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
             </div>
-          )}
 
-          {/* Comments list */}
-          {!isLoading && comments.length > 0 && (
-            <div className="space-y-3">
-              {comments.map(comment => (
-                <CommentItem
-                  key={comment.id}
-                  comment={comment}
-                  currentUserId={currentUserId}
-                  onDelete={handleDelete}
-                  onEdit={handleEdit}
-                />
-              ))}
-            </div>
-          )}
-
-          {/* Empty state */}
-          {!isLoading && comments.length === 0 && (
-            <p className="text-xs text-zinc-500 py-2">No comments yet. Be the first to comment!</p>
-          )}
-
-          {/* Comment form */}
-          <form onSubmit={handleSubmit} className="flex gap-2">
-            <input
-              type="text"
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              placeholder={currentUserId ? "Add a comment..." : "Sign in to comment"}
-              disabled={!currentUserId || isSubmitting}
-              maxLength={1000}
-              className="flex-1 rounded-lg border border-white/10 bg-zinc-800/50 px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:border-orange-500/50 focus:outline-none disabled:opacity-50"
-            />
-            <button
-              type="submit"
-              disabled={!currentUserId || isSubmitting || !newComment.trim()}
-              className="rounded-lg bg-orange-500/20 px-3 py-2 text-orange-400 hover:bg-orange-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isSubmitting ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Send className="h-4 w-4" />
+            {/* Scrollable content area */}
+            <div className="flex-1 overflow-y-auto">
+              {/* Original content */}
+              {children && (
+                <div className="p-6 border-b border-white/5">
+                  {children}
+                </div>
               )}
-            </button>
-          </form>
+
+              {/* Comments section */}
+              <div className="p-6 space-y-4">
+                {/* Loading state */}
+                {isLoading && (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin text-zinc-500" />
+                  </div>
+                )}
+
+                {/* Comments list */}
+                {!isLoading && comments.length > 0 && (
+                  <div className="space-y-4">
+                    {comments.map(comment => (
+                      <CommentItem
+                        key={comment.id}
+                        comment={comment}
+                        currentUserId={currentUserId}
+                        onDelete={handleDelete}
+                        onEdit={handleEdit}
+                      />
+                    ))}
+                  </div>
+                )}
+
+                {/* Empty state */}
+                {!isLoading && comments.length === 0 && (
+                  <div className="text-center py-8">
+                    <MessageCircle className="h-12 w-12 mx-auto mb-3 text-orange-400 opacity-30" />
+                    <p className="text-sm text-zinc-500">No comments yet</p>
+                    <p className="text-xs text-zinc-600 mt-1">Be the first to comment!</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Comment form - fixed at bottom */}
+            <div className="border-t border-white/10 p-4 bg-zinc-900/95">
+              <form onSubmit={handleSubmit} className="flex gap-3">
+                <input
+                  type="text"
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  placeholder={currentUserId ? "Write a comment..." : "Sign in to comment"}
+                  disabled={!currentUserId || isSubmitting}
+                  maxLength={1000}
+                  className="flex-1 rounded-xl border border-white/10 bg-zinc-800/50 px-4 py-3 text-sm text-white placeholder:text-zinc-500 focus:border-white/20 focus:outline-none disabled:opacity-50"
+                />
+                <button
+                  type="submit"
+                  disabled={!currentUserId || isSubmitting || !newComment.trim()}
+                  className="rounded-xl px-4 py-3 bg-orange-500/20 text-orange-400 hover:bg-orange-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <Send className="h-5 w-5" />
+                  )}
+                </button>
+              </form>
+            </div>
+          </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
 
@@ -268,7 +323,7 @@ function CommentItem({ comment, currentUserId, onDelete, onEdit }: CommentItemPr
   const displayName = comment.user.firstName && comment.user.lastName
     ? `${comment.user.firstName} ${comment.user.lastName}`
     : comment.user.name || "Builder";
-  const isEdited = comment.updatedAt && 
+  const isEdited = comment.updatedAt &&
     new Date(comment.updatedAt).getTime() - new Date(comment.createdAt).getTime() > 1000;
 
   async function handleSaveEdit() {
@@ -280,39 +335,39 @@ function CommentItem({ comment, currentUserId, onDelete, onEdit }: CommentItemPr
   }
 
   return (
-    <div className="group flex gap-2">
+    <div className="group flex gap-3">
       {/* Avatar */}
       <Link href={comment.user.slug ? `/${comment.user.slug}` : "#"} className="flex-shrink-0">
         {comment.user.image ? (
           <Image
             src={comment.user.image}
             alt={displayName}
-            width={24}
-            height={24}
-            className="h-6 w-6 rounded-full object-cover"
+            width={36}
+            height={36}
+            className="h-9 w-9 rounded-full object-cover ring-2 ring-white/5"
           />
         ) : (
-          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-pink-500">
-            <User className="h-3 w-3 text-white" />
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-pink-500">
+            <User className="h-4 w-4 text-white" />
           </div>
         )}
       </Link>
 
       {/* Content */}
       <div className="flex-1 min-w-0">
-        <div className="rounded-lg bg-zinc-800/50 px-3 py-2">
+        <div className="rounded-2xl bg-zinc-800/50 px-4 py-3">
           <div className="flex items-center justify-between gap-2 mb-1">
             <div className="flex items-center gap-2">
               <Link
                 href={comment.user.slug ? `/${comment.user.slug}` : "#"}
-                className="text-xs font-medium text-white hover:text-orange-400 transition-colors"
+                className="text-sm font-medium text-white hover:text-orange-400 transition-colors"
               >
                 {displayName}
               </Link>
-<span className="text-[10px] text-zinc-500">
-              {formatRelativeTime(comment.createdAt)}
-              {isEdited && " (edited)"}
-            </span>
+              <span className="text-xs text-zinc-500">
+                {formatRelativeTime(comment.createdAt)}
+                {isEdited && " · edited"}
+              </span>
             </div>
 
             {/* Actions menu */}
@@ -320,23 +375,23 @@ function CommentItem({ comment, currentUserId, onDelete, onEdit }: CommentItemPr
               <div className="relative">
                 <button
                   onClick={() => setShowMenu(!showMenu)}
-                  className="opacity-0 group-hover:opacity-100 p-0.5 rounded text-zinc-500 hover:text-zinc-300 transition-all"
+                  className="opacity-0 group-hover:opacity-100 p-1 rounded-lg text-zinc-500 hover:text-zinc-300 hover:bg-zinc-700/50 transition-all"
                 >
-                  <MoreHorizontal className="h-3 w-3" />
+                  <MoreHorizontal className="h-4 w-4" />
                 </button>
 
                 {showMenu && (
                   <>
                     <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
-                    <div className="absolute right-0 top-full mt-1 z-20 w-24 rounded-lg border border-white/10 bg-zinc-800 shadow-xl py-1">
+                    <div className="absolute right-0 top-full mt-1 z-20 w-28 rounded-xl border border-white/10 bg-zinc-800 shadow-xl py-1 overflow-hidden">
                       <button
                         onClick={() => {
                           setIsEditing(true);
                           setShowMenu(false);
                         }}
-                        className="flex w-full items-center gap-1.5 px-2 py-1 text-xs text-zinc-300 hover:bg-zinc-700/50"
+                        className="flex w-full items-center gap-2 px-3 py-2 text-sm text-zinc-300 hover:bg-zinc-700/50 transition-colors"
                       >
-                        <Pencil className="h-3 w-3" />
+                        <Pencil className="h-3.5 w-3.5" />
                         Edit
                       </button>
                       <button
@@ -344,9 +399,9 @@ function CommentItem({ comment, currentUserId, onDelete, onEdit }: CommentItemPr
                           onDelete(comment.id);
                           setShowMenu(false);
                         }}
-                        className="flex w-full items-center gap-1.5 px-2 py-1 text-xs text-red-400 hover:bg-red-500/10"
+                        className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-colors"
                       >
-                        <Trash2 className="h-3 w-3" />
+                        <Trash2 className="h-3.5 w-3.5" />
                         Delete
                       </button>
                     </div>
@@ -361,35 +416,35 @@ function CommentItem({ comment, currentUserId, onDelete, onEdit }: CommentItemPr
               <textarea
                 value={editContent}
                 onChange={(e) => setEditContent(e.target.value)}
-                className="w-full rounded-lg border border-white/10 bg-zinc-700/50 px-2 py-1 text-xs text-white focus:border-orange-500/50 focus:outline-none resize-none"
-                rows={2}
+                className="w-full rounded-xl border border-white/10 bg-zinc-700/50 px-3 py-2 text-sm text-white focus:border-white/20 focus:outline-none resize-none"
+                rows={3}
                 maxLength={1000}
               />
-              <div className="flex items-center justify-end gap-1">
+              <div className="flex items-center justify-end gap-2">
                 <button
                   onClick={() => {
                     setIsEditing(false);
                     setEditContent(comment.content);
                   }}
-                  className="p-1 rounded text-zinc-400 hover:text-white hover:bg-zinc-700/50 transition-colors"
+                  className="px-3 py-1.5 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-zinc-700/50 transition-colors"
                 >
-                  <X className="h-3 w-3" />
+                  Cancel
                 </button>
                 <button
                   onClick={handleSaveEdit}
                   disabled={isLoading || !editContent.trim()}
-                  className="p-1 rounded text-orange-400 hover:text-orange-300 hover:bg-orange-500/10 transition-colors disabled:opacity-50"
+                  className="px-3 py-1.5 rounded-lg text-sm bg-orange-500/20 text-orange-400 hover:bg-orange-500/30 transition-colors disabled:opacity-50"
                 >
                   {isLoading ? (
-                    <Loader2 className="h-3 w-3 animate-spin" />
+                    <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
-                    <Check className="h-3 w-3" />
+                    "Save"
                   )}
                 </button>
               </div>
             </div>
           ) : (
-            <p className="text-xs text-zinc-300 whitespace-pre-wrap break-words">
+            <p className="text-sm text-zinc-300 whitespace-pre-wrap break-words leading-relaxed">
               <ContentWithMentions content={comment.content} />
             </p>
           )}
