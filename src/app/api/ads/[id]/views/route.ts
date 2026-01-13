@@ -6,7 +6,7 @@ interface RouteParams {
   params: Promise<{ id: string }>;
 }
 
-// GET /api/ads/[id]/views - Get view analytics for an ad
+// GET /api/ads/[id]/views - Get view and click analytics for an ad
 export async function GET(request: Request, { params }: RouteParams) {
   try {
     const session = await auth();
@@ -44,6 +44,11 @@ export async function GET(request: Request, { params }: RouteParams) {
       where: { adId: id },
     });
 
+    // Get total clicks
+    const totalClicks = await prisma.adClick.count({
+      where: { adId: id },
+    });
+
     // Get unique visitors (by visitorId)
     const uniqueVisitors = await prisma.adView.groupBy({
       by: ["visitorId"],
@@ -53,34 +58,68 @@ export async function GET(request: Request, { params }: RouteParams) {
       },
     });
 
-    // Get views per day for the last 30 days
+    // Get all views for the last 30 days
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    const viewsByDay = await prisma.adView.groupBy({
-      by: ["createdAt"],
+    const views = await prisma.adView.findMany({
       where: {
         adId: id,
         createdAt: { gte: thirtyDaysAgo },
       },
-      _count: true,
+      select: { createdAt: true },
+      orderBy: { createdAt: "asc" },
+    });
+
+    // Get all clicks for the last 30 days
+    const clicks = await prisma.adClick.findMany({
+      where: {
+        adId: id,
+        createdAt: { gte: thirtyDaysAgo },
+      },
+      select: { createdAt: true },
       orderBy: { createdAt: "asc" },
     });
 
     // Aggregate views by date (day)
     const dailyViews: Record<string, number> = {};
-    viewsByDay.forEach((view) => {
+    views.forEach((view) => {
       const date = view.createdAt.toISOString().split("T")[0];
-      dailyViews[date] = (dailyViews[date] || 0) + view._count;
+      dailyViews[date] = (dailyViews[date] || 0) + 1;
     });
 
-    // Convert to array format for charting
-    const dailyViewsArray = Object.entries(dailyViews).map(([date, count]) => ({
+    // Aggregate clicks by date (day)
+    const dailyClicks: Record<string, number> = {};
+    clicks.forEach((click) => {
+      const date = click.createdAt.toISOString().split("T")[0];
+      dailyClicks[date] = (dailyClicks[date] || 0) + 1;
+    });
+
+    // Get all unique dates and fill in zeros for missing days
+    const allDates = new Set([...Object.keys(dailyViews), ...Object.keys(dailyClicks)]);
+
+    // Fill in missing dates between start and end to have continuous data
+    if (ad.startDate) {
+      const startDate = new Date(ad.startDate);
+      const endDate = ad.endDate ? new Date(ad.endDate) : new Date();
+      const today = new Date();
+      const actualEndDate = endDate < today ? endDate : today;
+
+      for (let d = new Date(startDate); d <= actualEndDate; d.setDate(d.getDate() + 1)) {
+        const dateStr = d.toISOString().split("T")[0];
+        allDates.add(dateStr);
+      }
+    }
+
+    // Convert to sorted array format for charting
+    const sortedDates = Array.from(allDates).sort();
+    const dailyViewsArray = sortedDates.map((date) => ({
       date,
-      views: count,
+      views: dailyViews[date] || 0,
+      clicks: dailyClicks[date] || 0,
     }));
 
-    // Get views for today
+    // Get views and clicks for today
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const todayViews = await prisma.adView.count({
@@ -89,11 +128,23 @@ export async function GET(request: Request, { params }: RouteParams) {
         createdAt: { gte: today },
       },
     });
+    const todayClicks = await prisma.adClick.count({
+      where: {
+        adId: id,
+        createdAt: { gte: today },
+      },
+    });
+
+    // Calculate CTR (Click-Through Rate)
+    const ctr = totalViews > 0 ? (totalClicks / totalViews) * 100 : 0;
 
     return NextResponse.json({
       totalViews,
+      totalClicks,
+      ctr: Math.round(ctr * 100) / 100, // Round to 2 decimal places
       uniqueVisitors: uniqueVisitors.length,
       todayViews,
+      todayClicks,
       dailyViews: dailyViewsArray,
       adPeriod: {
         startDate: ad.startDate,

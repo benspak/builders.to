@@ -830,6 +830,7 @@ model Advertisement {
   // Relations
   user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   views           AdView[]
+  clicks          AdClick[]
 
   @@index([userId])
   @@index([status])
@@ -839,6 +840,22 @@ model Advertisement {
 
 // Ad view tracking for analytics
 model AdView {
+  id              String        @id @default(cuid())
+  adId            String
+  createdAt       DateTime      @default(now())
+
+  // Anonymous visitor tracking
+  visitorId       String?       // Anonymous session identifier
+
+  advertisement   Advertisement @relation(fields: [adId], references: [id], onDelete: Cascade)
+
+  @@index([adId])
+  @@index([createdAt])
+  @@index([adId, visitorId])
+}
+
+// Ad click tracking for CTR analytics
+model AdClick {
   id              String        @id @default(cuid())
   adId            String
   createdAt       DateTime      @default(now())

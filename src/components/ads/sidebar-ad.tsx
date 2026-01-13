@@ -47,13 +47,27 @@ export function SidebarAd({ isAuthenticated = false }: SidebarAdProps) {
       await fetch("/api/ads/track", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ adId, visitorId }),
+        body: JSON.stringify({ adId, visitorId, type: "view" }),
       });
       setTracked(true);
     } catch (error) {
       console.error("Failed to track ad view:", error);
     }
   }, [tracked]);
+
+  const trackClick = useCallback(async (adId: string) => {
+    try {
+      const visitorId = getVisitorId();
+      // Fire and forget - don't block navigation
+      fetch("/api/ads/track", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ adId, visitorId, type: "click" }),
+      });
+    } catch (error) {
+      console.error("Failed to track ad click:", error);
+    }
+  }, []);
 
   useEffect(() => {
     if (ad && !tracked) {
@@ -140,6 +154,7 @@ export function SidebarAd({ isAuthenticated = false }: SidebarAdProps) {
       href={ad!.linkUrl}
       target="_blank"
       rel="noopener noreferrer sponsored"
+      onClick={() => trackClick(ad!.id)}
       className="group block rounded-xl border border-zinc-800/50 bg-zinc-900/50 backdrop-blur-sm overflow-hidden hover:border-emerald-500/30 transition-all hover:shadow-lg hover:shadow-emerald-500/5"
     >
       {/* Header */}

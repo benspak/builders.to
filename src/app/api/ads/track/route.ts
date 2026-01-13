@@ -1,15 +1,23 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-// POST /api/ads/track - Track an ad view
+// POST /api/ads/track - Track an ad view or click
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { adId, visitorId } = body;
+    const { adId, visitorId, type = "view" } = body;
 
     if (!adId || typeof adId !== "string") {
       return NextResponse.json(
         { error: "Ad ID is required" },
+        { status: 400 }
+      );
+    }
+
+    // Validate type
+    if (type !== "view" && type !== "click") {
+      return NextResponse.json(
+        { error: "Invalid tracking type. Must be 'view' or 'click'" },
         { status: 400 }
       );
     }
@@ -27,38 +35,48 @@ export async function POST(request: Request) {
       );
     }
 
-    // Debounce: Check if this visitor has viewed this ad in the last hour
-    if (visitorId) {
-      const oneHourAgo = new Date();
-      oneHourAgo.setHours(oneHourAgo.getHours() - 1);
+    if (type === "view") {
+      // Debounce: Check if this visitor has viewed this ad in the last hour
+      if (visitorId) {
+        const oneHourAgo = new Date();
+        oneHourAgo.setHours(oneHourAgo.getHours() - 1);
 
-      const recentView = await prisma.adView.findFirst({
-        where: {
+        const recentView = await prisma.adView.findFirst({
+          where: {
+            adId,
+            visitorId,
+            createdAt: { gt: oneHourAgo },
+          },
+        });
+
+        if (recentView) {
+          // Already viewed recently, skip tracking
+          return NextResponse.json({ tracked: false, reason: "debounced" });
+        }
+      }
+
+      // Create the view record
+      await prisma.adView.create({
+        data: {
           adId,
-          visitorId,
-          createdAt: { gt: oneHourAgo },
+          visitorId: visitorId || null,
         },
       });
-
-      if (recentView) {
-        // Already viewed recently, skip tracking
-        return NextResponse.json({ tracked: false, reason: "debounced" });
-      }
+    } else {
+      // Track click - no debouncing for clicks, each click matters
+      await prisma.adClick.create({
+        data: {
+          adId,
+          visitorId: visitorId || null,
+        },
+      });
     }
 
-    // Create the view record
-    await prisma.adView.create({
-      data: {
-        adId,
-        visitorId: visitorId || null,
-      },
-    });
-
-    return NextResponse.json({ tracked: true });
+    return NextResponse.json({ tracked: true, type });
   } catch (error) {
-    console.error("Error tracking ad view:", error);
+    console.error("Error tracking ad:", error);
     return NextResponse.json(
-      { error: "Failed to track ad view" },
+      { error: "Failed to track ad" },
       { status: 500 }
     );
   }
