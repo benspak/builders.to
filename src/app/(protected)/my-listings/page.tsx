@@ -153,6 +153,10 @@ export default function MyListingsPage() {
                 key={listing.id}
                 listing={listing}
                 showStatus={true}
+                isOwner={true}
+                onDeleted={() => {
+                  setListings(prev => prev.filter(l => l.id !== listing.id));
+                }}
               />
             ))}
           </div>
