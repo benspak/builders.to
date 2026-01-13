@@ -36,6 +36,34 @@ export const GIFT_PACKAGES = [
   },
 ] as const;
 
+// Token purchase packages (for buying tokens for yourself)
+export const TOKEN_PURCHASE_PACKAGES = [
+  {
+    id: "starter",
+    tokens: 10,
+    priceInCents: 100,
+    label: "Starter Pack",
+    description: "Enough for a service listing",
+    popular: false,
+  },
+  {
+    id: "builder",
+    tokens: 50,
+    priceInCents: 500,
+    label: "Builder Pack",
+    description: "Enough for a sidebar ad",
+    popular: true,
+  },
+  {
+    id: "pro",
+    tokens: 100,
+    priceInCents: 900,
+    label: "Pro Pack",
+    description: "Best value - 10% savings",
+    popular: false,
+  },
+] as const;
+
 /**
  * Generate a unique referral code for a user
  * Format: XXXX-XXXXXX (4 chars from slug + 6 random chars)

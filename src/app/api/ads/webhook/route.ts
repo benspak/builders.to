@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getStripe, SIDEBAR_AD_DURATION_DAYS, SERVICE_LISTING_DURATION_DAYS, LOCAL_LISTING_PAID_DURATION_DAYS } from "@/lib/stripe";
-import { giftTokens } from "@/lib/tokens";
+import { giftTokens, grantTokens } from "@/lib/tokens";
 import Stripe from "stripe";
 
 // Ensure webhook is always dynamic and uses Node.js runtime
@@ -296,6 +296,43 @@ export async function POST(request: Request) {
         console.error("[Webhook] Error processing token gift:", error);
         return NextResponse.json(
           { error: "Failed to process token gift" },
+          { status: 500 }
+        );
+      }
+    }
+
+    // Handle token_purchase payments (when someone buys tokens for themselves)
+    if (paymentType === "token_purchase") {
+      const userId = session.metadata?.userId;
+      const tokenAmount = parseInt(session.metadata?.tokenAmount || "0", 10);
+      const packageId = session.metadata?.packageId;
+
+      if (!userId || !tokenAmount) {
+        console.error("[Webhook] Missing token purchase metadata");
+        return NextResponse.json(
+          { error: "Missing purchase metadata" },
+          { status: 400 }
+        );
+      }
+
+      try {
+        // Grant the purchased tokens to the user
+        await grantTokens(
+          userId,
+          tokenAmount,
+          "GIFT_PURCHASED",
+          `Purchased ${tokenAmount} tokens`,
+          {
+            packageId,
+            stripePaymentId: session.payment_intent as string,
+          }
+        );
+
+        console.log(`[Webhook] Token purchase successful: ${tokenAmount} tokens for user ${userId}`);
+      } catch (error) {
+        console.error("[Webhook] Error processing token purchase:", error);
+        return NextResponse.json(
+          { error: "Failed to process token purchase" },
           { status: 500 }
         );
       }

@@ -20,7 +20,7 @@ function extractYouTubeVideoId(url: string): { videoId: string | null; isShort: 
 
   try {
     const urlObj = new URL(url);
-    
+
     // Check for shorts
     const shortsMatch = urlObj.pathname.match(/^\/shorts\/([a-zA-Z0-9_-]{11})/);
     if (shortsMatch) {
