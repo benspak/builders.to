@@ -6,6 +6,7 @@ import { ProfileForm } from "@/components/profile/profile-form";
 import { ProfileCompleteness } from "@/components/profile/profile-completeness";
 import { calculateProfileCompleteness } from "@/lib/profile-completeness";
 import { NotificationSettings } from "@/components/pwa";
+import { TwoFactorSettings } from "@/components/auth/two-factor";
 import { Settings, User, ArrowLeft, Bell } from "lucide-react";
 
 export const metadata = {
@@ -142,6 +143,11 @@ export default async function SettingsPage() {
             <h2 className="text-lg font-semibold text-white">Push Notifications</h2>
           </div>
           <NotificationSettings />
+        </div>
+
+        {/* Two-Factor Authentication Section */}
+        <div className="mt-8">
+          <TwoFactorSettings />
         </div>
       </div>
     </div>

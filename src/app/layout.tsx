@@ -120,12 +120,12 @@ export default function RootLayout({
         <ThemeProvider>
           <AuthProvider>
             <PWAProvider>
-              <ViewTracker />
-              <div className="flex min-h-screen flex-col">
-                <Navbar />
-                <main className="flex-1">{children}</main>
-                <Footer />
-              </div>
+            <ViewTracker />
+            <div className="flex min-h-screen flex-col">
+              <Navbar />
+              <main className="flex-1">{children}</main>
+              <Footer />
+            </div>
             </PWAProvider>
           </AuthProvider>
         </ThemeProvider>

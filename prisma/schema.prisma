@@ -148,6 +148,11 @@ model User {
   // Push Notification Subscriptions
   pushSubscriptions      PushSubscription[]
 
+  // Two-Factor Authentication
+  twoFactorEnabled       Boolean   @default(false)  // Whether 2FA is enabled
+  twoFactorSecret        String?                    // Encrypted TOTP secret
+  twoFactorBackupCodes   String[]                   // Encrypted backup codes
+
   @@index([slug])
   @@index([stripeConnectId])
   @@index([locationSlug])
