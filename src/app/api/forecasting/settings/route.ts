@@ -13,8 +13,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Get or create forecast target
-    let forecastTarget = await prisma.forecastTarget.findUnique({
+    // Get or create forecast target (using findFirst since userId is not @unique in schema)
+    let forecastTarget = await prisma.forecastTarget.findFirst({
       where: { userId: session.user.id },
       select: {
         id: true,
@@ -76,8 +76,8 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { isActive, minForecastCoins, maxForecastCoins } = body;
 
-    // Get existing forecast target
-    const existingTarget = await prisma.forecastTarget.findUnique({
+    // Get existing forecast target (using findFirst since userId is not @unique in schema)
+    const existingTarget = await prisma.forecastTarget.findFirst({
       where: { userId: session.user.id },
       select: {
         id: true,
@@ -104,31 +104,47 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Update or create forecast target
-    const forecastTarget = await prisma.forecastTarget.upsert({
-      where: { userId: session.user.id },
-      create: {
-        userId: session.user.id,
-        isActive: isActive ?? false,
-        minForecastCoins: min,
-        maxForecastCoins: max,
-      },
-      update: {
-        ...(typeof isActive === "boolean" && { isActive }),
-        ...(minForecastCoins && { minForecastCoins: min }),
-        ...(maxForecastCoins && { maxForecastCoins: max }),
-      },
-      select: {
-        id: true,
-        isActive: true,
-        minForecastCoins: true,
-        maxForecastCoins: true,
-        stripeAccountId: true,
-        stripeConnectedAt: true,
-        currentMrr: true,
-        lastMrrUpdate: true,
-      },
-    });
+    // Update or create forecast target (manual upsert since userId is not @unique)
+    let forecastTarget;
+    if (existingTarget) {
+      forecastTarget = await prisma.forecastTarget.update({
+        where: { id: existingTarget.id },
+        data: {
+          ...(typeof isActive === "boolean" && { isActive }),
+          ...(minForecastCoins && { minForecastCoins: min }),
+          ...(maxForecastCoins && { maxForecastCoins: max }),
+        },
+        select: {
+          id: true,
+          isActive: true,
+          minForecastCoins: true,
+          maxForecastCoins: true,
+          stripeAccountId: true,
+          stripeConnectedAt: true,
+          currentMrr: true,
+          lastMrrUpdate: true,
+        },
+      });
+    } else {
+      forecastTarget = await prisma.forecastTarget.create({
+        data: {
+          userId: session.user.id,
+          isActive: isActive ?? false,
+          minForecastCoins: min,
+          maxForecastCoins: max,
+        },
+        select: {
+          id: true,
+          isActive: true,
+          minForecastCoins: true,
+          maxForecastCoins: true,
+          stripeAccountId: true,
+          stripeConnectedAt: true,
+          currentMrr: true,
+          lastMrrUpdate: true,
+        },
+      });
+    }
 
     return NextResponse.json({
       ...forecastTarget,

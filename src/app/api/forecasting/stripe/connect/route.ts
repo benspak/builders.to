@@ -14,12 +14,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Ensure forecast target exists for this user
-    await prisma.forecastTarget.upsert({
+    // Ensure forecast target exists for this user (manual upsert since userId is not @unique)
+    const existingTarget = await prisma.forecastTarget.findFirst({
       where: { userId: session.user.id },
-      create: { userId: session.user.id },
-      update: {},
     });
+    if (!existingTarget) {
+      await prisma.forecastTarget.create({
+        data: { userId: session.user.id },
+      });
+    }
 
     // Generate OAuth URL
     const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";

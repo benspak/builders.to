@@ -161,7 +161,7 @@ model User {
   wonForecasts           Int       @default(0)      // Total forecasts won
   coinTransactions       CoinTransaction[]
   forecasts              Forecast[]
-  forecastTarget         ForecastTarget?
+  forecastTargets        ForecastTarget[]  // One-to-many to avoid @unique requirement during migration
 
   @@index([slug])
   @@index([stripeConnectId])
@@ -1388,9 +1388,11 @@ enum ForecastStatus {
 
 // Founders (users) that have opted in to be forecasted.
 // NOTE: `companyId` is kept temporarily for non-breaking DB push + backfill.
+// NOTE: Uniqueness on userId is enforced in application code (upsert by userId) to avoid
+//       needing --accept-data-loss during migration.
 model ForecastTarget {
   id                    String    @id @default(cuid())
-  userId                String?   @unique
+  userId                String?
   companyId             String?   @unique // legacy bridge column for migration/backfill
 
   // Stripe connection for MRR verification

@@ -51,24 +51,33 @@ export async function GET(request: NextRequest) {
     // Exchange code for tokens
     const tokens = await exchangeStripeOAuthCode(code);
 
-    // Update forecast target with Stripe connection
-    const forecastTarget = await prisma.forecastTarget.upsert({
+    // Update forecast target with Stripe connection (manual upsert since userId is not @unique)
+    let forecastTarget = await prisma.forecastTarget.findFirst({
       where: { userId },
-      create: {
-        userId,
-        stripeAccountId: tokens.stripeUserId,
-        stripeAccessToken: tokens.accessToken,
-        stripeRefreshToken: tokens.refreshToken,
-        stripeConnectedAt: new Date(),
-        isActive: false, // User still needs to manually activate
-      },
-      update: {
-        stripeAccountId: tokens.stripeUserId,
-        stripeAccessToken: tokens.accessToken,
-        stripeRefreshToken: tokens.refreshToken,
-        stripeConnectedAt: new Date(),
-      },
     });
+
+    if (forecastTarget) {
+      forecastTarget = await prisma.forecastTarget.update({
+        where: { id: forecastTarget.id },
+        data: {
+          stripeAccountId: tokens.stripeUserId,
+          stripeAccessToken: tokens.accessToken,
+          stripeRefreshToken: tokens.refreshToken,
+          stripeConnectedAt: new Date(),
+        },
+      });
+    } else {
+      forecastTarget = await prisma.forecastTarget.create({
+        data: {
+          userId,
+          stripeAccountId: tokens.stripeUserId,
+          stripeAccessToken: tokens.accessToken,
+          stripeRefreshToken: tokens.refreshToken,
+          stripeConnectedAt: new Date(),
+          isActive: false, // User still needs to manually activate
+        },
+      });
+    }
 
     // Fetch initial MRR
     await updateTargetMrr(forecastTarget.id);

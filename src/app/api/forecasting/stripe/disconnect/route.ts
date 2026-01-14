@@ -14,8 +14,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Get forecast target
-    const forecastTarget = await prisma.forecastTarget.findUnique({
+    // Get forecast target (using findFirst since userId is not @unique)
+    const forecastTarget = await prisma.forecastTarget.findFirst({
       where: { userId: session.user.id },
       select: { id: true },
     });
