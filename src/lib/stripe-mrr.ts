@@ -11,8 +11,9 @@ import { getStripe } from "./stripe";
  * - Snapshotting MRR for historical tracking
  */
 
-// OAuth scopes needed for MRR access (read-only)
-export const STRIPE_OAUTH_SCOPES = "read_only";
+// OAuth scopes needed for MRR access
+// Note: Stripe requires read_write by default; read_only requires special approval
+export const STRIPE_OAUTH_SCOPES = "read_write";
 
 // Stripe OAuth URLs
 export const STRIPE_AUTHORIZE_URL = "https://connect.stripe.com/oauth/authorize";
