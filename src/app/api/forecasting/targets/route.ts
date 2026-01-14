@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 
 /**
  * GET /api/forecasting/targets
- * List all active forecast targets (companies available for forecasting)
+ * List all active forecast targets (founders available for forecasting)
  */
 export async function GET(request: NextRequest) {
   try {
@@ -37,23 +37,13 @@ export async function GET(request: NextRequest) {
         currentMrr: { not: null },
       },
       include: {
-        company: {
+        user: {
           select: {
             id: true,
             name: true,
+            image: true,
             slug: true,
-            logo: true,
-            category: true,
-            about: true,
-            website: true,
-            user: {
-              select: {
-                id: true,
-                name: true,
-                image: true,
-                slug: true,
-              },
-            },
+            headline: true,
           },
         },
         _count: {
@@ -102,8 +92,8 @@ export async function GET(request: NextRequest) {
     // Format response
     const formattedTargets = targets.map((target) => ({
       id: target.id,
-      companyId: target.companyId,
-      company: target.company,
+      userId: target.userId,
+      founder: target.user,
       currentMrr: target.currentMrr,
       lastMrrUpdate: target.lastMrrUpdate,
       minForecastCoins: target.minForecastCoins,

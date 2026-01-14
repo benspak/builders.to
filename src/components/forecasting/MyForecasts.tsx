@@ -10,8 +10,7 @@ import {
   CheckCircle,
   XCircle,
   Loader2,
-  Building2,
-  DollarSign,
+  User,
   Coins,
   ChevronDown,
 } from "lucide-react";
@@ -28,12 +27,12 @@ interface Forecast {
   actualMrr: number | null;
   coinsPayout: number | null;
   createdAt: string;
-  company: {
+  founder: {
     id: string;
-    name: string;
     slug: string | null;
-    logo: string | null;
-    category: string;
+    name: string | null;
+    image: string | null;
+    headline: string | null;
   };
   currentMrr: number | null;
   daysRemaining: number | null;
@@ -157,7 +156,7 @@ export function MyForecasts({ initialStatus = "all" }: MyForecastsProps) {
           <TrendingUp className="h-12 w-12 mx-auto mb-4 opacity-50" />
           <p>No forecasts yet</p>
           <p className="text-sm mt-1">
-            Start forecasting on company earnings to see your predictions here
+            Start forecasting on founder earnings to see your predictions here
           </p>
         </div>
       ) : (
@@ -175,30 +174,26 @@ export function MyForecasts({ initialStatus = "all" }: MyForecastsProps) {
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-3">
                   <div className="relative h-10 w-10 rounded-lg overflow-hidden bg-zinc-800 shrink-0">
-                    {forecast.company.logo ? (
+                    {forecast.founder.image ? (
                       <Image
-                        src={forecast.company.logo}
-                        alt={forecast.company.name}
+                        src={forecast.founder.image}
+                        alt={forecast.founder.name || "Founder"}
                         fill
                         className="object-cover"
                       />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center">
-                        <Building2 className="h-5 w-5 text-zinc-500" />
+                        <User className="h-5 w-5 text-zinc-500" />
                       </div>
                     )}
                   </div>
                   <div>
                     <Link
-                      href={
-                        forecast.company.slug
-                          ? `/companies/${forecast.company.slug}`
-                          : "#"
-                      }
+                      href={forecast.founder.slug ? `/${forecast.founder.slug}` : "#"}
                       className="font-semibold hover:text-cyan-400 transition-colors"
                       style={{ color: "var(--foreground)" }}
                     >
-                      {forecast.company.name}
+                      {forecast.founder.name || "Anonymous"}
                     </Link>
                     <div className="flex items-center gap-2 mt-0.5">
                       <span

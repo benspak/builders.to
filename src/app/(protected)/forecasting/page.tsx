@@ -18,20 +18,13 @@ import { CoinPurchase } from "@/components/forecasting/CoinPurchase";
 
 interface ForecastTarget {
   id: string;
-  companyId: string;
-  company: {
+  userId: string;
+  founder: {
     id: string;
-    name: string;
+    name: string | null;
+    image: string | null;
     slug: string | null;
-    logo: string | null;
-    category: string;
-    about: string | null;
-    user: {
-      id: string;
-      name: string | null;
-      image: string | null;
-      slug: string | null;
-    };
+    headline: string | null;
   };
   currentMrr: number | null;
   lastMrrUpdate: string | null;
@@ -133,7 +126,7 @@ export default function ForecastingPage() {
                 Earnings Forecasting
               </h1>
               <p style={{ color: "var(--foreground-muted)" }}>
-                Predict company earnings and earn reputation coins
+                Predict founder earnings and earn reputation coins
               </p>
             </div>
 
@@ -173,7 +166,7 @@ export default function ForecastingPage() {
               >
                 <li className="flex items-start gap-2">
                   <span className="text-cyan-400 mt-0.5">1.</span>
-                  Choose a company and go LONG or SHORT
+                  Choose a founder and go LONG or SHORT
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-cyan-400 mt-0.5">2.</span>
@@ -266,11 +259,10 @@ export default function ForecastingPage() {
                 >
                   <TrendingUp className="h-12 w-12 mx-auto mb-4 opacity-50" />
                   <p className="text-lg font-medium mb-2">
-                    No companies available yet
+                    No founders available yet
                   </p>
                   <p className="text-sm">
-                    Companies need to connect Stripe and enable forecasting to appear
-                    here.
+                    Founders need to connect Stripe and enable forecasting to appear here.
                   </p>
                 </div>
               ) : (

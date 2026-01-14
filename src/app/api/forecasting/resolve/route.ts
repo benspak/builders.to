@@ -47,11 +47,7 @@ export async function POST(request: NextRequest) {
         target: {
           select: {
             currentMrr: true,
-            company: {
-              select: {
-                name: true,
-              },
-            },
+            user: { select: { name: true } },
           },
         },
         user: {
@@ -106,7 +102,7 @@ export async function POST(request: NextRequest) {
             forecast.userId,
             coinsPayout,
             "FORECAST_WON",
-            `Won ${forecast.position} forecast on ${forecast.target.company.name}`,
+            `Won ${forecast.position} forecast on ${forecast.target.user.name ?? "a founder"}`,
             {
               forecastId: forecast.id,
               targetMrr: forecast.targetMrr,
@@ -122,7 +118,7 @@ export async function POST(request: NextRequest) {
               userId: forecast.userId,
               amount: 0, // No change - coins were already spent
               type: "FORECAST_LOST",
-              description: `Lost ${forecast.position} forecast on ${forecast.target.company.name}`,
+              description: `Lost ${forecast.position} forecast on ${forecast.target.user.name ?? "a founder"}`,
               metadata: {
                 forecastId: forecast.id,
                 targetMrr: forecast.targetMrr,
@@ -216,11 +212,7 @@ export async function GET(request: NextRequest) {
         },
         target: {
           select: {
-            company: {
-              select: {
-                name: true,
-              },
-            },
+            user: { select: { name: true } },
           },
         },
       },

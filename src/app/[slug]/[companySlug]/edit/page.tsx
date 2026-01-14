@@ -2,8 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { CompanyForm } from "@/components/companies/company-form";
-import { ForecastingSettings } from "@/components/forecasting";
-import { ArrowLeft, Building2, TrendingUp } from "lucide-react";
+import { ArrowLeft, Building2 } from "lucide-react";
 import Link from "next/link";
 import { getCompanyUrl } from "@/lib/utils";
 
@@ -103,23 +102,6 @@ export default async function EditCompanyPage({ params }: EditCompanyPageProps) 
         </div>
 
         <CompanyForm initialData={company} />
-      </div>
-
-      {/* Forecasting Settings */}
-      <div className="card p-8 mt-8">
-        <div className="mb-6">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-500/20">
-              <TrendingUp className="h-5 w-5 text-cyan-400" />
-            </div>
-            <h2 className="text-xl font-bold text-white">Earnings Forecasting</h2>
-          </div>
-          <p className="text-zinc-400 mt-2">
-            Connect Stripe to let the community forecast your earnings growth. Earn visibility and engagement!
-          </p>
-        </div>
-
-        <ForecastingSettings companyId={company.id} companyName={company.name} />
       </div>
     </div>
   );

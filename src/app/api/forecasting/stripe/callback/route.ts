@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const code = searchParams.get("code");
-    const state = searchParams.get("state"); // companyId
+    const state = searchParams.get("state"); // userId
     const error = searchParams.get("error");
     const errorDescription = searchParams.get("error_description");
 
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
       console.error("Stripe OAuth error:", error, errorDescription);
       return NextResponse.redirect(
         new URL(
-          `/my-companies?error=${encodeURIComponent(errorDescription || error)}`,
+          `/settings?error=${encodeURIComponent(errorDescription || error)}`,
           baseUrl
         )
       );
@@ -35,40 +35,16 @@ export async function GET(request: NextRequest) {
 
     if (!code || !state) {
       return NextResponse.redirect(
-        new URL("/my-companies?error=Invalid+callback+parameters", baseUrl)
+        new URL("/settings?error=Invalid+callback+parameters", baseUrl)
       );
     }
 
-    const companyId = state;
+    const userId = state;
 
-    // Verify user owns the company
-    const company = await prisma.company.findUnique({
-      where: { id: companyId },
-      select: {
-        id: true,
-        userId: true,
-        slug: true,
-        members: {
-          where: {
-            userId: session.user.id,
-            role: { in: ["OWNER", "ADMIN"] },
-          },
-        },
-      },
-    });
-
-    if (!company) {
+    // Ensure the callback is for the signed-in user
+    if (userId !== session.user.id) {
       return NextResponse.redirect(
-        new URL("/my-companies?error=Company+not+found", baseUrl)
-      );
-    }
-
-    const isOwnerOrAdmin =
-      company.userId === session.user.id || company.members.length > 0;
-
-    if (!isOwnerOrAdmin) {
-      return NextResponse.redirect(
-        new URL("/my-companies?error=Access+denied", baseUrl)
+        new URL("/settings?error=Access+denied", baseUrl)
       );
     }
 
@@ -77,9 +53,9 @@ export async function GET(request: NextRequest) {
 
     // Update forecast target with Stripe connection
     const forecastTarget = await prisma.forecastTarget.upsert({
-      where: { companyId },
+      where: { userId },
       create: {
-        companyId,
+        userId,
         stripeAccountId: tokens.stripeUserId,
         stripeAccessToken: tokens.accessToken,
         stripeRefreshToken: tokens.refreshToken,
@@ -97,18 +73,13 @@ export async function GET(request: NextRequest) {
     // Fetch initial MRR
     await updateTargetMrr(forecastTarget.id);
 
-    // Redirect to company settings with success message
-    const redirectUrl = company.slug
-      ? `/companies/${company.slug}?forecasting=connected`
-      : `/my-companies?forecasting=connected`;
-
-    return NextResponse.redirect(new URL(redirectUrl, baseUrl));
+    return NextResponse.redirect(new URL("/settings?forecasting=connected", baseUrl));
   } catch (error) {
     console.error("Error handling Stripe OAuth callback:", error);
     const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
     return NextResponse.redirect(
       new URL(
-        `/my-companies?error=${encodeURIComponent("Failed to connect Stripe")}`,
+        `/settings?error=${encodeURIComponent("Failed to connect Stripe")}`,
         baseUrl
       )
     );

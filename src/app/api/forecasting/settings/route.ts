@@ -3,8 +3,8 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 /**
- * GET /api/forecasting/settings?companyId=xxx
- * Get forecasting settings for a company
+ * GET /api/forecasting/settings
+ * Get forecasting settings for the current user (founder)
  */
 export async function GET(request: NextRequest) {
   try {
@@ -13,47 +13,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { searchParams } = new URL(request.url);
-    const companyId = searchParams.get("companyId");
-
-    if (!companyId) {
-      return NextResponse.json(
-        { error: "companyId is required" },
-        { status: 400 }
-      );
-    }
-
-    // Check if user owns the company
-    const company = await prisma.company.findUnique({
-      where: { id: companyId },
-      select: {
-        id: true,
-        name: true,
-        userId: true,
-        members: {
-          where: {
-            userId: session.user.id,
-            role: { in: ["OWNER", "ADMIN"] },
-          },
-        },
-      },
-    });
-
-    if (!company) {
-      return NextResponse.json({ error: "Company not found" }, { status: 404 });
-    }
-
-    // Check if user is owner or admin
-    const isOwnerOrAdmin =
-      company.userId === session.user.id || company.members.length > 0;
-
-    if (!isOwnerOrAdmin) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
     // Get or create forecast target
     let forecastTarget = await prisma.forecastTarget.findUnique({
-      where: { companyId },
+      where: { userId: session.user.id },
       select: {
         id: true,
         isActive: true,
@@ -67,10 +29,10 @@ export async function GET(request: NextRequest) {
     });
 
     if (!forecastTarget) {
-      // Create a new forecast target for this company
+      // Create a new forecast target for this user
       forecastTarget = await prisma.forecastTarget.create({
         data: {
-          companyId,
+          userId: session.user.id,
           isActive: false,
         },
         select: {
@@ -88,8 +50,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       ...forecastTarget,
-      companyId,
-      companyName: company.name,
+      userId: session.user.id,
       hasStripeConnection: !!forecastTarget.stripeAccountId,
     });
   } catch (error) {
@@ -103,7 +64,7 @@ export async function GET(request: NextRequest) {
 
 /**
  * POST /api/forecasting/settings
- * Update forecasting settings for a company
+ * Update forecasting settings for the current user (founder)
  */
 export async function POST(request: NextRequest) {
   try {
@@ -113,45 +74,11 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { companyId, isActive, minForecastCoins, maxForecastCoins } = body;
-
-    if (!companyId) {
-      return NextResponse.json(
-        { error: "companyId is required" },
-        { status: 400 }
-      );
-    }
-
-    // Check if user owns the company
-    const company = await prisma.company.findUnique({
-      where: { id: companyId },
-      select: {
-        id: true,
-        userId: true,
-        members: {
-          where: {
-            userId: session.user.id,
-            role: { in: ["OWNER", "ADMIN"] },
-          },
-        },
-      },
-    });
-
-    if (!company) {
-      return NextResponse.json({ error: "Company not found" }, { status: 404 });
-    }
-
-    // Check if user is owner or admin
-    const isOwnerOrAdmin =
-      company.userId === session.user.id || company.members.length > 0;
-
-    if (!isOwnerOrAdmin) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    const { isActive, minForecastCoins, maxForecastCoins } = body;
 
     // Get existing forecast target
     const existingTarget = await prisma.forecastTarget.findUnique({
-      where: { companyId },
+      where: { userId: session.user.id },
       select: {
         id: true,
         stripeAccountId: true,
@@ -179,9 +106,9 @@ export async function POST(request: NextRequest) {
 
     // Update or create forecast target
     const forecastTarget = await prisma.forecastTarget.upsert({
-      where: { companyId },
+      where: { userId: session.user.id },
       create: {
-        companyId,
+        userId: session.user.id,
         isActive: isActive ?? false,
         minForecastCoins: min,
         maxForecastCoins: max,
@@ -205,7 +132,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       ...forecastTarget,
-      companyId,
+      userId: session.user.id,
       hasStripeConnection: !!forecastTarget.stripeAccountId,
     });
   } catch (error) {

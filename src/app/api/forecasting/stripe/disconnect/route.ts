@@ -5,7 +5,7 @@ import { disconnectStripe } from "@/lib/stripe-mrr";
 
 /**
  * POST /api/forecasting/stripe/disconnect
- * Disconnect Stripe from a company's forecasting
+ * Disconnect Stripe from the current user's forecasting
  */
 export async function POST(request: NextRequest) {
   try {
@@ -14,52 +14,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { companyId } = body;
-
-    if (!companyId) {
-      return NextResponse.json(
-        { error: "companyId is required" },
-        { status: 400 }
-      );
-    }
-
-    // Check if user owns the company
-    const company = await prisma.company.findUnique({
-      where: { id: companyId },
-      select: {
-        id: true,
-        userId: true,
-        members: {
-          where: {
-            userId: session.user.id,
-            role: { in: ["OWNER", "ADMIN"] },
-          },
-        },
-      },
-    });
-
-    if (!company) {
-      return NextResponse.json({ error: "Company not found" }, { status: 404 });
-    }
-
-    // Check if user is owner or admin
-    const isOwnerOrAdmin =
-      company.userId === session.user.id || company.members.length > 0;
-
-    if (!isOwnerOrAdmin) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
     // Get forecast target
     const forecastTarget = await prisma.forecastTarget.findUnique({
-      where: { companyId },
+      where: { userId: session.user.id },
       select: { id: true },
     });
 
     if (!forecastTarget) {
       return NextResponse.json(
-        { error: "Forecasting not enabled for this company" },
+        { error: "Forecasting not enabled for this account" },
         { status: 404 }
       );
     }

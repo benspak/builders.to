@@ -5,7 +5,7 @@ import { getStripeOAuthUrl } from "@/lib/stripe-mrr";
 
 /**
  * POST /api/forecasting/stripe/connect
- * Initiate Stripe OAuth connection for a company
+ * Initiate Stripe OAuth connection for the current user (founder)
  */
 export async function POST(request: NextRequest) {
   try {
@@ -14,47 +14,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { companyId } = body;
-
-    if (!companyId) {
-      return NextResponse.json(
-        { error: "companyId is required" },
-        { status: 400 }
-      );
-    }
-
-    // Check if user owns the company
-    const company = await prisma.company.findUnique({
-      where: { id: companyId },
-      select: {
-        id: true,
-        userId: true,
-        members: {
-          where: {
-            userId: session.user.id,
-            role: { in: ["OWNER", "ADMIN"] },
-          },
-        },
-      },
-    });
-
-    if (!company) {
-      return NextResponse.json({ error: "Company not found" }, { status: 404 });
-    }
-
-    // Check if user is owner or admin
-    const isOwnerOrAdmin =
-      company.userId === session.user.id || company.members.length > 0;
-
-    if (!isOwnerOrAdmin) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
-    // Ensure forecast target exists
+    // Ensure forecast target exists for this user
     await prisma.forecastTarget.upsert({
-      where: { companyId },
-      create: { companyId },
+      where: { userId: session.user.id },
+      create: { userId: session.user.id },
       update: {},
     });
 
@@ -62,7 +25,7 @@ export async function POST(request: NextRequest) {
     const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
     const redirectUri = `${baseUrl}/api/forecasting/stripe/callback`;
 
-    const authUrl = getStripeOAuthUrl(companyId, redirectUri);
+    const authUrl = getStripeOAuthUrl(session.user.id, redirectUri);
 
     return NextResponse.json({ url: authUrl });
   } catch (error) {

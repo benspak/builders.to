@@ -5,7 +5,7 @@ import { spendCoins, hasEnoughCoins } from "@/lib/coins";
 
 /**
  * POST /api/forecasting/place
- * Place a new forecast on a company's MRR
+ * Place a new forecast on a founder's earnings (MRR)
  */
 export async function POST(request: NextRequest) {
   try {
@@ -46,15 +46,15 @@ export async function POST(request: NextRequest) {
       where: { id: targetId },
       select: {
         id: true,
-        companyId: true,
+        userId: true,
         isActive: true,
         minForecastCoins: true,
         maxForecastCoins: true,
         currentMrr: true,
-        company: {
+        user: {
           select: {
-            userId: true,
             name: true,
+            slug: true,
           },
         },
       },
@@ -69,15 +69,15 @@ export async function POST(request: NextRequest) {
 
     if (!target.isActive) {
       return NextResponse.json(
-        { error: "Forecasting is not enabled for this company" },
+        { error: "Forecasting is not enabled for this founder" },
         { status: 400 }
       );
     }
 
-    // Check if user is the company owner (can't forecast own company)
-    if (target.company.userId === session.user.id) {
+    // Can't forecast yourself
+    if (target.userId === session.user.id) {
       return NextResponse.json(
-        { error: "You cannot forecast on your own company" },
+        { error: "You cannot forecast on yourself" },
         { status: 400 }
       );
     }
@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
 
     if (existingForecast) {
       return NextResponse.json(
-        { error: "You already have a pending forecast on this company" },
+        { error: "You already have a pending forecast on this founder" },
         { status: 400 }
       );
     }
@@ -142,7 +142,7 @@ export async function POST(request: NextRequest) {
         session.user.id,
         coinsStaked,
         "FORECAST_PLACED",
-        `Forecast placed on ${target.company.name}`,
+        `Forecast placed on ${target.user.name ?? "a founder"}`,
         { targetId, position, targetMrr }
       );
 
@@ -161,10 +161,11 @@ export async function POST(request: NextRequest) {
         include: {
           target: {
             include: {
-              company: {
+              user: {
                 select: {
                   name: true,
                   slug: true,
+                  image: true,
                 },
               },
             },
@@ -182,8 +183,8 @@ export async function POST(request: NextRequest) {
       coinsStaked: forecast.coinsStaked,
       quarterStart: forecast.quarterStart,
       quarterEnd: forecast.quarterEnd,
-      company: forecast.target.company,
-      message: `Successfully placed ${position} forecast on ${target.company.name}`,
+      founder: forecast.target.user,
+      message: `Successfully placed ${position} forecast on ${target.user.name ?? "a founder"}`,
     });
   } catch (error) {
     console.error("Error placing forecast:", error);

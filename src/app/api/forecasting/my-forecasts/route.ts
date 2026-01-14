@@ -39,13 +39,13 @@ export async function GET(request: NextRequest) {
       include: {
         target: {
           include: {
-            company: {
+            user: {
               select: {
                 id: true,
                 name: true,
                 slug: true,
-                logo: true,
-                category: true,
+                image: true,
+                headline: true,
               },
             },
           },
@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
       actualMrr: f.actualMrr,
       coinsPayout: f.coinsPayout,
       createdAt: f.createdAt,
-      company: f.target.company,
+      founder: f.target.user,
       currentMrr: f.target.currentMrr,
       daysRemaining:
         f.status === "PENDING"

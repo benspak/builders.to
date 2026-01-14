@@ -8,7 +8,7 @@ import {
   TrendingDown,
   DollarSign,
   Users,
-  Building2,
+  User,
   ChevronRight,
 } from "lucide-react";
 import { PlaceForecastModal } from "./PlaceForecastModal";
@@ -16,20 +16,13 @@ import { PlaceForecastModal } from "./PlaceForecastModal";
 interface ForecastTargetCardProps {
   target: {
     id: string;
-    companyId: string;
-    company: {
+    userId: string;
+    founder: {
       id: string;
-      name: string;
       slug: string | null;
-      logo: string | null;
-      category: string;
-      about: string | null;
-      user: {
-        id: string;
-        name: string | null;
-        image: string | null;
-        slug: string | null;
-      };
+      name: string | null;
+      image: string | null;
+      headline: string | null;
     };
     currentMrr: number | null;
     lastMrrUpdate: string | null;
@@ -79,36 +72,32 @@ export function ForecastTargetCard({
         {/* Header */}
         <div className="flex items-start gap-3 mb-4">
           <div className="relative h-12 w-12 rounded-xl overflow-hidden bg-zinc-800 shrink-0">
-            {target.company.logo ? (
+            {target.founder.image ? (
               <Image
-                src={target.company.logo}
-                alt={target.company.name}
+                src={target.founder.image}
+                alt={target.founder.name || "Founder"}
                 fill
                 className="object-cover"
               />
             ) : (
               <div className="flex h-full w-full items-center justify-center">
-                <Building2 className="h-6 w-6 text-zinc-500" />
+                <User className="h-6 w-6 text-zinc-500" />
               </div>
             )}
           </div>
           <div className="flex-1 min-w-0">
             <Link
-              href={
-                target.company.slug
-                  ? `/companies/${target.company.slug}`
-                  : "#"
-              }
+              href={target.founder.slug ? `/${target.founder.slug}` : "#"}
               className="font-semibold hover:text-cyan-400 transition-colors truncate block"
               style={{ color: "var(--foreground)" }}
             >
-              {target.company.name}
+              {target.founder.name || "Anonymous"}
             </Link>
             <p
               className="text-sm truncate"
               style={{ color: "var(--foreground-muted)" }}
             >
-              {target.company.category.replace("_", " ")}
+              {target.founder.headline || "Founder"}
             </p>
           </div>
         </div>

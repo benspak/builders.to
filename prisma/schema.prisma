@@ -161,6 +161,7 @@ model User {
   wonForecasts           Int       @default(0)      // Total forecasts won
   coinTransactions       CoinTransaction[]
   forecasts              Forecast[]
+  forecastTarget         ForecastTarget?
 
   @@index([slug])
   @@index([stripeConnectId])
@@ -456,7 +457,6 @@ model Company {
   updates  CompanyUpdate[]
   roles    CompanyRole[]
   members  CompanyMember[]  // Team members of the company
-  forecastTarget ForecastTarget?  // Forecasting target settings
 
   @@index([userId])
   @@index([category])
@@ -1388,7 +1388,7 @@ enum ForecastStatus {
 // Companies that have opted in to be forecasted
 model ForecastTarget {
   id                    String    @id @default(cuid())
-  companyId             String    @unique
+  userId                String    @unique
 
   // Stripe connection for MRR verification
   stripeAccountId       String?   // Connected Stripe account ID (read-only access)
@@ -1409,12 +1409,12 @@ model ForecastTarget {
   updatedAt             DateTime  @updatedAt
 
   // Relations
-  company               Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   forecasts             Forecast[]
   mrrSnapshots          MrrSnapshot[]
 
   @@index([isActive])
-  @@index([companyId])
+  @@index([userId])
 }
 
 // Individual forecasts placed by users

@@ -38,14 +38,6 @@ export function Footer() {
             >
               X Community
             </a>
-            <a
-              href="https://discord.com/invite/G7nmswWkbn"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="transition-colors hover:opacity-80"
-            >
-              Discord
-            </a>
             <Link href="/sitemap.xml" className="transition-colors hover:opacity-80">
               Sitemap
             </Link>

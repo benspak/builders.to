@@ -18,28 +18,13 @@ export async function GET(
     const target = await prisma.forecastTarget.findUnique({
       where: { id },
       include: {
-        company: {
+        user: {
           select: {
             id: true,
             name: true,
+            image: true,
             slug: true,
-            logo: true,
-            category: true,
-            about: true,
-            website: true,
-            revenueRange: true,
-            customerCount: true,
-            userCount: true,
-            isBootstrapped: true,
-            isProfitable: true,
-            user: {
-              select: {
-                id: true,
-                name: true,
-                image: true,
-                slug: true,
-              },
-            },
+            headline: true,
           },
         },
         forecasts: {
@@ -120,8 +105,8 @@ export async function GET(
 
     return NextResponse.json({
       id: target.id,
-      companyId: target.companyId,
-      company: target.company,
+      userId: target.userId,
+      founder: target.user,
       currentMrr: target.currentMrr,
       lastMrrUpdate: target.lastMrrUpdate,
       minForecastCoins: target.minForecastCoins,

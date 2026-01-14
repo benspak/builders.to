@@ -15,11 +15,6 @@ import {
   RefreshCw,
 } from "lucide-react";
 
-interface ForecastingSettingsProps {
-  companyId: string;
-  companyName: string;
-}
-
 interface SettingsData {
   id: string;
   isActive: boolean;
@@ -31,10 +26,7 @@ interface SettingsData {
   lastMrrUpdate: string | null;
 }
 
-export function ForecastingSettings({
-  companyId,
-  companyName,
-}: ForecastingSettingsProps) {
+export function ForecastingSettings() {
   const [settings, setSettings] = useState<SettingsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -45,15 +37,13 @@ export function ForecastingSettings({
 
   useEffect(() => {
     fetchSettings();
-  }, [companyId]);
+  }, []);
 
   const fetchSettings = async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch(
-        `/api/forecasting/settings?companyId=${companyId}`
-      );
+      const response = await fetch(`/api/forecasting/settings`);
       if (!response.ok) {
         throw new Error("Failed to fetch settings");
       }
@@ -75,7 +65,7 @@ export function ForecastingSettings({
       const response = await fetch("/api/forecasting/settings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ companyId, ...updates }),
+        body: JSON.stringify({ ...updates }),
       });
 
       if (!response.ok) {
@@ -102,7 +92,7 @@ export function ForecastingSettings({
       const response = await fetch("/api/forecasting/stripe/connect", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ companyId }),
+        body: JSON.stringify({}),
       });
 
       if (!response.ok) {
@@ -123,7 +113,7 @@ export function ForecastingSettings({
   const disconnectStripe = async () => {
     if (
       !confirm(
-        "Are you sure you want to disconnect Stripe? This will disable forecasting for your company."
+        "Are you sure you want to disconnect Stripe? This will disable forecasting for your account."
       )
     ) {
       return;
@@ -136,7 +126,7 @@ export function ForecastingSettings({
       const response = await fetch("/api/forecasting/stripe/disconnect", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ companyId }),
+        body: JSON.stringify({}),
       });
 
       if (!response.ok) {
@@ -204,7 +194,7 @@ export function ForecastingSettings({
             Forecasting Settings
           </h2>
           <p className="text-sm" style={{ color: "var(--foreground-muted)" }}>
-            Allow users to forecast your company&apos;s earnings
+            Allow users to forecast your earnings
           </p>
         </div>
       </div>
@@ -374,7 +364,7 @@ export function ForecastingSettings({
                     className="font-medium"
                     style={{ color: "var(--foreground)" }}
                   >
-                    Allow forecasting on {companyName}
+                    Allow forecasting on your earnings
                   </p>
                   <p
                     className="text-sm"
@@ -495,7 +485,7 @@ export function ForecastingSettings({
             className="text-sm space-y-1"
             style={{ color: "var(--foreground-muted)" }}
           >
-            <li>• Users stake reputation coins on your company&apos;s earnings performance</li>
+            <li>• Users stake reputation coins on your earnings performance</li>
             <li>• They can go LONG (earnings will increase) or SHORT (earnings will decrease)</li>
             <li>• Earnings are verified automatically via Stripe (read-only access)</li>
             <li>• Winners receive 2x their staked coins after 24 hours</li>

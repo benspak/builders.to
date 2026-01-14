@@ -17,8 +17,8 @@ import {
 interface PlaceForecastModalProps {
   target: {
     id: string;
-    company: {
-      name: string;
+    founder: {
+      name: string | null;
     };
     currentMrr: number | null;
     minForecastCoins: number;
@@ -75,7 +75,7 @@ export function PlaceForecastModal({
     const targetMrrCents = Math.round(parseFloat(targetMrr) * 100);
 
     if (isNaN(targetMrrCents) || targetMrrCents < 0) {
-      setError("Please enter a valid MRR target");
+      setError("Please enter a valid earnings target");
       return;
     }
 
@@ -173,7 +173,7 @@ export function PlaceForecastModal({
             Place Forecast
           </h2>
           <p className="text-sm" style={{ color: "var(--foreground-muted)" }}>
-            Predict {target.company.name}&apos;s earnings in 24 hours
+            Predict {(target.founder.name ?? "this founder")}&apos;s earnings in 24 hours
           </p>
         </div>
 

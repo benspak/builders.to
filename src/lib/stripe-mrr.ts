@@ -23,7 +23,7 @@ export const STRIPE_TOKEN_URL = "https://connect.stripe.com/oauth/token";
  * Generate the Stripe OAuth authorization URL
  */
 export function getStripeOAuthUrl(
-  companyId: string,
+  userId: string,
   redirectUri: string
 ): string {
   const clientId = process.env.STRIPE_CLIENT_ID;
@@ -37,7 +37,7 @@ export function getStripeOAuthUrl(
     client_id: clientId,
     scope: STRIPE_OAUTH_SCOPES,
     redirect_uri: redirectUri,
-    state: companyId, // Pass company ID as state for verification
+    state: userId, // Pass user ID as state for verification
   });
 
   return `${STRIPE_AUTHORIZE_URL}?${params.toString()}`;
@@ -312,7 +312,7 @@ export async function updateAllTargetsMrr(): Promise<{
   failed: number;
   results: Array<{
     targetId: string;
-    companyId: string;
+    userId: string;
     success: boolean;
     mrr?: number;
     error?: string;
@@ -325,7 +325,7 @@ export async function updateAllTargetsMrr(): Promise<{
     },
     select: {
       id: true,
-      companyId: true,
+      userId: true,
     },
   });
 
@@ -338,7 +338,7 @@ export async function updateAllTargetsMrr(): Promise<{
 
     results.push({
       targetId: target.id,
-      companyId: target.companyId,
+      userId: target.userId,
       success: result.success,
       mrr: result.success ? result.mrr : undefined,
       error: result.error,

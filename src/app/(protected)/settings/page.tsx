@@ -8,7 +8,8 @@ import { calculateProfileCompleteness } from "@/lib/profile-completeness";
 import { NotificationSettings } from "@/components/pwa";
 import { TwoFactorSettings } from "@/components/auth/two-factor";
 import { DeleteAccount } from "@/components/settings/delete-account";
-import { Settings, User, ArrowLeft, Bell } from "lucide-react";
+import { ForecastingSettings } from "@/components/forecasting";
+import { Settings, User, ArrowLeft, Bell, TrendingUp } from "lucide-react";
 
 export const metadata = {
   title: "Settings - Builders.to",
@@ -144,6 +145,15 @@ export default async function SettingsPage() {
             <h2 className="text-lg font-semibold text-white">Push Notifications</h2>
           </div>
           <NotificationSettings />
+        </div>
+
+        {/* Earnings Forecasting Section */}
+        <div className="mt-8">
+          <div className="flex items-center gap-3 mb-4">
+            <TrendingUp className="h-5 w-5 text-cyan-400" />
+            <h2 className="text-lg font-semibold text-white">Earnings Forecasting</h2>
+          </div>
+          <ForecastingSettings />
         </div>
 
         {/* Two-Factor Authentication Section */}
