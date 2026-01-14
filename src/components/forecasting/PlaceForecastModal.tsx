@@ -135,7 +135,7 @@ export function PlaceForecastModal({
   };
 
   const quarterEndDate = new Date();
-  quarterEndDate.setDate(quarterEndDate.getDate() + 90);
+  quarterEndDate.setDate(quarterEndDate.getDate() + 1);
 
   const potentialWin = coinsStaked * 2;
 
@@ -173,7 +173,7 @@ export function PlaceForecastModal({
             Place Forecast
           </h2>
           <p className="text-sm" style={{ color: "var(--foreground-muted)" }}>
-            Predict {target.company.name}&apos;s MRR in 90 days
+            Predict {target.company.name}&apos;s MRR in 24 hours
           </p>
         </div>
 
@@ -189,7 +189,7 @@ export function PlaceForecastModal({
               Forecast Placed!
             </h3>
             <p style={{ color: "var(--foreground-muted)" }}>
-              Good luck! Results in 90 days.
+              Good luck! Results in 24 hours.
             </p>
           </div>
         ) : (
@@ -265,7 +265,7 @@ export function PlaceForecastModal({
                 className="block text-sm font-medium mb-2"
                 style={{ color: "var(--foreground)" }}
               >
-                Target MRR (in 90 days)
+                Target MRR (in 24 hours)
               </label>
               <div className="relative">
                 <span
@@ -280,7 +280,7 @@ export function PlaceForecastModal({
                   onChange={(e) => setTargetMrr(e.target.value)}
                   placeholder="10000"
                   min="0"
-                  step="100"
+                  step="1"
                   className="w-full pl-8 pr-4 py-3 rounded-xl text-lg border"
                   style={{
                     background: "var(--background)",

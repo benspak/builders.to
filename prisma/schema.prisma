@@ -1428,9 +1428,9 @@ model Forecast {
   targetMrr       Int              // MRR threshold in cents (what they're betting on)
   coinsStaked     Int              // Number of coins staked
 
-  // Time period (rolling 90-day quarter)
-  quarterStart    DateTime         // When the quarter starts
-  quarterEnd      DateTime         // When the quarter ends (90 days later)
+  // Time period (24-hour resolution window)
+  quarterStart    DateTime         // When the forecast starts
+  quarterEnd      DateTime         // When the forecast ends (24 hours later)
 
   // Resolution
   status          ForecastStatus   @default(PENDING)

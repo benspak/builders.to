@@ -130,10 +130,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Calculate quarter dates (90 days from now)
+    // Calculate resolution date (24 hours from now)
     const quarterStart = new Date();
     const quarterEnd = new Date();
-    quarterEnd.setDate(quarterEnd.getDate() + 90);
+    quarterEnd.setDate(quarterEnd.getDate() + 1);
 
     // Create the forecast and spend coins in a transaction
     const forecast = await prisma.$transaction(async (tx) => {

@@ -181,7 +181,7 @@ export default function ForecastingPage() {
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-cyan-400 mt-0.5">3.</span>
-                  Wait 90 days for MRR to be verified
+                  Wait 24 hours for MRR to be verified
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-cyan-400 mt-0.5">4.</span>

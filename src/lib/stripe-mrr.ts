@@ -378,7 +378,7 @@ export async function getMrrHistory(
     snapshotAt: Date;
   }>
 > {
-  const limit = options?.limit ?? 90; // Default to last 90 days
+  const limit = options?.limit ?? 1; // Default to last 1 day
 
   const snapshots = await prisma.mrrSnapshot.findMany({
     where: {

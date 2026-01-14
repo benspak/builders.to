@@ -498,7 +498,7 @@ export function ForecastingSettings({
             <li>• Users stake reputation coins on your company&apos;s MRR performance</li>
             <li>• They can go LONG (MRR will increase) or SHORT (MRR will decrease)</li>
             <li>• MRR is verified automatically via Stripe (read-only access)</li>
-            <li>• Winners receive 2x their staked coins after 90 days</li>
+            <li>• Winners receive 2x their staked coins after 24 hours</li>
             <li>• Coins are non-transferable and have no monetary value</li>
           </ul>
         </div>
