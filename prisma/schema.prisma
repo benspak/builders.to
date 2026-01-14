@@ -55,103 +55,107 @@ model User {
   image         String?
 
   // Profile fields
-  slug          String?   @unique  // For public profile URLs (auto-set from X username)
-  username      String?            // X/Twitter username (handle), captured at signup
-  displayName   String?            // User-chosen display name (alternative to first/last name)
-  firstName     String?
-  lastName      String?
-  zipCode       String?            // Legacy field, kept for backward compatibility
-  city          String?            // User's city
-  state         String?            // Legacy field, kept for backward compatibility (US state abbreviation)
-  country       String?            // User's country
-  locationSlug  String?   // URL-friendly location slug for Builders Local (e.g., "san-francisco-usa")
-  headline      String?
-  bio           String?   @db.Text
-  websiteUrl    String?
-  twitterUrl    String?
-  youtubeUrl    String?
-  linkedinUrl   String?
-  twitchUrl     String?   // Twitch channel URL
+  slug             String? @unique // For public profile URLs (auto-set from X username)
+  username         String? // X/Twitter username (handle), captured at signup
+  displayName      String? // User-chosen display name (alternative to first/last name)
+  firstName        String?
+  lastName         String?
+  zipCode          String? // Legacy field, kept for backward compatibility
+  city             String? // User's city
+  state            String? // Legacy field, kept for backward compatibility (US state abbreviation)
+  country          String? // User's country
+  locationSlug     String? // URL-friendly location slug for Builders Local (e.g., "san-francisco-usa")
+  headline         String?
+  bio              String? @db.Text
+  websiteUrl       String?
+  twitterUrl       String?
+  youtubeUrl       String?
+  linkedinUrl      String?
+  twitchUrl        String? // Twitch channel URL
   featuredVideoUrl String? // Featured video URL (YouTube/Twitch video to showcase)
 
   // Profile status - what the user is currently up to
-  status              String?   // Short status message (e.g., "Building a new feature 🚀")
-  statusUpdatedAt     DateTime? // When the status was last updated
+  status          String? // Short status message (e.g., "Building a new feature 🚀")
+  statusUpdatedAt DateTime? // When the status was last updated
 
   // Intent flags - Builder Operating System
-  openToWork          Boolean @default(false)
-  lookingForCofounder Boolean @default(false)
+  openToWork           Boolean @default(false)
+  lookingForCofounder  Boolean @default(false)
   availableForContract Boolean @default(false)
 
   // Streak tracking
-  currentStreak       Int     @default(0)  // Current consecutive days with updates
-  longestStreak       Int     @default(0)  // Longest streak ever
-  lastActivityDate    DateTime? // Last date of activity for streak calculation
+  currentStreak    Int       @default(0) // Current consecutive days with updates
+  longestStreak    Int       @default(0) // Longest streak ever
+  lastActivityDate DateTime? // Last date of activity for streak calculation
 
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  accounts          Account[]
-  sessions          Session[]
-  projects          Project[]
-  upvotes           Upvote[]
-  comments          Comment[]
-  commentLikes      CommentLike[]
-  companies         Company[]
-  companyMemberships CompanyMember[]  // Companies where user is a team member
-  dailyUpdates      DailyUpdate[]
-  updateLikes       UpdateLike[]
-  updateComments    UpdateComment[]
-  coBuilderOn       ProjectCoBuilder[]  // Projects where user is a co-builder
+  accounts           Account[]
+  sessions           Session[]
+  projects           Project[]
+  upvotes            Upvote[]
+  comments           Comment[]
+  commentLikes       CommentLike[]
+  companies          Company[]
+  companyMemberships CompanyMember[] // Companies where user is a team member
+  dailyUpdates       DailyUpdate[]
+  updateLikes        UpdateLike[]
+  updateComments     UpdateComment[]
+  coBuilderOn        ProjectCoBuilder[] // Projects where user is a co-builder
 
   // Endorsements
   endorsementsGiven    Endorsement[] @relation("EndorserRelation")
   endorsementsReceived Endorsement[] @relation("EndorseeRelation")
 
   // Follows
-  followers            Follow[] @relation("FollowingRelation")  // Users who follow this user
-  following            Follow[] @relation("FollowerRelation")   // Users this user follows
+  followers Follow[] @relation("FollowingRelation") // Users who follow this user
+  following Follow[] @relation("FollowerRelation") // Users this user follows
 
   // Feed and notifications
-  feedEventLikes       FeedEventLike[]
-  feedEventComments    FeedEventComment[]
-  notifications        Notification[]
-  emailPreferences     EmailPreferences?
+  feedEventLikes    FeedEventLike[]
+  feedEventComments FeedEventComment[]
+  notifications     Notification[]
+  emailPreferences  EmailPreferences?
 
   // Advertising
-  advertisements       Advertisement[]
+  advertisements Advertisement[]
 
   // Stripe Connect for Services Marketplace
-  stripeConnectId        String?   // Stripe Connect account ID
-  stripeConnectOnboarded Boolean   @default(false)
+  stripeConnectId        String? // Stripe Connect account ID
+  stripeConnectOnboarded Boolean @default(false)
 
   // Services Marketplace
-  serviceListings        ServiceListing[]
-  serviceOrders          ServiceOrder[]    @relation("ServiceBuyer")
+  serviceListings ServiceListing[]
+  serviceOrders   ServiceOrder[]   @relation("ServiceBuyer")
 
   // Local Listings
-  localListings          LocalListing[]
-  localListingComments   LocalListingComment[]
-  localListingFlags      LocalListingFlag[]
-  localListingRatingsGiven    LocalListingRating[] @relation("LocalListingRater")
-  localListingRatingsReceived LocalListingRating[] @relation("LocalListingRated")
+  localListings               LocalListing[]
+  localListingComments        LocalListingComment[]
+  localListingFlags           LocalListingFlag[]
+  localListingRatingsGiven    LocalListingRating[]  @relation("LocalListingRater")
+  localListingRatingsReceived LocalListingRating[]  @relation("LocalListingRated")
 
   // Token System
-  tokenBalance           Int       @default(0)   // Current token balance
-  lifetimeTokensEarned   Int       @default(0)   // Total tokens earned (public metric for ranking)
-  referralCode           String?   @unique       // Unique referral code for sharing
-  referredById           String?                 // Who referred this user
-  referredBy             User?     @relation("Referrals", fields: [referredById], references: [id], onDelete: SetNull)
-  referrals              User[]    @relation("Referrals")  // Users this user referred
-  tokenTransactions      TokenTransaction[]
+  tokenBalance         Int                @default(0) // Current token balance
+  lifetimeTokensEarned Int                @default(0) // Total tokens earned (public metric for ranking)
+  referralCode         String?            @unique // Unique referral code for sharing
+  referredById         String? // Who referred this user
+  referredBy           User?              @relation("Referrals", fields: [referredById], references: [id], onDelete: SetNull)
+  referrals            User[]             @relation("Referrals") // Users this user referred
+  tokenTransactions    TokenTransaction[]
 
   // Push Notification Subscriptions
-  pushSubscriptions      PushSubscription[]
+  pushSubscriptions PushSubscription[]
 
   // Two-Factor Authentication
-  twoFactorEnabled       Boolean   @default(false)  // Whether 2FA is enabled
-  twoFactorSecret        String?                    // Encrypted TOTP secret
-  twoFactorBackupCodes   String[]                   // Encrypted backup codes
+  twoFactorEnabled     Boolean  @default(false) // Whether 2FA is enabled
+  twoFactorSecret      String? // Encrypted TOTP secret
+  twoFactorBackupCodes String[] // Encrypted backup codes
+
+  // Betting System
+  bettingEnabled Boolean @default(false) // Allow others to bet on this user's MRR
+  bets           Bet[] // Bets placed by this user
 
   @@index([slug])
   @@index([stripeConnectId])
@@ -161,21 +165,21 @@ model User {
 
 model Project {
   id          String        @id @default(cuid())
-  slug        String?       @unique  // Temporarily optional for migration
+  slug        String?       @unique // Temporarily optional for migration
   title       String
   tagline     String
   description String?       @db.Text
   url         String?
   githubUrl   String?
-  imageUrl    String?       // Main screenshot/cover image
+  imageUrl    String? // Main screenshot/cover image
   status      ProjectStatus @default(IDEA)
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
   // Artifact links - make projects compound value
-  demoUrl      String?      // Live demo link
-  docsUrl      String?      // Documentation link
-  changelogUrl String?      // Changelog/release notes link
+  demoUrl      String? // Live demo link
+  docsUrl      String? // Documentation link
+  changelogUrl String? // Changelog/release notes link
 
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -188,9 +192,9 @@ model Project {
   milestones        ProjectMilestone[]
   coBuilders        ProjectCoBuilder[]
   notifications     Notification[]
-  servicePortfolios ServicePortfolio[]  // Projects linked as proof-of-work for services
-  views             ProjectView[]       // View tracking
-  clicks            ProjectClick[]      // Click tracking
+  servicePortfolios ServicePortfolio[] // Projects linked as proof-of-work for services
+  views             ProjectView[] // View tracking
+  clicks            ProjectClick[] // Click tracking
 
   @@index([userId])
   @@index([createdAt])
@@ -205,10 +209,10 @@ model ProjectCoBuilder {
   projectId String
   userId    String
 
-  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([projectId, userId])  // A user can only be a co-builder once per project
+  @@unique([projectId, userId]) // A user can only be a co-builder once per project
   @@index([projectId])
   @@index([userId])
 }
@@ -250,8 +254,8 @@ model Comment {
   userId    String
   projectId String
 
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
   likes   CommentLike[]
 
   @@index([projectId])
@@ -284,32 +288,32 @@ enum ProjectStatus {
 
 // Predefined milestone types for project lifecycle tracking
 enum MilestoneType {
-  V1_SHIPPED        // v1 shipped
-  FIRST_USER        // First user/signup
-  FIRST_CUSTOMER    // First paying customer
-  MRR_1K            // $1k MRR
-  MRR_10K           // $10k MRR
-  PROFITABLE        // Reached profitability
-  TEAM_HIRE         // First hire
-  FUNDING           // Received funding
-  PIVOT             // Major pivot
-  CUSTOM            // Custom milestone
+  V1_SHIPPED // v1 shipped
+  FIRST_USER // First user/signup
+  FIRST_CUSTOMER // First paying customer
+  MRR_1K // $1k MRR
+  MRR_10K // $10k MRR
+  PROFITABLE // Reached profitability
+  TEAM_HIRE // First hire
+  FUNDING // Received funding
+  PIVOT // Major pivot
+  CUSTOM // Custom milestone
 }
 
 // Project milestones - longitudinal record of execution
 model ProjectMilestone {
   id          String        @id @default(cuid())
   type        MilestoneType
-  title       String?       // Custom title (optional, used for CUSTOM type)
+  title       String? // Custom title (optional, used for CUSTOM type)
   description String?       @db.Text
-  achievedAt  DateTime      @default(now())  // When milestone was achieved
+  achievedAt  DateTime      @default(now()) // When milestone was achieved
   createdAt   DateTime      @default(now())
 
-  projectId   String
-  project     Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   // Link to feed event
-  feedEvent   FeedEvent?
+  feedEvent FeedEvent?
 
   @@index([projectId])
   @@index([achievedAt])
@@ -339,32 +343,32 @@ enum CompanySize {
 
 // Traction badge enums
 enum CustomerRange {
-  RANGE_0         // No customers yet
-  RANGE_1_10      // 1-10 customers
-  RANGE_11_50     // 11-50 customers
-  RANGE_51_100    // 51-100 customers
-  RANGE_101_500   // 101-500 customers
-  RANGE_500_PLUS  // 500+ customers
+  RANGE_0 // No customers yet
+  RANGE_1_10 // 1-10 customers
+  RANGE_11_50 // 11-50 customers
+  RANGE_51_100 // 51-100 customers
+  RANGE_101_500 // 101-500 customers
+  RANGE_500_PLUS // 500+ customers
 }
 
 enum UserRange {
-  RANGE_0            // No users yet
-  RANGE_1_100        // 1-100 users
-  RANGE_101_1K       // 101-1,000 users
-  RANGE_1K_10K       // 1,000-10,000 users
-  RANGE_10K_100K     // 10,000-100,000 users
-  RANGE_100K_PLUS    // 100,000+ users
+  RANGE_0 // No users yet
+  RANGE_1_100 // 1-100 users
+  RANGE_101_1K // 101-1,000 users
+  RANGE_1K_10K // 1,000-10,000 users
+  RANGE_10K_100K // 10,000-100,000 users
+  RANGE_100K_PLUS // 100,000+ users
 }
 
 enum RevenueRange {
-  RANGE_0            // Pre-revenue
-  RANGE_1_10K        // $1-$10K ARR
-  RANGE_10K_50K      // $10K-$50K ARR
-  RANGE_50K_100K     // $50K-$100K ARR
-  RANGE_100K_500K    // $100K-$500K ARR
-  RANGE_500K_1M      // $500K-$1M ARR
-  RANGE_1M_5M        // $1M-$5M ARR
-  RANGE_5M_PLUS      // $5M+ ARR
+  RANGE_0 // Pre-revenue
+  RANGE_1_10K // $1-$10K ARR
+  RANGE_10K_50K // $10K-$50K ARR
+  RANGE_50K_100K // $50K-$100K ARR
+  RANGE_100K_500K // $100K-$500K ARR
+  RANGE_500K_1M // $500K-$1M ARR
+  RANGE_1M_5M // $1M-$5M ARR
+  RANGE_5M_PLUS // $5M+ ARR
 }
 
 enum FundingStage {
@@ -409,11 +413,11 @@ enum CompensationType {
 
 model Company {
   id           String          @id @default(cuid())
-  slug         String?         @unique  // Temporarily optional for migration
+  slug         String?         @unique // Temporarily optional for migration
   name         String
   logo         String?
   location     String?
-  locationSlug String?         // URL-friendly location slug for Builders Local (e.g., "san-francisco")
+  locationSlug String? // URL-friendly location slug for Builders Local (e.g., "san-francisco")
   category     CompanyCategory @default(OTHER)
   about        String?         @db.Text
   website      String?
@@ -423,40 +427,48 @@ model Company {
   updatedAt    DateTime        @updatedAt
 
   // Tech Stack / Tooling
-  techStack   String[]        // Array of technologies used (e.g., ["React", "PostgreSQL", "AWS"])
-  tools       String[]        // Tools and services used (e.g., ["Figma", "Linear", "Slack"])
+  techStack String[] // Array of technologies used (e.g., ["React", "PostgreSQL", "AWS"])
+  tools     String[] // Tools and services used (e.g., ["Figma", "Linear", "Slack"])
 
   // Traction Badges - proof of traction
-  customerCount      CustomerRange?  // Range of customers
-  revenueRange       RevenueRange?   // ARR/MRR range
-  userCount          UserRange?      // Range of users
-  isBootstrapped     Boolean         @default(false)
-  isProfitable       Boolean         @default(false)
-  hasRaisedFunding   Boolean         @default(false)
-  fundingStage       FundingStage?   // Pre-seed, Seed, Series A, etc.
+  customerCount    CustomerRange? // Range of customers
+  revenueRange     RevenueRange? // ARR/MRR range
+  userCount        UserRange? // Range of users
+  isBootstrapped   Boolean        @default(false)
+  isProfitable     Boolean        @default(false)
+  hasRaisedFunding Boolean        @default(false)
+  fundingStage     FundingStage? // Pre-seed, Seed, Series A, etc.
 
   // Opportunity Hub flags
-  isHiring           Boolean         @default(false)  // Quick filter for hiring companies
-  acceptsContracts   Boolean         @default(false)  // Open for contract work
+  isHiring         Boolean @default(false) // Quick filter for hiring companies
+  acceptsContracts Boolean @default(false) // Open for contract work
+
+  // Stripe Connect for Betting MRR tracking
+  stripeConnectId        String? // Stripe Connect account ID for pulling MRR
+  stripeConnectOnboarded Boolean @default(false)
+
+  // Betting System
+  bettingEnabled Boolean @default(false) // Allow others to bet on this company's MRR
 
   userId   String
-  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   projects Project[]
   updates  CompanyUpdate[]
   roles    CompanyRole[]
-  members  CompanyMember[]  // Team members of the company
+  members  CompanyMember[] // Team members of the company
 
   @@index([userId])
   @@index([category])
   @@index([isHiring])
   @@index([locationSlug])
+  @@index([stripeConnectId])
 }
 
 // Company members - allows multiple users to be part of a company with different roles
 enum CompanyMemberRole {
-  OWNER   // Full control, can delete company
-  ADMIN   // Can edit company and manage members
-  MEMBER  // Can view and post updates
+  OWNER // Full control, can delete company
+  ADMIN // Can edit company and manage members
+  MEMBER // Can view and post updates
 }
 
 model CompanyMember {
@@ -468,10 +480,10 @@ model CompanyMember {
   companyId String
   userId    String
 
-  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([companyId, userId])  // A user can only be a member once per company
+  @@unique([companyId, userId]) // A user can only be a member once per company
   @@index([companyId])
   @@index([userId])
 }
@@ -479,17 +491,17 @@ model CompanyMember {
 // Company Updates - internal build logs / announcements
 model CompanyUpdate {
   id        String   @id @default(cuid())
-  content   String   @db.Text  // The update content (supports markdown)
-  imageUrl  String?  // Optional image attachment
-  isPinned  Boolean  @default(false)  // Pin important updates to top
+  content   String   @db.Text // The update content (supports markdown)
+  imageUrl  String? // Optional image attachment
+  isPinned  Boolean  @default(false) // Pin important updates to top
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   companyId String
-  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   // Author of the update (company owner or team member)
-  authorId  String
+  authorId String
 
   @@index([companyId])
   @@index([createdAt])
@@ -498,44 +510,44 @@ model CompanyUpdate {
 
 // Company Roles - open positions and gigs
 model CompanyRole {
-  id              String            @id @default(cuid())
-  title           String            // Job title
-  description     String?           @db.Text  // Full job description
-  type            RoleType          @default(FULL_TIME)
-  category        RoleCategory      @default(ENGINEERING)
+  id          String       @id @default(cuid())
+  title       String // Job title
+  description String?      @db.Text // Full job description
+  type        RoleType     @default(FULL_TIME)
+  category    RoleCategory @default(ENGINEERING)
 
   // Location
-  location        String?           // Location or "Remote"
-  isRemote        Boolean           @default(false)
-  timezone        String?           // Preferred timezone (e.g., "PST", "UTC±3")
+  location String? // Location or "Remote"
+  isRemote Boolean @default(false)
+  timezone String? // Preferred timezone (e.g., "PST", "UTC±3")
 
   // Compensation
   compensationType CompensationType?
-  salaryMin        Int?             // Minimum salary (annual or hourly based on type)
-  salaryMax        Int?             // Maximum salary
-  currency         String?          @default("USD")
-  equityMin        Float?           // Minimum equity % (e.g., 0.1 for 0.1%)
-  equityMax        Float?           // Maximum equity %
+  salaryMin        Int? // Minimum salary (annual or hourly based on type)
+  salaryMax        Int? // Maximum salary
+  currency         String?           @default("USD")
+  equityMin        Float? // Minimum equity % (e.g., 0.1 for 0.1%)
+  equityMax        Float? // Maximum equity %
 
   // Requirements
-  skills          String[]          // Required skills
-  experienceMin   Int?              // Minimum years of experience
-  experienceMax   Int?              // Maximum years of experience
+  skills        String[] // Required skills
+  experienceMin Int? // Minimum years of experience
+  experienceMax Int? // Maximum years of experience
 
   // Status
-  isActive        Boolean           @default(true)  // Is the role still open?
-  applicationUrl  String?           // External application link
-  applicationEmail String?          // Email to apply
+  isActive         Boolean @default(true) // Is the role still open?
+  applicationUrl   String? // External application link
+  applicationEmail String? // Email to apply
 
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-  expiresAt       DateTime?         // When the listing expires
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  expiresAt DateTime? // When the listing expires
 
-  companyId       String
-  company         Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   // Link to feed event
-  feedEvent       FeedEvent?
+  feedEvent FeedEvent?
 
   @@index([companyId])
   @@index([isActive])
@@ -544,15 +556,14 @@ model CompanyRole {
   @@index([createdAt])
 }
 
-
 // Site analytics - page views tracking
 model SiteView {
   id        String   @id @default(cuid())
-  path      String   // The page path visited
+  path      String // The page path visited
   createdAt DateTime @default(now())
 
   // Optional: track visitor info (anonymized)
-  visitorId String?  // Anonymous session identifier
+  visitorId String? // Anonymous session identifier
   userAgent String?
 
   @@index([createdAt])
@@ -562,19 +573,19 @@ model SiteView {
 // Daily updates - builder progress updates
 model DailyUpdate {
   id        String   @id @default(cuid())
-  content   String   @db.Text  // The update content
-  imageUrl  String?  // Optional image attachment
-  gifUrl    String?  // Optional GIF attachment from Giphy
-  videoUrl  String?  // Optional YouTube video URL
+  content   String   @db.Text // The update content
+  imageUrl  String? // Optional image attachment
+  gifUrl    String? // Optional GIF attachment from Giphy
+  videoUrl  String? // Optional YouTube video URL
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  likes     UpdateLike[]
-  comments  UpdateComment[]
+  userId        String
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  likes         UpdateLike[]
+  comments      UpdateComment[]
   notifications Notification[]
-  views     UpdateView[]     // View tracking
+  views         UpdateView[] // View tracking
 
   @@index([userId])
   @@index([createdAt])
@@ -585,11 +596,11 @@ model UpdateLike {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
 
-  userId    String
-  updateId  String
+  userId   String
+  updateId String
 
-  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  update    DailyUpdate @relation(fields: [updateId], references: [id], onDelete: Cascade)
+  user   User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  update DailyUpdate @relation(fields: [updateId], references: [id], onDelete: Cascade)
 
   @@unique([userId, updateId])
   @@index([updateId])
@@ -599,15 +610,15 @@ model UpdateLike {
 model UpdateComment {
   id        String   @id @default(cuid())
   content   String   @db.Text
-  gifUrl    String?  // Optional GIF attachment from Giphy
+  gifUrl    String? // Optional GIF attachment from Giphy
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  userId    String
-  updateId  String
+  userId   String
+  updateId String
 
-  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  update    DailyUpdate @relation(fields: [updateId], references: [id], onDelete: Cascade)
+  user   User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  update DailyUpdate @relation(fields: [updateId], references: [id], onDelete: Cascade)
 
   @@index([updateId])
   @@index([userId])
@@ -616,75 +627,75 @@ model UpdateComment {
 // Builder endorsements - credibility signals
 model Endorsement {
   id        String   @id @default(cuid())
-  message   String?  @db.Text  // Optional endorsement message
-  skill     String?            // Optional skill being endorsed (e.g., "Frontend", "Product")
+  message   String?  @db.Text // Optional endorsement message
+  skill     String? // Optional skill being endorsed (e.g., "Frontend", "Product")
   createdAt DateTime @default(now())
 
-  endorserId String  // User giving the endorsement
-  endorseeId String  // User receiving the endorsement
+  endorserId String // User giving the endorsement
+  endorseeId String // User receiving the endorsement
 
-  endorser   User @relation("EndorserRelation", fields: [endorserId], references: [id], onDelete: Cascade)
-  endorsee   User @relation("EndorseeRelation", fields: [endorseeId], references: [id], onDelete: Cascade)
+  endorser User @relation("EndorserRelation", fields: [endorserId], references: [id], onDelete: Cascade)
+  endorsee User @relation("EndorseeRelation", fields: [endorseeId], references: [id], onDelete: Cascade)
 
-  @@unique([endorserId, endorseeId])  // One endorsement per user pair
+  @@unique([endorserId, endorseeId]) // One endorsement per user pair
   @@index([endorseeId])
   @@index([endorserId])
 }
 
 // User follows - social connections between builders
 model Follow {
-  id          String   @id @default(cuid())
-  createdAt   DateTime @default(now())
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
 
-  followerId  String   // User doing the following
-  followingId String   // User being followed
+  followerId  String // User doing the following
+  followingId String // User being followed
 
-  follower    User @relation("FollowerRelation", fields: [followerId], references: [id], onDelete: Cascade)
-  following   User @relation("FollowingRelation", fields: [followingId], references: [id], onDelete: Cascade)
+  follower  User @relation("FollowerRelation", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("FollowingRelation", fields: [followingId], references: [id], onDelete: Cascade)
 
-  @@unique([followerId, followingId])  // Can only follow a user once
+  @@unique([followerId, followingId]) // Can only follow a user once
   @@index([followingId])
   @@index([followerId])
 }
 
 // Feed event types
 enum FeedEventType {
-  MILESTONE_ACHIEVED     // Project hit a milestone
-  PROJECT_LAUNCHED       // Project status changed to LAUNCHED
-  PROJECT_ACQUIRED       // Project was acquired
-  STATUS_UPDATE          // User updated their profile status
-  PROJECT_STATUS_CHANGE  // Project status changed (any transition)
-  PROJECT_CREATED        // A new project was created
-  JOB_POSTED             // A new job/role was posted by a company
-  USER_JOINED            // A new user signed up
-  LISTING_CREATED        // A new local listing was created
+  MILESTONE_ACHIEVED // Project hit a milestone
+  PROJECT_LAUNCHED // Project status changed to LAUNCHED
+  PROJECT_ACQUIRED // Project was acquired
+  STATUS_UPDATE // User updated their profile status
+  PROJECT_STATUS_CHANGE // Project status changed (any transition)
+  PROJECT_CREATED // A new project was created
+  JOB_POSTED // A new job/role was posted by a company
+  USER_JOINED // A new user signed up
+  LISTING_CREATED // A new local listing was created
 }
 
 // Feed events - aggregated activity feed
 model FeedEvent {
-  id          String        @id @default(cuid())
-  type        FeedEventType
-  createdAt   DateTime      @default(now())
+  id        String        @id @default(cuid())
+  type      FeedEventType
+  createdAt DateTime      @default(now())
 
   // The user who triggered the event (project owner)
-  userId      String
+  userId String
 
   // Related entities (polymorphic references)
-  projectId       String?
-  milestoneId     String?       @unique  // For milestone events
-  companyRoleId   String?       @unique  // For job posted events
-  localListingId  String?       @unique  // For listing created events
+  projectId      String?
+  milestoneId    String? @unique // For milestone events
+  companyRoleId  String? @unique // For job posted events
+  localListingId String? @unique // For listing created events
 
   // Denormalized data for fast feed rendering
-  title       String        // e.g., "shipped v1" or "hit $1k MRR"
-  description String?       @db.Text
+  title       String // e.g., "shipped v1" or "hit $1k MRR"
+  description String? @db.Text
 
   // Relations
-  milestone    ProjectMilestone? @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
-  companyRole  CompanyRole?      @relation(fields: [companyRoleId], references: [id], onDelete: Cascade)
-  localListing LocalListing?     @relation(fields: [localListingId], references: [id], onDelete: Cascade)
-  likes        FeedEventLike[]
-  comments     FeedEventComment[]
+  milestone     ProjectMilestone?  @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
+  companyRole   CompanyRole?       @relation(fields: [companyRoleId], references: [id], onDelete: Cascade)
+  localListing  LocalListing?      @relation(fields: [localListingId], references: [id], onDelete: Cascade)
+  likes         FeedEventLike[]
+  comments      FeedEventComment[]
   notifications Notification[]
 
   @@index([createdAt])
@@ -696,14 +707,14 @@ model FeedEvent {
 
 // Likes on feed events
 model FeedEventLike {
-  id          String    @id @default(cuid())
-  createdAt   DateTime  @default(now())
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
 
   userId      String
   feedEventId String
 
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  feedEvent   FeedEvent @relation(fields: [feedEventId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  feedEvent FeedEvent @relation(fields: [feedEventId], references: [id], onDelete: Cascade)
 
   @@unique([userId, feedEventId])
   @@index([feedEventId])
@@ -711,17 +722,17 @@ model FeedEventLike {
 
 // Comments on feed events (for all feed item types)
 model FeedEventComment {
-  id          String    @id @default(cuid())
-  content     String    @db.Text
-  gifUrl      String?   // Optional GIF attachment from Giphy
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id        String   @id @default(cuid())
+  content   String   @db.Text
+  gifUrl    String? // Optional GIF attachment from Giphy
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   userId      String
   feedEventId String
 
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  feedEvent   FeedEvent @relation(fields: [feedEventId], references: [id], onDelete: Cascade)
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  feedEvent     FeedEvent      @relation(fields: [feedEventId], references: [id], onDelete: Cascade)
   notifications Notification[]
 
   @@index([feedEventId])
@@ -731,52 +742,52 @@ model FeedEventComment {
 
 // Notification types
 enum NotificationType {
-  MILESTONE_LIKED       // Someone liked your milestone
-  MILESTONE_CELEBRATED  // Multiple people celebrated (batched)
-  UPDATE_LIKED          // Someone liked your daily update
-  UPDATE_COMMENTED      // Someone commented on your daily update
-  USER_MENTIONED        // Someone mentioned you in an update
-  WEEKLY_DIGEST         // Weekly summary notification
-  PROJECT_UPVOTED       // Someone upvoted your project
-  PROJECT_COMMENTED     // Someone commented on your project
-  COMMENT_LIKED         // Someone liked your comment on a project
-  FEED_EVENT_COMMENTED  // Someone commented on your feed event (milestone, project, etc.)
-  TOKEN_GIFTED          // Someone gifted you tokens
+  MILESTONE_LIKED // Someone liked your milestone
+  MILESTONE_CELEBRATED // Multiple people celebrated (batched)
+  UPDATE_LIKED // Someone liked your daily update
+  UPDATE_COMMENTED // Someone commented on your daily update
+  USER_MENTIONED // Someone mentioned you in an update
+  WEEKLY_DIGEST // Weekly summary notification
+  PROJECT_UPVOTED // Someone upvoted your project
+  PROJECT_COMMENTED // Someone commented on your project
+  COMMENT_LIKED // Someone liked your comment on a project
+  FEED_EVENT_COMMENTED // Someone commented on your feed event (milestone, project, etc.)
+  TOKEN_GIFTED // Someone gifted you tokens
 }
 
 // In-app notifications
 model Notification {
-  id          String           @id @default(cuid())
-  type        NotificationType
-  title       String
-  message     String?          @db.Text
-  read        Boolean          @default(false)
-  createdAt   DateTime         @default(now())
+  id        String           @id @default(cuid())
+  type      NotificationType
+  title     String
+  message   String?          @db.Text
+  read      Boolean          @default(false)
+  createdAt DateTime         @default(now())
 
   // Recipient
-  userId      String
-  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // Optional link to related feed event
   feedEventId String?
-  feedEvent   FeedEvent?       @relation(fields: [feedEventId], references: [id], onDelete: Cascade)
+  feedEvent   FeedEvent? @relation(fields: [feedEventId], references: [id], onDelete: Cascade)
 
   // Optional link to related daily update
-  updateId    String?
-  update      DailyUpdate?     @relation(fields: [updateId], references: [id], onDelete: Cascade)
+  updateId String?
+  update   DailyUpdate? @relation(fields: [updateId], references: [id], onDelete: Cascade)
 
   // Optional link to related project (for upvote notifications)
-  projectId   String?
-  project     Project?         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   // Optional link to feed event comment (for direct reply navigation)
   feedEventCommentId String?
   feedEventComment   FeedEventComment? @relation(fields: [feedEventCommentId], references: [id], onDelete: Cascade)
 
   // Actor who triggered the notification (if applicable)
-  actorId     String?
-  actorName   String?          // Denormalized for deleted users
-  actorImage  String?
+  actorId    String?
+  actorName  String? // Denormalized for deleted users
+  actorImage String?
 
   @@index([userId, read])
   @@index([createdAt])
@@ -786,59 +797,59 @@ model Notification {
 
 // Email preferences per user
 model EmailPreferences {
-  id                    String   @id @default(cuid())
-  userId                String   @unique
-  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  weeklyDigest          Boolean  @default(true)
-  dailyDigest           Boolean  @default(true)  // Daily summary of likes, upvotes, celebrations
+  weeklyDigest           Boolean @default(true)
+  dailyDigest            Boolean @default(true) // Daily summary of likes, upvotes, celebrations
   milestoneNotifications Boolean @default(true)
 
   // Track last digests sent
-  lastDigestSentAt      DateTime?  // Weekly digest
-  lastDailyDigestSentAt DateTime?  // Daily digest
+  lastDigestSentAt      DateTime? // Weekly digest
+  lastDailyDigestSentAt DateTime? // Daily digest
 
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // Sidebar Advertisement - paid ad spots on the feed
 enum AdvertisementStatus {
-  DRAFT             // Ad created but not yet paid
-  PENDING_PAYMENT   // User started checkout but hasn't paid
-  ACTIVE            // Paid and currently running
-  EXPIRED           // Ad period has ended
-  CANCELLED         // Payment was refunded or cancelled
+  DRAFT // Ad created but not yet paid
+  PENDING_PAYMENT // User started checkout but hasn't paid
+  ACTIVE // Paid and currently running
+  EXPIRED // Ad period has ended
+  CANCELLED // Payment was refunded or cancelled
 }
 
 model Advertisement {
-  id              String              @id @default(cuid())
-  userId          String
+  id     String @id @default(cuid())
+  userId String
 
   // Ad content
-  title           String              // Headline text
-  description     String?             @db.Text  // Body text
-  imageUrl        String?             // Ad image
-  linkUrl         String              // Click-through URL
-  ctaText         String              @default("Learn More")  // CTA button text
+  title       String // Headline text
+  description String? @db.Text // Body text
+  imageUrl    String? // Ad image
+  linkUrl     String // Click-through URL
+  ctaText     String  @default("Learn More") // CTA button text
 
   // Payment info
   stripeSessionId String?             @unique
   stripePaymentId String?
-  amountPaid      Int                 @default(500)  // $5.00 in cents
+  amountPaid      Int                 @default(500) // $5.00 in cents
   status          AdvertisementStatus @default(DRAFT)
 
   // Active period (30 days from payment)
-  startDate       DateTime?           // When the ad starts showing
-  endDate         DateTime?           // When the ad stops showing
+  startDate DateTime? // When the ad starts showing
+  endDate   DateTime? // When the ad stops showing
 
-  createdAt       DateTime            @default(now())
-  updatedAt       DateTime            @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  views           AdView[]
-  clicks          AdClick[]
+  user   User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  views  AdView[]
+  clicks AdClick[]
 
   @@index([userId])
   @@index([status])
@@ -848,14 +859,14 @@ model Advertisement {
 
 // Ad view tracking for analytics
 model AdView {
-  id              String        @id @default(cuid())
-  adId            String
-  createdAt       DateTime      @default(now())
+  id        String   @id @default(cuid())
+  adId      String
+  createdAt DateTime @default(now())
 
   // Anonymous visitor tracking
-  visitorId       String?       // Anonymous session identifier
+  visitorId String? // Anonymous session identifier
 
-  advertisement   Advertisement @relation(fields: [adId], references: [id], onDelete: Cascade)
+  advertisement Advertisement @relation(fields: [adId], references: [id], onDelete: Cascade)
 
   @@index([adId])
   @@index([createdAt])
@@ -864,14 +875,14 @@ model AdView {
 
 // Ad click tracking for CTR analytics
 model AdClick {
-  id              String        @id @default(cuid())
-  adId            String
-  createdAt       DateTime      @default(now())
+  id        String   @id @default(cuid())
+  adId      String
+  createdAt DateTime @default(now())
 
   // Anonymous visitor tracking
-  visitorId       String?       // Anonymous session identifier
+  visitorId String? // Anonymous session identifier
 
-  advertisement   Advertisement @relation(fields: [adId], references: [id], onDelete: Cascade)
+  advertisement Advertisement @relation(fields: [adId], references: [id], onDelete: Cascade)
 
   @@index([adId])
   @@index([createdAt])
@@ -913,30 +924,30 @@ enum ServiceOrderStatus {
 
 // Service listings - services offered by builders
 model ServiceListing {
-  id                String               @id @default(cuid())
-  slug              String?              @unique
-  title             String
-  description       String               @db.Text
-  category          ServiceCategory
-  priceInCents      Int                  // Service price
-  deliveryDays      Int                  // Estimated delivery time
-  status            ServiceListingStatus @default(DRAFT)
+  id           String               @id @default(cuid())
+  slug         String?              @unique
+  title        String
+  description  String               @db.Text
+  category     ServiceCategory
+  priceInCents Int // Service price
+  deliveryDays Int // Estimated delivery time
+  status       ServiceListingStatus @default(DRAFT)
 
   // Stripe checkout for listing fee
-  stripeSessionId   String?              @unique
+  stripeSessionId String? @unique
 
   // Listing period (90 days from activation)
-  activatedAt       DateTime?
-  expiresAt         DateTime?
+  activatedAt DateTime?
+  expiresAt   DateTime?
 
   // Relations
   userId            String
-  user              User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  portfolioProjects ServicePortfolio[]   // Linked proof-of-work projects
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  portfolioProjects ServicePortfolio[] // Linked proof-of-work projects
   orders            ServiceOrder[]
 
-  createdAt         DateTime             @default(now())
-  updatedAt         DateTime             @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@index([category])
@@ -946,13 +957,13 @@ model ServiceListing {
 
 // Service portfolio - links projects as proof-of-work for a service
 model ServicePortfolio {
-  id              String         @id @default(cuid())
-  serviceId       String
-  projectId       String
-  description     String?        // Why this project demonstrates capability
+  id          String  @id @default(cuid())
+  serviceId   String
+  projectId   String
+  description String? // Why this project demonstrates capability
 
-  service         ServiceListing @relation(fields: [serviceId], references: [id], onDelete: Cascade)
-  project         Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  service ServiceListing @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  project Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@unique([serviceId, projectId])
   @@index([serviceId])
@@ -961,30 +972,30 @@ model ServicePortfolio {
 
 // Service orders - purchases of services
 model ServiceOrder {
-  id                  String             @id @default(cuid())
-  status              ServiceOrderStatus @default(PENDING_ACCEPTANCE)
-  requirements        String?            @db.Text  // Buyer's requirements
+  id           String             @id @default(cuid())
+  status       ServiceOrderStatus @default(PENDING_ACCEPTANCE)
+  requirements String?            @db.Text // Buyer's requirements
 
   // Pricing at time of purchase
-  priceInCents        Int                // Service price at time of purchase
-  platformFeeInCents  Int?               // 5% platform fee
+  priceInCents       Int // Service price at time of purchase
+  platformFeeInCents Int? // 5% platform fee
 
   // Stripe Connect payment
-  stripePaymentIntent String?            @unique
+  stripePaymentIntent String? @unique
 
   // Relations
-  serviceId           String
-  buyerId             String
+  serviceId String
+  buyerId   String
 
-  service             ServiceListing     @relation(fields: [serviceId], references: [id])
-  buyer               User               @relation("ServiceBuyer", fields: [buyerId], references: [id])
+  service ServiceListing @relation(fields: [serviceId], references: [id])
+  buyer   User           @relation("ServiceBuyer", fields: [buyerId], references: [id])
 
   // Timestamps
-  acceptedAt          DateTime?
-  deliveredAt         DateTime?
-  completedAt         DateTime?
-  createdAt           DateTime           @default(now())
-  updatedAt           DateTime           @updatedAt
+  acceptedAt  DateTime?
+  deliveredAt DateTime?
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   @@index([serviceId])
   @@index([buyerId])
@@ -996,17 +1007,17 @@ model ServiceOrder {
 // ============================================
 
 enum LocalListingCategory {
-  COMMUNITY         // General community posts
-  SERVICES          // $1 per 90 days
-  DISCUSSION        // Conversations/questions
+  COMMUNITY // General community posts
+  SERVICES // $1 per 90 days
+  DISCUSSION // Conversations/questions
   COWORKING_HOUSING // Space listings
-  FOR_SALE          // Items for sale
+  FOR_SALE // Items for sale
   // Note: JOBS uses existing CompanyRole model
 }
 
 enum LocalListingStatus {
   DRAFT
-  PENDING_PAYMENT   // For SERVICES only
+  PENDING_PAYMENT // For SERVICES only
   ACTIVE
   EXPIRED
   FLAGGED
@@ -1015,44 +1026,44 @@ enum LocalListingStatus {
 
 // Local listings - craigslist-style classifieds by location
 model LocalListing {
-  id              String               @id @default(cuid())
-  slug            String               @unique
-  title           String
-  description     String               @db.Text
-  category        LocalListingCategory
-  status          LocalListingStatus   @default(DRAFT)
+  id          String               @id @default(cuid())
+  slug        String               @unique
+  title       String
+  description String               @db.Text
+  category    LocalListingCategory
+  status      LocalListingStatus   @default(DRAFT)
 
   // Location (default from user profile, overrideable)
-  locationSlug    String
-  city            String
-  state           String
-  zipCode         String?
+  locationSlug String
+  city         String
+  state        String
+  zipCode      String?
 
   // Contact
-  contactEmail    String?
-  contactPhone    String?
-  contactUrl      String?
+  contactEmail String?
+  contactPhone String?
+  contactUrl   String?
 
   // For SERVICES category only (paid $1)
-  stripeSessionId String?              @unique
-  priceInCents    Int?                 // What they're charging for their service
+  stripeSessionId String? @unique
+  priceInCents    Int? // What they're charging for their service
 
   // Expiration (90 days for paid SERVICES, 30 days for free categories)
-  activatedAt     DateTime?
-  expiresAt       DateTime?
+  activatedAt DateTime?
+  expiresAt   DateTime?
 
   // Relations
-  userId          String
-  user            User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  images          LocalListingImage[]
-  comments        LocalListingComment[]
-  flags           LocalListingFlag[]
-  feedEvents      FeedEvent[]
-  views           LocalListingView[]   // View tracking
-  clicks          LocalListingClick[]  // Click tracking
+  userId     String
+  user       User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  images     LocalListingImage[]
+  comments   LocalListingComment[]
+  flags      LocalListingFlag[]
+  feedEvents FeedEvent[]
+  views      LocalListingView[] // View tracking
+  clicks     LocalListingClick[] // Click tracking
 
-  createdAt       DateTime             @default(now())
-  updatedAt       DateTime             @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@index([locationSlug])
@@ -1064,14 +1075,14 @@ model LocalListing {
 
 // Images attached to local listings
 model LocalListingImage {
-  id          String       @id @default(cuid())
-  url         String
-  caption     String?
-  order       Int          @default(0)
-  createdAt   DateTime     @default(now())
+  id        String   @id @default(cuid())
+  url       String
+  caption   String?
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
 
-  listingId   String
-  listing     LocalListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  listingId String
+  listing   LocalListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
 
   @@index([listingId])
   @@index([order])
@@ -1079,16 +1090,16 @@ model LocalListingImage {
 
 // Comments on local listings
 model LocalListingComment {
-  id          String       @id @default(cuid())
-  content     String       @db.Text
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  id        String   @id @default(cuid())
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  userId      String
-  listingId   String
+  userId    String
+  listingId String
 
-  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  listing     LocalListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  user    User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listing LocalListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
 
   @@index([listingId])
   @@index([userId])
@@ -1106,37 +1117,37 @@ enum LocalListingFlagReason {
 }
 
 model LocalListingFlag {
-  id          String                  @id @default(cuid())
+  id          String                 @id @default(cuid())
   reason      LocalListingFlagReason
-  description String?                 @db.Text
-  createdAt   DateTime                @default(now())
+  description String?                @db.Text
+  createdAt   DateTime               @default(now())
 
-  userId      String
-  listingId   String
+  userId    String
+  listingId String
 
-  user        User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  listing     LocalListing            @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  user    User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listing LocalListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, listingId])  // One flag per user per listing
+  @@unique([userId, listingId]) // One flag per user per listing
   @@index([listingId])
   @@index([reason])
 }
 
 // Rating for listing authors (separate from listing itself)
 model LocalListingRating {
-  id          String   @id @default(cuid())
-  rating      Int      // 1-5 stars
-  comment     String?  @db.Text
-  createdAt   DateTime @default(now())
+  id        String   @id @default(cuid())
+  rating    Int // 1-5 stars
+  comment   String?  @db.Text
+  createdAt DateTime @default(now())
 
-  raterId     String   // User giving the rating
-  ratedUserId String   // User receiving the rating
-  listingId   String   // The listing this rating is associated with
+  raterId     String // User giving the rating
+  ratedUserId String // User receiving the rating
+  listingId   String // The listing this rating is associated with
 
-  rater       User     @relation("LocalListingRater", fields: [raterId], references: [id], onDelete: Cascade)
-  ratedUser   User     @relation("LocalListingRated", fields: [ratedUserId], references: [id], onDelete: Cascade)
+  rater     User @relation("LocalListingRater", fields: [raterId], references: [id], onDelete: Cascade)
+  ratedUser User @relation("LocalListingRated", fields: [ratedUserId], references: [id], onDelete: Cascade)
 
-  @@unique([raterId, listingId])  // One rating per user per listing
+  @@unique([raterId, listingId]) // One rating per user per listing
   @@index([ratedUserId])
   @@index([listingId])
 }
@@ -1146,31 +1157,35 @@ model LocalListingRating {
 // ============================================
 
 enum TokenTransactionType {
-  WELCOME_BONUS             // New user signup bonus (5 tokens)
-  REFERRAL_REWARD           // Referrer gets tokens when referee signs up (10 tokens)
-  STREAK_BONUS              // Bonus for maintaining daily update streaks
-  ENGAGEMENT_BONUS          // Bonus for posting updates, commenting, etc.
-  PROFILE_COMPLETION        // Bonus for reaching 100% profile completeness (10 tokens)
-  AD_REDEMPTION             // Spent tokens to unlock an advertisement
-  SERVICE_REDEMPTION        // Spent tokens to unlock a service listing
-  LOCAL_LISTING_REDEMPTION  // Spent tokens to unlock a local listing
-  GIFT_SENT                 // Tokens sent as a gift to another user
-  GIFT_RECEIVED             // Tokens received as a gift from another user
-  GIFT_PURCHASED            // Tokens purchased to gift (paid with Stripe)
-  ADMIN_ADJUSTMENT          // Manual adjustment by admin
+  WELCOME_BONUS // New user signup bonus (5 tokens)
+  REFERRAL_REWARD // Referrer gets tokens when referee signs up (10 tokens)
+  STREAK_BONUS // Bonus for maintaining daily update streaks
+  ENGAGEMENT_BONUS // Bonus for posting updates, commenting, etc.
+  PROFILE_COMPLETION // Bonus for reaching 100% profile completeness (10 tokens)
+  AD_REDEMPTION // Spent tokens to unlock an advertisement
+  SERVICE_REDEMPTION // Spent tokens to unlock a service listing
+  LOCAL_LISTING_REDEMPTION // Spent tokens to unlock a local listing
+  GIFT_SENT // Tokens sent as a gift to another user
+  GIFT_RECEIVED // Tokens received as a gift from another user
+  GIFT_PURCHASED // Tokens purchased to gift (paid with Stripe)
+  ADMIN_ADJUSTMENT // Manual adjustment by admin
+  BET_PLACED // Tokens staked on a bet
+  BET_WON // Winnings from a bet
+  BET_REFUND // Cancelled bet refund
+  BET_HOUSE_FEE // 5% house fee taken from bet
 }
 
 // Track all token movements for audit/history
 model TokenTransaction {
   id          String               @id @default(cuid())
   userId      String
-  amount      Int                  // Positive = earned, Negative = spent
+  amount      Int // Positive = earned, Negative = spent
   type        TokenTransactionType
-  description String?              // Human-readable description
-  metadata    Json?                // Store referral IDs, streak days, item IDs, etc.
+  description String? // Human-readable description
+  metadata    Json? // Store referral IDs, streak days, item IDs, etc.
   createdAt   DateTime             @default(now())
 
-  user        User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([createdAt])
@@ -1183,12 +1198,12 @@ model TokenTransaction {
 
 // Project views - track when someone views a project page
 model ProjectView {
-  id          String   @id @default(cuid())
-  projectId   String
-  visitorId   String?  // Anonymous session identifier
-  createdAt   DateTime @default(now())
+  id        String   @id @default(cuid())
+  projectId String
+  visitorId String? // Anonymous session identifier
+  createdAt DateTime @default(now())
 
-  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@index([projectId])
   @@index([createdAt])
@@ -1197,13 +1212,13 @@ model ProjectView {
 
 // Project clicks - track when someone clicks through to project URL
 model ProjectClick {
-  id          String   @id @default(cuid())
-  projectId   String
-  visitorId   String?  // Anonymous session identifier
-  clickType   String   @default("url") // "url", "github", "demo", "docs"
-  createdAt   DateTime @default(now())
+  id        String   @id @default(cuid())
+  projectId String
+  visitorId String? // Anonymous session identifier
+  clickType String   @default("url") // "url", "github", "demo", "docs"
+  createdAt DateTime @default(now())
 
-  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@index([projectId])
   @@index([createdAt])
@@ -1211,12 +1226,12 @@ model ProjectClick {
 
 // Update views - track when someone views an update
 model UpdateView {
-  id          String      @id @default(cuid())
-  updateId    String
-  visitorId   String?     // Anonymous session identifier
-  createdAt   DateTime    @default(now())
+  id        String   @id @default(cuid())
+  updateId  String
+  visitorId String? // Anonymous session identifier
+  createdAt DateTime @default(now())
 
-  update      DailyUpdate @relation(fields: [updateId], references: [id], onDelete: Cascade)
+  update DailyUpdate @relation(fields: [updateId], references: [id], onDelete: Cascade)
 
   @@index([updateId])
   @@index([createdAt])
@@ -1225,12 +1240,12 @@ model UpdateView {
 
 // Local listing views - track when someone views a listing
 model LocalListingView {
-  id          String       @id @default(cuid())
-  listingId   String
-  visitorId   String?      // Anonymous session identifier
-  createdAt   DateTime     @default(now())
+  id        String   @id @default(cuid())
+  listingId String
+  visitorId String? // Anonymous session identifier
+  createdAt DateTime @default(now())
 
-  listing     LocalListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  listing LocalListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
 
   @@index([listingId])
   @@index([createdAt])
@@ -1239,13 +1254,13 @@ model LocalListingView {
 
 // Local listing clicks - track when someone clicks contact info
 model LocalListingClick {
-  id          String       @id @default(cuid())
-  listingId   String
-  visitorId   String?      // Anonymous session identifier
-  clickType   String       @default("contact") // "email", "phone", "url"
-  createdAt   DateTime     @default(now())
+  id        String   @id @default(cuid())
+  listingId String
+  visitorId String? // Anonymous session identifier
+  clickType String   @default("contact") // "email", "phone", "url"
+  createdAt DateTime @default(now())
 
-  listing     LocalListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  listing LocalListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
 
   @@index([listingId])
   @@index([createdAt])
@@ -1257,16 +1272,16 @@ model LocalListingClick {
 
 // Store push notification subscriptions for PWA
 model PushSubscription {
-  id            String   @id @default(cuid())
-  userId        String
-  endpoint      String   @unique  // Push service endpoint URL
-  p256dh        String             // Public key for encryption
-  auth          String             // Auth secret for encryption
-  userAgent     String?            // Browser/device info
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique // Push service endpoint URL
+  p256dh    String // Public key for encryption
+  auth      String // Auth secret for encryption
+  userAgent String? // Browser/device info
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([endpoint])
@@ -1277,50 +1292,152 @@ model PushSubscription {
 // ============================================
 
 enum ReportContentType {
-  USER              // Report a user profile
-  PROJECT           // Report a project
-  SERVICE_LISTING   // Report a service listing
-  LOCAL_LISTING     // Report a local listing
-  DAILY_UPDATE      // Report a daily update
-  COMMENT           // Report a comment
+  USER // Report a user profile
+  PROJECT // Report a project
+  SERVICE_LISTING // Report a service listing
+  LOCAL_LISTING // Report a local listing
+  DAILY_UPDATE // Report a daily update
+  COMMENT // Report a comment
 }
 
 enum ReportReason {
-  SPAM              // Spam or misleading content
-  INAPPROPRIATE     // Inappropriate or offensive content
-  HARASSMENT        // Harassment or bullying
-  IMPERSONATION     // Fake identity or impersonation
-  SCAM              // Fraudulent or scam content
-  COPYRIGHT         // Copyright violation
-  OTHER             // Other reason (requires description)
+  SPAM // Spam or misleading content
+  INAPPROPRIATE // Inappropriate or offensive content
+  HARASSMENT // Harassment or bullying
+  IMPERSONATION // Fake identity or impersonation
+  SCAM // Fraudulent or scam content
+  COPYRIGHT // Copyright violation
+  OTHER // Other reason (requires description)
 }
 
 enum ReportStatus {
-  PENDING           // Not yet reviewed
-  REVIEWED          // Admin has reviewed
-  RESOLVED          // Issue resolved
-  DISMISSED         // Report dismissed as invalid
+  PENDING // Not yet reviewed
+  REVIEWED // Admin has reviewed
+  RESOLVED // Issue resolved
+  DISMISSED // Report dismissed as invalid
 }
 
 // Content reports - allows users to report inappropriate content
 model Report {
-  id              String            @id @default(cuid())
-  contentType     ReportContentType
-  contentId       String            // ID of the reported content
-  reason          ReportReason
-  description     String?           @db.Text  // Additional details from reporter
-  status          ReportStatus      @default(PENDING)
-  adminNotes      String?           @db.Text  // Internal notes for admin
-  resolvedAt      DateTime?
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
+  id          String            @id @default(cuid())
+  contentType ReportContentType
+  contentId   String // ID of the reported content
+  reason      ReportReason
+  description String?           @db.Text // Additional details from reporter
+  status      ReportStatus      @default(PENDING)
+  adminNotes  String?           @db.Text // Internal notes for admin
+  resolvedAt  DateTime?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
 
   // Reporter
-  reporterId      String
-  reporterEmail   String?           // Cached for notification if user is deleted
+  reporterId    String
+  reporterEmail String? // Cached for notification if user is deleted
 
-  @@unique([reporterId, contentType, contentId])  // One report per user per content
+  @@unique([reporterId, contentType, contentId]) // One report per user per content
   @@index([contentType, contentId])
   @@index([status])
   @@index([createdAt])
+}
+
+// ============================================
+// MRR Betting System - Bet on founder/company growth
+// ============================================
+
+enum BetTargetType {
+  COMPANY // Bet on a company's MRR
+  USER // Bet on a user's (founder's) portfolio MRR
+}
+
+enum BetDirection {
+  LONG // Expects growth >= targetPercentage
+  SHORT // Expects growth < targetPercentage
+}
+
+enum BetStatus {
+  PENDING // Bet placed, waiting for resolution
+  WON // Bettor won
+  LOST // Bettor lost
+  CANCELLED // Refunded (e.g., no MRR data available)
+  VOID // Target opted out or other invalid state
+}
+
+enum BettingPeriodStatus {
+  UPCOMING // Not yet open for betting
+  OPEN // Accepting bets
+  CLOSED // Quarter in progress, no new bets
+  RESOLVED // All bets settled
+}
+
+// MRR snapshots pulled from Stripe Connect
+model MrrSnapshot {
+  id              String        @id @default(cuid())
+  targetType      BetTargetType // COMPANY or USER
+  targetId        String // companyId or userId
+  mrrCents        Int // MRR in cents
+  quarter         String // e.g., "2026-Q1"
+  snapshotAt      DateTime // When the snapshot was taken
+  isStartSnapshot Boolean // true = quarter start, false = quarter end
+  createdAt       DateTime      @default(now())
+
+  @@unique([targetType, targetId, quarter, isStartSnapshot])
+  @@index([targetId])
+  @@index([quarter])
+}
+
+// Betting periods (calendar quarters)
+model BettingPeriod {
+  id              String              @id @default(cuid())
+  quarter         String              @unique // e.g., "2026-Q1"
+  startsAt        DateTime // Quarter start date
+  endsAt          DateTime // Quarter end date
+  bettingClosesAt DateTime // When betting closes (at quarter start)
+  status          BettingPeriodStatus @default(UPCOMING)
+  createdAt       DateTime            @default(now())
+
+  bets Bet[]
+
+  @@index([status])
+  @@index([startsAt])
+}
+
+// Individual bets placed by users
+model Bet {
+  id               String        @id @default(cuid())
+  userId           String // Bettor
+  targetType       BetTargetType // COMPANY or USER
+  targetId         String // companyId or userId being bet on
+  periodId         String // Which betting period/quarter
+  direction        BetDirection // LONG or SHORT
+  targetPercentage Float // e.g., 10.0 for 10% growth target
+  stakeTokens      Int // Total tokens wagered
+  houseFeeTokens   Int // 5% taken by house
+  netStakeTokens   Int // Stake minus fee (stakeTokens - houseFeeTokens)
+  status           BetStatus     @default(PENDING)
+  winnings         Int? // Tokens won (null until resolved)
+  actualPercentage Float? // Actual growth % at resolution
+  createdAt        DateTime      @default(now())
+  resolvedAt       DateTime?
+
+  user   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  period BettingPeriod @relation(fields: [periodId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([targetType, targetId])
+  @@index([periodId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// Track house earnings from betting fees
+model HouseEarnings {
+  id          String   @id @default(cuid())
+  amount      Int // Tokens earned
+  source      String // "BET_FEE"
+  betId       String? // Related bet ID if applicable
+  description String? // Human-readable description
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([source])
 }
