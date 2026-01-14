@@ -369,3 +369,20 @@ export function validateImageUrl(url: string | null | undefined): string | null 
     return "Invalid image URL format.";
   }
 }
+
+/**
+ * Converts a relative URL to an absolute URL for use in OpenGraph images
+ * Returns null if the input is null/undefined, or the absolute URL otherwise
+ */
+export function getAbsoluteImageUrl(url: string | null | undefined): string | null {
+  if (!url) return null;
+  
+  // Already an absolute URL
+  if (url.startsWith("http://") || url.startsWith("https://")) {
+    return url;
+  }
+  
+  // Relative URL - prepend base URL
+  const baseUrl = process.env.NEXTAUTH_URL || "https://builders.to";
+  return `${baseUrl}${url.startsWith("/") ? "" : "/"}${url}`;
+}

@@ -1,5 +1,6 @@
 import { ImageResponse } from 'next/og'
 import { prisma } from '@/lib/prisma'
+import { getAbsoluteImageUrl } from '@/lib/utils'
 
 export const runtime = 'nodejs'
 
@@ -189,7 +190,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
             {/* Avatar */}
             {user.image ? (
               <img
-                src={user.image}
+                src={getAbsoluteImageUrl(user.image)!}
                 alt=""
                 width={140}
                 height={140}
