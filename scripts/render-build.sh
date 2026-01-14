@@ -36,6 +36,9 @@ echo "🗄️ Running database migrations..."
 # This is needed to remove deprecated betting system (replaced by forecasting system)
 npx prisma db push
 
+echo "🗄️ Backfilling forecasting targets to users..."
+npx prisma db execute --schema ./prisma/schema.prisma --file ./scripts/post-push-forecast-target-userid.sql || true
+
 echo "🔄 Running slug migration for existing projects..."
 node scripts/migrate-slugs.mjs || {
   echo "⚠️  Slug migration had issues (may be okay if already done)"

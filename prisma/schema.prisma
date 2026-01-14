@@ -457,6 +457,7 @@ model Company {
   updates  CompanyUpdate[]
   roles    CompanyRole[]
   members  CompanyMember[]  // Team members of the company
+  forecastTarget ForecastTarget?  // (legacy) forecasting target settings
 
   @@index([userId])
   @@index([category])
@@ -1385,10 +1386,12 @@ enum ForecastStatus {
   CANCELLED   // Forecast was cancelled (refunded)
 }
 
-// Companies that have opted in to be forecasted
+// Founders (users) that have opted in to be forecasted.
+// NOTE: `companyId` is kept temporarily for non-breaking DB push + backfill.
 model ForecastTarget {
   id                    String    @id @default(cuid())
-  userId                String    @unique
+  userId                String?   @unique
+  companyId             String?   @unique // legacy bridge column for migration/backfill
 
   // Stripe connection for MRR verification
   stripeAccountId       String?   // Connected Stripe account ID (read-only access)
@@ -1409,12 +1412,14 @@ model ForecastTarget {
   updatedAt             DateTime  @updatedAt
 
   // Relations
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                  User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company               Company?  @relation(fields: [companyId], references: [id], onDelete: Cascade)
   forecasts             Forecast[]
   mrrSnapshots          MrrSnapshot[]
 
   @@index([isActive])
   @@index([userId])
+  @@index([companyId])
 }
 
 // Individual forecasts placed by users

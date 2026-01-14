@@ -35,6 +35,7 @@ export async function GET(request: NextRequest) {
         isActive: true,
         stripeAccountId: { not: null },
         currentMrr: { not: null },
+        userId: { not: null }, // exclude legacy rows not yet backfilled
       },
       include: {
         user: {
