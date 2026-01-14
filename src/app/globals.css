@@ -740,3 +740,45 @@ footer {
   transform: scale(1.02);
   opacity: 0.9;
 }
+
+/* PWA Offline Banner Animation */
+@keyframes slide-up-bounce {
+  0% {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  60% {
+    transform: translateY(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up-bounce {
+  animation: slide-up-bounce 0.5s ease-out forwards;
+}
+
+/* PWA Install Prompt Animation */
+@keyframes slide-in-bottom {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-in-bottom {
+  animation: slide-in-bottom 0.3s ease-out forwards;
+}
+
+/* PWA Standalone Mode - hide browser-specific UI */
+@media all and (display-mode: standalone) {
+  .hide-in-pwa {
+    display: none !important;
+  }
+}

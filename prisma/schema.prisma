@@ -145,6 +145,9 @@ model User {
   referrals              User[]    @relation("Referrals")  // Users this user referred
   tokenTransactions      TokenTransaction[]
 
+  // Push Notification Subscriptions
+  pushSubscriptions      PushSubscription[]
+
   @@index([slug])
   @@index([stripeConnectId])
   @@index([locationSlug])
@@ -1241,6 +1244,27 @@ model LocalListingClick {
 
   @@index([listingId])
   @@index([createdAt])
+}
+
+// ============================================
+// Push Notification Subscriptions
+// ============================================
+
+// Store push notification subscriptions for PWA
+model PushSubscription {
+  id            String   @id @default(cuid())
+  userId        String
+  endpoint      String   @unique  // Push service endpoint URL
+  p256dh        String             // Public key for encryption
+  auth          String             // Auth secret for encryption
+  userAgent     String?            // Browser/device info
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([endpoint])
 }
 
 // ============================================

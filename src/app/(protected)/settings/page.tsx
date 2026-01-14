@@ -5,7 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { ProfileForm } from "@/components/profile/profile-form";
 import { ProfileCompleteness } from "@/components/profile/profile-completeness";
 import { calculateProfileCompleteness } from "@/lib/profile-completeness";
-import { Settings, User, ArrowLeft } from "lucide-react";
+import { NotificationSettings } from "@/components/pwa";
+import { Settings, User, ArrowLeft, Bell } from "lucide-react";
 
 export const metadata = {
   title: "Settings - Builders.to",
@@ -132,6 +133,15 @@ export default async function SettingsPage() {
           </div>
 
           <ProfileForm user={user} />
+        </div>
+
+        {/* Push Notifications Section */}
+        <div className="mt-8">
+          <div className="flex items-center gap-3 mb-4">
+            <Bell className="h-5 w-5 text-orange-500" />
+            <h2 className="text-lg font-semibold text-white">Push Notifications</h2>
+          </div>
+          <NotificationSettings />
         </div>
       </div>
     </div>

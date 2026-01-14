@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import "./globals.css";
 import { AuthProvider } from "@/components/auth/auth-provider";
@@ -6,12 +6,31 @@ import { ThemeProvider } from "@/components/ui/theme-provider";
 import { Navbar } from "@/components/ui/navbar";
 import { Footer } from "@/components/ui/footer";
 import { ViewTracker } from "@/components/analytics/view-tracker";
+import { PWAProvider } from "@/components/pwa";
+
+export const viewport: Viewport = {
+  themeColor: "#f97316",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
+};
 
 export const metadata: Metadata = {
   title: "Builders.to - Share your project, get feedback, find your first users",
   description: "A members-only launchpad for builders. Share your work in progress, get feedback from the community, and find your first users. Part of the Builders.to community on X.",
   keywords: ["builders", "startup", "projects", "feedback", "community", "launch"],
   metadataBase: new URL("https://builders.to"),
+  applicationName: "Builders.to",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Builders.to",
+  },
+  formatDetection: {
+    telephone: false,
+  },
   openGraph: {
     title: "Builders.to - Ship faster. Together.",
     description: "Share your project, get feedback, find your first users. A members-only launchpad for builders who ship.",
@@ -23,6 +42,16 @@ export const metadata: Metadata = {
     title: "Builders.to - Ship faster. Together.",
     description: "Share your project, get feedback, find your first users. A members-only launchpad for builders who ship.",
     creator: "@builderstoHQ",
+  },
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icons/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/icons/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+    ],
+    apple: [
+      { url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
   },
 };
 
@@ -90,12 +119,14 @@ export default function RootLayout({
         </noscript>
         <ThemeProvider>
           <AuthProvider>
-            <ViewTracker />
-            <div className="flex min-h-screen flex-col">
-              <Navbar />
-              <main className="flex-1">{children}</main>
-              <Footer />
-            </div>
+            <PWAProvider>
+              <ViewTracker />
+              <div className="flex min-h-screen flex-col">
+                <Navbar />
+                <main className="flex-1">{children}</main>
+                <Footer />
+              </div>
+            </PWAProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>
