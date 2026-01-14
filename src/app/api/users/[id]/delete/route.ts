@@ -36,6 +36,12 @@ export async function DELETE(
     // Delete all related records in the correct order to respect foreign keys
     // Using transaction to ensure all-or-nothing deletion
     await prisma.$transaction(async (tx) => {
+      // Delete user's forecasts
+      await tx.forecast.deleteMany({ where: { userId } });
+
+      // Delete user's coin transactions
+      await tx.coinTransaction.deleteMany({ where: { userId } });
+
       // Delete user's upvotes
       await tx.upvote.deleteMany({ where: { userId } });
 
@@ -67,20 +73,43 @@ export async function DELETE(
       // Delete user's notifications
       await tx.notification.deleteMany({ where: { userId } });
 
+      // Delete user's feed event comments
+      await tx.feedEventComment.deleteMany({ where: { userId } });
+
       // Delete user's feed event likes
       await tx.feedEventLike.deleteMany({ where: { userId } });
 
       // Delete user's feed events
       await tx.feedEvent.deleteMany({ where: { userId } });
 
+      // Delete user's project co-builder associations
+      await tx.projectCoBuilder.deleteMany({ where: { userId } });
+
       // Delete user's projects (and related data via cascade)
       await tx.project.deleteMany({ where: { userId } });
+
+      // Delete user's company memberships
+      await tx.companyMember.deleteMany({ where: { userId } });
 
       // Delete user's companies (and related data via cascade)
       await tx.company.deleteMany({ where: { userId } });
 
-      // Delete user's services
-      await tx.service.deleteMany({ where: { userId } });
+      // Delete user's service orders (as buyer)
+      await tx.serviceOrder.deleteMany({ where: { buyerId: userId } });
+
+      // Delete user's service listings
+      await tx.serviceListing.deleteMany({ where: { userId } });
+
+      // Delete user's local listing comments
+      await tx.localListingComment.deleteMany({ where: { userId } });
+
+      // Delete user's local listing flags
+      await tx.localListingFlag.deleteMany({ where: { userId } });
+
+      // Delete user's local listing ratings (both given and received)
+      await tx.localListingRating.deleteMany({
+        where: { OR: [{ raterId: userId }, { ratedUserId: userId }] },
+      });
 
       // Delete user's local listings
       await tx.localListing.deleteMany({ where: { userId } });
@@ -91,17 +120,14 @@ export async function DELETE(
       // Delete user's email preferences
       await tx.emailPreferences.deleteMany({ where: { userId } });
 
-      // Delete user's token balances
-      await tx.tokenBalance.deleteMany({ where: { userId } });
-
       // Delete user's token transactions
       await tx.tokenTransaction.deleteMany({ where: { userId } });
 
-      // Delete user's referral codes
-      await tx.referralCode.deleteMany({ where: { userId } });
-
       // Delete user's content reports (as reporter)
-      await tx.contentReport.deleteMany({ where: { reporterId: userId } });
+      await tx.report.deleteMany({ where: { reporterId: userId } });
+
+      // Delete user's advertisements
+      await tx.advertisement.deleteMany({ where: { userId } });
 
       // Finally, delete the user (will cascade to Account, Session, etc.)
       await tx.user.delete({ where: { id: userId } });
