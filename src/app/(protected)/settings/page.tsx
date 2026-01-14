@@ -7,6 +7,7 @@ import { ProfileCompleteness } from "@/components/profile/profile-completeness";
 import { calculateProfileCompleteness } from "@/lib/profile-completeness";
 import { NotificationSettings } from "@/components/pwa";
 import { TwoFactorSettings } from "@/components/auth/two-factor";
+import { DeleteAccount } from "@/components/settings/delete-account";
 import { Settings, User, ArrowLeft, Bell } from "lucide-react";
 
 export const metadata = {
@@ -148,6 +149,11 @@ export default async function SettingsPage() {
         {/* Two-Factor Authentication Section */}
         <div className="mt-8">
           <TwoFactorSettings />
+        </div>
+
+        {/* Delete Account Section */}
+        <div className="mt-12">
+          <DeleteAccount userId={user.id} />
         </div>
       </div>
     </div>

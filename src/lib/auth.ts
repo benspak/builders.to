@@ -156,9 +156,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
   callbacks: {
-    jwt({ token, user }) {
+    jwt({ token, user, trigger }) {
       if (user) {
         token.id = user.id;
+      }
+      // Mark if this is a new user (for redirect purposes)
+      if (trigger === "signUp") {
+        token.isNewUser = true;
       }
       return token;
     },
@@ -166,7 +170,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (session.user && token.id) {
         session.user.id = token.id as string;
       }
+      // Pass isNewUser flag to session
+      if (token.isNewUser) {
+        (session as { isNewUser?: boolean }).isNewUser = true;
+      }
       return session;
+    },
+    // Redirect new users to settings page
+    redirect({ url, baseUrl }) {
+      // If this is a callback from OAuth provider
+      if (url.startsWith(baseUrl)) {
+        return url;
+      }
+      // Default to the requested URL or base URL
+      return url.startsWith("/") ? `${baseUrl}${url}` : baseUrl;
     },
   },
   events: {
@@ -189,11 +206,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           pendingUsernames.delete(account.providerAccountId);
         }
 
-        // For email signups, derive a base name from email
-        const emailBaseName = user.email?.split("@")[0] || null;
+        // For email signups, generate a random slug (don't use email prefix for privacy)
+        const randomSuffix = Math.random().toString(36).substring(2, 8);
 
-        // Use OAuth username for slug, fall back to email prefix, then name, then id
-        const baseName = oauthUsername || emailBaseName || user.name || user.id;
+        // Use OAuth username for slug, fall back to name, then generate a random builder slug
+        const baseName = oauthUsername || user.name || `builder-${randomSuffix}`;
 
         // Generate unique slug from username
         const slug = await getUniqueSlug(baseName);
@@ -227,7 +244,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
 
         // Create a feed event to announce the new user
-        const displayName = user.name || oauthUsername || emailBaseName || "A new builder";
+        const displayName = user.name || oauthUsername || "A new builder";
         await prisma.feedEvent.create({
           data: {
             type: "USER_JOINED",

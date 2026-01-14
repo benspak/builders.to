@@ -10,7 +10,7 @@ interface SignInButtonsProps {
   callbackUrl?: string;
 }
 
-export function SignInButtons({ className, callbackUrl = "/projects" }: SignInButtonsProps) {
+export function SignInButtons({ className, callbackUrl = "/settings" }: SignInButtonsProps) {
   const [showEmailForm, setShowEmailForm] = useState(false);
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);

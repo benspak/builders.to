@@ -8,7 +8,7 @@ export default async function SignInPage() {
   const session = await auth();
 
   if (session) {
-    redirect("/projects");
+    redirect("/settings");
   }
 
   return (
