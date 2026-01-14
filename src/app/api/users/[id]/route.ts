@@ -159,6 +159,8 @@ export async function PATCH(
       linkedinUrl,
       twitchUrl,
       featuredVideoUrl,
+      // Profile image
+      image,
       // Status
       status,
       // Intent flags
@@ -298,12 +300,28 @@ export async function PATCH(
     const trimmedStatus = status?.trim() || null;
     const statusChanged = status !== undefined && trimmedStatus && trimmedStatus !== currentUser?.status;
 
+    // Validate image URL if provided
+    if (image !== undefined && image !== null && image !== "") {
+      const trimmedImage = image.trim();
+      // Only allow our own upload paths or external OAuth images
+      const isOurUpload = trimmedImage.startsWith("/api/files/avatars/");
+      const isExternalOAuth = trimmedImage.startsWith("https://");
+      if (!isOurUpload && !isExternalOAuth) {
+        return NextResponse.json(
+          { error: "Invalid image URL" },
+          { status: 400 }
+        );
+      }
+    }
+
     const user = await prisma.user.update({
       where: { id },
       data: {
         slug,
         // Update email if provided
         ...(email !== undefined && { email: trimmedEmail }),
+        // Update image if provided (allow null to clear)
+        ...(image !== undefined && { image: image?.trim() || null }),
         displayName: displayName?.trim() || null,
         firstName: firstName?.trim() || null,
         lastName: lastName?.trim() || null,

@@ -17,8 +17,10 @@ import {
   Mail,
   Bell,
   AtSign,
+  Camera,
 } from "lucide-react";
 import Image from "next/image";
+import { AvatarUpload } from "./avatar-upload";
 
 // Social icons as SVG
 const XIcon = () => (
@@ -104,6 +106,8 @@ export function ProfileForm({ user }: ProfileFormProps) {
     linkedinUrl: user.linkedinUrl || "",
     twitchUrl: user.twitchUrl || "",
     featuredVideoUrl: user.featuredVideoUrl || "",
+    // Profile image
+    image: user.image || "",
     // Status
     status: user.status || "",
     // Intent flags
@@ -160,30 +164,22 @@ export function ProfileForm({ user }: ProfileFormProps) {
         </div>
       )}
 
-      {/* Profile Preview */}
-      <div className="flex items-center gap-4 p-4 rounded-xl bg-zinc-800/30 border border-zinc-700/50">
-        {user.image ? (
-          <Image
-            src={user.image}
-            alt={user.name || "Profile"}
-            width={64}
-            height={64}
-            className="rounded-full ring-2 ring-orange-500/20"
-          />
-        ) : (
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-pink-500">
-            <User className="h-8 w-8 text-white" />
+      {/* Profile Photo */}
+      <div className="p-4 rounded-xl bg-zinc-800/30 border border-zinc-700/50">
+        <div className="flex items-center gap-3 mb-4">
+          <Camera className="h-5 w-5 text-orange-500" />
+          <div>
+            <h3 className="text-sm font-medium text-white">Profile Photo</h3>
+            <p className="text-xs text-zinc-500">
+              {user.username ? `Your photo was imported from @${user.username}. Upload a custom one or keep the original.` : "Upload a photo to personalize your profile"}
+            </p>
           </div>
-        )}
-        <div>
-          <p className="text-lg font-semibold text-white">{user.name}</p>
-          {user.username && (
-            <p className="text-sm text-orange-400">@{user.username}</p>
-          )}
-          <p className="text-sm text-zinc-400">
-            Profile photo is synced from X
-          </p>
         </div>
+        <AvatarUpload
+          currentImage={formData.image || null}
+          userName={user.name}
+          onImageChange={(url) => setFormData({ ...formData, image: url || "" })}
+        />
       </div>
 
       {/* Email */}

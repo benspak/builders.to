@@ -5,3 +5,6 @@ export { ProfileForm } from "./profile-form";
 export { ProfileCompleteness } from "./profile-completeness";
 export { GiftTokensButton } from "./gift-tokens-button";
 export { GiftSuccessToast } from "./gift-success-toast";
+export { AvatarUpload } from "./avatar-upload";
+export { EmailRequiredModal } from "./email-required-modal";
+export { EmailCollectionWrapper } from "./email-collection-wrapper";
