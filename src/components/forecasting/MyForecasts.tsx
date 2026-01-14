@@ -157,7 +157,7 @@ export function MyForecasts({ initialStatus = "all" }: MyForecastsProps) {
           <TrendingUp className="h-12 w-12 mx-auto mb-4 opacity-50" />
           <p>No forecasts yet</p>
           <p className="text-sm mt-1">
-            Start forecasting on company MRR to see your predictions here
+            Start forecasting on company earnings to see your predictions here
           </p>
         </div>
       ) : (
@@ -231,7 +231,7 @@ export function MyForecasts({ initialStatus = "all" }: MyForecastsProps) {
                     className="text-xs mb-1"
                     style={{ color: "var(--foreground-muted)" }}
                   >
-                    Target MRR
+                    Target Earnings
                   </p>
                   <p className="font-semibold" style={{ color: "var(--foreground)" }}>
                     {formatMrr(forecast.targetMrr)}
@@ -242,7 +242,7 @@ export function MyForecasts({ initialStatus = "all" }: MyForecastsProps) {
                     className="text-xs mb-1"
                     style={{ color: "var(--foreground-muted)" }}
                   >
-                    {forecast.status === "PENDING" ? "Current MRR" : "Actual MRR"}
+                    {forecast.status === "PENDING" ? "Current Earnings" : "Actual Earnings"}
                   </p>
                   <p className="font-semibold text-green-400">
                     {forecast.status === "PENDING"

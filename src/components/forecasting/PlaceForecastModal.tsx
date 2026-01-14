@@ -173,7 +173,7 @@ export function PlaceForecastModal({
             Place Forecast
           </h2>
           <p className="text-sm" style={{ color: "var(--foreground-muted)" }}>
-            Predict {target.company.name}&apos;s MRR in 24 hours
+            Predict {target.company.name}&apos;s earnings in 24 hours
           </p>
         </div>
 
@@ -206,7 +206,7 @@ export function PlaceForecastModal({
                     className="text-sm"
                     style={{ color: "var(--foreground-muted)" }}
                   >
-                    Current MRR
+                    Current Earnings
                   </span>
                 </div>
                 <span className="font-bold text-green-400">
@@ -254,8 +254,8 @@ export function PlaceForecastModal({
                 style={{ color: "var(--foreground-muted)" }}
               >
                 {position === "LONG"
-                  ? "You win if MRR reaches or exceeds your target"
-                  : "You win if MRR is below your target"}
+                  ? "You win if earnings reach or exceed your target"
+                  : "You win if earnings are below your target"}
               </p>
             </div>
 
@@ -265,7 +265,7 @@ export function PlaceForecastModal({
                 className="block text-sm font-medium mb-2"
                 style={{ color: "var(--foreground)" }}
               >
-                Target MRR (in 24 hours)
+                Target Earnings (in 24 hours)
               </label>
               <div className="relative">
                 <span

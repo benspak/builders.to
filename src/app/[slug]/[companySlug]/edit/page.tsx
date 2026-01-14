@@ -112,10 +112,10 @@ export default async function EditCompanyPage({ params }: EditCompanyPageProps) 
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-500/20">
               <TrendingUp className="h-5 w-5 text-cyan-400" />
             </div>
-            <h2 className="text-xl font-bold text-white">MRR Forecasting</h2>
+            <h2 className="text-xl font-bold text-white">Earnings Forecasting</h2>
           </div>
           <p className="text-zinc-400 mt-2">
-            Connect Stripe to let the community forecast your MRR growth. Earn visibility and engagement!
+            Connect Stripe to let the community forecast your earnings growth. Earn visibility and engagement!
           </p>
         </div>
 

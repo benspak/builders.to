@@ -204,7 +204,7 @@ export function ForecastingSettings({
             Forecasting Settings
           </h2>
           <p className="text-sm" style={{ color: "var(--foreground-muted)" }}>
-            Allow users to forecast your company&apos;s MRR
+            Allow users to forecast your company&apos;s earnings
           </p>
         </div>
       </div>
@@ -288,7 +288,7 @@ export function ForecastingSettings({
                         className="text-sm"
                         style={{ color: "var(--foreground-muted)" }}
                       >
-                        Current MRR
+                        Current Earnings
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
@@ -329,7 +329,7 @@ export function ForecastingSettings({
                   className="text-sm mb-4"
                   style={{ color: "var(--foreground-muted)" }}
                 >
-                  Connect your Stripe account to enable MRR forecasting
+                  Connect your Stripe account to enable earnings forecasting
                 </p>
                 <button
                   onClick={connectStripe}
@@ -380,7 +380,7 @@ export function ForecastingSettings({
                     className="text-sm"
                     style={{ color: "var(--foreground-muted)" }}
                   >
-                    Users can stake coins to predict your MRR
+                    Users can stake coins to predict your earnings
                   </p>
                 </div>
                 <button
@@ -495,9 +495,9 @@ export function ForecastingSettings({
             className="text-sm space-y-1"
             style={{ color: "var(--foreground-muted)" }}
           >
-            <li>• Users stake reputation coins on your company&apos;s MRR performance</li>
-            <li>• They can go LONG (MRR will increase) or SHORT (MRR will decrease)</li>
-            <li>• MRR is verified automatically via Stripe (read-only access)</li>
+            <li>• Users stake reputation coins on your company&apos;s earnings performance</li>
+            <li>• They can go LONG (earnings will increase) or SHORT (earnings will decrease)</li>
+            <li>• Earnings are verified automatically via Stripe (read-only access)</li>
             <li>• Winners receive 2x their staked coins after 24 hours</li>
             <li>• Coins are non-transferable and have no monetary value</li>
           </ul>

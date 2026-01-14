@@ -130,10 +130,10 @@ export default function ForecastingPage() {
                 className="text-2xl font-bold"
                 style={{ color: "var(--foreground)" }}
               >
-                MRR Forecasting
+                Earnings Forecasting
               </h1>
               <p style={{ color: "var(--foreground-muted)" }}>
-                Predict company MRR and earn reputation coins
+                Predict company earnings and earn reputation coins
               </p>
             </div>
 
@@ -181,7 +181,7 @@ export default function ForecastingPage() {
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-cyan-400 mt-0.5">3.</span>
-                  Wait 24 hours for MRR to be verified
+                  Wait 24 hours for earnings to be verified
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-cyan-400 mt-0.5">4.</span>
@@ -245,7 +245,7 @@ export default function ForecastingPage() {
                       color: "var(--foreground)",
                     }}
                   >
-                    <option value="mrr">Highest MRR</option>
+                    <option value="mrr">Highest Earnings</option>
                     <option value="forecasts">Most Forecasts</option>
                     <option value="newest">Newest</option>
                   </select>

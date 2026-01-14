@@ -124,7 +124,7 @@ export function ForecastTargetCard({
               className="text-sm"
               style={{ color: "var(--foreground-muted)" }}
             >
-              Current MRR
+              Current Earnings
             </span>
           </div>
           <span className="text-lg font-bold text-green-400">
