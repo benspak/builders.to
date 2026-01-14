@@ -32,7 +32,7 @@ export function generateMagicLinkEmail({
               <table width="100%">
                 <tr>
                   <td>
-                    <img src="${baseUrl}/favicon.ico" alt="Builders.to" width="40" height="40" style="border-radius: 8px;">
+                    <img src="${baseUrl}/icons/icon-96x96.png" alt="Builders.to" width="40" height="40" style="border-radius: 8px;">
                   </td>
                 </tr>
                 <tr>

@@ -55,9 +55,7 @@ export default async function SettingsPage() {
       // Email preferences
       emailPreferences: {
         select: {
-          weeklyDigest: true,
           dailyDigest: true,
-          milestoneNotifications: true,
         },
       },
     },

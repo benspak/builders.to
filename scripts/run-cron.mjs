@@ -6,7 +6,6 @@
  * 
  * Endpoints:
  *   - daily-digest
- *   - weekly-digest
  *   - forecast-resolve
  *   - expire-ads
  *   - expire-services
@@ -16,7 +15,6 @@
 
 const ENDPOINTS = {
   'daily-digest': '/api/email/daily-digest',
-  'weekly-digest': '/api/email/weekly-digest',
   'forecast-resolve': '/api/forecasting/resolve',
   'expire-ads': '/api/cron/expire-ads',
   'expire-services': '/api/cron/expire-services',

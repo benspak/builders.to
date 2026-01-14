@@ -168,9 +168,7 @@ export async function PATCH(
       lookingForCofounder,
       availableForContract,
       // Email preferences
-      weeklyDigest,
       dailyDigest,
-      milestoneNotifications,
     } = body;
 
     // Get current user data for comparison
@@ -396,23 +394,17 @@ export async function PATCH(
 
     // Update email preferences if any are provided
     const hasEmailPreferenceUpdate =
-      typeof weeklyDigest === "boolean" ||
-      typeof dailyDigest === "boolean" ||
-      typeof milestoneNotifications === "boolean";
+      typeof dailyDigest === "boolean";
 
     if (hasEmailPreferenceUpdate) {
       await prisma.emailPreferences.upsert({
         where: { userId: id },
         create: {
           userId: id,
-          weeklyDigest: weeklyDigest ?? true,
           dailyDigest: dailyDigest ?? true,
-          milestoneNotifications: milestoneNotifications ?? true,
         },
         update: {
-          ...(typeof weeklyDigest === "boolean" && { weeklyDigest }),
           ...(typeof dailyDigest === "boolean" && { dailyDigest }),
-          ...(typeof milestoneNotifications === "boolean" && { milestoneNotifications }),
         },
       });
     }

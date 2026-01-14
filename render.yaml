@@ -56,20 +56,6 @@ services:
       - key: NEXTAUTH_URL
         sync: false
 
-  # Weekly digest emails - sends milestone summary
-  - type: cron
-    name: builders-to-weekly-digest
-    runtime: node
-    region: oregon
-    schedule: "0 10 * * 0"
-    buildCommand: npm install
-    startCommand: node scripts/run-cron.mjs weekly-digest
-    envVars:
-      - key: CRON_SECRET
-        sync: false
-      - key: NEXTAUTH_URL
-        sync: false
-
   # Forecast resolution - updates MRR and resolves forecasts
   - type: cron
     name: builders-to-forecast-resolve

@@ -68,9 +68,8 @@ CREATE TABLE IF NOT EXISTS "Notification" (
 CREATE TABLE IF NOT EXISTS "EmailPreferences" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
-    "weeklyDigest" BOOLEAN NOT NULL DEFAULT true,
-    "milestoneNotifications" BOOLEAN NOT NULL DEFAULT true,
-    "lastDigestSentAt" TIMESTAMP(3),
+    "dailyDigest" BOOLEAN NOT NULL DEFAULT true,
+    "lastDailyDigestSentAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
