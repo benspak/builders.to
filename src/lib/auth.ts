@@ -190,6 +190,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     // When a new user is created, set their slug and username from their OAuth handle
     async createUser({ user }) {
       if (user.id) {
+        // First check if user already has a slug (shouldn't happen for new users, but safety check)
+        const existingUser = await prisma.user.findUnique({
+          where: { id: user.id },
+          select: { slug: true },
+        });
+
+        // NEVER overwrite an existing slug
+        if (existingUser?.slug) {
+          return;
+        }
+
         // Try to get linked account (Twitter or GitHub)
         const account = await prisma.account.findFirst({
           where: { userId: user.id },
@@ -209,8 +220,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         // For email signups, generate a random slug (don't use email prefix for privacy)
         const randomSuffix = Math.random().toString(36).substring(2, 8);
 
-        // Use OAuth username for slug, fall back to name, then generate a random builder slug
-        const baseName = oauthUsername || user.name || `builder-${randomSuffix}`;
+        // Check if user.name looks like an email address - if so, ignore it
+        const isNameAnEmail = user.name && user.name.includes("@");
+        const safeName = isNameAnEmail ? null : user.name;
+
+        // Use OAuth username for slug, fall back to name (if not email), then generate a random builder slug
+        const baseName = oauthUsername || safeName || `builder-${randomSuffix}`;
 
         // Generate unique slug from username
         const slug = await getUniqueSlug(baseName);
@@ -244,7 +259,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
 
         // Create a feed event to announce the new user
-        const displayName = user.name || oauthUsername || "A new builder";
+        // Don't use email as display name
+        const displayName = (safeName || oauthUsername) || "A new builder";
         await prisma.feedEvent.create({
           data: {
             type: "USER_JOINED",

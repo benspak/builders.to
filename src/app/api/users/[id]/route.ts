@@ -230,14 +230,20 @@ export async function PATCH(
       }
     } else if (!slug) {
       // Generate slug automatically if not exists and no custom slug provided
-      // Priority for slug: username > displayName > firstName+lastName > name > id
+      // Check if name looks like an email - if so, don't use it for privacy
+      const isNameAnEmail = currentUser?.name && currentUser.name.includes("@");
+      const safeName = isNameAnEmail ? null : currentUser?.name;
+
+      // Priority for slug: username > displayName > firstName+lastName > safeName > random
+      // NEVER use email-derived values
+      const randomSuffix = Math.random().toString(36).substring(2, 8);
       const baseName = currentUser?.username
         || displayName
         || (firstName && lastName ? `${firstName}-${lastName}` : null)
         || firstName
         || lastName
-        || currentUser?.name
-        || id;
+        || safeName
+        || `builder-${randomSuffix}`;
       slug = await getUniqueSlug(generateSlug(baseName), id);
     }
 
