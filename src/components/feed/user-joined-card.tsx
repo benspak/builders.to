@@ -27,6 +27,7 @@ interface UserJoinedCardProps {
     user: {
       id: string;
       name?: string | null;
+      displayName?: string | null;
       firstName?: string | null;
       lastName?: string | null;
       image?: string | null;
@@ -53,9 +54,11 @@ export function UserJoinedCard({ event, currentUserId }: UserJoinedCardProps) {
 
   const user = event.user;
 
-  const displayName = user?.firstName && user?.lastName
-    ? `${user.firstName} ${user.lastName}`
-    : user?.name || "New Builder";
+  // Priority: displayName > firstName+lastName > name
+  const displayName = user?.displayName
+    || (user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : null)
+    || user?.name
+    || "New Builder";
 
   const userUrl = user?.slug ? `/${user.slug}` : null;
 

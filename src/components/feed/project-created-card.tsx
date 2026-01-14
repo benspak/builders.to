@@ -36,6 +36,7 @@ interface ProjectCreatedCardProps {
       user: {
         id: string;
         name?: string | null;
+        displayName?: string | null;
         firstName?: string | null;
         lastName?: string | null;
         image?: string | null;
@@ -60,9 +61,11 @@ export function ProjectCreatedCard({ event, currentUserId }: ProjectCreatedCardP
   const project = event.project;
   const user = project?.user;
 
-  const displayName = user?.firstName && user?.lastName
-    ? `${user.firstName} ${user.lastName}`
-    : user?.name || "Builder";
+  // Priority: displayName > firstName+lastName > name
+  const displayName = user?.displayName
+    || (user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : null)
+    || user?.name
+    || "Builder";
 
   const projectUrl = project ? `/projects/${project.slug || project.id}` : null;
   const userUrl = user?.slug ? `/${user.slug}` : null;

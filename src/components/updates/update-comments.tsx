@@ -75,6 +75,7 @@ interface Comment {
   user: {
     id: string;
     name: string | null;
+    displayName?: string | null;
     firstName: string | null;
     lastName: string | null;
     image: string | null;
@@ -368,9 +369,11 @@ function CommentItem({ comment, currentUserId, onDelete, onEdit }: CommentItemPr
   const [isLoading, setIsLoading] = useState(false);
 
   const isOwner = currentUserId === comment.user.id;
-  const displayName = comment.user.firstName && comment.user.lastName
-    ? `${comment.user.firstName} ${comment.user.lastName}`
-    : comment.user.name || "Builder";
+  // Priority: displayName > firstName+lastName > name
+  const displayName = comment.user.displayName
+    || (comment.user.firstName && comment.user.lastName ? `${comment.user.firstName} ${comment.user.lastName}` : null)
+    || comment.user.name
+    || "Builder";
   const isEdited = comment.updatedAt &&
     new Date(comment.updatedAt).getTime() - new Date(comment.createdAt).getTime() > 1000;
 

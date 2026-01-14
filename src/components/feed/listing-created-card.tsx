@@ -68,6 +68,7 @@ interface ListingCreatedCardProps {
       user: {
         id: string;
         name?: string | null;
+        displayName?: string | null;
         firstName?: string | null;
         lastName?: string | null;
         image?: string | null;
@@ -92,9 +93,11 @@ export function ListingCreatedCard({ event, currentUserId }: ListingCreatedCardP
   const listing = event.localListing;
   const user = listing?.user;
 
-  const displayName = user?.firstName && user?.lastName
-    ? `${user.firstName} ${user.lastName}`
-    : user?.name || "Builder";
+  // Priority: displayName > firstName+lastName > name
+  const displayName = user?.displayName
+    || (user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : null)
+    || user?.name
+    || "Builder";
 
   const listingUrl = listing ? `/listing/${listing.slug}` : null;
   const userUrl = user?.slug ? `/${user.slug}` : null;

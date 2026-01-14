@@ -7,6 +7,7 @@ import { Trophy, User, Rocket, Users, Coins } from "lucide-react";
 interface TopBuilder {
   id: string;
   name: string | null;
+  displayName: string | null;
   firstName: string | null;
   lastName: string | null;
   image: string | null;
@@ -33,6 +34,8 @@ export function TopBuilders({ builders }: TopBuildersProps) {
   }
 
   const getDisplayName = (builder: TopBuilder) => {
+    // Priority: displayName > firstName+lastName > name
+    if (builder.displayName) return builder.displayName;
     if (builder.firstName && builder.lastName) {
       return `${builder.firstName} ${builder.lastName}`;
     }

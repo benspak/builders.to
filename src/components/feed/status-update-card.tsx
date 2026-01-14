@@ -25,6 +25,7 @@ interface StatusUpdateCardProps {
     user: {
       id: string;
       name?: string | null;
+      displayName?: string | null;
       firstName?: string | null;
       lastName?: string | null;
       image?: string | null;
@@ -48,9 +49,11 @@ export function StatusUpdateCard({ event, currentUserId }: StatusUpdateCardProps
 
   const user = event.user;
 
-  const displayName = user?.firstName && user?.lastName
-    ? `${user.firstName} ${user.lastName}`
-    : user?.name || "Builder";
+  // Priority: displayName > firstName+lastName > name
+  const displayName = user?.displayName
+    || (user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : null)
+    || user?.name
+    || "Builder";
 
   const userUrl = user?.slug ? `/${user.slug}` : null;
 

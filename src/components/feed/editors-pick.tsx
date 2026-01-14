@@ -16,6 +16,7 @@ interface EditorsPickProject {
   user: {
     id: string;
     name: string | null;
+    displayName: string | null;
     firstName: string | null;
     lastName: string | null;
     image: string | null;
@@ -32,6 +33,8 @@ interface EditorsPickProps {
 
 export function EditorsPick({ project }: EditorsPickProps) {
   const getDisplayName = (user: EditorsPickProject["user"]) => {
+    // Priority: displayName > firstName+lastName > name
+    if (user.displayName) return user.displayName;
     if (user.firstName && user.lastName) {
       return `${user.firstName} ${user.lastName}`;
     }
