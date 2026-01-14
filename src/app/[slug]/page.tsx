@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { FollowButton, FollowStats, GiftTokensButton, GiftSuccessToast } from "@/components/profile";
 import { ReportButton } from "@/components/ui/report-button";
+import { ProfileForecastStats } from "@/components/forecasting";
 import { Suspense } from "react";
 import { formatRelativeTime, getStatusColor, getStatusLabel, getCategoryColor, getCategoryLabel, getMemberRoleLabel, getMemberRoleColor, getCompanyUrl, formatLocationSlug } from "@/lib/utils";
 import { cn } from "@/lib/utils";
@@ -266,6 +267,11 @@ export default async function SlugPage({ params }: PageProps) {
       // Token system
       tokenBalance: true,
       lifetimeTokensEarned: true,
+      // Forecasting coin system
+      coinBalance: true,
+      forecastAccuracy: true,
+      totalForecasts: true,
+      wonForecasts: true,
       // Follow counts
       _count: {
         select: {
@@ -828,6 +834,19 @@ export default async function SlugPage({ params }: PageProps) {
                   )}
 
                 </div>
+
+                {/* Forecasting Stats */}
+                {(user.totalForecasts > 0 || (user.coinBalance !== 100 && user.coinBalance > 0)) && (
+                  <div className="pt-4 border-t border-white/5">
+                    <ProfileForecastStats
+                      coinBalance={user.coinBalance}
+                      forecastAccuracy={user.forecastAccuracy}
+                      totalForecasts={user.totalForecasts}
+                      wonForecasts={user.wonForecasts}
+                      isOwnProfile={isOwnProfile}
+                    />
+                  </div>
+                )}
               </div>
             </div>
 

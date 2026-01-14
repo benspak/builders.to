@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getStripe, SIDEBAR_AD_DURATION_DAYS, SERVICE_LISTING_DURATION_DAYS, LOCAL_LISTING_PAID_DURATION_DAYS } from "@/lib/stripe";
 import { giftTokens, grantTokens } from "@/lib/tokens";
+import { grantCoins } from "@/lib/coins";
 import Stripe from "stripe";
 
 // Ensure webhook is always dynamic and uses Node.js runtime
@@ -352,6 +353,43 @@ export async function POST(request: Request) {
         console.error("[Webhook] Error processing token purchase:", error);
         return NextResponse.json(
           { error: "Failed to process token purchase" },
+          { status: 500 }
+        );
+      }
+    }
+
+    // Handle coin_purchase payments (when someone buys forecasting coins)
+    if (paymentType === "coin_purchase") {
+      const userId = session.metadata?.userId;
+      const coinAmount = parseInt(session.metadata?.coinAmount || "0", 10);
+      const packageId = session.metadata?.packageId;
+
+      if (!userId || !coinAmount) {
+        console.error("[Webhook] Missing coin purchase metadata");
+        return NextResponse.json(
+          { error: "Missing coin purchase metadata" },
+          { status: 400 }
+        );
+      }
+
+      try {
+        // Grant the purchased coins to the user
+        await grantCoins(
+          userId,
+          coinAmount,
+          "PURCHASED",
+          `Purchased ${coinAmount.toLocaleString()} forecasting coins`,
+          {
+            packageId,
+            stripePaymentId: session.payment_intent as string,
+          }
+        );
+
+        console.log(`[Webhook] Coin purchase successful: ${coinAmount} coins for user ${userId}`);
+      } catch (error) {
+        console.error("[Webhook] Error processing coin purchase:", error);
+        return NextResponse.json(
+          { error: "Failed to process coin purchase" },
           { status: 500 }
         );
       }
