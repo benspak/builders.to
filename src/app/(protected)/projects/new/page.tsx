@@ -47,7 +47,7 @@ export default async function NewProjectPage({ searchParams }: NewProjectPagePro
               <p className="text-zinc-400 mt-2">
                 {isGitHubImport
                   ? "Review and customize the imported details before publishing."
-                  : "Tell the community what you're building. Get feedback, find users, and grow together."}
+                  : "Tell the community what you’re building and launching. Get feedback, meet collaborators, and find early users."}
               </p>
             </div>
             {!isGitHubImport && (

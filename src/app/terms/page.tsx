@@ -20,7 +20,7 @@ export default function TermsOfServicePage() {
         </div>
 
         <h1 className="text-4xl font-bold text-white mb-2">Terms of Service</h1>
-        <p className="text-zinc-500 mb-12">Last updated: December 21, 2025</p>
+        <p className="text-zinc-500 mb-12">Last updated: January 14, 2026</p>
 
         <div className="prose prose-invert prose-zinc max-w-none">
           <div className="space-y-8 text-zinc-300">
@@ -38,11 +38,19 @@ export default function TermsOfServicePage() {
             <section>
               <h2 className="text-2xl font-semibold text-white mb-4">2. Description of Service</h2>
               <p className="leading-relaxed">
-                Builders.to is a community platform for builders, creators, and entrepreneurs to share
-                projects, receive feedback, and connect with potential users and collaborators. The
-                Service allows users to create profiles, submit projects, form companies, interact
-                through comments and upvotes, and engage with other community members.
+                Builders.to is a launch pad and social network for builders, entrepreneurs, and founders to share
+                what they&apos;re building, get feedback, meet collaborators, and find early users. The Service includes:
               </p>
+              <ul className="list-disc pl-6 space-y-2 mt-4">
+                <li>Creating profiles and sharing projects at any development stage</li>
+                <li>Posting daily updates and engaging with other builders</li>
+                <li>Creating and managing company profiles</li>
+                <li>Offering and purchasing builder services through the marketplace</li>
+                <li>Posting and browsing local classifieds</li>
+                <li>Participating in forecasting and reputation systems</li>
+                <li>Earning and using virtual tokens and coins</li>
+                <li>Purchasing and displaying advertisements</li>
+              </ul>
             </section>
 
             <section>
@@ -55,15 +63,27 @@ export default function TermsOfServicePage() {
                 security of your account credentials with these providers.
               </p>
 
-              <h3 className="text-xl font-medium text-white mt-6 mb-3">3.2 Account Responsibilities</h3>
+              <h3 className="text-xl font-medium text-white mt-6 mb-3">3.2 Account Security</h3>
+              <p className="leading-relaxed mb-4">
+                We offer optional two-factor authentication (2FA) for enhanced account security.
+                You are encouraged to enable 2FA to protect your account. You are responsible for:
+              </p>
               <ul className="list-disc pl-6 space-y-2">
-                <li>You must provide accurate and complete information</li>
-                <li>You are responsible for all activity that occurs under your account</li>
-                <li>You must notify us immediately of any unauthorized use of your account</li>
-                <li>You may not transfer or share your account with others</li>
+                <li>Keeping your OAuth provider credentials secure</li>
+                <li>Safely storing your 2FA backup codes if you enable two-factor authentication</li>
+                <li>All activity that occurs under your account</li>
+                <li>Notifying us immediately of any unauthorized use of your account</li>
               </ul>
 
-              <h3 className="text-xl font-medium text-white mt-6 mb-3">3.3 Age Requirements</h3>
+              <h3 className="text-xl font-medium text-white mt-6 mb-3">3.3 Account Responsibilities</h3>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>You must provide accurate and complete information</li>
+                <li>You may not transfer or share your account with others</li>
+                <li>You may not create multiple accounts for the purpose of manipulation or fraud</li>
+                <li>You may not impersonate another person or entity</li>
+              </ul>
+
+              <h3 className="text-xl font-medium text-white mt-6 mb-3">3.4 Age Requirements</h3>
               <p className="leading-relaxed">
                 You must be at least 13 years old to use this Service. By using the Service, you
                 represent and warrant that you meet this age requirement.
@@ -76,10 +96,10 @@ export default function TermsOfServicePage() {
               <h3 className="text-xl font-medium text-white mt-6 mb-3">4.1 Your Content</h3>
               <p className="leading-relaxed">
                 You retain ownership of all content you submit to the Service (&quot;User Content&quot;),
-                including projects, company profiles, comments, and profile information. By
-                submitting User Content, you grant Builders.to a worldwide, non-exclusive,
-                royalty-free license to use, display, reproduce, and distribute your content
-                in connection with the Service.
+                including projects, company profiles, daily updates, comments, service listings,
+                local listings, job postings, and profile information. By submitting User Content,
+                you grant Builders.to a worldwide, non-exclusive, royalty-free license to use,
+                display, reproduce, and distribute your content in connection with the Service.
               </p>
 
               <h3 className="text-xl font-medium text-white mt-6 mb-3">4.2 Content Responsibility</h3>
@@ -93,18 +113,129 @@ export default function TermsOfServicePage() {
                 <li>Promotes violence or discrimination</li>
                 <li>Impersonates another person or entity</li>
                 <li>Contains personal information of others without consent</li>
+                <li>Manipulates engagement metrics (upvotes, likes, follows) through artificial means</li>
+                <li>Promotes illegal products or services</li>
               </ul>
 
               <h3 className="text-xl font-medium text-white mt-6 mb-3">4.3 Content Moderation</h3>
               <p className="leading-relaxed">
                 We reserve the right, but have no obligation, to review, edit, or remove any User
                 Content at our sole discretion. We may remove content that violates these Terms or
-                that we find objectionable for any reason.
+                that we find objectionable for any reason. Users may report content through our
+                reporting system, and we will review flagged content as appropriate.
               </p>
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">5. Acceptable Use</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">5. Token and Coin Systems</h2>
+
+              <h3 className="text-xl font-medium text-white mt-6 mb-3">5.1 Builder Tokens</h3>
+              <p className="leading-relaxed mb-4">
+                Builder Tokens are a virtual currency that can be earned through platform engagement:
+              </p>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>Welcome bonuses for new users</li>
+                <li>Referral rewards when you invite new builders</li>
+                <li>Streak bonuses for consistent daily updates</li>
+                <li>Profile completion bonuses</li>
+                <li>Engagement activities</li>
+                <li>Receiving gifts from other users</li>
+              </ul>
+              <p className="mt-4">
+                Tokens can be used to redeem advertisements, service listings, and local listings.
+                Tokens can also be gifted to other users.
+              </p>
+
+              <h3 className="text-xl font-medium text-white mt-6 mb-3">5.2 Forecasting Coins</h3>
+              <p className="leading-relaxed">
+                Forecasting Coins are a separate virtual currency used in the company forecasting
+                system. You can stake coins on whether companies will meet revenue targets. Correct
+                forecasts are rewarded; incorrect forecasts result in loss of staked coins.
+              </p>
+
+              <h3 className="text-xl font-medium text-white mt-6 mb-3">5.3 Virtual Currency Terms</h3>
+              <p className="leading-relaxed">
+                Both Tokens and Coins:
+              </p>
+              <ul className="list-disc pl-6 space-y-2 mt-2">
+                <li>Have no real-world monetary value</li>
+                <li>Cannot be exchanged for cash or any real currency</li>
+                <li>Are non-transferable outside of the platform</li>
+                <li>May be modified, reset, or discontinued at any time at our discretion</li>
+                <li>May not be purchased except through designated official channels</li>
+                <li>Are subject to forfeiture in cases of Terms violations</li>
+              </ul>
+              <p className="mt-4">
+                We reserve the right to adjust token/coin balances to correct errors, prevent abuse,
+                or maintain system integrity.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-semibold text-white mb-4">6. Services Marketplace</h2>
+
+              <h3 className="text-xl font-medium text-white mt-6 mb-3">6.1 Service Providers</h3>
+              <p className="leading-relaxed">
+                If you offer services through the marketplace, you agree to:
+              </p>
+              <ul className="list-disc pl-6 space-y-2 mt-2">
+                <li>Provide accurate descriptions of your services</li>
+                <li>Deliver services as described within the stated timeframe</li>
+                <li>Communicate promptly with buyers</li>
+                <li>Complete Stripe Connect onboarding for payment processing</li>
+                <li>Handle disputes professionally and in good faith</li>
+              </ul>
+
+              <h3 className="text-xl font-medium text-white mt-6 mb-3">6.2 Service Buyers</h3>
+              <p className="leading-relaxed">
+                If you purchase services, you agree to:
+              </p>
+              <ul className="list-disc pl-6 space-y-2 mt-2">
+                <li>Provide clear and accurate requirements</li>
+                <li>Communicate promptly with service providers</li>
+                <li>Pay for services through the platform</li>
+                <li>Acknowledge delivery when services are completed satisfactorily</li>
+              </ul>
+
+              <h3 className="text-xl font-medium text-white mt-6 mb-3">6.3 Platform Role</h3>
+              <p className="leading-relaxed">
+                Builders.to facilitates connections between service providers and buyers but is not
+                a party to service agreements. We are not responsible for the quality, safety, or
+                legality of services offered or purchased. Disputes should be resolved between
+                parties, though we may intervene at our discretion.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-semibold text-white mb-4">7. Local Listings and Classifieds</h2>
+              <p className="leading-relaxed mb-4">
+                Local listings allow users to post classifieds in various categories. You agree that:
+              </p>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>All listing information must be accurate and not misleading</li>
+                <li>You will not post prohibited items or services</li>
+                <li>You are responsible for all transactions that result from your listings</li>
+                <li>Listings may be removed if flagged by the community or found to violate these Terms</li>
+                <li>Paid listings are subject to expiration and non-refundable after activation</li>
+              </ul>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-semibold text-white mb-4">8. Advertising</h2>
+              <p className="leading-relaxed mb-4">
+                Users may purchase advertisements to be displayed on the platform. Advertisers agree:
+              </p>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>All advertisement content must be truthful and not misleading</li>
+                <li>Advertisements must not violate any laws or these Terms</li>
+                <li>We reserve the right to reject or remove any advertisement</li>
+                <li>Ad payments are non-refundable after the ad begins running</li>
+                <li>View and click metrics are provided as estimates, not guarantees</li>
+              </ul>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-semibold text-white mb-4">9. Acceptable Use</h2>
               <p className="mb-4">You agree not to:</p>
               <ul className="list-disc pl-6 space-y-2">
                 <li>Use the Service for any illegal purpose</li>
@@ -115,20 +246,38 @@ export default function TermsOfServicePage() {
                 <li>Use the Service to send spam or unsolicited messages</li>
                 <li>Circumvent any security measures or access controls</li>
                 <li>Reverse engineer or attempt to extract source code</li>
+                <li>Manipulate the token, coin, or forecasting systems</li>
+                <li>Create fake accounts or artificially inflate engagement metrics</li>
+                <li>Use the platform for money laundering or financial fraud</li>
+                <li>Post false or misleading information about businesses or individuals</li>
               </ul>
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">6. Intellectual Property</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">10. Payments and Refunds</h2>
+              <p className="leading-relaxed mb-4">
+                All payments are processed through Stripe. By making payments, you agree to Stripe&apos;s
+                terms of service. Regarding refunds:
+              </p>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>Service listing fees and advertisement purchases are generally non-refundable once activated</li>
+                <li>Service order disputes should be resolved between buyer and seller</li>
+                <li>We may issue refunds at our discretion for technical errors or extenuating circumstances</li>
+                <li>Chargebacks may result in account suspension pending investigation</li>
+              </ul>
+            </section>
 
-              <h3 className="text-xl font-medium text-white mt-6 mb-3">6.1 Our Property</h3>
+            <section>
+              <h2 className="text-2xl font-semibold text-white mb-4">11. Intellectual Property</h2>
+
+              <h3 className="text-xl font-medium text-white mt-6 mb-3">11.1 Our Property</h3>
               <p className="leading-relaxed">
                 The Service, including its design, features, and content (excluding User Content),
                 is owned by Builders.to and protected by copyright, trademark, and other laws.
                 You may not copy, modify, or distribute our intellectual property without permission.
               </p>
 
-              <h3 className="text-xl font-medium text-white mt-6 mb-3">6.2 Trademarks</h3>
+              <h3 className="text-xl font-medium text-white mt-6 mb-3">11.2 Trademarks</h3>
               <p className="leading-relaxed">
                 &quot;Builders.to&quot; and associated logos are trademarks of Builders.to. You may not
                 use these trademarks without our prior written consent.
@@ -136,7 +285,7 @@ export default function TermsOfServicePage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">7. Third-Party Services</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">12. Third-Party Services</h2>
               <p className="leading-relaxed">
                 The Service may contain links to third-party websites or services that are not
                 owned or controlled by Builders.to. We have no control over and assume no
@@ -146,48 +295,59 @@ export default function TermsOfServicePage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">8. Disclaimer of Warranties</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">13. Disclaimer of Warranties</h2>
               <p className="leading-relaxed uppercase text-sm">
                 THE SERVICE IS PROVIDED &quot;AS IS&quot; AND &quot;AS AVAILABLE&quot; WITHOUT WARRANTIES OF ANY
                 KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO IMPLIED WARRANTIES
                 OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT. WE
                 DO NOT WARRANT THAT THE SERVICE WILL BE UNINTERRUPTED, SECURE, OR ERROR-FREE.
+                WE DO NOT GUARANTEE THE ACCURACY OF FORECASTING DATA, TOKEN BALANCES, OR ANY
+                METRICS DISPLAYED ON THE PLATFORM.
               </p>
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">9. Limitation of Liability</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">14. Limitation of Liability</h2>
               <p className="leading-relaxed uppercase text-sm">
                 TO THE MAXIMUM EXTENT PERMITTED BY LAW, BUILDERS.TO SHALL NOT BE LIABLE FOR ANY
                 INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR ANY LOSS
                 OF PROFITS OR REVENUES, WHETHER INCURRED DIRECTLY OR INDIRECTLY, OR ANY LOSS OF
                 DATA, USE, GOODWILL, OR OTHER INTANGIBLE LOSSES, RESULTING FROM YOUR USE OF THE
-                SERVICE.
+                SERVICE, INCLUDING BUT NOT LIMITED TO LOSSES RELATED TO THE TOKEN OR COIN SYSTEMS,
+                SERVICE MARKETPLACE TRANSACTIONS, OR FORECASTING ACTIVITIES.
               </p>
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">10. Indemnification</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">15. Indemnification</h2>
               <p className="leading-relaxed">
                 You agree to indemnify, defend, and hold harmless Builders.to and its officers,
                 directors, employees, and agents from any claims, damages, losses, liabilities,
                 and expenses (including legal fees) arising from your use of the Service, your
-                User Content, or your violation of these Terms.
+                User Content, your service marketplace activities, or your violation of these Terms.
               </p>
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">11. Termination</h2>
-              <p className="leading-relaxed">
+              <h2 className="text-2xl font-semibold text-white mb-4">16. Termination</h2>
+              <p className="leading-relaxed mb-4">
                 We may suspend or terminate your access to the Service at any time, with or
-                without cause, and with or without notice. Upon termination, your right to use
-                the Service will immediately cease. All provisions of these Terms that by their
-                nature should survive termination shall survive.
+                without cause, and with or without notice. Upon termination:
+              </p>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>Your right to use the Service will immediately cease</li>
+                <li>Any unused tokens or coins will be forfeited</li>
+                <li>Active service orders may be cancelled</li>
+                <li>Active listings and advertisements may be removed</li>
+              </ul>
+              <p className="mt-4">
+                All provisions of these Terms that by their nature should survive termination
+                shall survive.
               </p>
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">12. Modifications to Terms</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">17. Modifications to Terms</h2>
               <p className="leading-relaxed">
                 We reserve the right to modify these Terms at any time. We will notify users of
                 material changes by updating the &quot;Last updated&quot; date. Your continued use of the
@@ -196,7 +356,7 @@ export default function TermsOfServicePage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">13. Governing Law</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">18. Governing Law</h2>
               <p className="leading-relaxed">
                 These Terms shall be governed by and construed in accordance with the laws of
                 the jurisdiction in which Builders.to operates, without regard to conflict of
@@ -205,7 +365,7 @@ export default function TermsOfServicePage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">14. Dispute Resolution</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">19. Dispute Resolution</h2>
               <p className="leading-relaxed">
                 Any disputes arising from these Terms or your use of the Service shall first
                 be attempted to be resolved through good-faith negotiation. If negotiation fails,
@@ -215,7 +375,7 @@ export default function TermsOfServicePage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">15. Severability</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">20. Severability</h2>
               <p className="leading-relaxed">
                 If any provision of these Terms is found to be unenforceable or invalid, that
                 provision shall be limited or eliminated to the minimum extent necessary, and
@@ -224,7 +384,7 @@ export default function TermsOfServicePage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">16. Entire Agreement</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">21. Entire Agreement</h2>
               <p className="leading-relaxed">
                 These Terms, together with our Privacy Policy, constitute the entire agreement
                 between you and Builders.to regarding your use of the Service and supersede any
@@ -233,7 +393,7 @@ export default function TermsOfServicePage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">17. Contact Us</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">22. Contact Us</h2>
               <p className="leading-relaxed">
                 If you have any questions about these Terms, please contact us through our
                 community channels:

@@ -30,9 +30,9 @@ export default async function SignInPage() {
 
           <div className="rounded-2xl p-8 backdrop-blur-xl card">
             <div className="text-center mb-8">
-              <h1 className="text-3xl font-bold mb-2" style={{ color: "var(--foreground)" }}>Welcome to Builders</h1>
+              <h1 className="text-3xl font-bold mb-2" style={{ color: "var(--foreground)" }}>Welcome to Builders.to</h1>
               <p style={{ color: "var(--foreground-muted)" }}>
-                Sign in to share your projects and connect with fellow builders
+                Sign in to join the launch pad and builder network — share progress, meet collaborators, and find early users
               </p>
             </div>
 

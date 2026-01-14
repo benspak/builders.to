@@ -7,7 +7,7 @@ import { LocalListingForm } from "@/components/local/local-listing-form";
 
 export const metadata = {
   title: "Create Local Listing - Builders.to",
-  description: "Post a listing to your local builder community",
+  description: "Post a listing to your local builder network on Builders.to",
 };
 
 export default async function NewListingPage() {

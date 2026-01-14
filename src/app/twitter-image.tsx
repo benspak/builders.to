@@ -2,7 +2,7 @@ import { ImageResponse } from 'next/og'
 
 export const runtime = 'nodejs'
 
-export const alt = 'Builders.to - Ship faster. Together.'
+export const alt = 'Builders.to — Launch together.'
 export const size = {
   width: 1200,
   height: 628,
@@ -135,7 +135,7 @@ export default async function Image() {
               gap: '12px',
             }}
           >
-            <span style={{ color: 'white' }}>Ship faster.</span>
+            <span style={{ color: 'white' }}>Launch together.</span>
             <span
               style={{
                 background: 'linear-gradient(135deg, #f97316 0%, #fb923c 50%, #fbbf24 100%)',
@@ -143,7 +143,7 @@ export default async function Image() {
                 color: 'transparent',
               }}
             >
-              Together.
+              On Builders.to.
             </span>
           </div>
 
@@ -158,7 +158,7 @@ export default async function Image() {
               lineHeight: 1.5,
             }}
           >
-            Share your project, get feedback, find your first users
+            A launch pad + social network for builders, entrepreneurs, and founders
           </div>
 
           {/* Features badges */}
@@ -196,7 +196,7 @@ export default async function Image() {
                 <path d="M16 3.13a4 4 0 0 1 0 7.75" />
               </svg>
               <span style={{ color: '#f97316', fontSize: '16px', fontWeight: 600 }}>
-                Builders Community
+                Builder Network
               </span>
             </div>
             <div

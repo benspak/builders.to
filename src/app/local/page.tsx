@@ -9,8 +9,8 @@ import { CATEGORY_LABELS } from "@/components/local/types";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Builders Local - Classifieds & Community by Location | Builders.to",
-  description: "Find builders, companies, services, and local classifieds in your city. Connect with local talent and explore regional tech ecosystems.",
+  title: "Builders Local — Meet builders & find opportunities by city | Builders.to",
+  description: "Local builder network for founders and entrepreneurs. Find services, jobs, and listings near you — and meet builders in your city.",
 };
 
 interface LocationData {
@@ -227,10 +227,10 @@ export default async function LocalPage({ searchParams }: PageProps) {
             <span>Builders Local</span>
           </div>
           <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4">
-            Local Classifieds & Community
+            Local builder network
           </h1>
           <p className="text-xl text-zinc-400 max-w-2xl mx-auto mb-6">
-            Find services, jobs, housing, and connect with builders in your area.
+            Find services, jobs, housing, and meet builders, founders, and entrepreneurs in your area.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4 mb-8">
             <Link

@@ -18,8 +18,8 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Builders.to - Share your project, get feedback, find your first users",
-  description: "A members-only launchpad for builders. Share your work in progress, get feedback from the community, and find your first users. Part of the Builders.to community on X.",
+  title: "Builders.to — Launch pad & social network for builders",
+  description: "Builders.to is a launch pad and social network for builders, entrepreneurs, and founders. Share what you’re building, get feedback, meet collaborators, and find early users.",
   keywords: ["builders", "startup", "projects", "feedback", "community", "launch"],
   metadataBase: new URL("https://builders.to"),
   applicationName: "Builders.to",
@@ -32,15 +32,15 @@ export const metadata: Metadata = {
     telephone: false,
   },
   openGraph: {
-    title: "Builders.to - Ship faster. Together.",
-    description: "Share your project, get feedback, find your first users. A members-only launchpad for builders who ship.",
+    title: "Builders.to — Launch together.",
+    description: "A launch pad and social network for builders, entrepreneurs, and founders. Share what you’re building, get feedback, meet collaborators, and find early users.",
     type: "website",
     siteName: "Builders.to",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Builders.to - Ship faster. Together.",
-    description: "Share your project, get feedback, find your first users. A members-only launchpad for builders who ship.",
+    title: "Builders.to — Launch together.",
+    description: "A launch pad and social network for builders, entrepreneurs, and founders. Share what you’re building, get feedback, meet collaborators, and find early users.",
     creator: "@builderstoHQ",
   },
   icons: {

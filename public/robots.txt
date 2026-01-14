@@ -3,18 +3,33 @@
 
 User-agent: *
 Allow: /
+
+# Public pages - explicitly allowed for clarity
 Allow: /feed
 Allow: /projects
+Allow: /projects/*
 Allow: /companies
+Allow: /companies/*
 Allow: /services
+Allow: /services/*
 Allow: /local
+Allow: /local/*
+Allow: /listing/*
 Allow: /streamers
 Allow: /privacy
 Allow: /terms
 
-# Protect user-specific and authenticated pages
+# Public builder profiles (top-level slugs)
+# These are dynamically generated from usernames
+
+# Protect API endpoints
 Disallow: /api/
+
+# Protect authentication pages
 Disallow: /signin
+Disallow: /verify-2fa
+
+# Protect user-specific and authenticated pages
 Disallow: /settings
 Disallow: /notifications
 Disallow: /my-companies
@@ -23,7 +38,28 @@ Disallow: /purchases
 Disallow: /referrals
 Disallow: /tokens
 Disallow: /updates
+Disallow: /forecasting
+
+# Protect advertising management
 Disallow: /ads/
 
-# Sitemap
+# Protect service provider pages
+Disallow: /services/new
+Disallow: /services/*/edit
+
+# Protect project management pages
+Disallow: /projects/new
+Disallow: /projects/*/edit
+
+# Prevent indexing of file uploads directory patterns
+Disallow: /uploads/
+
+# Crawl-delay for politeness (optional, respected by some crawlers)
+Crawl-delay: 1
+
+# Sitemap location
 Sitemap: https://builders.to/sitemap.xml
+
+# AI Crawlers - llms.txt location
+# See https://llmstxt.org/ for specification
+# LLMs.txt: https://builders.to/llms.txt

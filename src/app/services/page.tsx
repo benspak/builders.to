@@ -8,8 +8,8 @@ import { cn } from "@/lib/utils";
 import type { ServiceCategory } from "@prisma/client";
 
 export const metadata = {
-  title: "Services Marketplace - Builders.to",
-  description: "Hire verified builders for MVP development, design, marketing, AI integrations, and more",
+  title: "Services — Hire builders to launch faster | Builders.to",
+  description: "Hire verified builders from the Builders.to launch pad and social network. MVP builds, design, marketing, AI integrations, DevOps, and more.",
 };
 
 export const dynamic = "force-dynamic";

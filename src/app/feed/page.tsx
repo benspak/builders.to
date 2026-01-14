@@ -8,7 +8,7 @@ import { SidebarAd } from "@/components/ads";
 
 export const metadata = {
   title: "Builders.to Feed – Launch Updates, Milestones & Jobs | Builders.to",
-  description: "The launchpad for indie hackers and builders. Share daily updates, celebrate milestones, discover projects, hire verified talent, and get visibility in an ecosystem of builders who ship.",
+  description: "A launch pad and social network for builders, entrepreneurs, and founders. Share daily updates, celebrate milestones, discover projects, meet collaborators, and find early users.",
 };
 
 // Force dynamic rendering since this page requires database access
@@ -529,7 +529,7 @@ export default function FeedPage() {
             <div>
               <h1 className="text-2xl font-bold text-white">Builder Feed</h1>
               <p className="text-zinc-400 text-sm">
-                See what builders are working on
+                See what builders, founders, and entrepreneurs are building and launching
               </p>
             </div>
           </div>

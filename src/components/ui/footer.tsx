@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Rocket } from "lucide-react";
 import { ProductHuntBadge } from "./product-hunt-badge";
+import { BuildersLogo } from "@/components/ui/builders-logo";
 
 export function Footer() {
   return (
@@ -16,23 +16,20 @@ export function Footer() {
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center justify-between gap-6 sm:flex-row">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-orange-500 to-orange-600">
-              <Rocket className="h-4 w-4 text-white" />
+            <div className="shadow-lg shadow-orange-500/25 rounded-lg">
+              <BuildersLogo size={32} className="h-8 w-8" />
             </div>
-            <span className="text-lg font-bold" style={{ color: "var(--foreground)" }}>
-              Builders<span className="text-orange-500">.to</span>
-            </span>
+            <div className="flex flex-col leading-tight">
+              <span className="text-lg font-bold" style={{ color: "var(--foreground)" }}>
+                Builders<span className="text-orange-500">.to</span>
+              </span>
+              <span className="text-xs" style={{ color: "var(--foreground-subtle)" }}>
+                Launch pad & social network for builders, entrepreneurs, and founders
+              </span>
+            </div>
           </div>
 
           <div className="flex items-center gap-6 text-sm" style={{ color: "var(--foreground-subtle)" }}>
-            <a
-              href="https://github.com/benspak/builders.to"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="transition-colors hover:opacity-80"
-            >
-              GitHub
-            </a>
             <a
               href="https://x.com/i/communities/1943895831322439993"
               target="_blank"
@@ -49,6 +46,12 @@ export function Footer() {
             >
               Discord
             </a>
+            <Link href="/sitemap.xml" className="transition-colors hover:opacity-80">
+              Sitemap
+            </Link>
+            <Link href="/llms.txt" className="transition-colors hover:opacity-80">
+              llms.txt
+            </Link>
             <Link href="/privacy" className="transition-colors hover:opacity-80">
               Privacy
             </Link>

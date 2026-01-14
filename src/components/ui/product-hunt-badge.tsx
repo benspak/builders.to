@@ -27,11 +27,10 @@ export function ProductHuntBadge() {
     >
       <img
         src={`https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1057424&theme=${badgeTheme}`}
-        alt="Builders.to - Ship faster. Together. | Product Hunt"
+        alt="Builders.to — Launch pad & social network for builders | Product Hunt"
         width="250"
         height="54"
       />
     </a>
   );
 }
-

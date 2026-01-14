@@ -43,7 +43,7 @@ export default async function ProjectsPage({ searchParams }: ProjectsPageProps) 
             </div>
           </div>
           <p className="text-zinc-400 mt-1">
-            Discover what builders are working on
+            Discover what builders, founders, and entrepreneurs are building and launching
           </p>
         </div>
         {session ? (

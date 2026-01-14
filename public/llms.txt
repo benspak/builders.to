@@ -2,39 +2,128 @@
 
 > A members-only project launchpad for builders. Share your work in progress, get feedback from the community, and find your first users.
 
-Builders.to is a community platform where indie hackers, solopreneurs, and developers share their projects at any stage—from idea to launched product. Members can upvote, comment, and provide feedback to help each other succeed.
+Builders.to is a community platform where indie hackers, solopreneurs, and developers share their projects at any stage—from idea to launched product. Members can upvote, comment, provide feedback, post daily updates, list services, find local builders, and engage with a growing ecosystem of makers who ship.
 
-## Features
+## Core Features
 
-- **Project Sharing**: Post your work at any stage (Idea → Building → Beta → Launched)
-- **Community Feedback**: Get constructive feedback from fellow builders
-- **Upvoting System**: Support projects you love and help them gain visibility
-- **Builder Profiles**: Showcase your work and connect with other makers
-- **Company Pages**: Create and manage company profiles
-- **Local Listings**: Discover builders and services in your area
-- **Services Marketplace**: Offer and find builder services
-- **Live Streamers**: Discover builders who stream their work
+### Project Sharing
+- **Projects**: Post your work at any stage (Idea → Building → Beta → Launched → Paused → Acquired)
+- **Co-Builders**: Credit multiple builders on a single project
+- **Milestones**: Track and celebrate project milestones (v1 shipped, first user, first customer, $1k MRR, $10k MRR, profitable, first hire, funding, pivot)
+- **Project Images**: Upload screenshots and media to showcase your work
+- **Upvotes & Comments**: Community feedback and support system
+
+### Community Feed
+- **Daily Updates**: Share what you're building with text, images, GIFs, and videos
+- **Activity Feed**: Real-time feed combining daily updates, milestones, new projects, job postings, and new member announcements
+- **Likes & Comments**: Engage with other builders' updates
+- **@Mentions**: Tag other builders in your updates
+
+### Builder Profiles
+- **Public Profiles**: Showcase your work, bio, headline, and social links
+- **Builder Operating System Flags**: Signal if you're open to work, looking for a co-founder, or available for contract work
+- **Streaks**: Track consecutive days of posting updates
+- **Endorsements**: Receive endorsements from other builders for specific skills
+- **Follows**: Follow builders you're interested in
+
+### Companies
+- **Company Pages**: Create and manage company profiles with logo, about, tech stack, and tools
+- **Traction Badges**: Display customer count, user count, revenue range, funding stage
+- **Company Updates**: Post internal build logs and announcements
+- **Team Members**: Add team members with roles (Owner, Admin, Member)
+- **Job Board**: Post open roles (Full-time, Part-time, Contract, Freelance, Co-founder, Advisor, Intern)
+
+### Services Marketplace
+- **Service Listings**: Offer your builder services (MVP Build, Design, Marketing, AI Integration, DevOps, Audit)
+- **Portfolio Projects**: Link your projects as proof-of-work for services
+- **Stripe Connect**: Integrated payments for service purchases
+- **Service Orders**: Track orders from pending to completed
+
+### Builders Local (Classifieds)
+- **Local Listings**: Craigslist-style classifieds by location
+- **Categories**: Community, Services, Discussion, Coworking/Housing, For Sale
+- **Location-Based**: Browse builders and services in your area
+- **Ratings & Comments**: Rate listing authors and leave feedback
+
+### Streamers Section
+- **Live Streamers**: Discover builders who stream their work on Twitch
+- **Featured Videos**: Showcase YouTube or Twitch videos on your profile
+
+### Token System
+- **Builder Tokens**: In-app currency earned through engagement
+- **Welcome Bonus**: New users receive tokens on signup
+- **Referral Rewards**: Earn tokens when you refer new builders
+- **Streak Bonuses**: Earn tokens for maintaining daily update streaks
+- **Profile Completion**: Earn tokens for completing your profile
+- **Token Gifting**: Send tokens to other builders as appreciation
+- **Token Redemption**: Use tokens to unlock ads, service listings, and local listings
+
+### Forecasting System (Reputation Coins)
+- **Forecasting Coins**: Separate currency for the forecasting system
+- **Company MRR Forecasts**: Stake coins on whether companies will hit MRR targets
+- **Positions**: Go LONG (MRR will meet/exceed target) or SHORT (MRR will be below target)
+- **Leaderboard**: Compete on forecast accuracy
+
+### Advertising
+- **Sidebar Ads**: Purchase ad placements visible on the feed
+- **View & Click Tracking**: Analytics for ad performance
+- **Token Redemption**: Optionally use tokens instead of payment
+
+### Notifications & Communication
+- **In-App Notifications**: Real-time notifications for likes, comments, mentions, and more
+- **Push Notifications**: PWA push notifications (opt-in)
+- **Email Digests**: Daily and weekly digest emails
+- **Content Reporting**: Report inappropriate content
+
+### Security
+- **OAuth Authentication**: Sign in with Google, GitHub, or X/Twitter
+- **Two-Factor Authentication**: Optional TOTP-based 2FA with backup codes
 
 ## Public Pages
 
-- `/feed` - Main community feed with recent projects and updates
+- `/feed` - Main community feed with recent projects, updates, milestones, and jobs
 - `/projects` - Browse all projects shared by the community
+- `/projects/[slug]` - Individual project pages
 - `/companies` - Discover companies built by community members
+- `/companies/[slug]` - Individual company pages
 - `/services` - Marketplace for builder services
+- `/services/[id]` - Individual service listing pages
 - `/local` - Find builders and listings by location
+- `/local/[locationSlug]` - Location-specific listings
+- `/listing/[slug]` - Individual local listing pages
 - `/streamers` - Builders who live-stream their work
+- `/[slug]` - Public builder profiles
+- `/[slug]/updates` - Builder's update history
+- `/[slug]/[companySlug]` - Company pages under builder profiles
 - `/privacy` - Privacy policy
 - `/terms` - Terms of service
 
+## Tech Stack
+
+- **Framework**: Next.js 16 (App Router)
+- **Language**: TypeScript
+- **Database**: PostgreSQL with Prisma ORM
+- **Authentication**: NextAuth.js v5 (OAuth: Google, GitHub, X/Twitter)
+- **Payments**: Stripe (Checkout, Connect)
+- **Styling**: Tailwind CSS
+- **Icons**: Lucide React
+- **Animations**: Motion (Framer Motion)
+- **Email**: Resend
+- **GIFs**: Giphy API
+- **Push Notifications**: Web Push API
+
 ## Community
 
-Part of the Builders.to community on X/Twitter: https://x.com/i/communities/1943895831322439993
+Join the Builders.to community:
+- X/Twitter Community: https://x.com/i/communities/1943895831322439993
+- Discord Server: https://discord.com/invite/G7nmswWkbn
 
 ## Contact
 
-For questions about Builders.to, reach out through the X community or create an account to connect with the team directly.
+For questions about Builders.to, reach out through our community channels or create an account to connect with the team directly.
 
 ## Optional
 
 - Logo: https://builders.to/logo.svg
+- Full Logo: https://builders.to/logo-full.svg
 - Favicon: https://builders.to/favicon.svg

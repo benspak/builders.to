@@ -5,8 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { StreamerCard } from "@/components/streamers";
 
 export const metadata = {
-  title: "Streamers - Builders.to",
-  description: "Discover builders who stream and create video content on YouTube and Twitch",
+  title: "Streamers — Learn from builders in public | Builders.to",
+  description: "Discover builders, founders, and entrepreneurs who stream on YouTube and Twitch. Follow along, learn, and meet people building in public.",
 };
 
 // Force dynamic rendering since this page requires database access

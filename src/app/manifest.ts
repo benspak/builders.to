@@ -2,9 +2,9 @@ import type { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Builders.to - Ship faster. Together.',
+    name: 'Builders.to — Launch together.',
     short_name: 'Builders.to',
-    description: 'A members-only launchpad for builders. Share your work in progress, get feedback from the community, and find your first users.',
+    description: 'A launch pad and social network for builders, entrepreneurs, and founders. Share what you’re building, get feedback, meet collaborators, and find early users.',
     start_url: '/',
     display: 'standalone',
     background_color: '#0a0a0a',

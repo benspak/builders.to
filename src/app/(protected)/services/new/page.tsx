@@ -8,7 +8,7 @@ import { ServiceForm } from "@/components/services/service-form";
 
 export const metadata = {
   title: "Create Service Listing - Builders.to",
-  description: "Sell your builder services to other builders",
+  description: "Sell your services to builders, founders, and entrepreneurs on Builders.to",
 };
 
 export default async function NewServicePage() {
