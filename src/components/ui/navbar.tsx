@@ -8,7 +8,7 @@ import { NotificationDropdown } from "@/components/notifications";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { SearchCommand } from "@/components/ui/search-command";
 import { TokenBalance } from "@/components/ui/token-balance";
-import { Plus, Rocket, ChevronDown, Sparkles, Menu, X, MapPin, Megaphone, TrendingUp } from "lucide-react";
+import { Plus, Rocket, ChevronDown, Sparkles, Menu, X, MapPin, Megaphone } from "lucide-react";
 import { BuildersLogo } from "@/components/ui/builders-logo";
 import { cn } from "@/lib/utils";
 
@@ -86,15 +86,6 @@ export function Navbar() {
                   >
                     Services
                   </Link>
-                  <Link
-                    href="/forecasting"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-white/5"
-                    style={{ color: "var(--foreground-muted)" }}
-                  >
-                    <TrendingUp className="h-3.5 w-3.5 text-cyan-400" />
-                    Forecast
-                  </Link>
                   {/* Divider */}
                   <div className="my-2 border-t" style={{ borderColor: "var(--card-border)" }} />
 
@@ -157,14 +148,6 @@ export function Navbar() {
             style={{ color: "var(--foreground-muted)" }}
           >
             Services
-          </Link>
-          <Link
-            href="/forecasting"
-            className="hidden lg:flex items-center gap-1.5 text-sm font-medium transition-colors"
-            style={{ color: "var(--foreground-muted)" }}
-          >
-            <TrendingUp className="h-3.5 w-3.5 text-cyan-400" />
-            Forecast
           </Link>
           {/* Mobile Search */}
           <div className="sm:hidden">

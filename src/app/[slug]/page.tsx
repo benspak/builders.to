@@ -196,31 +196,45 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
   }
 
-  // Check if it's a location
-  const company = await prisma.company.findFirst({
-    where: { locationSlug: slug },
-    select: { location: true },
-  });
+  // Check if it's a location - check companies, users, AND listings
+  const [company, locationUser, listing] = await Promise.all([
+    prisma.company.findFirst({
+      where: { locationSlug: slug },
+      select: { location: true },
+    }),
+    prisma.user.findFirst({
+      where: { locationSlug: slug },
+      select: { city: true, state: true, country: true },
+    }),
+    prisma.localListing.findFirst({
+      where: {
+        locationSlug: slug,
+        status: "ACTIVE",
+        OR: [
+          { expiresAt: null },
+          { expiresAt: { gt: new Date() } },
+        ],
+      },
+      select: { city: true, state: true },
+    }),
+  ]);
 
-  const locationUser = await prisma.user.findFirst({
-    where: { locationSlug: slug },
-    select: { city: true, state: true, country: true },
-  });
-
-  if (company || locationUser) {
+  if (company || locationUser || listing) {
     let locationName: string;
     if (company?.location) {
       locationName = company.location;
     } else if (locationUser?.city) {
       const locationSuffix = locationUser.country || locationUser.state;
       locationName = locationSuffix ? `${locationUser.city}, ${locationSuffix}` : locationUser.city;
+    } else if (listing?.city && listing?.state) {
+      locationName = `${listing.city}, ${listing.state}`;
     } else {
       locationName = formatLocationSlug(slug);
     }
 
     return {
       title: `Builders & Companies in ${locationName} - Builders Local | Builders.to`,
-      description: `Discover talented builders and innovative companies in ${locationName}. Connect with local talent and explore the tech ecosystem.`,
+      description: `Discover talented builders, companies, and local listings in ${locationName}. Connect with local talent and explore the tech ecosystem.`,
     };
   }
 
