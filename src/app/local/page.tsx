@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { MapPin, Building2, ArrowRight, Globe, Users, Plus, Megaphone, LayoutList, Newspaper } from "lucide-react";
+import { MapPin, Building2, ArrowRight, Globe, Users, Plus, Megaphone, LayoutList, Newspaper, Briefcase } from "lucide-react";
 import { LocalListingCard } from "@/components/local/local-listing-card";
 import { LocalCategoryFilter } from "@/components/local/local-category-filter";
 import { CATEGORY_LABELS } from "@/components/local/types";
@@ -37,7 +37,7 @@ export default async function LocalPage({ searchParams }: PageProps) {
   };
 
   // Get all data in parallel
-  const [companies, builders, allListings] = await Promise.all([
+  const [companies, builders, allListings, jobs] = await Promise.all([
     // Get all unique locations with company counts
     prisma.company.findMany({
       where: {
@@ -81,6 +81,24 @@ export default async function LocalPage({ searchParams }: PageProps) {
           select: {
             comments: true,
             flags: true,
+          },
+        },
+      },
+    }),
+    // Get all active jobs with their company's location
+    prisma.companyRole.findMany({
+      where: {
+        isActive: true,
+        company: {
+          locationSlug: { not: null },
+        },
+      },
+      select: {
+        id: true,
+        company: {
+          select: {
+            location: true,
+            locationSlug: true,
           },
         },
       },
@@ -148,6 +166,23 @@ export default async function LocalPage({ searchParams }: PageProps) {
     }
   }
 
+  // Group jobs by company's locationSlug
+  const jobLocationMap = new Map<string, LocationData>();
+  for (const job of jobs) {
+    if (job.company.locationSlug && job.company.location) {
+      const existing = jobLocationMap.get(job.company.locationSlug);
+      if (existing) {
+        existing.count += 1;
+      } else {
+        jobLocationMap.set(job.company.locationSlug, {
+          location: job.company.location,
+          locationSlug: job.company.locationSlug,
+          count: 1,
+        });
+      }
+    }
+  }
+
   // Convert to arrays and sort by count (descending)
   const builderLocations = Array.from(builderLocationMap.values())
     .sort((a, b) => b.count - a.count);
@@ -158,17 +193,22 @@ export default async function LocalPage({ searchParams }: PageProps) {
   const listingLocations = Array.from(listingLocationMap.values())
     .sort((a, b) => b.count - a.count);
 
-  // Calculate totals - include listing locations in the count
+  const jobLocations = Array.from(jobLocationMap.values())
+    .sort((a, b) => b.count - a.count);
+
+  // Calculate totals - include listing and job locations in the count
   const totalBuilders = builderLocations.reduce((sum, loc) => sum + loc.count, 0);
   const totalCompanies = companyLocations.reduce((sum, loc) => sum + loc.count, 0);
   const totalListings = allListings.length;
+  const totalJobs = jobs.length;
   const totalLocations = new Set([
     ...builderLocations.map(l => l.locationSlug),
     ...companyLocations.map(l => l.locationSlug),
     ...listingLocations.map(l => l.locationSlug),
+    ...jobLocations.map(l => l.locationSlug),
   ]).size;
 
-  const hasNoLocationData = builderLocations.length === 0 && companyLocations.length === 0 && listingLocations.length === 0;
+  const hasNoLocationData = builderLocations.length === 0 && companyLocations.length === 0 && listingLocations.length === 0 && jobLocations.length === 0;
 
   return (
     <div className="relative min-h-screen bg-zinc-950">
@@ -216,6 +256,10 @@ export default async function LocalPage({ searchParams }: PageProps) {
             <span className="flex items-center gap-2">
               <Megaphone className="h-4 w-4" />
               {totalListings} listings
+            </span>
+            <span className="flex items-center gap-2">
+              <Briefcase className="h-4 w-4" />
+              {totalJobs} jobs
             </span>
             <span className="flex items-center gap-2">
               <Users className="h-4 w-4" />
@@ -325,6 +369,86 @@ export default async function LocalPage({ searchParams }: PageProps) {
           </div>
         ) : (
           <div className="space-y-16">
+            {/* Jobs by Location Section - shows locations that have active job postings */}
+            {jobLocations.length > 0 && (
+              <section>
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-500/20 border border-violet-500/30">
+                    <Briefcase className="h-5 w-5 text-violet-400" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-white">Jobs by Location</h2>
+                    <p className="text-sm text-zinc-400">{totalJobs} open positions across {jobLocations.length} locations</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {jobLocations.slice(0, 6).map((loc) => (
+                    <Link
+                      key={loc.locationSlug}
+                      href={`/${loc.locationSlug}/jobs`}
+                      className="group relative overflow-hidden rounded-2xl border border-white/10 bg-zinc-900/50 backdrop-blur-sm p-6 hover:border-violet-500/30 hover:bg-zinc-900/70 transition-all"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <MapPin className="h-5 w-5 text-violet-400" />
+                            <h3 className="text-lg font-semibold text-white group-hover:text-violet-400 transition-colors">
+                              {loc.location}
+                            </h3>
+                          </div>
+                          <div className="flex items-center gap-1 text-sm text-zinc-400">
+                            <Briefcase className="h-3.5 w-3.5" />
+                            {loc.count} {loc.count === 1 ? "job" : "jobs"}
+                          </div>
+                        </div>
+                        <ArrowRight className="h-5 w-5 text-zinc-600 group-hover:text-violet-400 group-hover:translate-x-1 transition-all" />
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Listings by Location Section - shows locations that have active listings */}
+            {listingLocations.length > 0 && (
+              <section>
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-500/20 border border-cyan-500/30">
+                    <Newspaper className="h-5 w-5 text-cyan-400" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-white">Listings by Location</h2>
+                    <p className="text-sm text-zinc-400">{totalListings} listings across {listingLocations.length} locations</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {listingLocations.slice(0, 6).map((loc) => (
+                    <Link
+                      key={loc.locationSlug}
+                      href={`/${loc.locationSlug}`}
+                      className="group relative overflow-hidden rounded-2xl border border-white/10 bg-zinc-900/50 backdrop-blur-sm p-6 hover:border-cyan-500/30 hover:bg-zinc-900/70 transition-all"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <MapPin className="h-5 w-5 text-cyan-400" />
+                            <h3 className="text-lg font-semibold text-white group-hover:text-cyan-400 transition-colors">
+                              {loc.location}
+                            </h3>
+                          </div>
+                          <div className="flex items-center gap-1 text-sm text-zinc-400">
+                            <Megaphone className="h-3.5 w-3.5" />
+                            {loc.count} {loc.count === 1 ? "listing" : "listings"}
+                          </div>
+                        </div>
+                        <ArrowRight className="h-5 w-5 text-zinc-600 group-hover:text-cyan-400 group-hover:translate-x-1 transition-all" />
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            )}
+
             {/* Builders Section */}
             {builderLocations.length > 0 && (
               <section>
@@ -398,46 +522,6 @@ export default async function LocalPage({ searchParams }: PageProps) {
                           </div>
                         </div>
                         <ArrowRight className="h-5 w-5 text-zinc-600 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {/* Listings by Location Section - shows locations that have active listings */}
-            {listingLocations.length > 0 && (
-              <section>
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-500/20 border border-cyan-500/30">
-                    <Newspaper className="h-5 w-5 text-cyan-400" />
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-bold text-white">Listings by Location</h2>
-                    <p className="text-sm text-zinc-400">{totalListings} listings across {listingLocations.length} locations</p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {listingLocations.slice(0, 6).map((loc) => (
-                    <Link
-                      key={loc.locationSlug}
-                      href={`/${loc.locationSlug}`}
-                      className="group relative overflow-hidden rounded-2xl border border-white/10 bg-zinc-900/50 backdrop-blur-sm p-6 hover:border-cyan-500/30 hover:bg-zinc-900/70 transition-all"
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <MapPin className="h-5 w-5 text-cyan-400" />
-                            <h3 className="text-lg font-semibold text-white group-hover:text-cyan-400 transition-colors">
-                              {loc.location}
-                            </h3>
-                          </div>
-                          <div className="flex items-center gap-1 text-sm text-zinc-400">
-                            <Megaphone className="h-3.5 w-3.5" />
-                            {loc.count} {loc.count === 1 ? "listing" : "listings"}
-                          </div>
-                        </div>
-                        <ArrowRight className="h-5 w-5 text-zinc-600 group-hover:text-cyan-400 group-hover:translate-x-1 transition-all" />
                       </div>
                     </Link>
                   ))}
