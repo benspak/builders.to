@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { cn, formatRelativeTime } from "@/lib/utils";
 import { FeedEventComments } from "./feed-event-comments";
+import { UserNameWithCompany } from "@/components/ui/user-name-with-company";
 
 interface StatusUpdateCardProps {
   event: {
@@ -29,6 +30,12 @@ interface StatusUpdateCardProps {
       image?: string | null;
       slug?: string | null;
       headline?: string | null;
+      companies?: {
+        id: string;
+        name: string;
+        slug: string | null;
+        logo: string | null;
+      }[];
     };
   };
   currentUserId?: string;
@@ -135,15 +142,15 @@ export function StatusUpdateCard({ event, currentUserId }: StatusUpdateCardProps
           {/* Content */}
           <div className="flex-1 min-w-0">
             {/* User name and headline */}
-            {userUrl ? (
-              <Link href={userUrl}>
-                <h3 className="font-semibold text-white hover:text-orange-400 transition-colors">
-                  {displayName}
-                </h3>
-              </Link>
-            ) : (
-              <h3 className="font-semibold text-white">{displayName}</h3>
-            )}
+            <h3 className="font-semibold">
+              <UserNameWithCompany
+                name={displayName}
+                slug={user?.slug}
+                company={user?.companies?.[0]}
+                linkToProfile={!!userUrl}
+                className="text-white hover:text-orange-400"
+              />
+            </h3>
             {user?.headline && (
               <p className="text-xs text-zinc-500 truncate">{user.headline}</p>
             )}

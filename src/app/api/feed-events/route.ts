@@ -35,6 +35,18 @@ export async function GET(request: NextRequest) {
                       lastName: true,
                       image: true,
                       slug: true,
+                      // Include first company with logo for display next to username
+                      companies: {
+                        where: { logo: { not: null } },
+                        take: 1,
+                        orderBy: { createdAt: "asc" },
+                        select: {
+                          id: true,
+                          name: true,
+                          slug: true,
+                          logo: true,
+                        },
+                      },
                     },
                   },
                 },

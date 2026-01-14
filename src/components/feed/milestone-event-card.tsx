@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { cn, formatRelativeTime, getMilestoneColor, getMilestoneLabel, getStatusColor, getStatusLabel } from "@/lib/utils";
 import { FeedEventComments } from "./feed-event-comments";
+import { UserNameWithCompany } from "@/components/ui/user-name-with-company";
 
 interface MilestoneEventCardProps {
   event: {
@@ -41,6 +42,12 @@ interface MilestoneEventCardProps {
           lastName?: string | null;
           image?: string | null;
           slug?: string | null;
+          companies?: {
+            id: string;
+            name: string;
+            slug: string | null;
+            logo: string | null;
+          }[];
         };
       };
     } | null;
@@ -175,44 +182,48 @@ export function MilestoneEventCard({ event, currentUserId }: MilestoneEventCardP
         {/* Footer */}
         <div className="mt-4 pt-4 border-t border-white/5 flex items-center justify-between">
           {/* Author */}
-          {userUrl ? (
-            <Link
-              href={userUrl}
-              className="flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors"
-            >
-              {user?.image ? (
-                <Image
-                  src={user.image}
-                  alt={displayName}
-                  width={24}
-                  height={24}
-                  className="rounded-full"
-                />
-              ) : (
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-700">
-                  <User className="h-3 w-3 text-zinc-400" />
-                </div>
-              )}
-              <span>{displayName}</span>
-            </Link>
-          ) : (
-            <div className="flex items-center gap-2 text-sm text-zinc-400">
-              {user?.image ? (
-                <Image
-                  src={user.image}
-                  alt={displayName}
-                  width={24}
-                  height={24}
-                  className="rounded-full"
-                />
-              ) : (
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-700">
-                  <User className="h-3 w-3 text-zinc-400" />
-                </div>
-              )}
-              <span>{displayName}</span>
-            </div>
-          )}
+          <div className="flex items-center gap-2 text-sm text-zinc-400">
+            {userUrl ? (
+              <Link href={userUrl} className="flex-shrink-0">
+                {user?.image ? (
+                  <Image
+                    src={user.image}
+                    alt={displayName}
+                    width={24}
+                    height={24}
+                    className="rounded-full"
+                  />
+                ) : (
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-700">
+                    <User className="h-3 w-3 text-zinc-400" />
+                  </div>
+                )}
+              </Link>
+            ) : (
+              <>
+                {user?.image ? (
+                  <Image
+                    src={user.image}
+                    alt={displayName}
+                    width={24}
+                    height={24}
+                    className="rounded-full"
+                  />
+                ) : (
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-700">
+                    <User className="h-3 w-3 text-zinc-400" />
+                  </div>
+                )}
+              </>
+            )}
+            <UserNameWithCompany
+              name={displayName}
+              slug={user?.slug}
+              company={user?.companies?.[0]}
+              linkToProfile={!!userUrl}
+              className="text-zinc-400 hover:text-white"
+            />
+          </div>
 
           {/* Actions */}
           <div className="flex items-center gap-2">

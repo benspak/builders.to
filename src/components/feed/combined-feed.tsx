@@ -29,7 +29,20 @@ interface DailyUpdate {
     image: string | null;
     slug: string | null;
     headline?: string | null;
+    companies?: {
+      id: string;
+      name: string;
+      slug: string | null;
+      logo: string | null;
+    }[];
   };
+}
+
+interface CompanyLogo {
+  id: string;
+  name: string;
+  slug: string | null;
+  logo: string | null;
 }
 
 interface FeedEvent {
@@ -61,6 +74,7 @@ interface FeedEvent {
         lastName?: string | null;
         image?: string | null;
         slug?: string | null;
+        companies?: CompanyLogo[];
       };
     };
   } | null;
@@ -75,6 +89,7 @@ interface FeedEvent {
     headline?: string | null;
     city?: string | null;
     state?: string | null;
+    companies?: CompanyLogo[];
   } | null;
   // For project status change events and project created events
   project?: {
@@ -91,6 +106,7 @@ interface FeedEvent {
       lastName?: string | null;
       image?: string | null;
       slug?: string | null;
+      companies?: CompanyLogo[];
     };
   } | null;
   // For job posted events
@@ -129,6 +145,7 @@ interface FeedEvent {
       lastName?: string | null;
       image?: string | null;
       slug?: string | null;
+      companies?: CompanyLogo[];
     };
   } | null;
 }

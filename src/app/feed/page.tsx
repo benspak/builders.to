@@ -39,6 +39,18 @@ async function FeedContent() {
             image: true,
             slug: true,
             headline: true,
+            // Include first company with logo for display next to username
+            companies: {
+              where: { logo: { not: null } },
+              take: 1,
+              orderBy: { createdAt: "asc" },
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                logo: true,
+              },
+            },
           },
         },
         likes: {
@@ -76,6 +88,18 @@ async function FeedContent() {
                     lastName: true,
                     image: true,
                     slug: true,
+                    // Include first company with logo for display next to username
+                    companies: {
+                      where: { logo: { not: null } },
+                      take: 1,
+                      orderBy: { createdAt: "asc" },
+                      select: {
+                        id: true,
+                        name: true,
+                        slug: true,
+                        logo: true,
+                      },
+                    },
                   },
                 },
               },
@@ -108,7 +132,7 @@ async function FeedContent() {
       const listingCreatedEvents = events.filter(e => e.type === "LISTING_CREATED");
 
       // Fetch users for status updates
-      let userMap = new Map<string, { id: string; name: string | null; firstName: string | null; lastName: string | null; image: string | null; slug: string | null; headline: string | null }>();
+      let userMap = new Map<string, { id: string; name: string | null; firstName: string | null; lastName: string | null; image: string | null; slug: string | null; headline: string | null; companies: { id: string; name: string; slug: string | null; logo: string | null }[] }>();
       if (statusEvents.length > 0) {
         const userIds = Array.from(new Set(statusEvents.map(e => e.userId)));
         const users = await prisma.user.findMany({
@@ -121,13 +145,25 @@ async function FeedContent() {
             image: true,
             slug: true,
             headline: true,
+            // Include first company with logo for display next to username
+            companies: {
+              where: { logo: { not: null } },
+              take: 1,
+              orderBy: { createdAt: "asc" },
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                logo: true,
+              },
+            },
           },
         });
         userMap = new Map(users.map(u => [u.id, u]));
       }
 
       // Fetch users for user joined events (with location data)
-      let userJoinedMap = new Map<string, { id: string; name: string | null; firstName: string | null; lastName: string | null; image: string | null; slug: string | null; headline: string | null; city: string | null; state: string | null; country: string | null }>();
+      let userJoinedMap = new Map<string, { id: string; name: string | null; firstName: string | null; lastName: string | null; image: string | null; slug: string | null; headline: string | null; city: string | null; state: string | null; country: string | null; companies: { id: string; name: string; slug: string | null; logo: string | null }[] }>();
       if (userJoinedEvents.length > 0) {
         const userIds = Array.from(new Set(userJoinedEvents.map(e => e.userId)));
         const users = await prisma.user.findMany({
@@ -143,13 +179,25 @@ async function FeedContent() {
             city: true,
             state: true,
             country: true,
+            // Include first company with logo for display next to username
+            companies: {
+              where: { logo: { not: null } },
+              take: 1,
+              orderBy: { createdAt: "asc" },
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                logo: true,
+              },
+            },
           },
         });
         userJoinedMap = new Map(users.map(u => [u.id, u]));
       }
 
       // Fetch projects for project status changes and project created events
-      let projectMap = new Map<string, { id: string; slug: string | null; title: string; tagline: string | null; imageUrl: string | null; status: string; user: { id: string; name: string | null; firstName: string | null; lastName: string | null; image: string | null; slug: string | null } }>();
+      let projectMap = new Map<string, { id: string; slug: string | null; title: string; tagline: string | null; imageUrl: string | null; status: string; user: { id: string; name: string | null; firstName: string | null; lastName: string | null; image: string | null; slug: string | null; companies: { id: string; name: string; slug: string | null; logo: string | null }[] } }>();
       const projectEventsWithIds = [...projectStatusChangeEvents, ...projectCreatedEvents];
       if (projectEventsWithIds.length > 0) {
         const projectIds = Array.from(new Set(projectEventsWithIds.map(e => e.projectId).filter(Boolean))) as string[];
@@ -170,6 +218,18 @@ async function FeedContent() {
                 lastName: true,
                 image: true,
                 slug: true,
+                // Include first company with logo for display next to username
+                companies: {
+                  where: { logo: { not: null } },
+                  take: 1,
+                  orderBy: { createdAt: "asc" },
+                  select: {
+                    id: true,
+                    name: true,
+                    slug: true,
+                    logo: true,
+                  },
+                },
               },
             },
           },
@@ -207,7 +267,7 @@ async function FeedContent() {
       }
 
       // Fetch local listings for listing created events
-      let localListingMap = new Map<string, { id: string; slug: string; title: string; description: string; category: string; city: string; state: string; locationSlug: string; priceInCents: number | null; user: { id: string; name: string | null; firstName: string | null; lastName: string | null; image: string | null; slug: string | null } }>();
+      let localListingMap = new Map<string, { id: string; slug: string; title: string; description: string; category: string; city: string; state: string; locationSlug: string; priceInCents: number | null; user: { id: string; name: string | null; firstName: string | null; lastName: string | null; image: string | null; slug: string | null; companies: { id: string; name: string; slug: string | null; logo: string | null }[] } }>();
       if (listingCreatedEvents.length > 0) {
         const localListingIds = Array.from(new Set(listingCreatedEvents.map(e => e.localListingId).filter(Boolean))) as string[];
         const localListings = await prisma.localListing.findMany({
@@ -230,6 +290,18 @@ async function FeedContent() {
                 lastName: true,
                 image: true,
                 slug: true,
+                // Include first company with logo for display next to username
+                companies: {
+                  where: { logo: { not: null } },
+                  take: 1,
+                  orderBy: { createdAt: "asc" },
+                  select: {
+                    id: true,
+                    name: true,
+                    slug: true,
+                    logo: true,
+                  },
+                },
               },
             },
           },

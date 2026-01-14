@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { cn, formatRelativeTime } from "@/lib/utils";
 import { FeedEventComments } from "./feed-event-comments";
+import { UserNameWithCompany } from "@/components/ui/user-name-with-company";
 
 interface UserJoinedCardProps {
   event: {
@@ -34,6 +35,12 @@ interface UserJoinedCardProps {
       city?: string | null;
       state?: string | null;  // Legacy field
       country?: string | null;
+      companies?: {
+        id: string;
+        name: string;
+        slug: string | null;
+        logo: string | null;
+      }[];
     };
   };
   currentUserId?: string;
@@ -147,16 +154,16 @@ export function UserJoinedCard({ event, currentUserId }: UserJoinedCardProps) {
 
           {/* Content */}
           <div className="flex-1 min-w-0">
-            {/* User name */}
-            {userUrl ? (
-              <Link href={userUrl}>
-                <h3 className="font-semibold text-lg text-white hover:text-violet-400 transition-colors">
-                  {displayName}
-                </h3>
-              </Link>
-            ) : (
-              <h3 className="font-semibold text-lg text-white">{displayName}</h3>
-            )}
+            {/* User name with company logo */}
+            <h3 className="font-semibold text-lg">
+              <UserNameWithCompany
+                name={displayName}
+                slug={user.slug}
+                company={user.companies?.[0]}
+                linkToProfile={!!userUrl}
+                className="text-white hover:text-violet-400"
+              />
+            </h3>
 
             {/* Headline */}
             {user.headline && (

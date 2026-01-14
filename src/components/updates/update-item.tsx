@@ -10,6 +10,7 @@ import { UpdateComments } from "./update-comments";
 import { ImageLightbox } from "@/components/ui/image-lightbox";
 import { YouTubeEmbed, extractYouTubeUrlFromText } from "@/components/ui/youtube-embed";
 import { ReportButton } from "@/components/ui/report-button";
+import { UserNameWithCompany } from "@/components/ui/user-name-with-company";
 
 const FEED_TRUNCATE_LENGTH = 500;
 
@@ -99,6 +100,12 @@ interface UpdateItemProps {
       image: string | null;
       slug: string | null;
       headline?: string | null;
+      companies?: {
+        id: string;
+        name: string;
+        slug: string | null;
+        logo: string | null;
+      }[];
     };
   };
   currentUserId?: string;
@@ -256,12 +263,14 @@ export function UpdateItem({ update, currentUserId, showAuthor = true }: UpdateI
                 )}
               </Link>
               <div className="flex-1 min-w-0">
-                <Link
-                  href={update.user.slug ? `/${update.user.slug}` : "#"}
-                  className="text-sm font-medium text-white hover:text-orange-400 transition-colors"
-                >
-                  {displayName}
-                </Link>
+                <div className="text-sm">
+                  <UserNameWithCompany
+                    name={displayName}
+                    slug={update.user.slug}
+                    company={update.user.companies?.[0]}
+                    linkToProfile={true}
+                  />
+                </div>
                 {update.user.headline && (
                   <p className="text-xs text-zinc-500 truncate">{update.user.headline}</p>
                 )}
