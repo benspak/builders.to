@@ -36,6 +36,101 @@ services:
       - key: TWITTER_CLIENT_SECRET
         sync: false
 
+  # ============================================
+  # Cron Jobs
+  # ============================================
+
+  # Daily digest emails - sends summary of likes/upvotes to users
+  - type: cron
+    name: builders-to-daily-digest
+    runtime: image
+    image:
+      url: curlimages/curl:latest
+    schedule: "0 18 * * *" # 6 PM UTC daily
+    command: curl -X POST -H "Authorization: Bearer $CRON_SECRET" https://builders.to/api/email/daily-digest
+    region: oregon
+    envVars:
+      - key: CRON_SECRET
+        sync: false
+
+  # Weekly digest emails - sends milestone summary
+  - type: cron
+    name: builders-to-weekly-digest
+    runtime: image
+    image:
+      url: curlimages/curl:latest
+    schedule: "0 10 * * 0" # 10 AM UTC every Sunday
+    command: curl -X POST -H "Authorization: Bearer $CRON_SECRET" https://builders.to/api/email/weekly-digest
+    region: oregon
+    envVars:
+      - key: CRON_SECRET
+        sync: false
+
+  # Forecast resolution - updates MRR and resolves forecasts
+  - type: cron
+    name: builders-to-forecast-resolve
+    runtime: image
+    image:
+      url: curlimages/curl:latest
+    schedule: "0 2 * * *" # 2 AM UTC daily
+    command: curl -X POST -H "Authorization: Bearer $CRON_SECRET" https://builders.to/api/forecasting/resolve
+    region: oregon
+    envVars:
+      - key: CRON_SECRET
+        sync: false
+
+  # Expire ads - marks expired advertisements
+  - type: cron
+    name: builders-to-expire-ads
+    runtime: image
+    image:
+      url: curlimages/curl:latest
+    schedule: "0 1 * * *" # 1 AM UTC daily
+    command: curl -X POST -H "Authorization: Bearer $CRON_SECRET" https://builders.to/api/cron/expire-ads
+    region: oregon
+    envVars:
+      - key: CRON_SECRET
+        sync: false
+
+  # Expire services - marks expired service listings
+  - type: cron
+    name: builders-to-expire-services
+    runtime: image
+    image:
+      url: curlimages/curl:latest
+    schedule: "15 1 * * *" # 1:15 AM UTC daily
+    command: curl -X POST -H "Authorization: Bearer $CRON_SECRET" https://builders.to/api/cron/expire-services
+    region: oregon
+    envVars:
+      - key: CRON_SECRET
+        sync: false
+
+  # Expire local listings - marks expired local listings
+  - type: cron
+    name: builders-to-expire-local-listings
+    runtime: image
+    image:
+      url: curlimages/curl:latest
+    schedule: "30 1 * * *" # 1:30 AM UTC daily
+    command: curl -X POST -H "Authorization: Bearer $CRON_SECRET" https://builders.to/api/cron/expire-local-listings
+    region: oregon
+    envVars:
+      - key: CRON_SECRET
+        sync: false
+
+  # Data cleanup - removes old notifications, sessions, and analytics data
+  - type: cron
+    name: builders-to-cleanup
+    runtime: image
+    image:
+      url: curlimages/curl:latest
+    schedule: "0 3 * * 6" # 3 AM UTC every Saturday
+    command: curl -X POST -H "Authorization: Bearer $CRON_SECRET" https://builders.to/api/cron/cleanup
+    region: oregon
+    envVars:
+      - key: CRON_SECRET
+        sync: false
+
 databases:
   # PostgreSQL Database
   - name: builders-to-db

@@ -7,6 +7,7 @@ import { Navbar } from "@/components/ui/navbar";
 import { Footer } from "@/components/ui/footer";
 import { ViewTracker } from "@/components/analytics/view-tracker";
 import { PWAProvider } from "@/components/pwa";
+import { AnnouncementBanner } from "@/components/ui/announcement-banner";
 
 export const viewport: Viewport = {
   themeColor: "#f97316",
@@ -121,6 +122,7 @@ export default function RootLayout({
           <AuthProvider>
             <PWAProvider>
             <ViewTracker />
+            <AnnouncementBanner />
             <div className="flex min-h-screen flex-col">
               <Navbar />
               <main className="flex-1">{children}</main>
