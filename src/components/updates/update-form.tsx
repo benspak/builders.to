@@ -244,6 +244,7 @@ export function UpdateForm({ onSuccess }: UpdateFormProps) {
       setContent("");
       setImageUrl(null);
       setGifUrl(null);
+      router.push("/feed");
       router.refresh();
       onSuccess?.();
     } catch (err) {
