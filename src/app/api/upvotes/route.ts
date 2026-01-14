@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { rateLimit, RATE_LIMITS, rateLimitResponse } from "@/lib/rate-limit";
+import { notifyProjectUpvote } from "@/lib/push-notifications";
 
 // POST /api/upvotes - Toggle upvote on a project
 export async function POST(request: NextRequest) {
@@ -109,6 +110,15 @@ export async function POST(request: NextRequest) {
             actorImage: currentUser?.image,
           },
         });
+
+        // Send push notification
+        const projectUrl = project.slug ? `/projects/${project.slug}` : `/projects`;
+        notifyProjectUpvote(
+          project.userId,
+          currentUser?.name || "Someone",
+          project.title,
+          projectUrl
+        ).catch(console.error);
       }
 
       return NextResponse.json({

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { notifyTokenGift } from "@/lib/push-notifications";
 
 /**
  * POST /api/tokens/gift/send
@@ -180,6 +181,9 @@ export async function POST(request: NextRequest) {
         newBalance: updatedSender?.tokenBalance ?? 0,
       };
     });
+
+    // Send push notification to recipient
+    notifyTokenGift(recipient.id, senderName, tokenAmount).catch(console.error);
 
     return NextResponse.json({
       success: true,

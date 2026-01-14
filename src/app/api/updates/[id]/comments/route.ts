@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { rateLimit, RATE_LIMITS, rateLimitResponse } from "@/lib/rate-limit";
 import { extractMentions } from "@/lib/utils";
+import { notifyNewComment, sendUserPushNotification } from "@/lib/push-notifications";
 
 // GET /api/updates/[id]/comments - Get comments for an update
 export async function GET(
@@ -160,6 +161,17 @@ export async function POST(
           actorImage: currentUser?.image,
         },
       });
+
+      // Send push notification
+      const updatePreview = update.content.length > 30
+        ? update.content.substring(0, 30) + "..."
+        : update.content;
+      notifyNewComment(
+        update.userId,
+        commenterName,
+        updatePreview,
+        '/updates'
+      ).catch(console.error);
     }
 
     // Extract and process @mentions
@@ -194,6 +206,16 @@ export async function POST(
         await prisma.notification.createMany({
           data: mentionNotifications,
         });
+
+        // Send push notifications to mentioned users
+        for (const notification of mentionNotifications) {
+          sendUserPushNotification(notification.userId, {
+            title: 'You were mentioned',
+            body: `${commenterName} mentioned you in a comment`,
+            url: '/updates',
+            tag: 'mention',
+          }).catch(console.error);
+        }
       }
     }
 

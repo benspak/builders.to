@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { rateLimit, RATE_LIMITS, rateLimitResponse } from "@/lib/rate-limit";
 import { extractMentions } from "@/lib/utils";
+import { notifyNewComment, sendUserPushNotification } from "@/lib/push-notifications";
 
 /**
  * Helper to find or create a FeedEvent for a project.
@@ -269,6 +270,15 @@ export async function POST(request: NextRequest) {
           actorImage: currentUser?.image,
         },
       });
+
+      // Send push notification
+      const projectUrl = project.slug ? `/projects/${project.slug}` : '/projects';
+      notifyNewComment(
+        project.userId,
+        commenterName,
+        project.title,
+        projectUrl
+      ).catch(console.error);
     }
 
     // Extract and process @mentions
@@ -305,6 +315,17 @@ export async function POST(request: NextRequest) {
         await prisma.notification.createMany({
           data: mentionNotifications,
         });
+
+        // Send push notifications to mentioned users
+        const projectUrl = project.slug ? `/projects/${project.slug}` : '/projects';
+        for (const notification of mentionNotifications) {
+          sendUserPushNotification(notification.userId, {
+            title: 'You were mentioned',
+            body: `${commenterName} mentioned you in a comment`,
+            url: projectUrl,
+            tag: 'mention',
+          }).catch(console.error);
+        }
       }
     }
 

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { rateLimit, RATE_LIMITS, rateLimitResponse } from "@/lib/rate-limit";
+import { notifyNewFollower } from "@/lib/push-notifications";
 
 // POST /api/follows - Toggle follow on a user
 export async function POST(request: NextRequest) {
@@ -83,6 +84,26 @@ export async function POST(request: NextRequest) {
       const followersCount = await prisma.follow.count({
         where: { followingId: userId },
       });
+
+      // Get follower info for notification
+      const follower = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: {
+          name: true,
+          firstName: true,
+          lastName: true,
+          slug: true,
+        },
+      });
+
+      const followerName = follower?.firstName && follower?.lastName
+        ? `${follower.firstName} ${follower.lastName}`
+        : follower?.name || "Someone";
+
+      const followerUrl = follower?.slug ? `/${follower.slug}` : '/';
+
+      // Send push notification to the followed user
+      notifyNewFollower(userId, followerName, followerUrl).catch(console.error);
 
       return NextResponse.json({
         following: true,

@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { rateLimit, RATE_LIMITS, rateLimitResponse } from "@/lib/rate-limit";
 import { extractMentions } from "@/lib/utils";
+import { notifyNewComment, sendUserPushNotification } from "@/lib/push-notifications";
 
 // GET /api/feed-events/[id]/comments - Get comments for a feed event
 export async function GET(
@@ -178,6 +179,14 @@ export async function POST(
           actorImage: currentUser?.image,
         },
       });
+
+      // Send push notification
+      notifyNewComment(
+        feedEventOwnerId,
+        commenterName,
+        feedEvent.title,
+        '/feed'
+      ).catch(console.error);
     }
 
     // Extract and process @mentions
@@ -213,6 +222,16 @@ export async function POST(
         await prisma.notification.createMany({
           data: mentionNotifications,
         });
+
+        // Send push notifications to mentioned users
+        for (const notification of mentionNotifications) {
+          sendUserPushNotification(notification.userId, {
+            title: 'You were mentioned',
+            body: `${commenterName} mentioned you in a comment`,
+            url: '/feed',
+            tag: 'mention',
+          }).catch(console.error);
+        }
       }
     }
 

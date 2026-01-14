@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { rateLimit, RATE_LIMITS, rateLimitResponse } from "@/lib/rate-limit";
 import { extractMentions } from "@/lib/utils";
+import { notifyNewComment, sendUserPushNotification } from "@/lib/push-notifications";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -201,7 +202,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     // Verify listing exists and is active
     const listing = await prisma.localListing.findUnique({
       where: { id: listingId },
-      select: { id: true, status: true, userId: true, title: true },
+      select: { id: true, status: true, userId: true, title: true, slug: true },
     });
 
     if (!listing) {
@@ -289,6 +290,15 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
           actorImage: currentUser?.image,
         },
       });
+
+      // Send push notification
+      const listingUrl = listing.slug ? `/local/${listing.slug}` : '/local';
+      notifyNewComment(
+        listing.userId,
+        commenterName,
+        listing.title,
+        listingUrl
+      ).catch(console.error);
     }
 
     // Extract and process @mentions
@@ -324,6 +334,17 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         await prisma.notification.createMany({
           data: mentionNotifications,
         });
+
+        // Send push notifications to mentioned users
+        const listingUrl = listing.slug ? `/local/${listing.slug}` : '/local';
+        for (const notification of mentionNotifications) {
+          sendUserPushNotification(notification.userId, {
+            title: 'You were mentioned',
+            body: `${commenterName} mentioned you in a comment`,
+            url: listingUrl,
+            tag: 'mention',
+          }).catch(console.error);
+        }
       }
     }
 

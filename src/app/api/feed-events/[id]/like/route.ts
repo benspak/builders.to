@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { notifyMilestoneCelebration } from "@/lib/push-notifications";
 
 // POST /api/feed-events/[id]/like - Like/unlike a feed event
 export async function POST(
@@ -108,6 +109,14 @@ export async function POST(
           actorImage: liker?.image,
         },
       });
+
+      // Send push notification
+      notifyMilestoneCelebration(
+        projectOwnerId,
+        likerName,
+        feedEvent.title,
+        '/feed'
+      ).catch(console.error);
     }
 
     return NextResponse.json({

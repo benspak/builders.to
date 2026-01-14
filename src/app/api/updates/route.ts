@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { rateLimit, RATE_LIMITS, rateLimitResponse } from "@/lib/rate-limit";
 import { extractMentions } from "@/lib/utils";
 import { grantEngagementBonus, checkAndGrantStreakBonus } from "@/lib/tokens";
+import { sendUserPushNotification } from "@/lib/push-notifications";
 
 // GET /api/updates - Get updates for a user or global feed
 export async function GET(request: NextRequest) {
@@ -247,6 +248,16 @@ export async function POST(request: NextRequest) {
           })),
           skipDuplicates: true,
         });
+
+        // Send push notifications to mentioned users
+        for (const user of mentionedUsers) {
+          sendUserPushNotification(user.id, {
+            title: 'You were mentioned',
+            body: `${actorName} mentioned you in an update`,
+            url: '/updates',
+            tag: 'mention',
+          }).catch(console.error);
+        }
       }
     }
 

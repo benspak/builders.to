@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { notifyLike } from "@/lib/push-notifications";
 
 // POST /api/updates/[id]/like - Toggle like on an update
 export async function POST(
@@ -109,6 +110,15 @@ export async function POST(
             actorImage: liker?.image,
           },
         });
+
+        // Send push notification
+        const updateUrl = update.user?.slug ? `/${update.user.slug}` : '/updates';
+        notifyLike(
+          update.userId,
+          likerName,
+          contentPreview,
+          updateUrl
+        ).catch(console.error);
       }
 
       return NextResponse.json({
