@@ -8,7 +8,6 @@ import {
   generateReferralCode,
   grantWelcomeBonus,
 } from "@/lib/tokens";
-import { grantDailyLoginBonus } from "@/lib/coins";
 import { generateMagicLinkEmail } from "@/lib/magic-link-email";
 
 // Store for temporarily holding username during OAuth flow
@@ -269,17 +268,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             description: "Welcome to Builders.to! 🎉",
           },
         });
-      }
-    },
-    // Grant daily login bonus for returning users
-    async signIn({ user, isNewUser }) {
-      // Don't grant daily login to brand new users (they already got welcome bonus)
-      if (isNewUser || !user.id) return;
-
-      try {
-        await grantDailyLoginBonus(user.id);
-      } catch (error) {
-        console.error("Failed to grant daily login bonus:", error);
       }
     },
   },
