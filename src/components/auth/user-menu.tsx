@@ -4,7 +4,7 @@ import { signOut, useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { LogOut, User, ChevronDown, Settings, Megaphone, Bell, Building2, MapPin, Coins, TrendingUp, Sun, Moon } from "lucide-react";
+import { LogOut, User, ChevronDown, Settings, Megaphone, Bell, Building2, MapPin, Coins, Sun, Moon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/components/ui/theme-provider";
 
@@ -215,16 +215,6 @@ export function UserMenu() {
             >
               <Building2 className="h-4 w-4" />
               My Company
-            </Link>
-
-            <Link
-              href="/forecasting"
-              onClick={() => setIsOpen(false)}
-              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-black/5 dark:hover:bg-white/5"
-              style={{ color: "var(--foreground-muted)" }}
-            >
-              <TrendingUp className="h-4 w-4 text-cyan-400" />
-              Forecasting
             </Link>
 
             <Link

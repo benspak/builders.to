@@ -57,12 +57,6 @@ Builders.to is a community platform where indie hackers, solopreneurs, and devel
 - **Token Gifting**: Send tokens to other builders as appreciation
 - **Token Redemption**: Use tokens to unlock ads, service listings, and local listings
 
-### Forecasting System (Reputation Coins)
-- **Forecasting Coins**: Separate currency for the forecasting system
-- **Company MRR Forecasts**: Stake coins on whether companies will hit MRR targets
-- **Positions**: Go LONG (MRR will meet/exceed target) or SHORT (MRR will be below target)
-- **Leaderboard**: Compete on forecast accuracy
-
 ### Advertising
 - **Sidebar Ads**: Purchase ad placements visible on the feed
 - **View & Click Tracking**: Analytics for ad performance

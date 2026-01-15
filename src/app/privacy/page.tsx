@@ -60,7 +60,6 @@ export default function PrivacyPolicyPage() {
               <h3 className="text-xl font-medium text-white mt-6 mb-3">2.3 Information from Third Parties</h3>
               <ul className="list-disc pl-6 space-y-2">
                 <li><strong className="text-white">OAuth Providers:</strong> Profile information from Google, GitHub, or X/Twitter when you authenticate.</li>
-                <li><strong className="text-white">Stripe:</strong> For companies participating in the forecasting feature, we may receive limited financial data (MRR metrics) with explicit consent.</li>
                 <li><strong className="text-white">Giphy:</strong> When you use GIFs in posts, we interact with the Giphy API on your behalf.</li>
               </ul>
             </section>
@@ -74,7 +73,6 @@ export default function PrivacyPolicyPage() {
                 <li>Display your projects, profile, and content to the community</li>
                 <li>Enable interactions between community members (comments, upvotes, follows)</li>
                 <li>Process token rewards for engagement, referrals, and profile completion</li>
-                <li>Facilitate the forecasting system and track reputation coins</li>
                 <li>Process payments through Stripe for services, listings, and advertisements</li>
                 <li>Send important service-related communications</li>
                 <li>Send optional daily and weekly digest emails (you can opt out)</li>
@@ -86,15 +84,14 @@ export default function PrivacyPolicyPage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">4. Token and Coin Systems</h2>
-              <p className="mb-4">Builders.to operates two virtual currency systems:</p>
+              <h2 className="text-2xl font-semibold text-white mb-4">4. Token System</h2>
+              <p className="mb-4">Builders.to operates a virtual currency system:</p>
               <ul className="list-disc pl-6 space-y-2">
                 <li><strong className="text-white">Builder Tokens:</strong> Earned through engagement, referrals, streaks, and profile completion. Can be used to redeem advertisements, service listings, and local listings. Token transactions and balances are tracked for your account.</li>
-                <li><strong className="text-white">Forecasting Coins:</strong> A separate virtual currency used in the company forecasting system. Your coin balance, forecast history, and accuracy metrics are tracked to power leaderboards and reputation features.</li>
               </ul>
               <p className="mt-4">
-                These virtual currencies have no real-world monetary value and cannot be exchanged for cash.
-                We reserve the right to modify, reset, or discontinue these systems at any time.
+                Tokens have no real-world monetary value and cannot be exchanged for cash.
+                We reserve the right to modify, reset, or discontinue this system at any time.
               </p>
             </section>
 
@@ -103,7 +100,7 @@ export default function PrivacyPolicyPage() {
               <p className="mb-4">We may share your information in the following circumstances:</p>
               <ul className="list-disc pl-6 space-y-2">
                 <li><strong className="text-white">Public Content:</strong> Your profile, projects, companies, updates, comments, service listings, local listings, and job postings are publicly visible to other users and visitors.</li>
-                <li><strong className="text-white">Leaderboards:</strong> Token earnings, forecasting accuracy, and streak data may appear on public leaderboards.</li>
+                <li><strong className="text-white">Leaderboards:</strong> Token earnings and streak data may appear on public leaderboards.</li>
                 <li><strong className="text-white">Service Providers:</strong> We share information with third-party vendors who assist in operating our services:
                   <ul className="list-disc pl-6 mt-2 space-y-1">
                     <li>Stripe for payment processing</li>
@@ -210,7 +207,7 @@ export default function PrivacyPolicyPage() {
               <p className="leading-relaxed">
                 We retain your information for as long as your account is active or as needed to provide
                 services. We may retain certain information for legitimate business purposes, legal compliance,
-                dispute resolution, or to enforce our agreements. Token and coin transaction history is retained
+                dispute resolution, or to enforce our agreements.                 Token transaction history is retained
                 for audit purposes. Anonymized analytics data may be retained indefinitely.
               </p>
             </section>

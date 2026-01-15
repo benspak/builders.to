@@ -9,7 +9,6 @@ import {
   Trophy,
   Coins,
   Bell,
-  TrendingUp,
   Briefcase,
   ArrowRight,
   CheckCircle2,
@@ -132,11 +131,6 @@ export default async function HomePage() {
       title: "Notifications & Digest",
       description: "Real-time notifications, push alerts, daily and weekly digests of activity.",
     },
-    {
-      icon: TrendingUp,
-      title: "MRR Forecasting",
-      description: "Stake coins on company MRR performance. Track accuracy and climb the forecasting leaderboard.",
-    },
   ];
 
   const colorClasses: Record<string, { bg: string; border: string; text: string; hover: string }> = {
@@ -210,7 +204,7 @@ export default async function HomePage() {
               <span className="text-white font-medium">entrepreneurs</span>,{" "}
               <span className="text-white font-medium">builders</span>,{" "}
               <span className="text-white font-medium">makers</span>, and{" "}
-              <span className="text-white font-medium">founders</span> share projects, 
+              <span className="text-white font-medium">founders</span> share projects,
               post daily updates, find collaborators, and grow together.
             </p>
 
@@ -281,7 +275,7 @@ export default async function HomePage() {
               <span className="gradient-text">build and launch</span>
             </h2>
             <p className="text-lg text-zinc-400 max-w-2xl mx-auto">
-              A complete ecosystem for entrepreneurs, makers, and founders to share, connect, 
+              A complete ecosystem for entrepreneurs, makers, and founders to share, connect,
               hire, and grow.
             </p>
           </div>
@@ -375,7 +369,7 @@ export default async function HomePage() {
               <span className="gradient-text">builders who ship</span>
             </h2>
             <p className="text-lg text-zinc-400 max-w-2xl mx-auto">
-              Whether you're launching your first side project or scaling your startup, 
+              Whether you're launching your first side project or scaling your startup,
               Builders.to is your community.
             </p>
           </div>
@@ -460,7 +454,7 @@ export default async function HomePage() {
                   </div>
                 </div>
                 <p className="text-zinc-400 mb-8 max-w-md">
-                  Join a growing community of entrepreneurs, indie hackers, and developers 
+                  Join a growing community of entrepreneurs, indie hackers, and developers
                   who believe in building in public and supporting each other.
                 </p>
                 {session ? (
@@ -487,7 +481,7 @@ export default async function HomePage() {
             Ready to share what you're building?
           </h2>
           <p className="text-lg text-zinc-400 mb-8 max-w-2xl mx-auto">
-            Join thousands of entrepreneurs, builders, makers, and founders who are 
+            Join thousands of entrepreneurs, builders, makers, and founders who are
             building in public and launching together.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">

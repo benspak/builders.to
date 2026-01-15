@@ -153,16 +153,6 @@ model User {
   twoFactorSecret        String?                    // Encrypted TOTP secret
   twoFactorBackupCodes   String[]                   // Encrypted backup codes
 
-  // Forecasting Coin System (separate from tokens)
-  coinBalance            Int       @default(100)    // Current coin balance (start with 100)
-  lifetimeCoinsEarned    Int       @default(0)      // Total coins earned (for leaderboard)
-  forecastAccuracy       Float?                     // Win rate percentage (0-100)
-  totalForecasts         Int       @default(0)      // Total forecasts placed
-  wonForecasts           Int       @default(0)      // Total forecasts won
-  coinTransactions       CoinTransaction[]
-  forecasts              Forecast[]
-  forecastTargets        ForecastTarget[]  // One-to-many to avoid @unique requirement during migration
-
   // Pro Subscription
   proSubscription        ProSubscription?
   customDomains          CustomDomain[]
@@ -171,8 +161,6 @@ model User {
   @@index([stripeConnectId])
   @@index([locationSlug])
   @@index([referralCode])
-  @@index([coinBalance])
-  @@index([forecastAccuracy])
 }
 
 model Project {
@@ -461,7 +449,6 @@ model Company {
   updates  CompanyUpdate[]
   roles    CompanyRole[]
   members  CompanyMember[]  // Team members of the company
-  forecastTarget ForecastTarget?  // (legacy) forecasting target settings
 
   @@index([userId])
   @@index([category])
@@ -1320,145 +1307,6 @@ model Report {
   @@index([contentType, contentId])
   @@index([status])
   @@index([createdAt])
-}
-
-// ============================================
-// Forecasting System - Reputation Coin Staking
-// ============================================
-
-// Coin transaction types for the forecasting system
-enum CoinTransactionType {
-  WELCOME_BONUS           // Initial 100 coins for new users
-  DAILY_LOGIN             // 5 coins for logging in each day
-  PURCHASED               // Coins purchased via Stripe
-  FORECAST_PLACED         // Coins staked when placing a forecast (negative)
-  FORECAST_WON            // Coins earned from winning forecast (2x stake)
-  FORECAST_LOST           // Record of lost forecast (0 - already deducted)
-  FORECAST_CANCELLED      // Coins returned when forecast is cancelled
-  ACCURACY_BONUS          // Bonus for hitting accuracy milestones
-  ADMIN_ADJUSTMENT        // Manual adjustment by admin
-}
-
-// Track all coin movements for the forecasting system
-model CoinTransaction {
-  id          String              @id @default(cuid())
-  userId      String
-  amount      Int                 // Positive = earned, Negative = spent
-  type        CoinTransactionType
-  description String?             // Human-readable description
-  metadata    Json?               // Store forecast IDs, etc.
-  createdAt   DateTime            @default(now())
-
-  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([createdAt])
-  @@index([type])
-}
-
-// Forecast position - LONG (MRR will meet/exceed target) or SHORT (MRR will be below target)
-enum ForecastPosition {
-  LONG    // Betting MRR will be >= target
-  SHORT   // Betting MRR will be < target
-}
-
-// Forecast status
-enum ForecastStatus {
-  PENDING     // Forecast is active, waiting for resolution
-  WON         // Forecast was correct
-  LOST        // Forecast was incorrect
-  CANCELLED   // Forecast was cancelled (refunded)
-}
-
-// Founders (users) that have opted in to be forecasted.
-// NOTE: `companyId` is kept temporarily for non-breaking DB push + backfill.
-// NOTE: Uniqueness on userId is enforced in application code (upsert by userId) to avoid
-//       needing --accept-data-loss during migration.
-model ForecastTarget {
-  id                    String    @id @default(cuid())
-  userId                String?
-  companyId             String?   @unique // legacy bridge column for migration/backfill
-
-  // Stripe connection for MRR verification
-  stripeAccountId       String?   // Connected Stripe account ID (read-only access)
-  stripeRefreshToken    String?   // OAuth refresh token for re-authentication
-  stripeAccessToken     String?   // OAuth access token (encrypted)
-  stripeConnectedAt     DateTime? // When Stripe was connected
-
-  // Forecasting settings
-  isActive              Boolean   @default(false)  // Whether forecasting is enabled
-  minForecastCoins      Int       @default(10)     // Minimum coins per forecast
-  maxForecastCoins      Int       @default(100)    // Maximum coins per forecast
-
-  // Current MRR (cached from Stripe)
-  currentMrr            Int?      // Current MRR in cents (updated daily)
-  lastMrrUpdate         DateTime? // When MRR was last fetched
-
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
-
-  // Relations
-  user                  User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  company               Company?  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  forecasts             Forecast[]
-  mrrSnapshots          MrrSnapshot[]
-
-  @@index([isActive])
-  @@index([userId])
-  @@index([companyId])
-}
-
-// Individual forecasts placed by users
-model Forecast {
-  id              String           @id @default(cuid())
-  userId          String
-  targetId        String
-
-  // Forecast details
-  position        ForecastPosition // LONG or SHORT
-  targetMrr       Int              // MRR threshold in cents (what they're betting on)
-  coinsStaked     Int              // Number of coins staked
-
-  // Time period (24-hour resolution window)
-  quarterStart    DateTime         // When the forecast starts
-  quarterEnd      DateTime         // When the forecast ends (24 hours later)
-
-  // Resolution
-  status          ForecastStatus   @default(PENDING)
-  resolvedAt      DateTime?        // When the forecast was resolved
-  actualMrr       Int?             // Actual MRR at resolution time
-  coinsPayout     Int?             // Coins paid out (2x stake for winners, 0 for losers)
-
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-
-  // Relations
-  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  target          ForecastTarget   @relation(fields: [targetId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([targetId])
-  @@index([status])
-  @@index([quarterEnd])
-  @@index([createdAt])
-}
-
-// MRR snapshots for historical tracking and resolution
-model MrrSnapshot {
-  id          String          @id @default(cuid())
-  targetId    String
-  mrr         Int             // MRR in cents at snapshot time
-  source      String          @default("stripe")  // Where the data came from
-  snapshotAt  DateTime        @default(now())     // When the snapshot was taken
-
-  // Optional metadata from Stripe
-  metadata    Json?           // Additional data like subscription count, etc.
-
-  target      ForecastTarget  @relation(fields: [targetId], references: [id], onDelete: Cascade)
-
-  @@index([targetId])
-  @@index([snapshotAt])
-  @@index([targetId, snapshotAt])
 }
 
 // ============================================

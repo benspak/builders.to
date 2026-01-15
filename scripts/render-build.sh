@@ -32,12 +32,7 @@ echo "🗄️ Running pre-migration scripts..."
 npx prisma db execute --schema ./prisma/schema.prisma --file ./scripts/pre-push-token-system.sql || true
 
 echo "🗄️ Running database migrations..."
-# Using db push to sync schema with --accept-data-loss flag
-# This is needed to remove deprecated betting system (replaced by forecasting system)
 npx prisma db push
-
-echo "🗄️ Backfilling forecasting targets to users..."
-npx prisma db execute --schema ./prisma/schema.prisma --file ./scripts/post-push-forecast-target-userid.sql || true
 
 echo "🔄 Running slug migration for existing projects..."
 node scripts/migrate-slugs.mjs || {

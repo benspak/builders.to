@@ -47,8 +47,7 @@ export default function TermsOfServicePage() {
                 <li>Creating and managing company profiles</li>
                 <li>Offering and purchasing builder services through the marketplace</li>
                 <li>Posting and browsing local classifieds</li>
-                <li>Participating in forecasting and reputation systems</li>
-                <li>Earning and using virtual tokens and coins</li>
+                <li>Earning and using virtual tokens</li>
                 <li>Purchasing and displaying advertisements</li>
               </ul>
             </section>
@@ -127,7 +126,7 @@ export default function TermsOfServicePage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">5. Token and Coin Systems</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">5. Token System</h2>
 
               <h3 className="text-xl font-medium text-white mt-6 mb-3">5.1 Builder Tokens</h3>
               <p className="leading-relaxed mb-4">
@@ -146,16 +145,9 @@ export default function TermsOfServicePage() {
                 Tokens can also be gifted to other users.
               </p>
 
-              <h3 className="text-xl font-medium text-white mt-6 mb-3">5.2 Forecasting Coins</h3>
+              <h3 className="text-xl font-medium text-white mt-6 mb-3">5.2 Virtual Currency Terms</h3>
               <p className="leading-relaxed">
-                Forecasting Coins are a separate virtual currency used in the company forecasting
-                system. You can stake coins on whether companies will meet revenue targets. Correct
-                forecasts are rewarded; incorrect forecasts result in loss of staked coins.
-              </p>
-
-              <h3 className="text-xl font-medium text-white mt-6 mb-3">5.3 Virtual Currency Terms</h3>
-              <p className="leading-relaxed">
-                Both Tokens and Coins:
+                Tokens:
               </p>
               <ul className="list-disc pl-6 space-y-2 mt-2">
                 <li>Have no real-world monetary value</li>
@@ -166,7 +158,7 @@ export default function TermsOfServicePage() {
                 <li>Are subject to forfeiture in cases of Terms violations</li>
               </ul>
               <p className="mt-4">
-                We reserve the right to adjust token/coin balances to correct errors, prevent abuse,
+                We reserve the right to adjust token balances to correct errors, prevent abuse,
                 or maintain system integrity.
               </p>
             </section>
@@ -246,7 +238,7 @@ export default function TermsOfServicePage() {
                 <li>Use the Service to send spam or unsolicited messages</li>
                 <li>Circumvent any security measures or access controls</li>
                 <li>Reverse engineer or attempt to extract source code</li>
-                <li>Manipulate the token, coin, or forecasting systems</li>
+                <li>Manipulate the token system</li>
                 <li>Create fake accounts or artificially inflate engagement metrics</li>
                 <li>Use the platform for money laundering or financial fraud</li>
                 <li>Post false or misleading information about businesses or individuals</li>
@@ -301,7 +293,7 @@ export default function TermsOfServicePage() {
                 KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO IMPLIED WARRANTIES
                 OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT. WE
                 DO NOT WARRANT THAT THE SERVICE WILL BE UNINTERRUPTED, SECURE, OR ERROR-FREE.
-                WE DO NOT GUARANTEE THE ACCURACY OF FORECASTING DATA, TOKEN BALANCES, OR ANY
+                WE DO NOT GUARANTEE THE ACCURACY OF TOKEN BALANCES OR ANY
                 METRICS DISPLAYED ON THE PLATFORM.
               </p>
             </section>
@@ -313,8 +305,8 @@ export default function TermsOfServicePage() {
                 INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR ANY LOSS
                 OF PROFITS OR REVENUES, WHETHER INCURRED DIRECTLY OR INDIRECTLY, OR ANY LOSS OF
                 DATA, USE, GOODWILL, OR OTHER INTANGIBLE LOSSES, RESULTING FROM YOUR USE OF THE
-                SERVICE, INCLUDING BUT NOT LIMITED TO LOSSES RELATED TO THE TOKEN OR COIN SYSTEMS,
-                SERVICE MARKETPLACE TRANSACTIONS, OR FORECASTING ACTIVITIES.
+                SERVICE, INCLUDING BUT NOT LIMITED TO LOSSES RELATED TO THE TOKEN SYSTEM OR
+                SERVICE MARKETPLACE TRANSACTIONS.
               </p>
             </section>
 

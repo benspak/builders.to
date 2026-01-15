@@ -63,20 +63,6 @@ services:
       - key: NEXTAUTH_URL
         sync: false
 
-  # Forecast resolution - updates MRR and resolves forecasts
-  - type: cron
-    name: builders-to-forecast-resolve
-    runtime: node
-    region: oregon
-    schedule: "0 2 * * *"
-    buildCommand: npm install
-    startCommand: node scripts/run-cron.mjs forecast-resolve
-    envVars:
-      - key: CRON_SECRET
-        sync: false
-      - key: NEXTAUTH_URL
-        sync: false
-
   # Expire ads - marks expired advertisements
   - type: cron
     name: builders-to-expire-ads

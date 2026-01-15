@@ -36,12 +36,6 @@ export async function DELETE(
     // Delete all related records in the correct order to respect foreign keys
     // Using transaction to ensure all-or-nothing deletion
     await prisma.$transaction(async (tx) => {
-      // Delete user's forecasts
-      await tx.forecast.deleteMany({ where: { userId } });
-
-      // Delete user's coin transactions
-      await tx.coinTransaction.deleteMany({ where: { userId } });
-
       // Delete user's upvotes
       await tx.upvote.deleteMany({ where: { userId } });
 

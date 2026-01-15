@@ -1,12 +1,11 @@
 #!/usr/bin/env node
 /**
  * Cron Job Runner Script
- * 
+ *
  * Usage: node scripts/run-cron.mjs <endpoint>
- * 
+ *
  * Endpoints:
  *   - daily-digest
- *   - forecast-resolve
  *   - expire-ads
  *   - expire-services
  *   - expire-local-listings
@@ -15,7 +14,6 @@
 
 const ENDPOINTS = {
   'daily-digest': '/api/email/daily-digest',
-  'forecast-resolve': '/api/forecasting/resolve',
   'expire-ads': '/api/cron/expire-ads',
   'expire-services': '/api/cron/expire-services',
   'expire-local-listings': '/api/cron/expire-local-listings',
@@ -24,7 +22,7 @@ const ENDPOINTS = {
 
 async function main() {
   const endpoint = process.argv[2];
-  
+
   if (!endpoint || !ENDPOINTS[endpoint]) {
     console.error('Usage: node scripts/run-cron.mjs <endpoint>');
     console.error('Available endpoints:', Object.keys(ENDPOINTS).join(', '));
@@ -40,7 +38,7 @@ async function main() {
   }
 
   const url = `${baseUrl}${ENDPOINTS[endpoint]}`;
-  
+
   console.log(`[Cron] Running: ${endpoint}`);
   console.log(`[Cron] URL: ${url}`);
   console.log(`[Cron] Time: ${new Date().toISOString()}`);

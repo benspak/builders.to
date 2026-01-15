@@ -49,13 +49,6 @@ A members-only launchpad and community platform for indie hackers and builders. 
 - **Profile Completion** — 10 tokens for completing your profile
 - **Token Gifting** — Send tokens to support fellow builders
 
-### 🎰 Forecasting (Reputation Coins)
-
-- **MRR Forecasting** — Stake coins on company MRR performance
-- **Leaderboard** — Track accuracy and climb the rankings
-- **Daily Login Bonus** — 5 coins for active members
-- **LONG/SHORT Positions** — Predict if MRR meets or misses targets
-
 ### 🔔 Notifications & Engagement
 
 - **In-App Notifications** — Real-time updates on likes, comments, mentions
@@ -214,7 +207,6 @@ src/
 │   ├── (auth)/                 # Auth pages (signin)
 │   ├── (protected)/            # Protected routes (dashboard, settings, etc.)
 │   │   ├── ads/                # Advertisement management
-│   │   ├── forecasting/        # Coin forecasting system
 │   │   ├── my-companies/       # Company management
 │   │   ├── my-listings/        # Local listing management
 │   │   ├── notifications/      # Notification center
@@ -230,7 +222,6 @@ src/
 │   │   ├── auth/               # NextAuth handlers
 │   │   ├── companies/          # Company management
 │   │   ├── feed-events/        # Feed event interactions
-│   │   ├── forecasting/        # Coin system & forecasts
 │   │   ├── local-listings/     # Builders Local
 │   │   ├── notifications/      # Notification management
 │   │   ├── projects/           # Project CRUD
@@ -250,7 +241,6 @@ src/
 │   ├── comments/               # Comment system
 │   ├── companies/              # Company components
 │   ├── feed/                   # Feed & updates components
-│   ├── forecasting/            # Coin forecasting UI
 │   ├── local/                  # Builders Local components
 │   ├── notifications/          # Notification UI
 │   ├── profile/                # Profile components
@@ -261,7 +251,6 @@ src/
 │   └── updates/                # Daily update components
 ├── lib/
 │   ├── auth.ts                 # NextAuth configuration
-│   ├── coins.ts                # Forecasting coin system
 │   ├── prisma.ts               # Prisma client singleton
 │   ├── stripe.ts               # Stripe utilities
 │   ├── tokens.ts               # Token system
@@ -326,7 +315,7 @@ The database includes 40+ models covering:
 - **Feed**: FeedEvent, FeedEventLike, FeedEventComment, DailyUpdate, UpdateLike, UpdateComment
 - **Marketplace**: ServiceListing, ServicePortfolio, ServiceOrder
 - **Local**: LocalListing, LocalListingImage, LocalListingComment, LocalListingFlag, LocalListingRating
-- **Tokens & Coins**: TokenTransaction, CoinTransaction, Forecast, ForecastTarget
+- **Tokens**: TokenTransaction
 - **Notifications**: Notification, EmailPreferences, PushSubscription
 - **Advertising**: Advertisement, AdView, AdClick
 - **Analytics**: SiteView, ProjectView, ProjectClick, UpdateView, LocalListingView
