@@ -98,6 +98,7 @@ export async function GET(
         githubUrl: true,
         producthuntUrl: true,
         featuredVideoUrl: true,
+        profileBackgroundImage: true,
         image: true,
         createdAt: true,
         // Status
@@ -161,6 +162,7 @@ export async function PATCH(
       githubUrl,
       producthuntUrl,
       featuredVideoUrl,
+      profileBackgroundImage,
       // Profile image
       image,
       // Status
@@ -317,6 +319,19 @@ export async function PATCH(
       }
     }
 
+    // Validate profile background image URL if provided
+    if (profileBackgroundImage !== undefined && profileBackgroundImage !== null && profileBackgroundImage !== "") {
+      const trimmedBg = profileBackgroundImage.trim();
+      // Only allow our own upload paths
+      const isOurUpload = trimmedBg.startsWith("/api/files/backgrounds/");
+      if (!isOurUpload) {
+        return NextResponse.json(
+          { error: "Invalid background image URL" },
+          { status: 400 }
+        );
+      }
+    }
+
     const user = await prisma.user.update({
       where: { id },
       data: {
@@ -339,6 +354,8 @@ export async function PATCH(
         githubUrl: githubUrl?.trim() || null,
         producthuntUrl: producthuntUrl?.trim() || null,
         featuredVideoUrl: featuredVideoUrl?.trim() || null,
+        // Profile background image - update if provided (allow null to clear)
+        ...(profileBackgroundImage !== undefined && { profileBackgroundImage: profileBackgroundImage?.trim() || null }),
         // Status - update if provided, allow clearing with empty string
         ...(status !== undefined && {
           status: trimmedStatus,
@@ -368,6 +385,7 @@ export async function PATCH(
         githubUrl: true,
         producthuntUrl: true,
         featuredVideoUrl: true,
+        profileBackgroundImage: true,
         image: true,
         createdAt: true,
         openToWork: true,

@@ -266,6 +266,7 @@ export default async function SlugPage({ params }: PageProps) {
       linkedinUrl: true,
       twitchUrl: true,
       featuredVideoUrl: true,
+      profileBackgroundImage: true,
       image: true,
       createdAt: true,
       // Status
@@ -601,8 +602,24 @@ export default async function SlugPage({ params }: PageProps) {
 
       {/* Hero Section */}
       <div className="relative border-b border-white/5">
-        {/* Gradient banner */}
-        <div className="h-32 sm:h-40 bg-gradient-to-r from-orange-600/20 via-orange-500/10 to-cyan-500/10" />
+        {/* Profile banner - custom image or default gradient */}
+        <div className="h-32 sm:h-40 relative overflow-hidden">
+          {user.profileBackgroundImage ? (
+            <>
+              <Image
+                src={user.profileBackgroundImage}
+                alt="Profile background"
+                fill
+                className="object-cover"
+                priority
+              />
+              {/* Gradient overlay for better text readability */}
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-zinc-950/70" />
+            </>
+          ) : (
+            <div className="absolute inset-0 bg-gradient-to-r from-orange-600/20 via-orange-500/10 to-cyan-500/10" />
+          )}
+        </div>
 
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
           <div className="relative -mt-12 sm:-mt-14 pb-8">

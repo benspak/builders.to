@@ -18,9 +18,11 @@ import {
   Bell,
   AtSign,
   Camera,
+  ImageIcon,
 } from "lucide-react";
 import Image from "next/image";
 import { AvatarUpload } from "./avatar-upload";
+import { BackgroundUpload } from "./background-upload";
 
 // Social icons as SVG
 const XIcon = () => (
@@ -79,6 +81,7 @@ interface ProfileFormProps {
     githubUrl: string | null;
     producthuntUrl: string | null;
     featuredVideoUrl: string | null;
+    profileBackgroundImage: string | null;
     image: string | null;
     // Status
     status: string | null;
@@ -116,6 +119,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
     githubUrl: user.githubUrl || "",
     producthuntUrl: user.producthuntUrl || "",
     featuredVideoUrl: user.featuredVideoUrl || "",
+    profileBackgroundImage: user.profileBackgroundImage || "",
     // Profile image
     image: user.image || "",
     // Status
@@ -218,6 +222,23 @@ export function ProfileForm({ user }: ProfileFormProps) {
           currentImage={formData.image || null}
           userName={user.name}
           onImageChange={(url) => setFormData({ ...formData, image: url || "" })}
+        />
+      </div>
+
+      {/* Profile Background */}
+      <div className="p-4 rounded-xl bg-zinc-800/30 border border-zinc-700/50">
+        <div className="flex items-center gap-3 mb-4">
+          <ImageIcon className="h-5 w-5 text-cyan-500" />
+          <div>
+            <h3 className="text-sm font-medium text-white">Profile Background</h3>
+            <p className="text-xs text-zinc-500">
+              Customize your profile header with a custom background image
+            </p>
+          </div>
+        </div>
+        <BackgroundUpload
+          currentBackground={formData.profileBackgroundImage || null}
+          onBackgroundChange={(url) => setFormData({ ...formData, profileBackgroundImage: url || "" })}
         />
       </div>
 

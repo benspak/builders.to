@@ -75,6 +75,7 @@ model User {
   githubUrl     String?   // GitHub profile URL
   producthuntUrl String?  // Product Hunt profile URL
   featuredVideoUrl String? // Featured video URL (YouTube/Twitch video to showcase)
+  profileBackgroundImage String? // Custom background image for profile page (replaces default gradient)
 
   // Profile status - what the user is currently up to
   status              String?   // Short status message (e.g., "Building a new feature 🚀")

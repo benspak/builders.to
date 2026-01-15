@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import { useState } from "react";
 import { UserMenu } from "@/components/auth/user-menu";
 import { SearchCommand } from "@/components/ui/search-command";
-import { Plus, Rocket, ChevronDown, Sparkles, Menu, X, MapPin, Megaphone, Building2 } from "lucide-react";
+import { Plus, Rocket, ChevronDown, Sparkles, Menu, X, MapPin, Megaphone, Building2, Video, Rss, FolderKanban, Briefcase } from "lucide-react";
 import { BuildersLogo } from "@/components/ui/builders-logo";
 import { cn } from "@/lib/utils";
 
@@ -53,17 +53,19 @@ export function Navbar() {
                   <Link
                     href="/feed"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="block px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-white/5"
+                    className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-white/5"
                     style={{ color: "var(--foreground-muted)" }}
                   >
+                    <Rss className="h-3.5 w-3.5 text-orange-400" />
                     Feed
                   </Link>
                   <Link
                     href="/projects"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="block px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-white/5"
+                    className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-white/5"
                     style={{ color: "var(--foreground-muted)" }}
                   >
+                    <FolderKanban className="h-3.5 w-3.5 text-sky-400" />
                     Projects
                   </Link>
                   <Link
@@ -78,9 +80,10 @@ export function Navbar() {
                   <Link
                     href="/services"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="block px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-white/5"
+                    className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-white/5"
                     style={{ color: "var(--foreground-muted)" }}
                   >
+                    <Briefcase className="h-3.5 w-3.5 text-amber-400" />
                     Services
                   </Link>
                   <Link
@@ -91,6 +94,15 @@ export function Navbar() {
                   >
                     <Building2 className="h-3.5 w-3.5 text-blue-400" />
                     Companies
+                  </Link>
+                  <Link
+                    href="/streamers"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-white/5"
+                    style={{ color: "var(--foreground-muted)" }}
+                  >
+                    <Video className="h-3.5 w-3.5 text-purple-400" />
+                    Streamers
                   </Link>
                 </div>
               </>
@@ -118,16 +130,18 @@ export function Navbar() {
           {/* Desktop Navigation links */}
           <Link
             href="/feed"
-            className="hidden lg:block text-sm font-medium transition-colors"
+            className="hidden lg:flex items-center gap-1.5 text-sm font-medium transition-colors"
             style={{ color: "var(--foreground-muted)" }}
           >
+            <Rss className="h-3.5 w-3.5 text-orange-400" />
             Feed
           </Link>
           <Link
             href="/projects"
-            className="hidden lg:block text-sm font-medium transition-colors"
+            className="hidden lg:flex items-center gap-1.5 text-sm font-medium transition-colors"
             style={{ color: "var(--foreground-muted)" }}
           >
+            <FolderKanban className="h-3.5 w-3.5 text-sky-400" />
             Projects
           </Link>
           <Link
@@ -140,9 +154,10 @@ export function Navbar() {
           </Link>
           <Link
             href="/services"
-            className="hidden lg:block text-sm font-medium transition-colors"
+            className="hidden lg:flex items-center gap-1.5 text-sm font-medium transition-colors"
             style={{ color: "var(--foreground-muted)" }}
           >
+            <Briefcase className="h-3.5 w-3.5 text-amber-400" />
             Services
           </Link>
           <Link
@@ -152,6 +167,14 @@ export function Navbar() {
           >
             <Building2 className="h-3.5 w-3.5 text-blue-400" />
             Companies
+          </Link>
+          <Link
+            href="/streamers"
+            className="hidden lg:flex items-center gap-1.5 text-sm font-medium transition-colors"
+            style={{ color: "var(--foreground-muted)" }}
+          >
+            <Video className="h-3.5 w-3.5 text-purple-400" />
+            Streamers
           </Link>
           {/* Mobile Search */}
           <div className="sm:hidden">

@@ -44,6 +44,7 @@ export default async function SettingsPage() {
       githubUrl: true,
       producthuntUrl: true,
       featuredVideoUrl: true,
+      profileBackgroundImage: true,
       image: true,
       // Status
       status: true,
