@@ -76,6 +76,10 @@ export async function GET(
   try {
     const { id } = await params;
 
+    // Check if the requester is viewing their own profile
+    const session = await auth();
+    const isOwnProfile = session?.user?.id === id;
+
     const user = await prisma.user.findUnique({
       where: { id },
       select: {
@@ -112,6 +116,8 @@ export async function GET(
         // Streak data
         currentStreak: true,
         longestStreak: true,
+        // Email - only include for own profile (private data)
+        ...(isOwnProfile && { email: true }),
       },
     });
 

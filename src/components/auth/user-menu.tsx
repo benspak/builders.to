@@ -10,6 +10,7 @@ import { useTheme } from "@/components/ui/theme-provider";
 
 interface UserProfile {
   slug: string | null;
+  email: string | null;
 }
 
 export function UserMenu() {
@@ -17,24 +18,26 @@ export function UserMenu() {
   const { theme, toggleTheme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
   const [userSlug, setUserSlug] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
   const [tokenBalance, setTokenBalance] = useState<number | null>(null);
 
   useEffect(() => {
-    async function fetchUserSlug() {
+    async function fetchUserProfile() {
       if (session?.user?.id) {
         try {
           const response = await fetch(`/api/users/${session.user.id}`);
           if (response.ok) {
             const data: UserProfile = await response.json();
             setUserSlug(data.slug);
+            setUserEmail(data.email);
           }
         } catch (error) {
-          console.error("Failed to fetch user slug:", error);
+          console.error("Failed to fetch user profile:", error);
         }
       }
     }
-    fetchUserSlug();
+    fetchUserProfile();
   }, [session?.user?.id]);
 
   useEffect(() => {
@@ -126,7 +129,7 @@ export function UserMenu() {
           >
             <div className="border-b px-3 py-2 mb-2" style={{ borderColor: "var(--card-border)" }}>
               <p className="text-sm font-medium" style={{ color: "var(--foreground)" }}>{session.user.name}</p>
-              <p className="text-xs" style={{ color: "var(--foreground-muted)" }}>{session.user.email}</p>
+              <p className="text-xs" style={{ color: "var(--foreground-muted)" }}>{userEmail || session.user.email}</p>
             </div>
 
             {/* Token Balance */}
@@ -178,11 +181,11 @@ export function UserMenu() {
                   {theme === "dark" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
                   {theme === "dark" ? "Dark Mode" : "Light Mode"}
                 </div>
-                <div 
+                <div
                   className="relative h-5 w-9 rounded-full transition-colors"
                   style={{ background: theme === "dark" ? "var(--accent)" : "var(--background-tertiary)" }}
                 >
-                  <div 
+                  <div
                     className={cn(
                       "absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform",
                       theme === "dark" ? "translate-x-4" : "translate-x-0.5"
