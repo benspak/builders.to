@@ -216,9 +216,6 @@ async function deleteAccount(userId) {
   await prisma.follow.deleteMany({ where: { OR: [{ followerId: userId }, { followingId: userId }] } });
   console.log('   ✓ Deleted follows');
 
-  await prisma.endorsement.deleteMany({ where: { OR: [{ endorserId: userId }, { endorseeId: userId }] } });
-  console.log('   ✓ Deleted endorsements');
-
   await prisma.notification.deleteMany({ where: { userId } });
   console.log('   ✓ Deleted notifications');
 

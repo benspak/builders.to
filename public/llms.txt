@@ -23,7 +23,6 @@ Builders.to is a community platform where indie hackers, solopreneurs, and devel
 - **Public Profiles**: Showcase your work, bio, headline, and social links
 - **Builder Operating System Flags**: Signal if you're open to work, looking for a co-founder, or available for contract work
 - **Streaks**: Track consecutive days of posting updates
-- **Endorsements**: Receive endorsements from other builders for specific skills
 - **Follows**: Follow builders you're interested in
 
 ### Companies

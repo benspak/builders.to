@@ -77,7 +77,6 @@ async function ServicesList({ category, search }: ServicesListProps) {
           _count: {
             select: {
               projects: { where: { status: "LAUNCHED" } },
-              endorsementsReceived: true,
             },
           },
         },

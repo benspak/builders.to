@@ -65,11 +65,6 @@ export async function DELETE(
         where: { OR: [{ followerId: userId }, { followingId: userId }] },
       });
 
-      // Delete user's endorsements (both directions)
-      await tx.endorsement.deleteMany({
-        where: { OR: [{ endorserId: userId }, { endorseeId: userId }] },
-      });
-
       // Delete user's notifications
       await tx.notification.deleteMany({ where: { userId } });
 

@@ -43,7 +43,7 @@ export default function PrivacyPolicyPage() {
                 <li><strong className="text-white">Profile Information:</strong> Username, display name, bio, headline, location (city, state, country), website, and social media links you choose to add to your profile.</li>
                 <li><strong className="text-white">Project Information:</strong> Details about projects you submit including titles, descriptions, images, URLs, tags, and milestone data.</li>
                 <li><strong className="text-white">Company Information:</strong> Business details you provide when creating company profiles, including tech stack, traction metrics, and team information.</li>
-                <li><strong className="text-white">Content:</strong> Daily updates, comments, endorsements, and any other content you post on the platform.</li>
+                <li><strong className="text-white">Content:</strong> Daily updates, comments, and any other content you post on the platform.</li>
                 <li><strong className="text-white">Service Listings:</strong> Information about services you offer, including descriptions, pricing, and portfolio projects.</li>
                 <li><strong className="text-white">Local Listings:</strong> Classified listings you create, including contact information you choose to share.</li>
                 <li><strong className="text-white">Job Postings:</strong> Information about roles and positions you post for your company.</li>
@@ -72,7 +72,7 @@ export default function PrivacyPolicyPage() {
                 <li>Provide, maintain, and improve our services</li>
                 <li>Create and manage your account</li>
                 <li>Display your projects, profile, and content to the community</li>
-                <li>Enable interactions between community members (comments, upvotes, follows, endorsements)</li>
+                <li>Enable interactions between community members (comments, upvotes, follows)</li>
                 <li>Process token rewards for engagement, referrals, and profile completion</li>
                 <li>Facilitate the forecasting system and track reputation coins</li>
                 <li>Process payments through Stripe for services, listings, and advertisements</li>
@@ -102,7 +102,7 @@ export default function PrivacyPolicyPage() {
               <h2 className="text-2xl font-semibold text-white mb-4">5. Information Sharing</h2>
               <p className="mb-4">We may share your information in the following circumstances:</p>
               <ul className="list-disc pl-6 space-y-2">
-                <li><strong className="text-white">Public Content:</strong> Your profile, projects, companies, updates, comments, endorsements, service listings, local listings, and job postings are publicly visible to other users and visitors.</li>
+                <li><strong className="text-white">Public Content:</strong> Your profile, projects, companies, updates, comments, service listings, local listings, and job postings are publicly visible to other users and visitors.</li>
                 <li><strong className="text-white">Leaderboards:</strong> Token earnings, forecasting accuracy, and streak data may appear on public leaderboards.</li>
                 <li><strong className="text-white">Service Providers:</strong> We share information with third-party vendors who assist in operating our services:
                   <ul className="list-disc pl-6 mt-2 space-y-1">

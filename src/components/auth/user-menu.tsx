@@ -4,8 +4,9 @@ import { signOut, useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { LogOut, User, ChevronDown, Settings, Megaphone, Bell, Building2, MapPin, Coins, TrendingUp } from "lucide-react";
+import { LogOut, User, ChevronDown, Settings, Megaphone, Bell, Building2, MapPin, Coins, TrendingUp, Sun, Moon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTheme } from "@/components/ui/theme-provider";
 
 interface UserProfile {
   slug: string | null;
@@ -13,6 +14,7 @@ interface UserProfile {
 
 export function UserMenu() {
   const { data: session } = useSession();
+  const { theme, toggleTheme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
   const [userSlug, setUserSlug] = useState<string | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -127,8 +129,8 @@ export function UserMenu() {
               <p className="text-xs" style={{ color: "var(--foreground-muted)" }}>{session.user.email}</p>
             </div>
 
-            {/* Token Balance - Mobile only */}
-            <div className="md:hidden border-b pb-2 mb-2" style={{ borderColor: "var(--card-border)" }}>
+            {/* Token Balance */}
+            <div className="border-b pb-2 mb-2" style={{ borderColor: "var(--card-border)" }}>
               <Link
                 href="/tokens"
                 onClick={() => setIsOpen(false)}
@@ -144,9 +146,8 @@ export function UserMenu() {
                   {tokenBalance !== null ? tokenBalance : "..."}
                 </span>
               </Link>
-            </div>
 
-            <div className="sm:hidden border-b pb-2 mb-2" style={{ borderColor: "var(--card-border)" }}>
+              {/* Notifications */}
               <Link
                 href="/notifications"
                 onClick={() => setIsOpen(false)}
@@ -163,6 +164,32 @@ export function UserMenu() {
                   </span>
                 )}
               </Link>
+
+              {/* Theme Toggle */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleTheme();
+                }}
+                className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors hover:bg-black/5 dark:hover:bg-white/5"
+                style={{ color: "var(--foreground-muted)" }}
+              >
+                <div className="flex items-center gap-2">
+                  {theme === "dark" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+                  {theme === "dark" ? "Dark Mode" : "Light Mode"}
+                </div>
+                <div 
+                  className="relative h-5 w-9 rounded-full transition-colors"
+                  style={{ background: theme === "dark" ? "var(--accent)" : "var(--background-tertiary)" }}
+                >
+                  <div 
+                    className={cn(
+                      "absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform",
+                      theme === "dark" ? "translate-x-4" : "translate-x-0.5"
+                    )}
+                  />
+                </div>
+              </button>
             </div>
 
             {userSlug && (

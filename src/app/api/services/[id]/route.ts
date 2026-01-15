@@ -34,7 +34,6 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
             _count: {
               select: {
                 projects: { where: { status: "LAUNCHED" } },
-                endorsementsReceived: true,
               },
             },
             projects: {

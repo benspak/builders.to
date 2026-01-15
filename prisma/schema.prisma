@@ -106,10 +106,6 @@ model User {
   updateComments    UpdateComment[]
   coBuilderOn       ProjectCoBuilder[]  // Projects where user is a co-builder
 
-  // Endorsements
-  endorsementsGiven    Endorsement[] @relation("EndorserRelation")
-  endorsementsReceived Endorsement[] @relation("EndorseeRelation")
-
   // Follows
   followers            Follow[] @relation("FollowingRelation")  // Users who follow this user
   following            Follow[] @relation("FollowerRelation")   // Users this user follows
@@ -626,24 +622,6 @@ model UpdateComment {
 
   @@index([updateId])
   @@index([userId])
-}
-
-// Builder endorsements - credibility signals
-model Endorsement {
-  id        String   @id @default(cuid())
-  message   String?  @db.Text  // Optional endorsement message
-  skill     String?            // Optional skill being endorsed (e.g., "Frontend", "Product")
-  createdAt DateTime @default(now())
-
-  endorserId String  // User giving the endorsement
-  endorseeId String  // User receiving the endorsement
-
-  endorser   User @relation("EndorserRelation", fields: [endorserId], references: [id], onDelete: Cascade)
-  endorsee   User @relation("EndorseeRelation", fields: [endorseeId], references: [id], onDelete: Cascade)
-
-  @@unique([endorserId, endorseeId])  // One endorsement per user pair
-  @@index([endorseeId])
-  @@index([endorserId])
 }
 
 // User follows - social connections between builders

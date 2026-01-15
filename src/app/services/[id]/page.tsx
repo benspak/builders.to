@@ -16,7 +16,6 @@ import {
   ShoppingCart,
   ExternalLink,
   MessageCircle,
-  Award,
 } from "lucide-react";
 import type { ServiceCategory } from "@prisma/client";
 import { PurchaseButton } from "@/components/services/purchase-button";
@@ -100,7 +99,6 @@ export default async function ServicePage({ params }: ServicePageProps) {
           _count: {
             select: {
               projects: { where: { status: "LAUNCHED" } },
-              endorsementsReceived: true,
               followers: true,
             },
           },
@@ -427,13 +425,6 @@ export default async function ServicePage({ params }: ServicePageProps) {
                     <span className="text-lg font-bold">{totalUpvotes}</span>
                   </div>
                   <span className="text-xs text-zinc-500">Upvotes</span>
-                </div>
-                <div className="p-3 rounded-lg bg-zinc-800/50 text-center">
-                  <div className="flex items-center justify-center gap-1 text-emerald-400 mb-1">
-                    <Award className="h-4 w-4" />
-                    <span className="text-lg font-bold">{service.user._count.endorsementsReceived}</span>
-                  </div>
-                  <span className="text-xs text-zinc-500">Endorsements</span>
                 </div>
                 <div className="p-3 rounded-lg bg-zinc-800/50 text-center">
                   <div className="flex items-center justify-center gap-1 text-cyan-400 mb-1">

@@ -67,7 +67,6 @@ A members-only launchpad and community platform for indie hackers and builders. 
 ### 👤 Builder Operating System
 
 - **Profile Flags** — Open to Work, Looking for Cofounder, Available for Contract
-- **Endorsements** — Get vouched for skills by other builders
 - **Follow System** — Build your network of builders
 - **Streak Tracking** — Current and longest daily update streaks
 - **Public Profiles** — SEO-friendly profile pages (`builders.to/username`)
@@ -331,7 +330,7 @@ The database includes 40+ models covering:
 - **Notifications**: Notification, EmailPreferences, PushSubscription
 - **Advertising**: Advertisement, AdView, AdClick
 - **Analytics**: SiteView, ProjectView, ProjectClick, UpdateView, LocalListingView
-- **Social**: Follow, Endorsement, Report
+- **Social**: Follow, Report
 
 ## 🔮 Future Improvements
 
