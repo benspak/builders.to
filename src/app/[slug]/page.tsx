@@ -584,11 +584,13 @@ export default async function SlugPage({ params }: PageProps) {
   const followingCount = user._count.following;
 
   // Intent flags for display
+  // Note: "Open to Meeting" is restricted to Pro members only
+  const isPro = user.proSubscription?.status === "ACTIVE";
   const intentFlags = [
     { active: user.openToWork, label: "Open to Work", icon: Briefcase, color: "emerald" },
     { active: user.lookingForCofounder, label: "Looking for Co-founder", icon: Users, color: "violet" },
     { active: user.availableForContract, label: "Available for Contract", icon: Code, color: "cyan" },
-    { active: user.openToMeeting, label: "Open to Meeting", icon: Calendar, color: "amber" },
+    { active: user.openToMeeting && isPro, label: "Open to Meeting", icon: Calendar, color: "amber" },
   ].filter(flag => flag.active);
 
   return (
@@ -694,8 +696,8 @@ export default async function SlugPage({ params }: PageProps) {
                       </div>
                     )}
 
-                    {/* Book a Meeting CTA */}
-                    {user.openToMeeting && user.calendarUrl && (
+                    {/* Book a Meeting CTA - Pro members only */}
+                    {user.openToMeeting && user.calendarUrl && isPro && (
                       <div className="mt-3">
                         <a
                           href={user.calendarUrl}
@@ -786,21 +788,6 @@ export default async function SlugPage({ params }: PageProps) {
                       className="text-orange-400 hover:text-orange-300 transition-colors truncate"
                     >
                       {user.websiteUrl.replace(/^https?:\/\//, "").replace(/\/$/, "")}
-                    </a>
-                  </div>
-                )}
-
-                {/* Calendar Link */}
-                {user.calendarUrl && (
-                  <div className="flex items-center gap-3 text-sm">
-                    <Calendar className="h-4 w-4 text-zinc-500" />
-                    <a
-                      href={user.calendarUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-amber-400 hover:text-amber-300 transition-colors truncate"
-                    >
-                      {user.calendarUrl.replace(/^https?:\/\//, "").replace(/\/$/, "")}
                     </a>
                   </div>
                 )}
