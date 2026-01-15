@@ -32,8 +32,6 @@ export default async function SettingsPage() {
       slug: true,
       username: true,
       displayName: true,
-      firstName: true,
-      lastName: true,
       city: true,
       country: true,
       headline: true,
@@ -43,6 +41,8 @@ export default async function SettingsPage() {
       youtubeUrl: true,
       linkedinUrl: true,
       twitchUrl: true,
+      githubUrl: true,
+      producthuntUrl: true,
       featuredVideoUrl: true,
       image: true,
       // Status
@@ -68,8 +68,6 @@ export default async function SettingsPage() {
   // Calculate profile completeness
   const completeness = calculateProfileCompleteness({
     displayName: user.displayName,
-    firstName: user.firstName,
-    lastName: user.lastName,
     city: user.city,
     country: user.country,
     headline: user.headline,
@@ -79,11 +77,9 @@ export default async function SettingsPage() {
     youtubeUrl: user.youtubeUrl,
     linkedinUrl: user.linkedinUrl,
     twitchUrl: user.twitchUrl,
-    featuredVideoUrl: user.featuredVideoUrl,
+    githubUrl: user.githubUrl,
+    producthuntUrl: user.producthuntUrl,
     status: user.status,
-    openToWork: user.openToWork,
-    lookingForCofounder: user.lookingForCofounder,
-    availableForContract: user.availableForContract,
   });
 
   return (

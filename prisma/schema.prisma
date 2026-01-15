@@ -72,6 +72,8 @@ model User {
   youtubeUrl    String?
   linkedinUrl   String?
   twitchUrl     String?   // Twitch channel URL
+  githubUrl     String?   // GitHub profile URL
+  producthuntUrl String?  // Product Hunt profile URL
   featuredVideoUrl String? // Featured video URL (YouTube/Twitch video to showcase)
 
   // Profile status - what the user is currently up to

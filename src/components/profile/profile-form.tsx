@@ -47,6 +47,18 @@ const TwitchIcon = () => (
   </svg>
 );
 
+const GitHubIcon = () => (
+  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+  </svg>
+);
+
+const ProductHuntIcon = () => (
+  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M13.604 8.4h-3.405V12h3.405c.995 0 1.801-.806 1.801-1.8 0-.995-.806-1.8-1.801-1.8zM12 0C5.372 0 0 5.372 0 12s5.372 12 12 12 12-5.372 12-12S18.628 0 12 0zm1.604 14.4h-3.405V18H7.801V6h5.803c2.319 0 4.2 1.881 4.2 4.2 0 2.319-1.881 4.2-4.2 4.2z" />
+  </svg>
+);
+
 interface ProfileFormProps {
   user: {
     id: string;
@@ -55,8 +67,6 @@ interface ProfileFormProps {
     slug: string | null;
     username: string | null;
     displayName: string | null;
-    firstName: string | null;
-    lastName: string | null;
     city: string | null;
     country: string | null;
     headline: string | null;
@@ -66,6 +76,8 @@ interface ProfileFormProps {
     youtubeUrl: string | null;
     linkedinUrl: string | null;
     twitchUrl: string | null;
+    githubUrl: string | null;
+    producthuntUrl: string | null;
     featuredVideoUrl: string | null;
     image: string | null;
     // Status
@@ -92,8 +104,6 @@ export function ProfileForm({ user }: ProfileFormProps) {
     email: user.email || "",
     slug: user.slug || "",
     displayName: user.displayName || "",
-    firstName: user.firstName || "",
-    lastName: user.lastName || "",
     city: user.city || "",
     country: user.country || "",
     headline: user.headline || "",
@@ -103,6 +113,8 @@ export function ProfileForm({ user }: ProfileFormProps) {
     youtubeUrl: user.youtubeUrl || "",
     linkedinUrl: user.linkedinUrl || "",
     twitchUrl: user.twitchUrl || "",
+    githubUrl: user.githubUrl || "",
+    producthuntUrl: user.producthuntUrl || "",
     featuredVideoUrl: user.featuredVideoUrl || "",
     // Profile image
     image: user.image || "",
@@ -160,6 +172,37 @@ export function ProfileForm({ user }: ProfileFormProps) {
         </div>
       )}
 
+      {/* Status - What are you working on? (FIRST) */}
+      <div className="p-4 rounded-xl bg-gradient-to-r from-orange-500/5 to-cyan-500/5 border border-orange-500/20">
+        <label htmlFor="status" className="flex items-center gap-2 text-sm font-medium text-zinc-300 mb-2">
+          <MessageCircle className="h-4 w-4 text-orange-500" />
+          What are you working on?
+        </label>
+        <div className="relative">
+          <input
+            id="status"
+            type="text"
+            maxLength={100}
+            placeholder="Building a new feature 🚀"
+            value={formData.status}
+            onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+            className="input pr-10"
+          />
+          {formData.status && (
+            <button
+              type="button"
+              onClick={() => setFormData({ ...formData, status: "" })}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+        <p className="mt-2 text-xs text-zinc-500">
+          {formData.status.length}/100 characters - This will be displayed prominently on your profile
+        </p>
+      </div>
+
       {/* Profile Photo */}
       <div className="p-4 rounded-xl bg-zinc-800/30 border border-zinc-700/50">
         <div className="flex items-center gap-3 mb-4">
@@ -176,6 +219,28 @@ export function ProfileForm({ user }: ProfileFormProps) {
           userName={user.name}
           onImageChange={(url) => setFormData({ ...formData, image: url || "" })}
         />
+      </div>
+
+      {/* Display Name */}
+      <div>
+        <label htmlFor="displayName" className="block text-sm font-medium text-zinc-300 mb-2">
+          Display Name
+        </label>
+        <div className="relative">
+          <User className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
+          <input
+            id="displayName"
+            type="text"
+            maxLength={50}
+            placeholder="The name you want shown on your profile"
+            value={formData.displayName}
+            onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
+            className="input pl-11"
+          />
+        </div>
+        <p className="mt-2 text-xs text-zinc-500">
+          This is the name that will be displayed on your profile. Leave empty to use your X name.
+        </p>
       </div>
 
       {/* Email */}
@@ -225,98 +290,6 @@ export function ProfileForm({ user }: ProfileFormProps) {
           <br />
           Only lowercase letters, numbers, and hyphens allowed.
         </p>
-      </div>
-
-      {/* Status */}
-      <div className="p-4 rounded-xl bg-gradient-to-r from-orange-500/5 to-cyan-500/5 border border-orange-500/20">
-        <label htmlFor="status" className="flex items-center gap-2 text-sm font-medium text-zinc-300 mb-2">
-          <MessageCircle className="h-4 w-4 text-orange-500" />
-          What are you working on?
-        </label>
-        <div className="relative">
-          <input
-            id="status"
-            type="text"
-            maxLength={100}
-            placeholder="Building a new feature 🚀"
-            value={formData.status}
-            onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-            className="input pr-10"
-          />
-          {formData.status && (
-            <button
-              type="button"
-              onClick={() => setFormData({ ...formData, status: "" })}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          )}
-        </div>
-        <p className="mt-2 text-xs text-zinc-500">
-          {formData.status.length}/100 characters - This will be displayed prominently on your profile
-        </p>
-      </div>
-
-      {/* Display Name */}
-      <div>
-        <label htmlFor="displayName" className="block text-sm font-medium text-zinc-300 mb-2">
-          Display Name
-        </label>
-        <div className="relative">
-          <User className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
-          <input
-            id="displayName"
-            type="text"
-            maxLength={50}
-            placeholder="The name you want shown on your profile"
-            value={formData.displayName}
-            onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
-            className="input pl-11"
-          />
-        </div>
-        <p className="mt-2 text-xs text-zinc-500">
-          This is the name that will be displayed on your profile. Leave empty to use your X name.
-        </p>
-      </div>
-
-      {/* Name Fields (Optional) */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-        <div>
-          <label htmlFor="firstName" className="block text-sm font-medium text-zinc-300 mb-2">
-            First Name <span className="text-zinc-500 font-normal">(optional)</span>
-          </label>
-          <div className="relative">
-            <User className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
-            <input
-              id="firstName"
-              type="text"
-              maxLength={50}
-              placeholder="John"
-              value={formData.firstName}
-              onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-              className="input pl-11"
-            />
-          </div>
-        </div>
-
-        <div>
-          <label htmlFor="lastName" className="block text-sm font-medium text-zinc-300 mb-2">
-            Last Name <span className="text-zinc-500 font-normal">(optional)</span>
-          </label>
-          <div className="relative">
-            <User className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
-            <input
-              id="lastName"
-              type="text"
-              maxLength={50}
-              placeholder="Doe"
-              value={formData.lastName}
-              onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-              className="input pl-11"
-            />
-          </div>
-        </div>
       </div>
 
       {/* Location - City & Country */}
@@ -493,6 +466,46 @@ export function ProfileForm({ user }: ProfileFormProps) {
               placeholder="https://twitch.tv/username"
               value={formData.twitchUrl}
               onChange={(e) => setFormData({ ...formData, twitchUrl: e.target.value })}
+              className="input pl-11"
+            />
+          </div>
+        </div>
+
+        {/* GitHub */}
+        <div>
+          <label htmlFor="githubUrl" className="block text-sm font-medium text-zinc-300 mb-2">
+            GitHub
+          </label>
+          <div className="relative">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500">
+              <GitHubIcon />
+            </div>
+            <input
+              id="githubUrl"
+              type="url"
+              placeholder="https://github.com/username"
+              value={formData.githubUrl}
+              onChange={(e) => setFormData({ ...formData, githubUrl: e.target.value })}
+              className="input pl-11"
+            />
+          </div>
+        </div>
+
+        {/* Product Hunt */}
+        <div>
+          <label htmlFor="producthuntUrl" className="block text-sm font-medium text-zinc-300 mb-2">
+            Product Hunt
+          </label>
+          <div className="relative">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500">
+              <ProductHuntIcon />
+            </div>
+            <input
+              id="producthuntUrl"
+              type="url"
+              placeholder="https://producthunt.com/@username"
+              value={formData.producthuntUrl}
+              onChange={(e) => setFormData({ ...formData, producthuntUrl: e.target.value })}
               className="input pl-11"
             />
           </div>

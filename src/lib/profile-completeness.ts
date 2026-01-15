@@ -20,13 +20,14 @@ export interface ProfileCompletenessResult {
 }
 
 // Define profile fields with weights
+// Note: featuredVideo, intentFlag, and multipleSocials are NOT required for completeness
 export const PROFILE_FIELDS: ProfileField[] = [
   // Essential fields (higher weight) - 60 points total
   {
     key: "headline",
     label: "Headline",
     description: "Add a tagline about yourself",
-    weight: 15,
+    weight: 20,
     category: "essential",
     icon: "FileText",
   },
@@ -34,7 +35,7 @@ export const PROFILE_FIELDS: ProfileField[] = [
     key: "bio",
     label: "Bio",
     description: "Tell the community about yourself",
-    weight: 15,
+    weight: 20,
     category: "essential",
     icon: "AlignLeft",
   },
@@ -42,7 +43,7 @@ export const PROFILE_FIELDS: ProfileField[] = [
     key: "location",
     label: "Location",
     description: "Add your city and country",
-    weight: 15,
+    weight: 20,
     category: "essential",
     icon: "MapPin",
   },
@@ -50,12 +51,12 @@ export const PROFILE_FIELDS: ProfileField[] = [
     key: "socialLink",
     label: "Social Link",
     description: "Connect at least one social profile",
-    weight: 15,
+    weight: 20,
     category: "essential",
     icon: "Link",
   },
 
-  // Important fields (medium weight) - 25 points total
+  // Important fields (medium weight) - 20 points total
   {
     key: "displayName",
     label: "Display Name",
@@ -68,7 +69,7 @@ export const PROFILE_FIELDS: ProfileField[] = [
     key: "websiteUrl",
     label: "Website",
     description: "Link your personal website or portfolio",
-    weight: 10,
+    weight: 5,
     category: "important",
     icon: "Globe",
   },
@@ -80,38 +81,10 @@ export const PROFILE_FIELDS: ProfileField[] = [
     category: "important",
     icon: "MessageCircle",
   },
-
-  // Optional fields (lower weight) - 15 points total
-  {
-    key: "featuredVideo",
-    label: "Featured Video",
-    description: "Showcase a YouTube or Twitch video",
-    weight: 5,
-    category: "optional",
-    icon: "Play",
-  },
-  {
-    key: "intentFlag",
-    label: "Availability",
-    description: "Set your work availability status",
-    weight: 5,
-    category: "optional",
-    icon: "Briefcase",
-  },
-  {
-    key: "multipleSocials",
-    label: "Multiple Social Links",
-    description: "Connect 2+ social profiles",
-    weight: 5,
-    category: "optional",
-    icon: "Users",
-  },
 ];
 
 export interface UserProfileData {
   displayName?: string | null;
-  firstName?: string | null;
-  lastName?: string | null;
   city?: string | null;
   country?: string | null;
   headline?: string | null;
@@ -121,11 +94,9 @@ export interface UserProfileData {
   youtubeUrl?: string | null;
   linkedinUrl?: string | null;
   twitchUrl?: string | null;
-  featuredVideoUrl?: string | null;
+  githubUrl?: string | null;
+  producthuntUrl?: string | null;
   status?: string | null;
-  openToWork?: boolean;
-  lookingForCofounder?: boolean;
-  availableForContract?: boolean;
 }
 
 export function calculateProfileCompleteness(user: UserProfileData): ProfileCompletenessResult {
@@ -205,39 +176,19 @@ function checkFieldComplete(fieldKey: string, user: UserProfileData): boolean {
         user.twitterUrl?.trim() ||
         user.youtubeUrl?.trim() ||
         user.linkedinUrl?.trim() ||
-        user.twitchUrl?.trim()
+        user.twitchUrl?.trim() ||
+        user.githubUrl?.trim() ||
+        user.producthuntUrl?.trim()
       );
 
     case "displayName":
-      return Boolean(
-        user.displayName?.trim() ||
-        (user.firstName?.trim() && user.lastName?.trim())
-      );
+      return Boolean(user.displayName?.trim());
 
     case "websiteUrl":
       return Boolean(user.websiteUrl?.trim());
 
     case "status":
       return Boolean(user.status?.trim());
-
-    case "featuredVideo":
-      return Boolean(user.featuredVideoUrl?.trim());
-
-    case "intentFlag":
-      return Boolean(
-        user.openToWork ||
-        user.lookingForCofounder ||
-        user.availableForContract
-      );
-
-    case "multipleSocials":
-      const socialCount = [
-        user.twitterUrl?.trim(),
-        user.youtubeUrl?.trim(),
-        user.linkedinUrl?.trim(),
-        user.twitchUrl?.trim(),
-      ].filter(Boolean).length;
-      return socialCount >= 2;
 
     default:
       return false;

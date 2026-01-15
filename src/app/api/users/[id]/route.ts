@@ -95,6 +95,8 @@ export async function GET(
         youtubeUrl: true,
         linkedinUrl: true,
         twitchUrl: true,
+        githubUrl: true,
+        producthuntUrl: true,
         featuredVideoUrl: true,
         image: true,
         createdAt: true,
@@ -147,8 +149,6 @@ export async function PATCH(
       email,
       slug: customSlug,
       displayName,
-      firstName,
-      lastName,
       city,
       country,
       headline,
@@ -158,6 +158,8 @@ export async function PATCH(
       youtubeUrl,
       linkedinUrl,
       twitchUrl,
+      githubUrl,
+      producthuntUrl,
       featuredVideoUrl,
       // Profile image
       image,
@@ -232,14 +234,11 @@ export async function PATCH(
       const isNameAnEmail = currentUser?.name && currentUser.name.includes("@");
       const safeName = isNameAnEmail ? null : currentUser?.name;
 
-      // Priority for slug: username > displayName > firstName+lastName > safeName > random
+      // Priority for slug: username > displayName > safeName > random
       // NEVER use email-derived values
       const randomSuffix = Math.random().toString(36).substring(2, 8);
       const baseName = currentUser?.username
         || displayName
-        || (firstName && lastName ? `${firstName}-${lastName}` : null)
-        || firstName
-        || lastName
         || safeName
         || `builder-${randomSuffix}`;
       slug = await getUniqueSlug(generateSlug(baseName), id);
@@ -274,7 +273,7 @@ export async function PATCH(
     }
 
     // Validate URLs
-    const urlFields = { websiteUrl, twitterUrl, youtubeUrl, linkedinUrl, twitchUrl, featuredVideoUrl };
+    const urlFields = { websiteUrl, twitterUrl, youtubeUrl, linkedinUrl, twitchUrl, githubUrl, producthuntUrl, featuredVideoUrl };
     for (const [key, value] of Object.entries(urlFields)) {
       if (value && typeof value === "string") {
         try {
@@ -327,8 +326,6 @@ export async function PATCH(
         // Update image if provided (allow null to clear)
         ...(image !== undefined && { image: image?.trim() || null }),
         displayName: displayName?.trim() || null,
-        firstName: firstName?.trim() || null,
-        lastName: lastName?.trim() || null,
         city: trimmedCity,
         country: trimmedCountry,
         locationSlug,
@@ -339,6 +336,8 @@ export async function PATCH(
         youtubeUrl: youtubeUrl?.trim() || null,
         linkedinUrl: linkedinUrl?.trim() || null,
         twitchUrl: twitchUrl?.trim() || null,
+        githubUrl: githubUrl?.trim() || null,
+        producthuntUrl: producthuntUrl?.trim() || null,
         featuredVideoUrl: featuredVideoUrl?.trim() || null,
         // Status - update if provided, allow clearing with empty string
         ...(status !== undefined && {
@@ -357,8 +356,6 @@ export async function PATCH(
         slug: true,
         username: true,
         displayName: true,
-        firstName: true,
-        lastName: true,
         city: true,
         country: true,
         headline: true,
@@ -368,6 +365,8 @@ export async function PATCH(
         youtubeUrl: true,
         linkedinUrl: true,
         twitchUrl: true,
+        githubUrl: true,
+        producthuntUrl: true,
         featuredVideoUrl: true,
         image: true,
         createdAt: true,
@@ -412,8 +411,6 @@ export async function PATCH(
     // Check profile completeness and grant bonus if 100%
     const profileCompleteness = calculateProfileCompleteness({
       displayName: user.displayName,
-      firstName: user.firstName,
-      lastName: user.lastName,
       city: user.city,
       country: user.country,
       headline: user.headline,
@@ -423,11 +420,9 @@ export async function PATCH(
       youtubeUrl: user.youtubeUrl,
       linkedinUrl: user.linkedinUrl,
       twitchUrl: user.twitchUrl,
-      featuredVideoUrl: user.featuredVideoUrl,
+      githubUrl: user.githubUrl,
+      producthuntUrl: user.producthuntUrl,
       status: user.status,
-      openToWork: user.openToWork,
-      lookingForCofounder: user.lookingForCofounder,
-      availableForContract: user.availableForContract,
     });
 
     // Grant 10 tokens if profile is 100% complete (only once per user)
