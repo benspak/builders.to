@@ -83,6 +83,7 @@ interface ProfileFormProps {
     producthuntUrl: string | null;
     featuredVideoUrl: string | null;
     profileBackgroundImage: string | null;
+    calendarUrl: string | null;
     image: string | null;
     // Status
     status: string | null;
@@ -122,6 +123,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
     producthuntUrl: user.producthuntUrl || "",
     featuredVideoUrl: user.featuredVideoUrl || "",
     profileBackgroundImage: user.profileBackgroundImage || "",
+    calendarUrl: user.calendarUrl || "",
     // Profile image
     image: user.image || "",
     // Status
@@ -408,6 +410,27 @@ export function ProfileForm({ user }: ProfileFormProps) {
             className="input pl-11"
           />
         </div>
+      </div>
+
+      {/* Calendar Link */}
+      <div>
+        <label htmlFor="calendarUrl" className="block text-sm font-medium text-zinc-300 mb-2">
+          Calendar / Booking Link
+        </label>
+        <div className="relative">
+          <Calendar className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
+          <input
+            id="calendarUrl"
+            type="url"
+            placeholder="https://calendly.com/your-link or https://cal.com/your-link"
+            value={formData.calendarUrl}
+            onChange={(e) => setFormData({ ...formData, calendarUrl: e.target.value })}
+            className="input pl-11"
+          />
+        </div>
+        <p className="mt-2 text-xs text-zinc-500">
+          Add your Calendly, Cal.com, or other booking link. This will be displayed on your profile when &quot;Open to Meeting&quot; is enabled.
+        </p>
       </div>
 
       {/* Social Links Section */}

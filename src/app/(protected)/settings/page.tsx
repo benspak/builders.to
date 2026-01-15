@@ -45,6 +45,7 @@ export default async function SettingsPage() {
       producthuntUrl: true,
       featuredVideoUrl: true,
       profileBackgroundImage: true,
+      calendarUrl: true,
       image: true,
       // Status
       status: true,

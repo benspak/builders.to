@@ -268,6 +268,7 @@ export default async function SlugPage({ params }: PageProps) {
       twitchUrl: true,
       featuredVideoUrl: true,
       profileBackgroundImage: true,
+      calendarUrl: true,
       image: true,
       createdAt: true,
       // Status
@@ -682,13 +683,29 @@ export default async function SlugPage({ params }: PageProps) {
                               "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium border",
                               color === "emerald" && "bg-emerald-500/10 border-emerald-500/30 text-emerald-400",
                               color === "violet" && "bg-violet-500/10 border-violet-500/30 text-violet-400",
-                              color === "cyan" && "bg-cyan-500/10 border-cyan-500/30 text-cyan-400"
+                              color === "cyan" && "bg-cyan-500/10 border-cyan-500/30 text-cyan-400",
+                              color === "amber" && "bg-amber-500/10 border-amber-500/30 text-amber-400"
                             )}
                           >
                             <Icon className="h-3 w-3" />
                             {label}
                           </span>
                         ))}
+                      </div>
+                    )}
+
+                    {/* Book a Meeting CTA */}
+                    {user.openToMeeting && user.calendarUrl && (
+                      <div className="mt-3">
+                        <a
+                          href={user.calendarUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-2 text-sm font-medium text-zinc-900 hover:from-amber-400 hover:to-orange-400 transition-all shadow-lg shadow-amber-500/25"
+                        >
+                          <Calendar className="h-4 w-4" />
+                          Book a Meeting
+                        </a>
                       </div>
                     )}
                   </div>
@@ -769,6 +786,21 @@ export default async function SlugPage({ params }: PageProps) {
                       className="text-orange-400 hover:text-orange-300 transition-colors truncate"
                     >
                       {user.websiteUrl.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+                    </a>
+                  </div>
+                )}
+
+                {/* Calendar Link */}
+                {user.calendarUrl && (
+                  <div className="flex items-center gap-3 text-sm">
+                    <Calendar className="h-4 w-4 text-zinc-500" />
+                    <a
+                      href={user.calendarUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-amber-400 hover:text-amber-300 transition-colors truncate"
+                    >
+                      {user.calendarUrl.replace(/^https?:\/\//, "").replace(/\/$/, "")}
                     </a>
                   </div>
                 )}

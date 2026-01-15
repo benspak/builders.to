@@ -103,6 +103,7 @@ export async function GET(
         producthuntUrl: true,
         featuredVideoUrl: true,
         profileBackgroundImage: true,
+        calendarUrl: true,
         image: true,
         createdAt: true,
         // Status
@@ -170,6 +171,7 @@ export async function PATCH(
       producthuntUrl,
       featuredVideoUrl,
       profileBackgroundImage,
+      calendarUrl,
       // Profile image
       image,
       // Status
@@ -283,7 +285,7 @@ export async function PATCH(
     }
 
     // Validate URLs
-    const urlFields = { websiteUrl, twitterUrl, youtubeUrl, linkedinUrl, twitchUrl, githubUrl, producthuntUrl, featuredVideoUrl };
+    const urlFields = { websiteUrl, twitterUrl, youtubeUrl, linkedinUrl, twitchUrl, githubUrl, producthuntUrl, featuredVideoUrl, calendarUrl };
     for (const [key, value] of Object.entries(urlFields)) {
       if (value && typeof value === "string") {
         try {
@@ -362,6 +364,7 @@ export async function PATCH(
         githubUrl: githubUrl?.trim() || null,
         producthuntUrl: producthuntUrl?.trim() || null,
         featuredVideoUrl: featuredVideoUrl?.trim() || null,
+        calendarUrl: calendarUrl?.trim() || null,
         // Profile background image - update if provided (allow null to clear)
         ...(profileBackgroundImage !== undefined && { profileBackgroundImage: profileBackgroundImage?.trim() || null }),
         // Status - update if provided, allow clearing with empty string
@@ -395,6 +398,7 @@ export async function PATCH(
         producthuntUrl: true,
         featuredVideoUrl: true,
         profileBackgroundImage: true,
+        calendarUrl: true,
         image: true,
         createdAt: true,
         openToWork: true,
