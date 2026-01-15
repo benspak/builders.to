@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { FollowButton, FollowStats, GiftTokensButton, GiftSuccessToast } from "@/components/profile";
 import { ReportButton } from "@/components/ui/report-button";
+import { ProBadgeWithTooltip } from "@/components/ui/pro-badge";
 import { ProfileForecastStats } from "@/components/forecasting";
 import { Suspense } from "react";
 import { formatRelativeTime, getStatusColor, getStatusLabel, getCategoryColor, getCategoryLabel, getMemberRoleLabel, getMemberRoleColor, getCompanyUrl, formatLocationSlug } from "@/lib/utils";
@@ -287,6 +288,12 @@ export default async function SlugPage({ params }: PageProps) {
       forecastAccuracy: true,
       totalForecasts: true,
       wonForecasts: true,
+      // Pro subscription status
+      proSubscription: {
+        select: {
+          status: true,
+        },
+      },
       // Follow counts
       _count: {
         select: {
@@ -645,8 +652,11 @@ export default async function SlugPage({ params }: PageProps) {
               <div className="mt-4 sm:mt-0 sm:pb-2 flex-1">
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                   <div>
-                    <h1 className="text-2xl sm:text-3xl font-bold text-white">
+                    <h1 className="text-2xl sm:text-3xl font-bold text-white flex items-center gap-2">
                       {displayName}
+                      {user.proSubscription?.status === "ACTIVE" && (
+                        <ProBadgeWithTooltip size="lg" />
+                      )}
                     </h1>
                     {user.username && (
                       <p className="text-sm text-orange-400">@{user.username}</p>

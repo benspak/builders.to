@@ -162,6 +162,10 @@ model User {
   forecasts              Forecast[]
   forecastTargets        ForecastTarget[]  // One-to-many to avoid @unique requirement during migration
 
+  // Pro Subscription
+  proSubscription        ProSubscription?
+  customDomains          CustomDomain[]
+
   @@index([slug])
   @@index([stripeConnectId])
   @@index([locationSlug])
@@ -1149,6 +1153,7 @@ enum TokenTransactionType {
   GIFT_RECEIVED             // Tokens received as a gift from another user
   GIFT_PURCHASED            // Tokens purchased to gift (paid with Stripe)
   ADMIN_ADJUSTMENT          // Manual adjustment by admin
+  PRO_SUBSCRIPTION_GRANT    // Monthly 50 tokens from Pro subscription
 }
 
 // Track all token movements for audit/history
@@ -1453,4 +1458,70 @@ model MrrSnapshot {
   @@index([targetId])
   @@index([snapshotAt])
   @@index([targetId, snapshotAt])
+}
+
+// ============================================
+// Pro Subscription System
+// ============================================
+
+enum ProSubscriptionStatus {
+  INACTIVE
+  ACTIVE
+  PAST_DUE
+  CANCELLED
+}
+
+enum ProPlan {
+  MONTHLY   // $3.99/month
+  YEARLY    // $39.99/year
+}
+
+// Pro Subscription - tracks membership status
+model ProSubscription {
+  id                    String                @id @default(cuid())
+  userId                String                @unique
+
+  // Stripe subscription info
+  stripeCustomerId      String?
+  stripeSubscriptionId  String?               @unique
+  stripePriceId         String?
+
+  // Subscription status
+  status                ProSubscriptionStatus @default(INACTIVE)
+  plan                  ProPlan               @default(MONTHLY)
+
+  // Billing dates
+  currentPeriodStart    DateTime?
+  currentPeriodEnd      DateTime?
+  cancelAtPeriodEnd     Boolean               @default(false)
+
+  // Token tracking
+  lastTokenGrantAt      DateTime?             // Prevents duplicate grants
+
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+
+  user                  User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([stripeSubscriptionId])
+  @@index([status])
+}
+
+// Custom domain mapping for Pro users
+model CustomDomain {
+  id            String    @id @default(cuid())
+  userId        String
+  domain        String    @unique  // e.g., "portfolio.johndoe.com"
+
+  // Verification
+  verified      Boolean   @default(false)
+  verifiedAt    DateTime?
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([domain])
+  @@index([userId])
 }

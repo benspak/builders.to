@@ -37,6 +37,13 @@ services:
         sync: false
       - key: CRON_SECRET
         sync: false
+      # Pro Subscription - Stripe price IDs and webhook secret
+      - key: STRIPE_PRO_MONTHLY_PRICE_ID
+        sync: false
+      - key: STRIPE_PRO_YEARLY_PRICE_ID
+        sync: false
+      - key: STRIPE_PRO_WEBHOOK_SECRET
+        sync: false
 
   # ============================================
   # Cron Jobs
