@@ -14,6 +14,35 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 30; // 30 seconds timeout for webhook processing
 
 /**
+ * Helper to safely convert Stripe timestamps to Date objects
+ * Stripe timestamps are Unix timestamps (seconds since epoch)
+ * Handles undefined, null, and various numeric formats
+ */
+function getDateFromStripeTimestamp(timestamp: number | null | undefined): Date | null {
+  if (timestamp === null || timestamp === undefined) {
+    return null;
+  }
+  
+  // Stripe timestamps are in seconds, not milliseconds
+  const ms = typeof timestamp === "number" ? timestamp * 1000 : null;
+  
+  if (ms === null || isNaN(ms)) {
+    console.error(`[Pro Webhook] Invalid timestamp: ${timestamp}`);
+    return null;
+  }
+  
+  const date = new Date(ms);
+  
+  // Validate the date is reasonable (between year 2020 and 2100)
+  if (date.getFullYear() < 2020 || date.getFullYear() > 2100) {
+    console.error(`[Pro Webhook] Timestamp out of range: ${timestamp} -> ${date.toISOString()}`);
+    return null;
+  }
+  
+  return date;
+}
+
+/**
  * POST /api/pro/webhook
  * Handle Stripe webhook events for Pro subscriptions
  */
@@ -105,6 +134,18 @@ export async function POST(request: Request) {
         console.log(`[Pro Webhook] Retrieving subscription: ${subscriptionId}`);
         const subscription = await stripe.subscriptions.retrieve(subscriptionId);
         console.log(`[Pro Webhook] Subscription status: ${subscription.status}`);
+        console.log(`[Pro Webhook] Subscription raw data:`, JSON.stringify({
+          current_period_start: subscription.current_period_start,
+          current_period_end: subscription.current_period_end,
+        }));
+
+        // Handle period dates - they can be numbers (unix timestamps) or undefined
+        // In newer Stripe API versions, these are always numbers (seconds since epoch)
+        const periodStart = getDateFromStripeTimestamp(subscription.current_period_start);
+        const periodEnd = getDateFromStripeTimestamp(subscription.current_period_end);
+
+        console.log(`[Pro Webhook] Period start: ${periodStart?.toISOString()}`);
+        console.log(`[Pro Webhook] Period end: ${periodEnd?.toISOString()}`);
 
         await activateProSubscription(
           userId,
@@ -112,8 +153,8 @@ export async function POST(request: Request) {
           subscriptionId,
           subscription.items.data[0].price.id,
           plan,
-          new Date(subscription.current_period_start * 1000),
-          new Date(subscription.current_period_end * 1000)
+          periodStart || new Date(),
+          periodEnd || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // Default to 30 days from now
         );
 
         // Grant initial tokens
@@ -147,12 +188,15 @@ export async function POST(request: Request) {
           break;
         }
 
-        // Update period dates
+        // Update period dates with safe timestamp conversion
+        const invoicePeriodStart = getDateFromStripeTimestamp(subscription.current_period_start);
+        const invoicePeriodEnd = getDateFromStripeTimestamp(subscription.current_period_end);
+
         await updateProSubscriptionStatus(
           invoice.subscription as string,
           "ACTIVE",
-          new Date(subscription.current_period_start * 1000),
-          new Date(subscription.current_period_end * 1000)
+          invoicePeriodStart || undefined,
+          invoicePeriodEnd || undefined
         );
 
         // Grant monthly tokens (handles duplicate prevention internally)
@@ -187,11 +231,14 @@ export async function POST(request: Request) {
             status = "INACTIVE";
         }
 
+        const updatePeriodStart = getDateFromStripeTimestamp(subscription.current_period_start);
+        const updatePeriodEnd = getDateFromStripeTimestamp(subscription.current_period_end);
+
         await updateProSubscriptionStatus(
           subscription.id,
           status,
-          new Date(subscription.current_period_start * 1000),
-          new Date(subscription.current_period_end * 1000),
+          updatePeriodStart || undefined,
+          updatePeriodEnd || undefined,
           subscription.cancel_at_period_end
         );
 

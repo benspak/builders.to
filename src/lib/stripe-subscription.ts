@@ -238,6 +238,13 @@ export async function grantProTokens(userId: string): Promise<boolean> {
 }
 
 /**
+ * Validate that a Date object is valid
+ */
+function isValidDate(date: Date | null | undefined): date is Date {
+  return date instanceof Date && !isNaN(date.getTime());
+}
+
+/**
  * Activate a Pro subscription after successful checkout
  */
 export async function activateProSubscription(
@@ -249,6 +256,15 @@ export async function activateProSubscription(
   currentPeriodStart: Date,
   currentPeriodEnd: Date
 ): Promise<void> {
+  // Validate dates - use defaults if invalid
+  const validPeriodStart = isValidDate(currentPeriodStart) ? currentPeriodStart : new Date();
+  const validPeriodEnd = isValidDate(currentPeriodEnd) 
+    ? currentPeriodEnd 
+    : new Date(Date.now() + (plan === "YEARLY" ? 365 : 30) * 24 * 60 * 60 * 1000);
+
+  console.log(`[Pro Subscription] Activating for user ${userId}`);
+  console.log(`[Pro Subscription] Period: ${validPeriodStart.toISOString()} - ${validPeriodEnd.toISOString()}`);
+
   await prisma.proSubscription.upsert({
     where: { userId },
     create: {
@@ -258,8 +274,8 @@ export async function activateProSubscription(
       stripePriceId,
       status: "ACTIVE",
       plan,
-      currentPeriodStart,
-      currentPeriodEnd,
+      currentPeriodStart: validPeriodStart,
+      currentPeriodEnd: validPeriodEnd,
       cancelAtPeriodEnd: false,
     },
     update: {
@@ -268,8 +284,8 @@ export async function activateProSubscription(
       stripePriceId,
       status: "ACTIVE",
       plan,
-      currentPeriodStart,
-      currentPeriodEnd,
+      currentPeriodStart: validPeriodStart,
+      currentPeriodEnd: validPeriodEnd,
       cancelAtPeriodEnd: false,
     },
   });
