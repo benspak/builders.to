@@ -23,9 +23,9 @@ export function getStripe(): Stripe {
     if (!process.env.STRIPE_SECRET_KEY) {
       throw new Error("STRIPE_SECRET_KEY is not set in environment variables");
     }
-    stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY, {
-      typescript: true,
-    });
+    // Don't specify apiVersion - use Stripe account's default API version
+    // This ensures compatibility with webhooks which use the account's API version
+    stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY);
   }
   return stripeInstance;
 }

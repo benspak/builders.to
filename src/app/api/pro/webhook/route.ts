@@ -7,12 +7,29 @@ import {
   grantProTokens,
 } from "@/lib/stripe-subscription";
 
+// Route segment config for webhook handling
+// Use nodejs runtime and disable body size limit for webhook payloads
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const maxDuration = 30; // 30 seconds timeout for webhook processing
+
 /**
  * POST /api/pro/webhook
  * Handle Stripe webhook events for Pro subscriptions
  */
 export async function POST(request: Request) {
-  const body = await request.text();
+  let body: string;
+  
+  try {
+    body = await request.text();
+  } catch (err) {
+    console.error("[Pro Webhook] Failed to read request body:", err);
+    return NextResponse.json(
+      { error: "Failed to read request body" },
+      { status: 400 }
+    );
+  }
+
   const signature = request.headers.get("stripe-signature");
 
   if (!signature) {
@@ -40,6 +57,8 @@ export async function POST(request: Request) {
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : "Unknown error";
     console.error(`[Pro Webhook] Signature verification failed: ${errorMessage}`);
+    console.error(`[Pro Webhook] Signature: ${signature?.substring(0, 50)}...`);
+    console.error(`[Pro Webhook] Body length: ${body.length}`);
     return NextResponse.json(
       { error: `Webhook signature verification failed: ${errorMessage}` },
       { status: 400 }
@@ -47,15 +66,21 @@ export async function POST(request: Request) {
   }
 
   console.log(`[Pro Webhook] Received event: ${event.type}`);
+  console.log(`[Pro Webhook] Event ID: ${event.id}`);
 
   try {
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
 
+        console.log(`[Pro Webhook] Checkout session metadata: ${JSON.stringify(session.metadata)}`);
+        console.log(`[Pro Webhook] Session mode: ${session.mode}`);
+        console.log(`[Pro Webhook] Session subscription: ${session.subscription}`);
+
         // Only handle Pro subscription checkouts
         if (session.metadata?.type !== "pro_subscription") {
           console.log("[Pro Webhook] Not a Pro subscription checkout, skipping");
+          console.log(`[Pro Webhook] metadata.type = "${session.metadata?.type}"`);
           break;
         }
 
@@ -64,13 +89,22 @@ export async function POST(request: Request) {
 
         if (!userId || !plan) {
           console.error("[Pro Webhook] Missing userId or plan in metadata");
+          console.error(`[Pro Webhook] userId: ${userId}, plan: ${plan}`);
           break;
         }
 
         // Get subscription details
         const stripe = getStripe();
         const subscriptionId = session.subscription as string;
+        
+        if (!subscriptionId) {
+          console.error("[Pro Webhook] No subscription ID in session");
+          break;
+        }
+
+        console.log(`[Pro Webhook] Retrieving subscription: ${subscriptionId}`);
         const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+        console.log(`[Pro Webhook] Subscription status: ${subscription.status}`);
 
         await activateProSubscription(
           userId,
@@ -215,8 +249,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ received: true });
   } catch (error) {
     console.error("[Pro Webhook] Error processing event:", error);
+    console.error("[Pro Webhook] Event type:", event.type);
+    console.error("[Pro Webhook] Event ID:", event.id);
+    if (error instanceof Error) {
+      console.error("[Pro Webhook] Error message:", error.message);
+      console.error("[Pro Webhook] Error stack:", error.stack);
+    }
     return NextResponse.json(
-      { error: "Webhook handler failed" },
+      { error: "Webhook handler failed", details: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 }
     );
   }
