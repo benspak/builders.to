@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { User, MapPin, Briefcase, Users, Code, Rocket, Flame } from "lucide-react";
+import { User, MapPin, Briefcase, Users, Code, Rocket, Flame, Calendar } from "lucide-react";
 
 interface BuilderCardProps {
   builder: {
@@ -20,6 +20,7 @@ interface BuilderCardProps {
     openToWork: boolean;
     lookingForCofounder: boolean;
     availableForContract: boolean;
+    openToMeeting: boolean;
     currentStreak: number;
     _count?: {
       projects: number;
@@ -42,7 +43,7 @@ export function BuilderCard({ builder }: BuilderCardProps) {
   const locationSuffix = builder.country || builder.state;
   const location = builder.city && locationSuffix ? `${builder.city}, ${locationSuffix}` : builder.city || null;
 
-  const hasIntentFlags = builder.openToWork || builder.lookingForCofounder || builder.availableForContract;
+  const hasIntentFlags = builder.openToWork || builder.lookingForCofounder || builder.availableForContract || builder.openToMeeting;
 
   const content = (
     <div className="group relative overflow-hidden rounded-2xl border border-white/10 bg-zinc-900/50 backdrop-blur-sm p-5 hover:border-orange-500/30 hover:bg-zinc-900/70 transition-all">
@@ -124,6 +125,12 @@ export function BuilderCard({ builder }: BuilderCardProps) {
             <span className="inline-flex items-center gap-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 px-2.5 py-1 text-[10px] font-medium text-cyan-400">
               <Code className="h-2.5 w-2.5" />
               Available for Contract
+            </span>
+          )}
+          {builder.openToMeeting && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 text-[10px] font-medium text-amber-400">
+              <Calendar className="h-2.5 w-2.5" />
+              Open to Meeting
             </span>
           )}
         </div>

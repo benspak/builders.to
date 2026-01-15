@@ -108,6 +108,7 @@ export async function GET(
         openToWork: true,
         lookingForCofounder: true,
         availableForContract: true,
+        openToMeeting: true,
         // Streak data
         currentStreak: true,
         longestStreak: true,
@@ -171,6 +172,7 @@ export async function PATCH(
       openToWork,
       lookingForCofounder,
       availableForContract,
+      openToMeeting,
       // Email preferences
       dailyDigest,
     } = body;
@@ -365,6 +367,7 @@ export async function PATCH(
         ...(typeof openToWork === 'boolean' && { openToWork }),
         ...(typeof lookingForCofounder === 'boolean' && { lookingForCofounder }),
         ...(typeof availableForContract === 'boolean' && { availableForContract }),
+        ...(typeof openToMeeting === 'boolean' && { openToMeeting }),
       },
       select: {
         id: true,
@@ -391,6 +394,7 @@ export async function PATCH(
         openToWork: true,
         lookingForCofounder: true,
         availableForContract: true,
+        openToMeeting: true,
         status: true,
         statusUpdatedAt: true,
         currentStreak: true,

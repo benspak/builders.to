@@ -19,6 +19,7 @@ import {
   AtSign,
   Camera,
   ImageIcon,
+  Calendar,
 } from "lucide-react";
 import Image from "next/image";
 import { AvatarUpload } from "./avatar-upload";
@@ -90,6 +91,7 @@ interface ProfileFormProps {
     openToWork: boolean;
     lookingForCofounder: boolean;
     availableForContract: boolean;
+    openToMeeting: boolean;
     // Email preferences
     emailPreferences?: {
       dailyDigest: boolean;
@@ -128,6 +130,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
     openToWork: user.openToWork ?? false,
     lookingForCofounder: user.lookingForCofounder ?? false,
     availableForContract: user.availableForContract ?? false,
+    openToMeeting: user.openToMeeting ?? false,
     // Email preferences (default to true if not set)
     dailyDigest: user.emailPreferences?.dailyDigest ?? true,
   });
@@ -573,7 +576,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
           <p className="text-sm text-zinc-400">Let the community know what you&apos;re open to</p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Open to Work */}
           <label
             className={`relative flex cursor-pointer flex-col items-center gap-3 rounded-xl border-2 p-4 transition-all ${
@@ -661,6 +664,36 @@ export function ProfileForm({ user }: ProfileFormProps) {
             </div>
             {formData.availableForContract && (
               <div className="absolute top-2 right-2 h-2 w-2 rounded-full bg-cyan-500" />
+            )}
+          </label>
+
+          {/* Open to Meeting */}
+          <label
+            className={`relative flex cursor-pointer flex-col items-center gap-3 rounded-xl border-2 p-4 transition-all ${
+              formData.openToMeeting
+                ? "border-amber-500/50 bg-amber-500/10"
+                : "border-zinc-700/50 bg-zinc-800/30 hover:border-zinc-600/50"
+            }`}
+          >
+            <input
+              type="checkbox"
+              checked={formData.openToMeeting}
+              onChange={(e) => setFormData({ ...formData, openToMeeting: e.target.checked })}
+              className="sr-only"
+            />
+            <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${
+              formData.openToMeeting ? "bg-amber-500/20" : "bg-zinc-700/30"
+            }`}>
+              <Calendar className={`h-6 w-6 ${formData.openToMeeting ? "text-amber-400" : "text-zinc-500"}`} />
+            </div>
+            <div className="text-center">
+              <div className={`font-medium ${formData.openToMeeting ? "text-amber-400" : "text-zinc-300"}`}>
+                Open to Meeting
+              </div>
+              <div className="text-xs text-zinc-500 mt-1">Happy to chat with other builders</div>
+            </div>
+            {formData.openToMeeting && (
+              <div className="absolute top-2 right-2 h-2 w-2 rounded-full bg-amber-500" />
             )}
           </label>
         </div>

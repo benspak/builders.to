@@ -54,6 +54,7 @@ export default async function SettingsPage() {
       openToWork: true,
       lookingForCofounder: true,
       availableForContract: true,
+      openToMeeting: true,
       // Email preferences
       emailPreferences: {
         select: {

@@ -112,6 +112,7 @@ async function getLocationData(locationSlug: string) {
         openToWork: true,
         lookingForCofounder: true,
         availableForContract: true,
+        openToMeeting: true,
         currentStreak: true,
         _count: {
           select: {
@@ -277,6 +278,7 @@ export default async function SlugPage({ params }: PageProps) {
       openToWork: true,
       lookingForCofounder: true,
       availableForContract: true,
+      openToMeeting: true,
       // Streak tracking
       currentStreak: true,
       longestStreak: true,
@@ -591,6 +593,7 @@ export default async function SlugPage({ params }: PageProps) {
     { active: user.openToWork, label: "Open to Work", icon: Briefcase, color: "emerald" },
     { active: user.lookingForCofounder, label: "Looking for Co-founder", icon: Users, color: "violet" },
     { active: user.availableForContract, label: "Available for Contract", icon: Code, color: "cyan" },
+    { active: user.openToMeeting, label: "Open to Meeting", icon: Calendar, color: "amber" },
   ].filter(flag => flag.active);
 
   return (

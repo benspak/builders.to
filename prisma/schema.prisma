@@ -85,6 +85,7 @@ model User {
   openToWork          Boolean @default(false)
   lookingForCofounder Boolean @default(false)
   availableForContract Boolean @default(false)
+  openToMeeting       Boolean @default(false)
 
   // Streak tracking
   currentStreak       Int     @default(0)  // Current consecutive days with updates

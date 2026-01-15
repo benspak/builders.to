@@ -28,6 +28,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
       openToWork: true,
       lookingForCofounder: true,
       availableForContract: true,
+      openToMeeting: true,
       _count: {
         select: {
           projects: true,
@@ -74,6 +75,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
     user.openToWork && { label: 'Open to Work', color: '#34d399', bg: 'rgba(52, 211, 153, 0.15)' },
     user.lookingForCofounder && { label: 'Looking for Co-founder', color: '#a78bfa', bg: 'rgba(167, 139, 250, 0.15)' },
     user.availableForContract && { label: 'Available for Contract', color: '#22d3ee', bg: 'rgba(34, 211, 238, 0.15)' },
+    user.openToMeeting && { label: 'Open to Meeting', color: '#fbbf24', bg: 'rgba(251, 191, 36, 0.15)' },
   ].filter(Boolean) as Array<{ label: string; color: string; bg: string }>
 
   return new ImageResponse(
