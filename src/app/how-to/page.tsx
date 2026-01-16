@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { BookOpen, User, Clock } from "lucide-react";
+import { BookOpen, User, Clock, Crown } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "How To - Builders.to",
@@ -17,6 +17,15 @@ const articles = [
     icon: User,
     iconColor: "text-orange-500",
     iconBg: "bg-orange-500/10",
+  },
+  {
+    slug: "become-a-pro-member",
+    title: "Become a Pro Member",
+    description: "Discover the benefits of Builders Pro membership, including the verified badge, monthly tokens, and custom domain mapping.",
+    readTime: "3 min read",
+    icon: Crown,
+    iconColor: "text-amber-400",
+    iconBg: "bg-amber-500/10",
   },
   // Add more articles here as they are created
 ];
