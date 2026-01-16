@@ -17,7 +17,7 @@ export default async function NewListingPage() {
     redirect("/signin");
   }
 
-  // Get user's location for default
+  // Get user's location and Stripe Connect status
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
     select: {
@@ -25,8 +25,12 @@ export default async function NewListingPage() {
       state: true,
       locationSlug: true,
       zipCode: true,
+      stripeConnectId: true,
+      stripeConnectOnboarded: true,
     },
   });
+
+  const userHasStripeConnect = !!(user?.stripeConnectId && user?.stripeConnectOnboarded);
 
   return (
     <div className="relative min-h-screen bg-zinc-950">
@@ -91,6 +95,7 @@ export default async function NewListingPage() {
               locationSlug: user.locationSlug,
               zipCode: user.zipCode,
             } : undefined}
+            userHasStripeConnect={userHasStripeConnect}
           />
         </div>
       </div>

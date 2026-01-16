@@ -136,6 +136,7 @@ model User {
   localListingFlags           LocalListingFlag[]
   localListingRatingsGiven    LocalListingRating[]  @relation("LocalListingRater")
   localListingRatingsReceived LocalListingRating[]  @relation("LocalListingRated")
+  localListingOrders          LocalListingOrder[]   @relation("LocalListingBuyer")
 
   // Token System
   tokenBalance         Int                @default(0) // Current token balance
@@ -989,11 +990,20 @@ enum LocalListingCategory {
 
 enum LocalListingStatus {
   DRAFT
-  PENDING_PAYMENT // For SERVICES only
+  PENDING_PAYMENT // For SERVICES and FOR_SALE
   ACTIVE
   EXPIRED
   FLAGGED
   REMOVED
+}
+
+enum LocalListingOrderStatus {
+  PENDING_PAYMENT // Checkout started but not paid
+  PAID // Payment received, awaiting seller action
+  SHIPPED // Seller marked as shipped
+  COMPLETED // Buyer confirmed receipt
+  CANCELLED // Order cancelled
+  REFUNDED // Payment refunded
 }
 
 // Local listings - craigslist-style classifieds by location
@@ -1011,16 +1021,11 @@ model LocalListing {
   state        String
   zipCode      String?
 
-  // Contact
-  contactEmail String?
-  contactPhone String?
-  contactUrl   String?
-
-  // For SERVICES category only (paid $1)
+  // For SERVICES and FOR_SALE categories (paid $1 listing fee)
   stripeSessionId String? @unique
-  priceInCents    Int? // What they're charging for their service
+  priceInCents    Int? // Price for services or for-sale items
 
-  // Expiration (90 days for paid SERVICES, 30 days for free categories)
+  // Expiration (90 days for paid listings, 30 days for free categories)
   activatedAt DateTime?
   expiresAt   DateTime?
 
@@ -1033,6 +1038,7 @@ model LocalListing {
   feedEvents FeedEvent[]
   views      LocalListingView[] // View tracking
   clicks     LocalListingClick[] // Click tracking
+  orders     LocalListingOrder[] // Purchase orders for FOR_SALE items
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1122,6 +1128,38 @@ model LocalListingRating {
   @@unique([raterId, listingId]) // One rating per user per listing
   @@index([ratedUserId])
   @@index([listingId])
+}
+
+// Orders for FOR_SALE local listings
+model LocalListingOrder {
+  id           String                  @id @default(cuid())
+  status       LocalListingOrderStatus @default(PENDING_PAYMENT)
+  notes        String?                 @db.Text // Buyer's notes/requirements
+
+  // Pricing at time of purchase
+  priceInCents       Int // Item price at time of purchase
+  platformFeeInCents Int? // 5% platform fee
+
+  // Stripe Connect payment
+  stripePaymentIntent String? @unique
+
+  // Relations
+  listingId String
+  buyerId   String
+
+  listing LocalListing @relation(fields: [listingId], references: [id])
+  buyer   User         @relation("LocalListingBuyer", fields: [buyerId], references: [id])
+
+  // Timestamps
+  paidAt      DateTime?
+  shippedAt   DateTime?
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([listingId])
+  @@index([buyerId])
+  @@index([status])
 }
 
 // ============================================

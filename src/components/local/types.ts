@@ -31,7 +31,6 @@ export interface LocalListing {
   city: string;
   state: string;
   zipCode: string | null;
-  contactUrl: string | null;
   priceInCents: number | null;
   activatedAt: string | null;
   expiresAt: string | null;

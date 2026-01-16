@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Link as LinkIcon, ImageIcon } from "lucide-react";
+import { Loader2, ImageIcon, DollarSign, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LocalListingCategory, CATEGORY_LABELS, LocalListing } from "./types";
 import { GalleryUpload } from "@/components/ui/image-upload";
@@ -15,17 +15,18 @@ interface LocalListingFormProps {
     locationSlug: string | null;
     zipCode: string | null;
   };
+  userHasStripeConnect?: boolean;
   mode?: "create" | "edit";
 }
 
-const categories: { value: LocalListingCategory; label: string; description: string }[] = [
+const categories: { value: LocalListingCategory; label: string; description: string; requiresPayment?: boolean }[] = [
   { value: "COMMUNITY", label: "Community", description: "General community posts and announcements" },
   { value: "DISCUSSION", label: "Discussion", description: "Start a conversation or ask questions" },
   { value: "COWORKING_HOUSING", label: "Co-working / Housing", description: "Spaces, rooms, and housing" },
-  { value: "FOR_SALE", label: "For Sale", description: "Items and products for sale" },
+  { value: "FOR_SALE", label: "For Sale", description: "Items and products for sale", requiresPayment: true },
 ];
 
-export function LocalListingForm({ initialData, userLocation, mode = "create" }: LocalListingFormProps) {
+export function LocalListingForm({ initialData, userLocation, userHasStripeConnect = false, mode = "create" }: LocalListingFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -37,9 +38,11 @@ export function LocalListingForm({ initialData, userLocation, mode = "create" }:
     city: initialData?.city || userLocation?.city || "",
     state: initialData?.state || userLocation?.state || "",
     zipCode: initialData?.zipCode || userLocation?.zipCode || "",
-    contactUrl: initialData?.contactUrl || "",
+    priceInCents: initialData?.priceInCents || null as number | null,
     images: initialData?.images || [],
   });
+
+  const isForSale = formData.category === "FOR_SALE";
 
   const [useCustomLocation, setUseCustomLocation] = useState(
     !userLocation?.city ||
@@ -51,6 +54,20 @@ export function LocalListingForm({ initialData, userLocation, mode = "create" }:
     setIsSubmitting(true);
     setError(null);
 
+    // Validate FOR_SALE listings require Stripe Connect
+    if (isForSale && !userHasStripeConnect) {
+      setError("You must set up Stripe Connect to sell items. Go to Settings > Payments to set up.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    // Validate price for FOR_SALE
+    if (isForSale && (!formData.priceInCents || formData.priceInCents < 100)) {
+      setError("Please set a price of at least $1.00 for your item.");
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
       const payload = {
         title: formData.title.trim(),
@@ -59,8 +76,7 @@ export function LocalListingForm({ initialData, userLocation, mode = "create" }:
         city: useCustomLocation ? formData.city.trim() : userLocation?.city,
         state: useCustomLocation ? formData.state.trim() : userLocation?.state,
         zipCode: formData.zipCode?.trim() || null,
-        contactUrl: formData.contactUrl?.trim() || null,
-        priceInCents: null,
+        priceInCents: isForSale ? formData.priceInCents : null,
         images: formData.images,
       };
 
@@ -242,36 +258,80 @@ export function LocalListingForm({ initialData, userLocation, mode = "create" }:
         </div>
       </div>
 
-      {/* Contact URL */}
-      <div>
-        <label htmlFor="contactUrl" className="block text-sm font-medium text-zinc-300 mb-2">
-          Website URL (optional)
-        </label>
-        <div className="relative">
-          <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-          <input
-            id="contactUrl"
-            type="url"
-            value={formData.contactUrl}
-            onChange={(e) => setFormData(prev => ({ ...prev, contactUrl: e.target.value }))}
-            placeholder="https://example.com"
-            className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 pl-10 pr-4 py-3 text-white placeholder:text-zinc-500 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
-          />
+      {/* Price field for FOR_SALE */}
+      {isForSale && (
+        <div>
+          <label htmlFor="price" className="block text-sm font-medium text-zinc-300 mb-2">
+            Price *
+          </label>
+          <div className="relative">
+            <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+            <input
+              id="price"
+              type="number"
+              min="1"
+              step="0.01"
+              required={isForSale}
+              value={formData.priceInCents ? (formData.priceInCents / 100).toFixed(2) : ""}
+              onChange={(e) => {
+                const value = parseFloat(e.target.value);
+                setFormData(prev => ({
+                  ...prev,
+                  priceInCents: isNaN(value) ? null : Math.round(value * 100)
+                }));
+              }}
+              placeholder="0.00"
+              className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 pl-10 pr-4 py-3 text-white placeholder:text-zinc-500 focus:border-pink-500 focus:outline-none focus:ring-1 focus:ring-pink-500"
+            />
+          </div>
+          <p className="mt-1 text-xs text-zinc-500">
+            Set your selling price. Buyers will pay through secure checkout.
+          </p>
+
+          {/* Stripe Connect requirement warning */}
+          {!userHasStripeConnect && (
+            <div className="mt-3 rounded-lg bg-amber-500/10 border border-amber-500/20 p-3">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="h-4 w-4 text-amber-400 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm text-amber-400 font-medium">Payment setup required</p>
+                  <p className="text-xs text-zinc-400 mt-1">
+                    To receive payments, you need to connect a Stripe account.{" "}
+                    <a href="/settings" className="text-amber-400 hover:text-amber-300 underline">
+                      Set up payments →
+                    </a>
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
-        <p className="mt-1 text-xs text-zinc-500">
-          Add a link to your website, portfolio, or relevant page
-        </p>
-      </div>
+      )}
 
       {/* Submit */}
       <div className="flex items-center justify-between pt-4 border-t border-zinc-800">
         <div className="text-sm text-zinc-500">
-          <span>Free listings expire after 30 days</span>
+          {isForSale ? (
+            <span>Paid listings expire after 90 days</span>
+          ) : (
+            <span>Free listings expire after 30 days</span>
+          )}
         </div>
         <button
           type="submit"
-          disabled={isSubmitting || !formData.category || !formData.title || !formData.description}
-          className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-zinc-900 rounded-lg bg-gradient-to-r from-orange-400 to-amber-500 hover:from-orange-500 hover:to-amber-600 transition-all shadow-lg shadow-orange-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={
+            isSubmitting ||
+            !formData.category ||
+            !formData.title ||
+            !formData.description ||
+            (isForSale && (!formData.priceInCents || formData.priceInCents < 100 || !userHasStripeConnect))
+          }
+          className={cn(
+            "inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-zinc-900 rounded-lg transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed",
+            isForSale
+              ? "bg-gradient-to-r from-pink-400 to-rose-500 hover:from-pink-500 hover:to-rose-600 shadow-pink-500/20"
+              : "bg-gradient-to-r from-orange-400 to-amber-500 hover:from-orange-500 hover:to-amber-600 shadow-orange-500/20"
+          )}
         >
           {isSubmitting ? (
             <>

@@ -13,7 +13,7 @@ import { LocalFlagButton } from "@/components/local/local-flag-button";
 import { LocalRating } from "@/components/local/local-rating";
 import { EntityViewTracker } from "@/components/analytics/entity-view-tracker";
 import { ViewStatsDisplay } from "@/components/analytics/view-stats";
-import { ListingContactLink } from "@/components/local/listing-contact-link";
+import { ListingPurchaseButton } from "@/components/local/listing-purchase-button";
 import {
   CATEGORY_LABELS, CATEGORY_COLORS, STATUS_LABELS, STATUS_COLORS,
   LocalListingCategory, LocalListingStatus
@@ -67,6 +67,8 @@ export default async function ListingDetailPage({ params }: PageProps) {
           slug: true,
           headline: true,
           createdAt: true,
+          stripeConnectId: true,
+          stripeConnectOnboarded: true,
           _count: {
             select: {
               localListings: {
@@ -205,8 +207,11 @@ export default async function ListingDetailPage({ params }: PageProps) {
                   <CategoryIcon className="h-4 w-4" />
                   {CATEGORY_LABELS[listing.category as LocalListingCategory]}
                 </span>
-                {listing.category === "SERVICES" && listing.priceInCents && (
-                  <span className="inline-flex items-center gap-1 text-sm text-emerald-400 font-semibold">
+                {(listing.category === "SERVICES" || listing.category === "FOR_SALE") && listing.priceInCents && (
+                  <span className={cn(
+                    "inline-flex items-center gap-1 text-sm font-semibold",
+                    listing.category === "FOR_SALE" ? "text-pink-400" : "text-emerald-400"
+                  )}>
                     <DollarSign className="h-4 w-4" />
                     {(listing.priceInCents / 100).toLocaleString("en-US", { minimumFractionDigits: 0 })}
                   </span>
@@ -321,22 +326,30 @@ export default async function ListingDetailPage({ params }: PageProps) {
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Contact card */}
-            <div className="rounded-xl border border-zinc-800/50 bg-zinc-900/50 p-6">
-              <h3 className="text-lg font-semibold text-white mb-4">Contact</h3>
-              <div className="space-y-3">
-                {listing.contactUrl ? (
-                  <ListingContactLink
+            {/* Purchase card for FOR_SALE items */}
+            {listing.category === "FOR_SALE" && listing.priceInCents && !isOwner && (
+              <div className="rounded-xl border border-zinc-800/50 bg-zinc-900/50 p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-white">Purchase</h3>
+                  <span className="text-2xl font-bold text-pink-400">
+                    ${(listing.priceInCents / 100).toLocaleString("en-US", { minimumFractionDigits: 0 })}
+                  </span>
+                </div>
+                {listing.user.stripeConnectId && listing.user.stripeConnectOnboarded ? (
+                  <ListingPurchaseButton
                     listingId={listing.id}
-                    contactUrl={listing.contactUrl}
+                    listingTitle={listing.title}
+                    priceInCents={listing.priceInCents}
+                    sellerId={listing.userId}
+                    isLoggedIn={!!session?.user?.id}
                   />
                 ) : (
                   <p className="text-sm text-zinc-500">
-                    No contact link provided. Use comments to reach out.
+                    Seller is not set up to receive payments yet. Use comments to arrange purchase.
                   </p>
                 )}
               </div>
-            </div>
+            )}
 
             {/* Poster info */}
             <div className="rounded-xl border border-zinc-800/50 bg-zinc-900/50 p-6">

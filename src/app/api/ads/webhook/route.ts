@@ -264,6 +264,85 @@ export async function POST(request: Request) {
       }
     }
 
+    // Handle local_listing_purchase payments (when someone buys a for-sale item)
+    if (paymentType === "local_listing_purchase") {
+      const orderId = session.metadata?.orderId;
+
+      if (!orderId) {
+        console.error("[Webhook] No orderId in session metadata for listing purchase");
+        return NextResponse.json(
+          { error: "Missing orderId in metadata" },
+          { status: 400 }
+        );
+      }
+
+      try {
+        // Check if order exists first to avoid Prisma errors
+        const existingOrder = await prisma.localListingOrder.findUnique({
+          where: { id: orderId },
+          include: {
+            listing: {
+              select: {
+                title: true,
+                userId: true,
+              },
+            },
+            buyer: {
+              select: {
+                name: true,
+                displayName: true,
+                image: true,
+              },
+            },
+          },
+        });
+
+        if (!existingOrder) {
+          console.error(`[Webhook] Local listing order ${orderId} not found`);
+          return NextResponse.json({ received: true, warning: "Order not found" });
+        }
+
+        // Only update if not already processed (idempotency)
+        if (existingOrder.status === "PAID" && existingOrder.stripePaymentIntent) {
+          console.log(`[Webhook] Local listing order ${orderId} already processed, skipping`);
+          return NextResponse.json({ received: true });
+        }
+
+        const now = new Date();
+
+        await prisma.localListingOrder.update({
+          where: { id: orderId },
+          data: {
+            status: "PAID",
+            stripePaymentIntent: session.payment_intent as string,
+            paidAt: now,
+          },
+        });
+
+        // Create notification for the seller
+        const buyerName = existingOrder.buyer.displayName || existingOrder.buyer.name || "Someone";
+        await prisma.notification.create({
+          data: {
+            type: "TOKEN_GIFTED", // Reusing this type for purchase notifications
+            title: `${buyerName} purchased your item!`,
+            message: `Someone bought "${existingOrder.listing.title}" for $${(existingOrder.priceInCents / 100).toFixed(2)}`,
+            userId: existingOrder.listing.userId,
+            actorId: existingOrder.buyerId,
+            actorName: buyerName,
+            actorImage: existingOrder.buyer.image || null,
+          },
+        });
+
+        console.log(`[Webhook] Local listing order ${orderId} payment received`);
+      } catch (error) {
+        console.error("[Webhook] Error updating local listing order:", error);
+        return NextResponse.json(
+          { error: "Failed to update local listing order" },
+          { status: 500 }
+        );
+      }
+    }
+
     // Handle token_gift payments (when someone gifts tokens to another user)
     if (paymentType === "token_gift") {
       const senderId = session.metadata?.senderId;

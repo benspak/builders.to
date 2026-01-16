@@ -42,7 +42,7 @@ export default async function EditListingPage({ params }: PageProps) {
     redirect("/my-listings");
   }
 
-  // Get user's location for default
+  // Get user's location and Stripe Connect status
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
     select: {
@@ -50,8 +50,12 @@ export default async function EditListingPage({ params }: PageProps) {
       state: true,
       locationSlug: true,
       zipCode: true,
+      stripeConnectId: true,
+      stripeConnectOnboarded: true,
     },
   });
+
+  const userHasStripeConnect = !!(user?.stripeConnectId && user?.stripeConnectOnboarded);
 
   return (
     <div className="relative min-h-screen bg-zinc-950">
@@ -100,7 +104,6 @@ export default async function EditListingPage({ params }: PageProps) {
               city: listing.city,
               state: listing.state,
               zipCode: listing.zipCode,
-              contactUrl: listing.contactUrl,
               priceInCents: listing.priceInCents,
               images: listing.images.map(img => ({
                 id: img.id,
@@ -119,6 +122,7 @@ export default async function EditListingPage({ params }: PageProps) {
               locationSlug: user.locationSlug,
               zipCode: user.zipCode,
             } : undefined}
+            userHasStripeConnect={userHasStripeConnect}
           />
         </div>
       </div>

@@ -7,7 +7,7 @@ import { rateLimit, RATE_LIMITS, rateLimitResponse } from "@/lib/rate-limit";
 
 // Duration in days for different categories
 const LISTING_DURATION = {
-  SERVICES: 90, // Paid listings last 90 days
+  PAID: 90, // Paid listings (SERVICES, FOR_SALE) last 90 days
   FREE: 30, // Free listings last 30 days
 };
 
@@ -158,8 +158,7 @@ export async function POST(request: NextRequest) {
       city: customCity,
       state: customState,
       zipCode,
-      contactUrl,
-      priceInCents, // For SERVICES category
+      priceInCents, // For SERVICES and FOR_SALE categories
       images,
     } = body;
 
@@ -221,10 +220,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Determine initial status based on category
-    // SERVICES requires payment, so it starts as DRAFT
+    // SERVICES and FOR_SALE require payment, so they start as DRAFT
     // Other categories go straight to ACTIVE
-    const isPaidCategory = category === "SERVICES";
+    const isPaidCategory = category === "SERVICES" || category === "FOR_SALE";
     const initialStatus = isPaidCategory ? "DRAFT" : "ACTIVE";
+
+    // FOR_SALE requires a price
+    if (category === "FOR_SALE" && (!priceInCents || priceInCents < 100)) {
+      return NextResponse.json(
+        { error: "For sale items must have a price of at least $1.00" },
+        { status: 400 }
+      );
+    }
 
     // Calculate expiration for free categories
     let activatedAt: Date | null = null;
@@ -248,7 +255,6 @@ export async function POST(request: NextRequest) {
         city: finalCity,
         state: finalState,
         zipCode: finalZipCode,
-        contactUrl,
         priceInCents: isPaidCategory ? priceInCents : null,
         activatedAt,
         expiresAt,

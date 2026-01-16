@@ -180,7 +180,6 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       city,
       state,
       zipCode,
-      contactUrl,
       priceInCents,
       images,
     } = body;
@@ -214,6 +213,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       }
 
       // Update the listing
+      const isPaidCategory = listing.category === "SERVICES" || listing.category === "FOR_SALE";
       return tx.localListing.update({
         where: { id },
         data: {
@@ -223,8 +223,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
           ...(state && { state }),
           ...(locationSlug && { locationSlug }),
           ...(zipCode !== undefined && { zipCode }),
-          ...(contactUrl !== undefined && { contactUrl }),
-          ...(priceInCents !== undefined && listing.category === "SERVICES" && { priceInCents }),
+          ...(priceInCents !== undefined && isPaidCategory && { priceInCents }),
         },
         include: {
           user: {

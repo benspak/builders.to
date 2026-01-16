@@ -121,8 +121,11 @@ export function LocalListingCard({ listing, showStatus = false, isOwner = false,
               {STATUS_LABELS[listing.status]}
             </span>
           )}
-          {listing.category === "SERVICES" && listing.priceInCents && (
-            <span className="inline-flex items-center gap-1 text-xs text-emerald-400">
+          {(listing.category === "SERVICES" || listing.category === "FOR_SALE") && listing.priceInCents && (
+            <span className={cn(
+              "inline-flex items-center gap-1 text-xs",
+              listing.category === "FOR_SALE" ? "text-pink-400" : "text-emerald-400"
+            )}>
               <DollarSign className="h-3 w-3" />
               {(listing.priceInCents / 100).toLocaleString("en-US", { minimumFractionDigits: 0 })}
             </span>
