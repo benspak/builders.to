@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Link as LinkIcon } from "lucide-react";
+import { Loader2, Link as LinkIcon, ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LocalListingCategory, CATEGORY_LABELS, LocalListing } from "./types";
+import { GalleryUpload } from "@/components/ui/image-upload";
 
 interface LocalListingFormProps {
   initialData?: Partial<LocalListing>;
@@ -161,6 +162,25 @@ export function LocalListingForm({ initialData, userLocation, mode = "create" }:
         />
         <p className="mt-1 text-xs text-zinc-500">
           {formData.description.length}/5000 characters
+        </p>
+      </div>
+
+      {/* Images */}
+      <div>
+        <label className="block text-sm font-medium text-zinc-300 mb-2">
+          <span className="flex items-center gap-2">
+            <ImageIcon className="h-4 w-4" />
+            Photos (optional)
+          </span>
+        </label>
+        <GalleryUpload
+          images={formData.images}
+          onChange={(images) => setFormData(prev => ({ ...prev, images }))}
+          maxImages={5}
+          uploadType="listings"
+        />
+        <p className="mt-2 text-xs text-zinc-500">
+          Add up to 5 photos to help showcase your listing. The first image will be used as the cover.
         </p>
       </div>
 

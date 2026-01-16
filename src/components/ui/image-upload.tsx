@@ -231,7 +231,7 @@ interface GalleryUploadProps {
   onChange: (images: GalleryImage[]) => void;
   maxImages?: number;
   disabled?: boolean;
-  uploadType?: "projects" | "companies" | "ads";
+  uploadType?: "projects" | "companies" | "ads" | "listings";
 }
 
 export function GalleryUpload({
