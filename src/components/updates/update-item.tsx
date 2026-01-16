@@ -4,75 +4,16 @@ import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { User, Trash2, Loader2, MoreHorizontal, Heart, ExternalLink, Link2, Check, Flag } from "lucide-react";
-import { formatRelativeTime, cn, MENTION_REGEX } from "@/lib/utils";
+import { User, Trash2, Loader2, MoreHorizontal, Heart, ExternalLink, Link2, Check } from "lucide-react";
+import { formatRelativeTime, cn } from "@/lib/utils";
 import { UpdateComments } from "./update-comments";
 import { ImageLightbox } from "@/components/ui/image-lightbox";
 import { YouTubeEmbed, extractYouTubeUrlFromText } from "@/components/ui/youtube-embed";
 import { ReportButton } from "@/components/ui/report-button";
 import { UserNameWithCompany } from "@/components/ui/user-name-with-company";
+import { MarkdownContent } from "@/components/ui/markdown-content";
 
 const FEED_TRUNCATE_LENGTH = 500;
-
-// Component to render content with clickable @mentions
-function ContentWithMentions({ content }: { content: string }) {
-  const parts = useMemo(() => {
-    const result: Array<{ type: "text" | "mention"; value: string }> = [];
-    let lastIndex = 0;
-
-    // Reset regex lastIndex to ensure fresh matching
-    const regex = new RegExp(MENTION_REGEX.source, "g");
-    let match;
-
-    while ((match = regex.exec(content)) !== null) {
-      // Add text before the mention
-      if (match.index > lastIndex) {
-        result.push({
-          type: "text",
-          value: content.slice(lastIndex, match.index),
-        });
-      }
-
-      // Add the mention
-      result.push({
-        type: "mention",
-        value: match[1], // The slug without @
-      });
-
-      lastIndex = match.index + match[0].length;
-    }
-
-    // Add remaining text after last mention
-    if (lastIndex < content.length) {
-      result.push({
-        type: "text",
-        value: content.slice(lastIndex),
-      });
-    }
-
-    return result;
-  }, [content]);
-
-  return (
-    <>
-      {parts.map((part, index) => {
-        if (part.type === "mention") {
-          return (
-            <Link
-              key={index}
-              href={`/${part.value}`}
-              className="text-orange-400 hover:text-orange-300 hover:underline transition-colors font-medium"
-              onClick={(e) => e.stopPropagation()}
-            >
-              @{part.value}
-            </Link>
-          );
-        }
-        return <span key={index}>{part.value}</span>;
-      })}
-    </>
-  );
-}
 
 // X/Twitter icon
 const XIcon = ({ className }: { className?: string }) => (
@@ -310,10 +251,10 @@ export function UpdateItem({ update, currentUserId, showAuthor = true }: UpdateI
             )}
 
             <div className="p-4">
-              <div className="text-zinc-300 whitespace-pre-wrap text-sm leading-relaxed">
-                <ContentWithMentions content={displayContent} />
+              <div className="text-zinc-300 text-sm leading-relaxed">
+                <MarkdownContent content={displayContent} className="prose-sm" />
                 {isTruncated && (
-                  <>
+                  <div className="mt-2">
                     <span className="text-zinc-500">...</span>
                     {updateUrl && (
                       <Link
@@ -325,7 +266,7 @@ export function UpdateItem({ update, currentUserId, showAuthor = true }: UpdateI
                         <ExternalLink className="h-3 w-3" />
                       </Link>
                     )}
-                  </>
+                  </div>
                 )}
               </div>
               <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/5">
@@ -384,8 +325,8 @@ export function UpdateItem({ update, currentUserId, showAuthor = true }: UpdateI
                         {update.user.headline && (
                           <p className="text-xs text-zinc-500 mb-2">{update.user.headline}</p>
                         )}
-                        <div className="text-zinc-300 whitespace-pre-wrap text-sm leading-relaxed">
-                          {update.content}
+                        <div className="text-zinc-300 text-sm leading-relaxed">
+                          <MarkdownContent content={update.content} className="prose-sm" />
                         </div>
                         {update.imageUrl && (
                           <div className="mt-3 rounded-xl overflow-hidden border border-white/10">

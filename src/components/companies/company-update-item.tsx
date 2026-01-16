@@ -6,6 +6,7 @@ import Image from "next/image";
 import { formatRelativeTime } from "@/lib/utils";
 import { Pin, MoreHorizontal, Pencil, Trash2, Loader2, X, Check } from "lucide-react";
 import { ImageLightbox } from "@/components/ui/image-lightbox";
+import { MarkdownContent } from "@/components/ui/markdown-content";
 
 interface CompanyUpdateItemProps {
   update: {
@@ -131,7 +132,9 @@ export function CompanyUpdateItem({ update, isOwner }: CompanyUpdateItemProps) {
               </div>
             </div>
           ) : (
-            <p className="text-zinc-300 whitespace-pre-wrap break-words">{update.content}</p>
+            <div className="text-zinc-300 break-words">
+              <MarkdownContent content={update.content} className="prose-sm" />
+            </div>
           )}
 
           {update.imageUrl && !isEditing && (

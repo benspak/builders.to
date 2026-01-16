@@ -19,6 +19,7 @@ import { EntityViewTracker } from "@/components/analytics/entity-view-tracker";
 import { ViewStatsDisplay } from "@/components/analytics/view-stats";
 import { YouTubeEmbed } from "@/components/ui/youtube-embed";
 import { extractYouTubeUrlFromText } from "@/lib/youtube";
+import { MarkdownContent } from "@/components/ui/markdown-content";
 
 interface UpdatePageProps {
   params: Promise<{ slug: string; id: string }>;
@@ -417,11 +418,7 @@ export default async function UpdatePage({ params }: UpdatePageProps) {
 
               {/* Content */}
               <div className="p-6">
-                <div className="prose prose-invert prose-zinc max-w-none">
-                  <p className="text-zinc-200 whitespace-pre-wrap text-base leading-relaxed">
-                    {update.content}
-                  </p>
-                </div>
+                <MarkdownContent content={update.content} className="text-zinc-200 text-base leading-relaxed" />
               </div>
 
               {/* Actions */}

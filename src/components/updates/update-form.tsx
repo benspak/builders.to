@@ -274,7 +274,10 @@ export function UpdateForm({ onSuccess }: UpdateFormProps) {
           disabled={isSubmitting}
           className="w-full rounded-xl border border-white/10 bg-zinc-800/50 px-4 py-3 text-white placeholder:text-zinc-500 focus:border-orange-500/50 focus:outline-none focus:ring-1 focus:ring-orange-500/50 disabled:opacity-50 resize-y min-h-[80px] max-h-[400px]"
         />
-        <div className="absolute bottom-3 right-3 text-xs text-zinc-500">
+        <div className="absolute bottom-3 right-3 flex items-center gap-3 text-xs text-zinc-500">
+          <span title="Markdown supported: **bold**, *italic*, [links](url), `code`, lists, etc.">
+            Markdown supported
+          </span>
           <span className={remainingChars < 100 ? (remainingChars < 0 ? "text-red-400" : "text-amber-400") : ""}>
             {content.length.toLocaleString()}/{maxLength.toLocaleString()}
           </span>
