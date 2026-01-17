@@ -1015,6 +1015,182 @@ export default async function SlugPage({ params }: PageProps) {
                 </p>
               </div>
             )}
+
+            {/* Companies (Owned) - Sidebar on desktop */}
+            {user.companies.length > 0 && (
+              <div className="rounded-2xl border border-white/10 bg-zinc-900/50 backdrop-blur-sm p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <Building2 className="h-4 w-4 text-cyan-500" />
+                  <h3 className="text-sm font-semibold text-white">Companies</h3>
+                  <span className="text-xs text-zinc-500">({user.companies.length})</span>
+                </div>
+
+                <div className="space-y-3">
+                  {user.companies.map((company) => (
+                    <Link
+                      key={company.id}
+                      href={getCompanyUrl(company)}
+                      className="flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-zinc-800/50 transition-colors group"
+                    >
+                      {/* Logo */}
+                      <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-lg bg-zinc-800/50 border border-white/10">
+                        {company.logo ? (
+                          <Image
+                            src={company.logo}
+                            alt={company.name}
+                            fill
+                            className="object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center">
+                            <Building2 className="h-4 w-4 text-zinc-600" />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Content */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <h4 className="text-sm font-medium text-white group-hover:text-cyan-400 transition-colors truncate">
+                            {company.name}
+                          </h4>
+                          <span className={cn(
+                            "inline-flex items-center rounded-full px-1.5 py-0.5 text-[9px] font-medium border",
+                            getMemberRoleColor("OWNER")
+                          )}>
+                            Owner
+                          </span>
+                        </div>
+                        {company.location && (
+                          <span className="text-xs text-zinc-500 flex items-center gap-1 mt-0.5">
+                            <MapPin className="h-3 w-3" />
+                            {company.location}
+                          </span>
+                        )}
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Team Member At - Sidebar on desktop */}
+            {user.companyMemberships.length > 0 && (
+              <div className="rounded-2xl border border-white/10 bg-zinc-900/50 backdrop-blur-sm p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <Users className="h-4 w-4 text-violet-500" />
+                  <h3 className="text-sm font-semibold text-white">Team Member At</h3>
+                  <span className="text-xs text-zinc-500">({user.companyMemberships.length})</span>
+                </div>
+
+                <div className="space-y-3">
+                  {user.companyMemberships.map((membership) => (
+                    <Link
+                      key={membership.id}
+                      href={getCompanyUrl(membership.company)}
+                      className="flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-zinc-800/50 transition-colors group"
+                    >
+                      {/* Logo */}
+                      <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-lg bg-zinc-800/50 border border-white/10">
+                        {membership.company.logo ? (
+                          <Image
+                            src={membership.company.logo}
+                            alt={membership.company.name}
+                            fill
+                            className="object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center">
+                            <Building2 className="h-4 w-4 text-zinc-600" />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Content */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <h4 className="text-sm font-medium text-white group-hover:text-violet-400 transition-colors truncate">
+                            {membership.company.name}
+                          </h4>
+                          <span className={cn(
+                            "inline-flex items-center rounded-full px-1.5 py-0.5 text-[9px] font-medium border",
+                            getMemberRoleColor(membership.role)
+                          )}>
+                            {getMemberRoleLabel(membership.role)}
+                          </span>
+                        </div>
+                        {membership.company.location && (
+                          <span className="text-xs text-zinc-500 flex items-center gap-1 mt-0.5">
+                            <MapPin className="h-3 w-3" />
+                            {membership.company.location}
+                          </span>
+                        )}
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Services - Sidebar on desktop */}
+            {user.serviceListings.length > 0 && (
+              <div className="rounded-2xl border border-white/10 bg-zinc-900/50 backdrop-blur-sm p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <Store className="h-4 w-4 text-amber-500" />
+                  <h3 className="text-sm font-semibold text-white">Services</h3>
+                  <span className="text-xs text-zinc-500">({user.serviceListings.length})</span>
+                </div>
+
+                <div className="space-y-3">
+                  {user.serviceListings.map((service) => {
+                    const formatPrice = (cents: number) => {
+                      return new Intl.NumberFormat("en-US", {
+                        style: "currency",
+                        currency: "USD",
+                        minimumFractionDigits: 0,
+                      }).format(cents / 100);
+                    };
+
+                    const categoryLabels: Record<string, string> = {
+                      MVP_BUILD: "MVP Build",
+                      DESIGN: "Design",
+                      MARKETING: "Marketing",
+                      AI_INTEGRATION: "AI Integration",
+                      DEVOPS: "DevOps",
+                      AUDIT: "Audit",
+                      OTHER: "Other",
+                    };
+
+                    return (
+                      <Link
+                        key={service.id}
+                        href={`/services/${service.slug || service.id}`}
+                        className="block p-3 -mx-2 rounded-lg hover:bg-zinc-800/50 transition-colors group"
+                      >
+                        <div className="flex items-center gap-2 mb-1">
+                          <h4 className="text-sm font-medium text-white group-hover:text-amber-400 transition-colors truncate">
+                            {service.title}
+                          </h4>
+                        </div>
+                        <p className="text-xs text-zinc-500 line-clamp-1">
+                          {categoryLabels[service.category] || "Other"}
+                        </p>
+                        <div className="mt-2 flex items-center gap-3 text-xs">
+                          <span className="flex items-center gap-1 text-emerald-400 font-medium">
+                            <DollarSign className="h-3 w-3" />
+                            {formatPrice(service.priceInCents)}
+                          </span>
+                          <span className="flex items-center gap-1 text-zinc-500">
+                            <Clock className="h-3 w-3" />
+                            {service.deliveryDays}d
+                          </span>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Main content */}
@@ -1154,235 +1330,6 @@ export default async function SlugPage({ params }: PageProps) {
                 </div>
               )}
             </section>
-
-            {/* Companies (Owned) */}
-            <section>
-              <div className="flex items-center gap-3 mb-4">
-                <Building2 className="h-5 w-5 text-cyan-500" />
-                <h2 className="text-xl font-semibold text-white">Companies</h2>
-                <span className="text-sm text-zinc-500">({user.companies.length})</span>
-              </div>
-
-              {user.companies.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {user.companies.map((company) => (
-                    <Link
-                      key={company.id}
-                      href={getCompanyUrl(company)}
-                      className="block rounded-xl border border-white/10 bg-zinc-900/50 p-4 hover:border-cyan-500/30 hover:bg-zinc-900/70 transition-all group"
-                    >
-                      <div className="flex items-start gap-3">
-                        {/* Logo */}
-                        <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-xl bg-zinc-800/50 border border-white/10">
-                          {company.logo ? (
-                            <Image
-                              src={company.logo}
-                              alt={company.name}
-                              fill
-                              className="object-cover"
-                            />
-                          ) : (
-                            <div className="flex h-full w-full items-center justify-center">
-                              <Building2 className="h-5 w-5 text-zinc-600" />
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Content */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <h3 className="font-semibold text-white group-hover:text-cyan-400 transition-colors truncate">
-                              {company.name}
-                            </h3>
-                            <span className={cn(
-                              "inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium border",
-                              getMemberRoleColor("OWNER")
-                            )}>
-                              Owner
-                            </span>
-                          </div>
-                          <div className="mt-1 flex flex-wrap items-center gap-2">
-                            <span
-                              className={cn(
-                                "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium border",
-                                getCategoryColor(company.category)
-                              )}
-                            >
-                              {getCategoryLabel(company.category)}
-                            </span>
-                            {company.location && (
-                              <span className="text-xs text-zinc-500 flex items-center gap-1">
-                                <MapPin className="h-3 w-3" />
-                                {company.location}
-                              </span>
-                            )}
-                          </div>
-                          <div className="mt-2 text-xs text-zinc-500">
-                            {company._count.projects} project{company._count.projects !== 1 ? "s" : ""}
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              ) : (
-                <div className="rounded-xl border border-white/10 bg-zinc-900/30 p-8 text-center">
-                  <Building2 className="h-10 w-10 text-zinc-600 mx-auto mb-3" />
-                  <p className="text-zinc-500">No companies yet</p>
-                </div>
-              )}
-            </section>
-
-            {/* Team Member At */}
-            {user.companyMemberships.length > 0 && (
-              <section>
-                <div className="flex items-center gap-3 mb-4">
-                  <Users className="h-5 w-5 text-violet-500" />
-                  <h2 className="text-xl font-semibold text-white">Team Member At</h2>
-                  <span className="text-sm text-zinc-500">({user.companyMemberships.length})</span>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {user.companyMemberships.map((membership) => (
-                    <Link
-                      key={membership.id}
-                      href={getCompanyUrl(membership.company)}
-                      className="block rounded-xl border border-white/10 bg-zinc-900/50 p-4 hover:border-violet-500/30 hover:bg-zinc-900/70 transition-all group"
-                    >
-                      <div className="flex items-start gap-3">
-                        {/* Logo */}
-                        <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-xl bg-zinc-800/50 border border-white/10">
-                          {membership.company.logo ? (
-                            <Image
-                              src={membership.company.logo}
-                              alt={membership.company.name}
-                              fill
-                              className="object-cover"
-                            />
-                          ) : (
-                            <div className="flex h-full w-full items-center justify-center">
-                              <Building2 className="h-5 w-5 text-zinc-600" />
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Content */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <h3 className="font-semibold text-white group-hover:text-violet-400 transition-colors truncate">
-                              {membership.company.name}
-                            </h3>
-                            <span className={cn(
-                              "inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium border",
-                              getMemberRoleColor(membership.role)
-                            )}>
-                              {getMemberRoleLabel(membership.role)}
-                            </span>
-                          </div>
-                          <div className="mt-1 flex flex-wrap items-center gap-2">
-                            <span
-                              className={cn(
-                                "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium border",
-                                getCategoryColor(membership.company.category)
-                              )}
-                            >
-                              {getCategoryLabel(membership.company.category)}
-                            </span>
-                            {membership.company.location && (
-                              <span className="text-xs text-zinc-500 flex items-center gap-1">
-                                <MapPin className="h-3 w-3" />
-                                {membership.company.location}
-                              </span>
-                            )}
-                          </div>
-                          <div className="mt-2 text-xs text-zinc-500">
-                            {membership.company._count.projects} project{membership.company._count.projects !== 1 ? "s" : ""}
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {/* Services */}
-            {user.serviceListings.length > 0 && (
-              <section>
-                <div className="flex items-center gap-3 mb-4">
-                  <Store className="h-5 w-5 text-amber-500" />
-                  <h2 className="text-xl font-semibold text-white">Services</h2>
-                  <span className="text-sm text-zinc-500">({user.serviceListings.length})</span>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {user.serviceListings.map((service) => {
-                    const formatPrice = (cents: number) => {
-                      return new Intl.NumberFormat("en-US", {
-                        style: "currency",
-                        currency: "USD",
-                        minimumFractionDigits: 0,
-                      }).format(cents / 100);
-                    };
-
-                    const categoryLabels: Record<string, string> = {
-                      MVP_BUILD: "MVP Build",
-                      DESIGN: "Design",
-                      MARKETING: "Marketing",
-                      AI_INTEGRATION: "AI Integration",
-                      DEVOPS: "DevOps",
-                      AUDIT: "Audit",
-                      OTHER: "Other",
-                    };
-
-                    const categoryColors: Record<string, string> = {
-                      MVP_BUILD: "bg-orange-500/10 text-orange-400 border-orange-500/30",
-                      DESIGN: "bg-pink-500/10 text-pink-400 border-pink-500/30",
-                      MARKETING: "bg-blue-500/10 text-blue-400 border-blue-500/30",
-                      AI_INTEGRATION: "bg-violet-500/10 text-violet-400 border-violet-500/30",
-                      DEVOPS: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
-                      AUDIT: "bg-amber-500/10 text-amber-400 border-amber-500/30",
-                      OTHER: "bg-zinc-500/10 text-zinc-400 border-zinc-500/30",
-                    };
-
-                    return (
-                      <Link
-                        key={service.id}
-                        href={`/services/${service.slug || service.id}`}
-                        className="block rounded-xl border border-white/10 bg-zinc-900/50 p-4 hover:border-amber-500/30 hover:bg-zinc-900/70 transition-all group"
-                      >
-                        <div className="mb-2">
-                          <span
-                            className={cn(
-                              "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium border",
-                              categoryColors[service.category] || categoryColors.OTHER
-                            )}
-                          >
-                            {categoryLabels[service.category] || "Other"}
-                          </span>
-                        </div>
-                        <h3 className="font-semibold text-white group-hover:text-amber-400 transition-colors line-clamp-1">
-                          {service.title}
-                        </h3>
-                        <p className="text-sm text-zinc-400 line-clamp-2 mt-1">
-                          {service.description}
-                        </p>
-                        <div className="mt-3 flex items-center gap-4 text-sm">
-                          <span className="flex items-center gap-1 text-emerald-400 font-semibold">
-                            <DollarSign className="h-4 w-4" />
-                            {formatPrice(service.priceInCents)}
-                          </span>
-                          <span className="flex items-center gap-1 text-zinc-500">
-                            <Clock className="h-4 w-4" />
-                            {service.deliveryDays} day{service.deliveryDays !== 1 ? "s" : ""}
-                          </span>
-                        </div>
-                      </Link>
-                    );
-                  })}
-                </div>
-              </section>
-            )}
 
             {/* Pinned Posts */}
             {user.pinnedPosts.length > 0 && (
