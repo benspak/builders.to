@@ -20,6 +20,7 @@ import { ViewStatsDisplay } from "@/components/analytics/view-stats";
 import { YouTubeEmbed } from "@/components/ui/youtube-embed";
 import { extractYouTubeUrlFromText } from "@/lib/youtube";
 import { MarkdownContent } from "@/components/ui/markdown-content";
+import { UpdatePoll } from "./update-poll";
 
 interface UpdatePageProps {
   params: Promise<{ slug: string; id: string }>;
@@ -220,6 +221,21 @@ export default async function UpdatePage({ params }: UpdatePageProps) {
         imageUrl: true,
         gifUrl: true,
         createdAt: true,
+        pollQuestion: true,
+        pollExpiresAt: true,
+        pollOptions: {
+          select: {
+            id: true,
+            text: true,
+            order: true,
+            _count: {
+              select: {
+                votes: true,
+              },
+            },
+          },
+          orderBy: { order: "asc" },
+        },
         user: {
           select: {
             id: true,
@@ -282,6 +298,24 @@ export default async function UpdatePage({ params }: UpdatePageProps) {
     });
     isPinned = !!pinnedPost;
   }
+
+  // Check if user has voted on the poll
+  let votedOptionId: string | null = null;
+  if (session?.user?.id && update.pollQuestion && update.pollOptions.length > 0) {
+    const vote = await prisma.updatePollVote.findUnique({
+      where: {
+        userId_updateId: {
+          userId: session.user.id,
+          updateId: update.id,
+        },
+      },
+      select: { optionId: true },
+    });
+    votedOptionId = vote?.optionId || null;
+  }
+
+  // Prepare poll data
+  const hasPoll = !!update.pollQuestion && update.pollOptions.length > 0;
 
   return (
     <div className="relative min-h-screen" style={{ background: "var(--background)" }}>
@@ -433,6 +467,18 @@ export default async function UpdatePage({ params }: UpdatePageProps) {
               {/* Content */}
               <div className="p-6">
                 <MarkdownContent content={update.content} className="text-zinc-200 text-base leading-relaxed" />
+
+                {/* Poll attachment */}
+                {hasPoll && (
+                  <UpdatePoll
+                    updateId={update.id}
+                    pollQuestion={update.pollQuestion!}
+                    pollExpiresAt={update.pollExpiresAt}
+                    pollOptions={update.pollOptions}
+                    votedOptionId={votedOptionId}
+                    currentUserId={session?.user?.id}
+                  />
+                )}
               </div>
 
               {/* Actions */}
