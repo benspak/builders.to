@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Send, Loader2, ImagePlus, X, User, BarChart3, Plus } from "lucide-react";
+import { Send, Loader2, ImagePlus, X, User, BarChart3, Plus, CheckCircle } from "lucide-react";
 import { GiphyPicker, GifButton, GifPreview } from "@/components/ui/giphy-picker";
 import { cn } from "@/lib/utils";
 
@@ -30,6 +30,7 @@ export function UpdateForm({ onSuccess }: UpdateFormProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showGifPicker, setShowGifPicker] = useState(false);
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -115,8 +116,22 @@ export function UpdateForm({ onSuccess }: UpdateFormProps) {
     }, 0);
   }, [content, mentionStartPos, mentionQuery]);
 
-  // Handle keyboard navigation in mention dropdown
+  // Handle keyboard navigation in mention dropdown and form submission
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // Handle Cmd/Ctrl + Enter to submit the form
+    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault();
+      // Trigger form submission if content is valid
+      if (content.trim() && content.length <= maxLength && !isSubmitting && !isUploading) {
+        const form = e.currentTarget.closest("form");
+        if (form) {
+          form.requestSubmit();
+        }
+      }
+      return;
+    }
+
+    // Only handle mention navigation if mention dropdown is open
     if (mentionUsers.length === 0) return;
 
     switch (e.key) {
@@ -143,7 +158,7 @@ export function UpdateForm({ onSuccess }: UpdateFormProps) {
         setMentionUsers([]);
         break;
     }
-  }, [mentionUsers, selectedMentionIndex, insertMention]);
+  }, [mentionUsers, selectedMentionIndex, insertMention, content, maxLength, isSubmitting, isUploading]);
 
   // Close mention dropdown when clicking outside
   useEffect(() => {
@@ -311,9 +326,16 @@ export function UpdateForm({ onSuccess }: UpdateFormProps) {
       setGifUrl(null);
       setShowPoll(false);
       setPollOptions(["", ""]);
-      router.push("/feed");
-      router.refresh();
-      onSuccess?.();
+
+      // Show success toast
+      setShowSuccessToast(true);
+
+      // Redirect to feed after a short delay to show the toast
+      setTimeout(() => {
+        router.push("/feed");
+        router.refresh();
+        onSuccess?.();
+      }, 1500);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to post update");
     } finally {
@@ -556,6 +578,7 @@ export function UpdateForm({ onSuccess }: UpdateFormProps) {
         <button
           type="submit"
           disabled={isSubmitting || isUploading || !content.trim() || content.length > maxLength}
+          title="Post Update (⌘+Enter or Ctrl+Enter)"
           className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 px-5 py-2.5 text-sm font-medium text-white shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 hover:from-orange-400 hover:to-orange-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
         >
           {isSubmitting ? (
@@ -567,6 +590,9 @@ export function UpdateForm({ onSuccess }: UpdateFormProps) {
             <>
               <Send className="h-4 w-4" />
               Post Update
+              <kbd className="hidden sm:inline-flex ml-1 px-1.5 py-0.5 text-xs bg-white/10 rounded">
+                ⌘↵
+              </kbd>
             </>
           )}
         </button>
@@ -578,6 +604,16 @@ export function UpdateForm({ onSuccess }: UpdateFormProps) {
         onClose={() => setShowGifPicker(false)}
         onSelect={handleGifSelect}
       />
+
+      {/* Success Toast */}
+      {showSuccessToast && (
+        <div className="fixed bottom-4 right-4 z-50 animate-in slide-in-from-bottom-4 duration-300">
+          <div className="flex items-center gap-3 px-4 py-3 rounded-xl border bg-emerald-500/20 border-emerald-500/30 text-emerald-400 shadow-lg">
+            <CheckCircle className="h-5 w-5 flex-shrink-0" />
+            <span className="text-sm font-medium">Update posted successfully!</span>
+          </div>
+        </div>
+      )}
     </form>
   );
 }
