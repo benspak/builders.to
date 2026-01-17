@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { BookOpen, FileText, Clock, User, Crown, ArrowRight } from "lucide-react";
+import { BookOpen, FileText, Clock, User, Crown, ArrowRight, Zap, Award, TrendingUp } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Articles - Builders.to",
@@ -32,6 +32,25 @@ const categories = [
         description: "Discover the benefits of Builders Pro membership, including the verified badge, monthly tokens, and custom domain mapping.",
         readTime: "3 min read",
         icon: Crown,
+        iconColor: "text-amber-400",
+        iconBg: "bg-amber-500/10",
+      },
+    ],
+  },
+  {
+    slug: "growth-hacks",
+    title: "Growth Hacks",
+    description: "Proven tactics to build authority and attract audiences fast.",
+    icon: Zap,
+    iconColor: "text-amber-400",
+    iconBg: "bg-amber-500/10",
+    articles: [
+      {
+        slug: "builder-badge-method",
+        title: "The Builder-Badge Method",
+        description: "Learn how to build instant authority by creating a 'Top 50 Builders' list. Cost: $12. Result: 1.2M visitors.",
+        readTime: "8 min read",
+        icon: Award,
         iconColor: "text-amber-400",
         iconBg: "bg-amber-500/10",
       },
