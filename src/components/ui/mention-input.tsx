@@ -152,6 +152,15 @@ export function MentionInput({
 
   // Handle keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Handle Cmd/Ctrl + Enter to submit (always, regardless of suggestions)
+    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault();
+      if (onSubmit) {
+        onSubmit();
+      }
+      return;
+    }
+
     if (!showSuggestions || suggestions.length === 0) {
       if (e.key === "Enter" && !e.shiftKey && onSubmit) {
         e.preventDefault();

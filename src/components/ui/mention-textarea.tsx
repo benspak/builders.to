@@ -23,6 +23,7 @@ interface MentionTextareaProps {
   maxLength?: number;
   rows?: number;
   className?: string;
+  onSubmit?: () => void;
 }
 
 export function MentionTextarea({
@@ -33,6 +34,7 @@ export function MentionTextarea({
   maxLength = 2000,
   rows = 3,
   className,
+  onSubmit,
 }: MentionTextareaProps) {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [suggestions, setSuggestions] = useState<MentionUser[]>([]);
@@ -152,6 +154,15 @@ export function MentionTextarea({
 
   // Handle keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // Handle Cmd/Ctrl + Enter to submit (always, regardless of suggestions)
+    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault();
+      if (onSubmit) {
+        onSubmit();
+      }
+      return;
+    }
+
     if (!showSuggestions || suggestions.length === 0) {
       return;
     }
