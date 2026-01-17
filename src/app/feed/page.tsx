@@ -17,9 +17,9 @@ export const dynamic = "force-dynamic";
 async function FeedContent() {
   const session = await auth();
 
-  // Fetch both daily updates and feed events (milestones)
+  // Fetch daily updates, feed events (milestones), and polls
   // Fetch all for SEO indexability - the CombinedFeed component handles "load more" UX
-  const [updates, feedEvents] = await Promise.all([
+  const [updates, feedEvents, polls] = await Promise.all([
     prisma.dailyUpdate.findMany({
       orderBy: { createdAt: "desc" },
       // Fetch more items for SEO - component will handle pagination UX
@@ -327,6 +327,53 @@ async function FeedContent() {
         localListing: event.type === "LISTING_CREATED" && event.localListingId ? localListingMap.get(event.localListingId) || null : null,
       }));
     }),
+    // Fetch polls
+    prisma.poll.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 50,
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            displayName: true,
+            firstName: true,
+            lastName: true,
+            image: true,
+            slug: true,
+            headline: true,
+            companies: {
+              where: { logo: { not: null } },
+              take: 1,
+              orderBy: { createdAt: "asc" },
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                logo: true,
+              },
+            },
+          },
+        },
+        options: {
+          orderBy: { order: "asc" },
+          include: {
+            _count: {
+              select: { votes: true },
+            },
+          },
+        },
+        _count: {
+          select: {
+            likes: true,
+            comments: true,
+          },
+        },
+        likes: {
+          select: { userId: true },
+        },
+      },
+    }),
   ]);
 
   // Transform updates to include like and comment info
@@ -349,10 +396,33 @@ async function FeedContent() {
       : false,
   }));
 
+  // Transform polls - check if user has voted on each poll
+  const pollVotes = session?.user?.id
+    ? await prisma.pollVote.findMany({
+        where: {
+          userId: session.user.id,
+          pollId: { in: polls.map(p => p.id) },
+        },
+        select: { pollId: true, optionId: true },
+      })
+    : [];
+  const pollVoteMap = new Map(pollVotes.map(v => [v.pollId, v.optionId]));
+
+  const pollsWithVotes = polls.map(poll => ({
+    ...poll,
+    likesCount: poll._count.likes,
+    commentsCount: poll._count.comments,
+    hasLiked: session?.user?.id
+      ? poll.likes.some(like => like.userId === session.user.id)
+      : false,
+    votedOptionId: pollVoteMap.get(poll.id) || null,
+  }));
+
   return (
     <CombinedFeed
       updates={updatesWithLikes}
       feedEvents={feedEventsWithLikes}
+      polls={pollsWithVotes}
       currentUserId={session?.user?.id}
       showAuthor={true}
     />

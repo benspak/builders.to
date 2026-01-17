@@ -159,6 +159,10 @@ model User {
   proSubscription ProSubscription?
   customDomains   CustomDomain[]
 
+  // Polls
+  polls        Poll[]
+  pollComments PollComment[]
+
   @@index([slug])
   @@index([stripeConnectId])
   @@index([locationSlug])
@@ -760,6 +764,10 @@ model Notification {
   feedEventCommentId String?
   feedEventComment   FeedEventComment? @relation(fields: [feedEventCommentId], references: [id], onDelete: Cascade)
 
+  // Optional link to poll
+  pollId String?
+  poll   Poll? @relation(fields: [pollId], references: [id], onDelete: Cascade)
+
   // Actor who triggered the notification (if applicable)
   actorId    String?
   actorName  String? // Denormalized for deleted users
@@ -769,6 +777,7 @@ model Notification {
   @@index([createdAt])
   @@index([projectId])
   @@index([feedEventCommentId])
+  @@index([pollId])
 }
 
 // Email preferences per user
@@ -1411,4 +1420,91 @@ model CustomDomain {
 
   @@index([domain])
   @@index([userId])
+}
+
+// ============================================
+// Polls System - X/Twitter-style polls
+// ============================================
+
+// Poll - a poll question with options
+model Poll {
+  id        String   @id @default(cuid())
+  question  String   @db.Text // The poll question
+  createdAt DateTime @default(now())
+  expiresAt DateTime // When the poll ends (7 days from creation)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  options      PollOption[]
+  likes        PollLike[]
+  comments     PollComment[]
+  notifications Notification[]
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([expiresAt])
+}
+
+// Poll options - up to 5 options per poll
+model PollOption {
+  id    String @id @default(cuid())
+  text  String // Option text (max 50 chars)
+  order Int    @default(0) // Display order
+
+  pollId String
+  poll   Poll   @relation(fields: [pollId], references: [id], onDelete: Cascade)
+
+  votes PollVote[]
+
+  @@index([pollId])
+}
+
+// Poll votes - one vote per user per poll
+model PollVote {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  userId   String
+  optionId String
+  pollId   String // Denormalized for efficient querying
+
+  option PollOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, pollId]) // One vote per user per poll
+  @@index([optionId])
+  @@index([pollId])
+}
+
+// Likes on polls
+model PollLike {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  userId String
+  pollId String
+
+  poll Poll @relation(fields: [pollId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, pollId])
+  @@index([pollId])
+}
+
+// Comments on polls
+model PollComment {
+  id        String   @id @default(cuid())
+  content   String   @db.Text
+  gifUrl    String? // Optional GIF attachment from Giphy
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId String
+  pollId String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  poll Poll @relation(fields: [pollId], references: [id], onDelete: Cascade)
+
+  @@index([pollId])
+  @@index([userId])
+  @@index([createdAt])
 }

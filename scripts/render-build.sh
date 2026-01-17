@@ -32,7 +32,7 @@ echo "🗄️ Running pre-migration scripts..."
 npx prisma db execute --schema ./prisma/schema.prisma --file ./scripts/pre-push-token-system.sql || true
 
 echo "🗄️ Running database migrations..."
-npx prisma db push --accept-data-loss
+npx prisma db push
 
 echo "🔄 Running slug migration for existing projects..."
 node scripts/migrate-slugs.mjs || {
