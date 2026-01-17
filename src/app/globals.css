@@ -293,6 +293,69 @@
   font-weight: 500;
 }
 
+/* Fix prose-invert for light mode - override inverted colors */
+[data-theme="light"] .prose-invert {
+  --tw-prose-body: #1e293b !important;
+  --tw-prose-headings: #0f172a !important;
+  --tw-prose-lead: #334155 !important;
+  --tw-prose-links: #ea580c !important;
+  --tw-prose-bold: #0f172a !important;
+  --tw-prose-counters: #64748b !important;
+  --tw-prose-bullets: #94a3b8 !important;
+  --tw-prose-hr: #e2e8f0 !important;
+  --tw-prose-quotes: #0f172a !important;
+  --tw-prose-quote-borders: #e2e8f0 !important;
+  --tw-prose-captions: #64748b !important;
+  --tw-prose-code: #c2410c !important;
+  --tw-prose-pre-code: #334155 !important;
+  --tw-prose-pre-bg: #f1f5f9 !important;
+  --tw-prose-th-borders: #cbd5e1 !important;
+  --tw-prose-td-borders: #e2e8f0 !important;
+}
+
+[data-theme="light"] .prose-invert p,
+[data-theme="light"] .prose-invert li,
+[data-theme="light"] .prose-invert span {
+  color: #1e293b !important;
+}
+
+[data-theme="light"] .prose-invert h1,
+[data-theme="light"] .prose-invert h2,
+[data-theme="light"] .prose-invert h3,
+[data-theme="light"] .prose-invert h4,
+[data-theme="light"] .prose-invert h5,
+[data-theme="light"] .prose-invert h6,
+[data-theme="light"] .prose-invert strong {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .prose-invert a {
+  color: #ea580c !important;
+}
+
+[data-theme="light"] .prose-invert a:hover {
+  color: #c2410c !important;
+}
+
+[data-theme="light"] .prose-invert blockquote {
+  color: #334155 !important;
+  border-left-color: #e2e8f0 !important;
+}
+
+[data-theme="light"] .prose-invert code {
+  color: #c2410c !important;
+  background-color: #f1f5f9 !important;
+}
+
+[data-theme="light"] .prose-invert pre {
+  background-color: #f1f5f9 !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+[data-theme="light"] .prose-invert pre code {
+  color: #334155 !important;
+}
+
 /* Improved small text rendering in light mode */
 [data-theme="light"] .text-xs,
 [data-theme="light"] .text-sm {
