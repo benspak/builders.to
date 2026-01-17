@@ -65,6 +65,8 @@ model User {
   state                  String? // Legacy field, kept for backward compatibility (US state abbreviation)
   country                String? // User's country
   locationSlug           String? // URL-friendly location slug for Builders Local (e.g., "san-francisco-usa")
+  latitude               Float? // Geocoded latitude for map display
+  longitude              Float? // Geocoded longitude for map display
   headline               String?
   bio                    String? @db.Text
   websiteUrl             String?

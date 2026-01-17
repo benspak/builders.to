@@ -17,6 +17,7 @@ import {
   Heart,
   MessageSquare,
   Globe,
+  Map,
 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
@@ -102,6 +103,15 @@ export default async function HomePage() {
       href: "/companies",
       color: "violet",
       stats: "Job board",
+    },
+    {
+      icon: Map,
+      title: "Builder World Map",
+      description:
+        "See where builders are located around the world. Discover entrepreneurs, makers, and founders in your region.",
+      href: "/map",
+      color: "cyan",
+      stats: "Global",
     },
   ];
 
