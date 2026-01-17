@@ -17,9 +17,10 @@ export const dynamic = "force-dynamic";
 async function FeedContent() {
   const session = await auth();
 
-  // Fetch daily updates, feed events (milestones), and polls
+  // Fetch daily updates and feed events (milestones)
+  // Polls are now part of updates (as an attachment type)
   // Fetch all for SEO indexability - the CombinedFeed component handles "load more" UX
-  const [updates, feedEvents, polls] = await Promise.all([
+  const [updates, feedEvents] = await Promise.all([
     prisma.dailyUpdate.findMany({
       orderBy: { createdAt: "desc" },
       // Fetch more items for SEO - component will handle pagination UX
@@ -30,6 +31,20 @@ async function FeedContent() {
         imageUrl: true,
         gifUrl: true,
         createdAt: true,
+        // Poll fields
+        pollQuestion: true,
+        pollExpiresAt: true,
+        pollOptions: {
+          orderBy: { order: "asc" },
+          select: {
+            id: true,
+            text: true,
+            order: true,
+            _count: {
+              select: { votes: true },
+            },
+          },
+        },
         user: {
           select: {
             id: true,
@@ -327,56 +342,30 @@ async function FeedContent() {
         localListing: event.type === "LISTING_CREATED" && event.localListingId ? localListingMap.get(event.localListingId) || null : null,
       }));
     }),
-    // Fetch polls
-    prisma.poll.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 50,
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            displayName: true,
-            firstName: true,
-            lastName: true,
-            image: true,
-            slug: true,
-            headline: true,
-            companies: {
-              where: { logo: { not: null } },
-              take: 1,
-              orderBy: { createdAt: "asc" },
-              select: {
-                id: true,
-                name: true,
-                slug: true,
-                logo: true,
-              },
-            },
-          },
-        },
-        options: {
-          orderBy: { order: "asc" },
-          include: {
-            _count: {
-              select: { votes: true },
-            },
-          },
-        },
-        _count: {
-          select: {
-            likes: true,
-            comments: true,
-          },
-        },
-        likes: {
-          select: { userId: true },
-        },
-      },
-    }),
   ]);
 
-  // Transform updates to include like and comment info
+  // Get current user's pinned post IDs (to show pin state)
+  const currentUserPinnedIds = session?.user?.id
+    ? await prisma.pinnedPost.findMany({
+        where: { userId: session.user.id },
+        select: { updateId: true },
+      }).then(pins => new Set(pins.map(p => p.updateId)))
+    : new Set<string>();
+
+  // Get current user's poll votes (for updates that have polls)
+  const updatesWithPolls = updates.filter(u => u.pollQuestion && u.pollOptions.length > 0);
+  const pollVotes = session?.user?.id && updatesWithPolls.length > 0
+    ? await prisma.updatePollVote.findMany({
+        where: {
+          userId: session.user.id,
+          updateId: { in: updatesWithPolls.map(u => u.id) },
+        },
+        select: { updateId: true, optionId: true },
+      })
+    : [];
+  const pollVoteMap = new Map(pollVotes.map(v => [v.updateId, v.optionId]));
+
+  // Transform updates to include like, comment, and poll vote info
   const updatesWithLikes = updates.map(update => ({
     ...update,
     likesCount: update._count.likes,
@@ -384,6 +373,8 @@ async function FeedContent() {
     isLiked: session?.user?.id
       ? update.likes.some(like => like.userId === session.user.id)
       : false,
+    isPinned: currentUserPinnedIds.has(update.id),
+    votedOptionId: pollVoteMap.get(update.id) || null,
   }));
 
   // Transform feed events
@@ -396,33 +387,10 @@ async function FeedContent() {
       : false,
   }));
 
-  // Transform polls - check if user has voted on each poll
-  const pollVotes = session?.user?.id
-    ? await prisma.pollVote.findMany({
-        where: {
-          userId: session.user.id,
-          pollId: { in: polls.map(p => p.id) },
-        },
-        select: { pollId: true, optionId: true },
-      })
-    : [];
-  const pollVoteMap = new Map(pollVotes.map(v => [v.pollId, v.optionId]));
-
-  const pollsWithVotes = polls.map(poll => ({
-    ...poll,
-    likesCount: poll._count.likes,
-    commentsCount: poll._count.comments,
-    hasLiked: session?.user?.id
-      ? poll.likes.some(like => like.userId === session.user.id)
-      : false,
-    votedOptionId: pollVoteMap.get(poll.id) || null,
-  }));
-
   return (
     <CombinedFeed
       updates={updatesWithLikes}
       feedEvents={feedEventsWithLikes}
-      polls={pollsWithVotes}
       currentUserId={session?.user?.id}
       showAuthor={true}
     />

@@ -9,9 +9,17 @@ import { ProjectCreatedCard } from "./project-created-card";
 import { JobPostedCard } from "./job-posted-card";
 import { UserJoinedCard } from "./user-joined-card";
 import { ListingCreatedCard } from "./listing-created-card";
-import { PollCard } from "@/components/polls";
 import { ChevronDown, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+interface PollOption {
+  id: string;
+  text: string;
+  order: number;
+  _count: {
+    votes: number;
+  };
+}
 
 interface DailyUpdate {
   id: string;
@@ -22,6 +30,12 @@ interface DailyUpdate {
   likesCount: number;
   commentsCount: number;
   isLiked: boolean;
+  isPinned?: boolean;
+  // Poll attachment (optional)
+  pollQuestion?: string | null;
+  pollExpiresAt?: Date | string | null;
+  pollOptions?: PollOption[];
+  votedOptionId?: string | null;
   user: {
     id: string;
     name: string | null;
@@ -151,38 +165,6 @@ interface FeedEvent {
   } | null;
 }
 
-interface PollOption {
-  id: string;
-  text: string;
-  order: number;
-  _count: {
-    votes: number;
-  };
-}
-
-interface Poll {
-  id: string;
-  question: string;
-  createdAt: Date | string;
-  expiresAt: Date | string;
-  user: {
-    id: string;
-    name?: string | null;
-    displayName?: string | null;
-    firstName?: string | null;
-    lastName?: string | null;
-    image?: string | null;
-    slug?: string | null;
-    headline?: string | null;
-    companies?: CompanyLogo[];
-  };
-  options: PollOption[];
-  likesCount: number;
-  hasLiked: boolean;
-  commentsCount?: number;
-  votedOptionId?: string | null;
-}
-
 type FeedItem =
   | { type: "update"; data: DailyUpdate }
   | { type: "milestone"; data: FeedEvent }
@@ -191,13 +173,11 @@ type FeedItem =
   | { type: "projectCreated"; data: FeedEvent }
   | { type: "jobPosted"; data: FeedEvent }
   | { type: "userJoined"; data: FeedEvent }
-  | { type: "listingCreated"; data: FeedEvent }
-  | { type: "poll"; data: Poll };
+  | { type: "listingCreated"; data: FeedEvent };
 
 interface CombinedFeedProps {
   updates: DailyUpdate[];
   feedEvents: FeedEvent[];
-  polls?: Poll[];
   currentUserId?: string;
   showAuthor?: boolean;
   /** Number of items to show initially before requiring "Load more" */
@@ -212,7 +192,6 @@ const DEFAULT_LOAD_MORE_COUNT = 20;
 export function CombinedFeed({
   updates,
   feedEvents,
-  polls = [],
   currentUserId,
   showAuthor = true,
   initialDisplayCount = DEFAULT_INITIAL_COUNT,
@@ -241,7 +220,6 @@ export function CombinedFeed({
     ...jobPostedEvents.map((e) => ({ type: "jobPosted" as const, data: e })),
     ...userJoinedEvents.map((e) => ({ type: "userJoined" as const, data: e })),
     ...listingCreatedEvents.map((e) => ({ type: "listingCreated" as const, data: e })),
-    ...polls.map((p) => ({ type: "poll" as const, data: p })),
   ].sort((a, b) => {
     const dateA = new Date(a.data.createdAt).getTime();
     const dateB = new Date(b.data.createdAt).getTime();
@@ -354,16 +332,6 @@ export function CombinedFeed({
             ...item.data,
             localListing: item.data.localListing,
           }}
-          currentUserId={currentUserId}
-        />
-      );
-    }
-
-    if (item.type === "poll") {
-      return (
-        <PollCard
-          key={`poll-${item.data.id}`}
-          poll={item.data}
           currentUserId={currentUserId}
         />
       );

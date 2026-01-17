@@ -35,7 +35,7 @@ const REASON_OPTIONS: { value: ReportReason; label: string }[] = [
 interface ReportButtonProps {
   contentType: ReportContentType;
   contentId: string;
-  variant?: "icon" | "text" | "full";
+  variant?: "icon" | "text" | "full" | "menu-item";
   className?: string;
   onReported?: () => void;
 }
@@ -159,6 +159,19 @@ export function ReportButton({
             onClick={() => setIsOpen(true)}
             className={cn(
               "flex items-center gap-2 px-3 py-2 text-sm text-zinc-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors",
+              className
+            )}
+          >
+            <Flag className="h-4 w-4" />
+            Report
+          </button>
+        );
+      case "menu-item":
+        return (
+          <button
+            onClick={() => setIsOpen(true)}
+            className={cn(
+              "flex w-full items-center gap-2 px-3 py-2 text-sm text-zinc-400 hover:text-red-400 hover:bg-zinc-700/50 transition-colors",
               className
             )}
           >

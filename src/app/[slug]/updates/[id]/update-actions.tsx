@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Heart, Share2, Trash2, Loader2, Check } from "lucide-react";
+import { Heart, Share2, Trash2, Loader2, Check, Pin, PinOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // X/Twitter icon
@@ -18,6 +18,7 @@ interface UpdateActionsProps {
   content: string;
   isLiked: boolean;
   likesCount: number;
+  isPinned?: boolean;
   currentUserId?: string;
   isOwner: boolean;
 }
@@ -28,6 +29,7 @@ export function UpdateActions({
   content,
   isLiked: initialIsLiked,
   likesCount: initialLikesCount,
+  isPinned: initialIsPinned = false,
   currentUserId,
   isOwner,
 }: UpdateActionsProps) {
@@ -37,6 +39,8 @@ export function UpdateActions({
   const [isLiking, setIsLiking] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [isPinned, setIsPinned] = useState(initialIsPinned);
+  const [isPinning, setIsPinning] = useState(false);
 
   async function handleLike() {
     if (!currentUserId) {
@@ -117,6 +121,54 @@ export function UpdateActions({
     window.open(shareUrl, "_blank", "width=550,height=420");
   }
 
+  async function handlePin() {
+    if (!currentUserId) {
+      router.push("/signin");
+      return;
+    }
+
+    if (isPinning) return;
+
+    setIsPinning(true);
+
+    try {
+      if (isPinned) {
+        // Unpin
+        const response = await fetch(`/api/pinned-posts?updateId=${updateId}`, {
+          method: "DELETE",
+        });
+
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.error || "Failed to unpin post");
+        }
+
+        setIsPinned(false);
+      } else {
+        // Pin
+        const response = await fetch("/api/pinned-posts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ updateId }),
+        });
+
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.error || "Failed to pin post");
+        }
+
+        setIsPinned(true);
+      }
+
+      router.refresh();
+    } catch (error) {
+      console.error("Error toggling pin:", error);
+      alert(error instanceof Error ? error.message : "Failed to toggle pin. Please try again.");
+    } finally {
+      setIsPinning(false);
+    }
+  }
+
   return (
     <div className="flex items-center gap-2">
       {/* Like button */}
@@ -167,6 +219,31 @@ export function UpdateActions({
         <XIcon className="h-4 w-4" />
         <span className="hidden sm:inline">Share</span>
       </button>
+
+      {/* Pin button (logged in users only) */}
+      {currentUserId && (
+        <button
+          onClick={handlePin}
+          disabled={isPinning}
+          className={cn(
+            "inline-flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all",
+            isPinned
+              ? "bg-orange-500/20 text-orange-400 border border-orange-500/30"
+              : "text-zinc-400 border border-zinc-700/50 hover:bg-zinc-800 hover:text-white hover:border-zinc-600",
+            isPinning && "opacity-50 cursor-not-allowed"
+          )}
+          title={isPinned ? "Unpin from profile" : "Pin to profile"}
+        >
+          {isPinning ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : isPinned ? (
+            <PinOff className="h-4 w-4" />
+          ) : (
+            <Pin className="h-4 w-4" />
+          )}
+          <span className="hidden sm:inline">{isPinned ? "Unpin" : "Pin"}</span>
+        </button>
+      )}
 
       {/* Delete button (owner only) */}
       {isOwner && (

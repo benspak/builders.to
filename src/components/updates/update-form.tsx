@@ -3,8 +3,9 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Send, Loader2, ImagePlus, X, User } from "lucide-react";
+import { Send, Loader2, ImagePlus, X, User, BarChart3, Plus } from "lucide-react";
 import { GiphyPicker, GifButton, GifPreview } from "@/components/ui/giphy-picker";
+import { cn } from "@/lib/utils";
 
 interface MentionUser {
   id: string;
@@ -31,6 +32,10 @@ export function UpdateForm({ onSuccess }: UpdateFormProps) {
   const [showGifPicker, setShowGifPicker] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Poll state
+  const [showPoll, setShowPoll] = useState(false);
+  const [pollOptions, setPollOptions] = useState(["", ""]);
 
   // Mention autocomplete state
   const [mentionQuery, setMentionQuery] = useState<string | null>(null);
@@ -214,12 +219,68 @@ export function UpdateForm({ onSuccess }: UpdateFormProps) {
     setGifUrl(null);
   }
 
+  // Poll functions
+  const maxPollOptions = 5;
+  const minPollOptions = 2;
+  const maxOptionLength = 50;
+
+  function handlePollOptionChange(index: number, value: string) {
+    const newOptions = [...pollOptions];
+    newOptions[index] = value;
+    setPollOptions(newOptions);
+  }
+
+  function addPollOption() {
+    if (pollOptions.length < maxPollOptions) {
+      setPollOptions([...pollOptions, ""]);
+    }
+  }
+
+  function removePollOption(index: number) {
+    if (pollOptions.length > minPollOptions) {
+      setPollOptions(pollOptions.filter((_, i) => i !== index));
+    }
+  }
+
+  function togglePoll() {
+    if (showPoll) {
+      // Clear poll when closing
+      setShowPoll(false);
+      setPollOptions(["", ""]);
+    } else {
+      // Remove image/gif when adding poll (mutually exclusive)
+      setImageUrl(null);
+      setGifUrl(null);
+      setShowPoll(true);
+    }
+  }
+
+  function removePoll() {
+    setShowPoll(false);
+    setPollOptions(["", ""]);
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
     if (!content.trim()) {
       setError("Please enter an update");
       return;
+    }
+
+    // Validate poll if present
+    if (showPoll) {
+      const validOptions = pollOptions.filter((opt) => opt.trim().length > 0);
+      if (validOptions.length < 2) {
+        setError("Please add at least 2 poll options");
+        return;
+      }
+      // Check for duplicate options
+      const uniqueOptions = new Set(validOptions.map((opt) => opt.trim().toLowerCase()));
+      if (uniqueOptions.size !== validOptions.length) {
+        setError("Poll options must be unique");
+        return;
+      }
     }
 
     setIsSubmitting(true);
@@ -233,6 +294,10 @@ export function UpdateForm({ onSuccess }: UpdateFormProps) {
           content: content.trim(),
           imageUrl: imageUrl,
           gifUrl: gifUrl,
+          // Include poll data if poll is shown
+          ...(showPoll && {
+            pollOptions: pollOptions.filter((opt) => opt.trim().length > 0).map((opt) => opt.trim()),
+          }),
         }),
       });
 
@@ -244,6 +309,8 @@ export function UpdateForm({ onSuccess }: UpdateFormProps) {
       setContent("");
       setImageUrl(null);
       setGifUrl(null);
+      setShowPoll(false);
+      setPollOptions(["", ""]);
       router.push("/feed");
       router.refresh();
       onSuccess?.();
@@ -366,6 +433,69 @@ export function UpdateForm({ onSuccess }: UpdateFormProps) {
         <GifPreview gifUrl={gifUrl} onRemove={removeGif} />
       )}
 
+      {/* Poll editor */}
+      {showPoll && (
+        <div className="rounded-xl border border-violet-500/30 bg-violet-500/5 p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-sm text-violet-400">
+              <BarChart3 className="h-4 w-4" />
+              <span className="font-medium">Poll</span>
+              <span className="text-xs text-zinc-500">(7 days)</span>
+            </div>
+            <button
+              type="button"
+              onClick={removePoll}
+              className="p-1 rounded-lg text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+
+          <div className="space-y-2">
+            {pollOptions.map((option, index) => (
+              <div key={index} className="flex gap-2">
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    value={option}
+                    onChange={(e) => handlePollOptionChange(index, e.target.value)}
+                    placeholder={`Option ${index + 1}`}
+                    disabled={isSubmitting}
+                    maxLength={maxOptionLength}
+                    className="w-full rounded-lg border border-white/10 bg-zinc-800/50 px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:border-violet-500/50 focus:outline-none focus:ring-1 focus:ring-violet-500/50 disabled:opacity-50"
+                  />
+                  <div className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-zinc-600">
+                    {option.length}/{maxOptionLength}
+                  </div>
+                </div>
+                {pollOptions.length > minPollOptions && (
+                  <button
+                    type="button"
+                    onClick={() => removePollOption(index)}
+                    disabled={isSubmitting}
+                    className="p-2 rounded-lg border border-white/10 bg-zinc-800/50 text-zinc-400 hover:text-red-400 hover:border-red-500/30 transition-colors disabled:opacity-50"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {pollOptions.length < maxPollOptions && (
+            <button
+              type="button"
+              onClick={addPollOption}
+              disabled={isSubmitting}
+              className="flex items-center gap-1.5 text-xs text-violet-400 hover:text-violet-300 transition-colors disabled:opacity-50"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Add option
+            </button>
+          )}
+        </div>
+      )}
+
       {error && (
         <p className="text-sm text-red-400">{error}</p>
       )}
@@ -384,7 +514,7 @@ export function UpdateForm({ onSuccess }: UpdateFormProps) {
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            disabled={isSubmitting || isUploading || !!imageUrl || !!gifUrl}
+            disabled={isSubmitting || isUploading || !!imageUrl || !!gifUrl || showPoll}
             className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-zinc-400 hover:text-white hover:bg-zinc-800/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isUploading ? (
@@ -402,8 +532,24 @@ export function UpdateForm({ onSuccess }: UpdateFormProps) {
 
           <GifButton
             onClick={() => setShowGifPicker(true)}
-            disabled={isSubmitting || isUploading || !!imageUrl || !!gifUrl}
+            disabled={isSubmitting || isUploading || !!imageUrl || !!gifUrl || showPoll}
           />
+
+          {/* Poll button */}
+          <button
+            type="button"
+            onClick={togglePoll}
+            disabled={isSubmitting || isUploading || !!imageUrl || !!gifUrl}
+            className={cn(
+              "inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
+              showPoll
+                ? "text-violet-400 bg-violet-500/10"
+                : "text-zinc-400 hover:text-white hover:bg-zinc-800/50"
+            )}
+          >
+            <BarChart3 className="h-4 w-4" />
+            <span className="hidden sm:inline">Poll</span>
+          </button>
         </div>
 
         {/* Submit button */}

@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { rateLimit, RATE_LIMITS, rateLimitResponse } from "@/lib/rate-limit";
 
-// POST /api/polls/[id]/vote - Vote on a poll
+// POST /api/updates/[id]/vote - Vote on an update's poll
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -24,7 +24,7 @@ export async function POST(
       );
     }
 
-    const { id: pollId } = await params;
+    const { id: updateId } = await params;
     const body = await request.json();
     const { optionId } = body;
 
@@ -35,33 +35,40 @@ export async function POST(
       );
     }
 
-    // Check if poll exists and is not expired
-    const poll = await prisma.poll.findUnique({
-      where: { id: pollId },
+    // Check if update exists and has a poll
+    const update = await prisma.dailyUpdate.findUnique({
+      where: { id: updateId },
       include: {
-        options: {
+        pollOptions: {
           select: { id: true },
         },
       },
     });
 
-    if (!poll) {
+    if (!update) {
       return NextResponse.json(
-        { error: "Poll not found" },
+        { error: "Update not found" },
         { status: 404 }
       );
     }
 
+    if (!update.pollQuestion || update.pollOptions.length === 0) {
+      return NextResponse.json(
+        { error: "This update does not have a poll" },
+        { status: 400 }
+      );
+    }
+
     // Check if poll is expired
-    if (new Date() > poll.expiresAt) {
+    if (update.pollExpiresAt && new Date() > update.pollExpiresAt) {
       return NextResponse.json(
         { error: "This poll has ended" },
         { status: 400 }
       );
     }
 
-    // Verify option belongs to this poll
-    const validOption = poll.options.find((opt) => opt.id === optionId);
+    // Verify option belongs to this update's poll
+    const validOption = update.pollOptions.find((opt) => opt.id === optionId);
     if (!validOption) {
       return NextResponse.json(
         { error: "Invalid option for this poll" },
@@ -70,11 +77,11 @@ export async function POST(
     }
 
     // Check if user has already voted
-    const existingVote = await prisma.pollVote.findUnique({
+    const existingVote = await prisma.updatePollVote.findUnique({
       where: {
-        userId_pollId: {
+        userId_updateId: {
           userId: session.user.id,
-          pollId,
+          updateId,
         },
       },
     });
@@ -89,44 +96,40 @@ export async function POST(
       }
 
       // Update vote to new option
-      await prisma.pollVote.update({
+      await prisma.updatePollVote.update({
         where: { id: existingVote.id },
         data: { optionId },
       });
     } else {
       // Create new vote
-      await prisma.pollVote.create({
+      await prisma.updatePollVote.create({
         data: {
           userId: session.user.id,
           optionId,
-          pollId,
+          updateId,
         },
       });
     }
 
-    // Return updated poll with vote counts
-    const updatedPoll = await prisma.poll.findUnique({
-      where: { id: pollId },
+    // Return updated poll options with vote counts
+    const updatedOptions = await prisma.updatePollOption.findMany({
+      where: { updateId },
+      orderBy: { order: "asc" },
       include: {
-        options: {
-          orderBy: { order: "asc" },
-          include: {
-            _count: {
-              select: { votes: true },
-            },
-          },
+        _count: {
+          select: { votes: true },
         },
       },
     });
 
     // Calculate total votes
-    const totalVotes = updatedPoll?.options.reduce(
+    const totalVotes = updatedOptions.reduce(
       (sum, opt) => sum + opt._count.votes,
       0
-    ) || 0;
+    );
 
     return NextResponse.json({
-      poll: updatedPoll,
+      options: updatedOptions,
       totalVotes,
       votedOptionId: optionId,
     });
@@ -139,7 +142,7 @@ export async function POST(
   }
 }
 
-// GET /api/polls/[id]/vote - Check if user has voted
+// GET /api/updates/[id]/vote - Check if user has voted
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -151,13 +154,13 @@ export async function GET(
       return NextResponse.json({ hasVoted: false, votedOptionId: null });
     }
 
-    const { id: pollId } = await params;
+    const { id: updateId } = await params;
 
-    const vote = await prisma.pollVote.findUnique({
+    const vote = await prisma.updatePollVote.findUnique({
       where: {
-        userId_pollId: {
+        userId_updateId: {
           userId: session.user.id,
-          pollId,
+          updateId,
         },
       },
     });

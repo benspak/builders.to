@@ -31,7 +31,7 @@ import { ProBadgeWithTooltip } from "@/components/ui/pro-badge";
 import { Suspense } from "react";
 import { formatRelativeTime, getStatusColor, getStatusLabel, getCategoryColor, getCategoryLabel, getMemberRoleLabel, getMemberRoleColor, getCompanyUrl, formatLocationSlug } from "@/lib/utils";
 import { cn } from "@/lib/utils";
-import { UpdateForm, UpdateTimeline } from "@/components/updates";
+import { UpdateForm, UpdateTimeline, PinnedPostsSection } from "@/components/updates";
 import { CompanyCard } from "@/components/companies/company-card";
 import { BuilderCard } from "@/components/profile/builder-card";
 import { LocalListingCard } from "@/components/local/local-listing-card";
@@ -397,8 +397,56 @@ export default async function SlugPage({ params }: PageProps) {
           deliveryDays: true,
         },
       },
+      // Pinned posts on profile
+      pinnedPosts: {
+        orderBy: { order: "asc" },
+        select: {
+          id: true,
+          order: true,
+          update: {
+            select: {
+              id: true,
+              content: true,
+              imageUrl: true,
+              gifUrl: true,
+              createdAt: true,
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  displayName: true,
+                  firstName: true,
+                  lastName: true,
+                  image: true,
+                  slug: true,
+                  headline: true,
+                },
+              },
+              likes: {
+                select: {
+                  userId: true,
+                },
+              },
+              _count: {
+                select: {
+                  likes: true,
+                  comments: true,
+                },
+              },
+            },
+          },
+        },
+      },
     },
   });
+
+  // Get current user's pinned post IDs (to show pin state)
+  const currentUserPinnedIds = session?.user?.id
+    ? await prisma.pinnedPost.findMany({
+        where: { userId: session.user.id },
+        select: { updateId: true },
+      }).then(pins => new Set(pins.map(p => p.updateId)))
+    : new Set<string>();
 
   // If no user found, check if it's a location page
   if (!user) {
@@ -1293,6 +1341,26 @@ export default async function SlugPage({ params }: PageProps) {
               </section>
             )}
 
+            {/* Pinned Posts */}
+            {user.pinnedPosts.length > 0 && (
+              <PinnedPostsSection
+                pinnedPosts={user.pinnedPosts.map(pin => ({
+                  id: pin.id,
+                  order: pin.order,
+                  update: {
+                    ...pin.update,
+                    likesCount: pin.update._count.likes,
+                    commentsCount: pin.update._count.comments,
+                    isLiked: session?.user?.id
+                      ? pin.update.likes.some(like => like.userId === session.user.id)
+                      : false,
+                  },
+                }))}
+                currentUserId={session?.user?.id}
+                isOwnProfile={isOwnProfile}
+              />
+            )}
+
             {/* Updates */}
             <section id="updates" className="scroll-mt-24">
               <div className="flex items-center gap-3 mb-4">
@@ -1318,6 +1386,7 @@ export default async function SlugPage({ params }: PageProps) {
                   isLiked: session?.user?.id
                     ? update.likes.some(like => like.userId === session.user.id)
                     : false,
+                  isPinned: currentUserPinnedIds.has(update.id),
                   user: {
                     id: user.id,
                     name: user.name,

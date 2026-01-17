@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { content, imageUrl, gifUrl } = body;
+    const { content, imageUrl, gifUrl, pollOptions } = body;
 
     if (!content || content.trim().length === 0) {
       return NextResponse.json(
@@ -104,6 +104,34 @@ export async function POST(request: NextRequest) {
         { error: "Content must be 10,000 characters or less" },
         { status: 400 }
       );
+    }
+
+    // Validate poll options if provided
+    let validatedPollOptions: { text: string; order: number }[] | null = null;
+    if (pollOptions && Array.isArray(pollOptions) && pollOptions.length > 0) {
+      if (pollOptions.length < 2) {
+        return NextResponse.json(
+          { error: "At least 2 poll options are required" },
+          { status: 400 }
+        );
+      }
+      if (pollOptions.length > 5) {
+        return NextResponse.json(
+          { error: "Maximum 5 poll options allowed" },
+          { status: 400 }
+        );
+      }
+
+      validatedPollOptions = pollOptions.map((opt: string, index: number) => {
+        const text = typeof opt === "string" ? opt.trim() : "";
+        if (!text || text.length === 0) {
+          throw new Error(`Option ${index + 1} is empty`);
+        }
+        if (text.length > 50) {
+          throw new Error(`Option ${index + 1} must be 50 characters or less`);
+        }
+        return { text, order: index };
+      });
     }
 
     // Calculate and update streak
@@ -138,6 +166,13 @@ export async function POST(request: NextRequest) {
       longestStreak = newStreak;
     }
 
+    // Calculate poll expiration (7 days from now) if poll is included
+    let pollExpiresAt: Date | null = null;
+    if (validatedPollOptions) {
+      pollExpiresAt = new Date();
+      pollExpiresAt.setDate(pollExpiresAt.getDate() + 7);
+    }
+
     // Create update and update user streak in a transaction
     const [update] = await prisma.$transaction([
       prisma.dailyUpdate.create({
@@ -146,6 +181,15 @@ export async function POST(request: NextRequest) {
           imageUrl: imageUrl || null,
           gifUrl: gifUrl || null,
           userId: session.user.id,
+          // Poll fields
+          pollQuestion: validatedPollOptions ? content.trim() : null,
+          pollExpiresAt: pollExpiresAt,
+          // Create poll options if present
+          ...(validatedPollOptions && {
+            pollOptions: {
+              create: validatedPollOptions,
+            },
+          }),
         },
         include: {
           user: {
@@ -170,6 +214,14 @@ export async function POST(request: NextRequest) {
                   slug: true,
                   logo: true,
                 },
+              },
+            },
+          },
+          pollOptions: {
+            orderBy: { order: "asc" },
+            include: {
+              _count: {
+                select: { votes: true },
               },
             },
           },

@@ -269,6 +269,20 @@ export default async function UpdatePage({ params }: UpdatePageProps) {
 
   const isOwner = session?.user?.id === update.user.id;
 
+  // Check if current user has pinned this update
+  let isPinned = false;
+  if (session?.user?.id) {
+    const pinnedPost = await prisma.pinnedPost.findUnique({
+      where: {
+        userId_updateId: {
+          userId: session.user.id,
+          updateId: update.id,
+        },
+      },
+    });
+    isPinned = !!pinnedPost;
+  }
+
   return (
     <div className="relative min-h-screen" style={{ background: "var(--background)" }}>
       {/* Background decorations */}
@@ -430,6 +444,7 @@ export default async function UpdatePage({ params }: UpdatePageProps) {
                   content={update.content}
                   isLiked={isLiked}
                   likesCount={update._count.likes}
+                  isPinned={isPinned}
                   currentUserId={session?.user?.id}
                   isOwner={isOwner}
                 />

@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { User, Trash2, Loader2, MoreHorizontal, Heart, ExternalLink, Link2, Check } from "lucide-react";
+import { User, Trash2, Loader2, MoreHorizontal, Heart, ExternalLink, Link2, Check, Pin, PinOff, BarChart3, Clock } from "lucide-react";
 import { formatRelativeTime, cn } from "@/lib/utils";
 import { UpdateComments } from "./update-comments";
 import { ImageLightbox } from "@/components/ui/image-lightbox";
@@ -22,6 +22,15 @@ const XIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
+interface PollOption {
+  id: string;
+  text: string;
+  order: number;
+  _count: {
+    votes: number;
+  };
+}
+
 interface UpdateItemProps {
   update: {
     id: string;
@@ -31,7 +40,13 @@ interface UpdateItemProps {
     createdAt: string | Date;
     likesCount?: number;
     isLiked?: boolean;
+    isPinned?: boolean;
     commentsCount?: number;
+    // Poll data (optional)
+    pollQuestion?: string | null;
+    pollExpiresAt?: string | Date | null;
+    pollOptions?: PollOption[];
+    votedOptionId?: string | null;
     user: {
       id: string;
       name: string | null;
@@ -61,6 +76,51 @@ export function UpdateItem({ update, currentUserId, showAuthor = true }: UpdateI
   const [likesCount, setLikesCount] = useState(update.likesCount ?? 0);
   const [isLiking, setIsLiking] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [isPinned, setIsPinned] = useState(update.isPinned ?? false);
+  const [isPinning, setIsPinning] = useState(false);
+
+  // Poll state
+  const [votedOptionId, setVotedOptionId] = useState<string | null>(update.votedOptionId || null);
+  const [pollOptions, setPollOptions] = useState(update.pollOptions || []);
+  const [isVoting, setIsVoting] = useState(false);
+
+  const hasPoll = !!update.pollQuestion && pollOptions.length > 0;
+  const isPollExpired = update.pollExpiresAt ? new Date() > new Date(update.pollExpiresAt) : false;
+  const hasVoted = !!votedOptionId;
+  const showPollResults = hasVoted || isPollExpired;
+
+  // Calculate total votes
+  const totalPollVotes = pollOptions.reduce((sum, opt) => sum + opt._count.votes, 0);
+
+  // Calculate time remaining for poll
+  const getPollTimeRemaining = () => {
+    if (!update.pollExpiresAt) return "";
+    const now = new Date();
+    const expires = new Date(update.pollExpiresAt);
+    const diff = expires.getTime() - now.getTime();
+
+    if (diff <= 0) return "Poll ended";
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+    if (days > 0) return `${days}d ${hours}h left`;
+    if (hours > 0) return `${hours}h left`;
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    return `${minutes}m left`;
+  };
+
+  const [pollTimeRemaining, setPollTimeRemaining] = useState(getPollTimeRemaining());
+
+  // Update poll time remaining every minute
+  useEffect(() => {
+    if (!hasPoll) return;
+    const interval = setInterval(() => {
+      setPollTimeRemaining(getPollTimeRemaining());
+    }, 60000);
+    return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [update.pollExpiresAt]);
 
   const isOwner = currentUserId === update.user.id;
   // Priority: displayName > firstName+lastName > name
@@ -175,6 +235,98 @@ export function UpdateItem({ update, currentUserId, showAuthor = true }: UpdateI
     }
   }
 
+  async function handlePin() {
+    if (!currentUserId) {
+      router.push("/signin");
+      return;
+    }
+
+    if (isPinning) return;
+
+    setIsPinning(true);
+
+    try {
+      if (isPinned) {
+        // Unpin
+        const response = await fetch(`/api/pinned-posts?updateId=${update.id}`, {
+          method: "DELETE",
+        });
+
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.error || "Failed to unpin post");
+        }
+
+        setIsPinned(false);
+      } else {
+        // Pin
+        const response = await fetch("/api/pinned-posts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ updateId: update.id }),
+        });
+
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.error || "Failed to pin post");
+        }
+
+        setIsPinned(true);
+      }
+
+      router.refresh();
+    } catch (error) {
+      console.error("Error toggling pin:", error);
+      alert(error instanceof Error ? error.message : "Failed to toggle pin. Please try again.");
+    } finally {
+      setIsPinning(false);
+      setShowMenu(false);
+    }
+  }
+
+  async function handleVote(optionId: string) {
+    if (!currentUserId || isVoting || isPollExpired || hasVoted) return;
+
+    setIsVoting(true);
+
+    // Optimistic update
+    setVotedOptionId(optionId);
+    setPollOptions(prev => prev.map(opt => ({
+      ...opt,
+      _count: {
+        votes: opt.id === optionId ? opt._count.votes + 1 : opt._count.votes,
+      },
+    })));
+
+    try {
+      const response = await fetch(`/api/updates/${update.id}/vote`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ optionId }),
+      });
+
+      if (!response.ok) {
+        // Revert on error
+        setVotedOptionId(null);
+        setPollOptions(update.pollOptions || []);
+        const data = await response.json();
+        console.error("Vote error:", data.error);
+      } else {
+        const data = await response.json();
+        if (data.options) {
+          setPollOptions(data.options);
+        }
+      }
+    } catch (error) {
+      // Revert on error
+      setVotedOptionId(null);
+      setPollOptions(update.pollOptions || []);
+      console.error("Error voting:", error);
+    } finally {
+      setIsVoting(false);
+    }
+  }
+
   return (
     <div className="group relative">
       <div className="flex gap-4">
@@ -269,6 +421,99 @@ export function UpdateItem({ update, currentUserId, showAuthor = true }: UpdateI
                   </div>
                 )}
               </div>
+
+              {/* Poll attachment */}
+              {hasPoll && (
+                <div className="mt-4 rounded-xl border border-violet-500/20 bg-violet-500/5 p-4">
+                  {/* Poll header */}
+                  <div className="flex items-center gap-2 mb-3">
+                    <BarChart3 className="h-4 w-4 text-violet-400" />
+                    <span className="text-sm font-medium text-violet-400">Poll</span>
+                    <div className="flex items-center gap-1 text-xs text-zinc-500">
+                      <Clock className="h-3 w-3" />
+                      <span className={isPollExpired ? "text-red-400" : ""}>{pollTimeRemaining}</span>
+                    </div>
+                  </div>
+
+                  {/* Poll options */}
+                  <div className="space-y-2">
+                    {pollOptions.map((option) => {
+                      const percentage = totalPollVotes > 0
+                        ? Math.round((option._count.votes / totalPollVotes) * 100)
+                        : 0;
+                      const isVoted = votedOptionId === option.id;
+                      const isWinning = showPollResults && option._count.votes === Math.max(...pollOptions.map(o => o._count.votes)) && option._count.votes > 0;
+
+                      return (
+                        <button
+                          key={option.id}
+                          onClick={() => handleVote(option.id)}
+                          disabled={!currentUserId || isVoting || isPollExpired || hasVoted}
+                          className={cn(
+                            "relative w-full text-left rounded-lg border transition-all overflow-hidden",
+                            showPollResults
+                              ? "cursor-default"
+                              : "hover:border-violet-500/50 hover:bg-violet-500/5 cursor-pointer",
+                            isVoted
+                              ? "border-violet-500/50 bg-violet-500/10"
+                              : "border-white/10 bg-zinc-800/30",
+                            (!currentUserId || isPollExpired) && !showPollResults && "opacity-60 cursor-not-allowed"
+                          )}
+                        >
+                          {/* Progress bar background */}
+                          {showPollResults && (
+                            <div
+                              className={cn(
+                                "absolute inset-y-0 left-0 transition-all duration-500",
+                                isVoted
+                                  ? "bg-violet-500/30"
+                                  : isWinning
+                                    ? "bg-violet-500/20"
+                                    : "bg-zinc-700/50"
+                              )}
+                              style={{ width: `${percentage}%` }}
+                            />
+                          )}
+
+                          {/* Option content */}
+                          <div className="relative flex items-center justify-between px-3 py-2">
+                            <div className="flex items-center gap-2">
+                              {isVoted && (
+                                <Check className="h-3.5 w-3.5 text-violet-400" />
+                              )}
+                              <span className={cn(
+                                "text-sm",
+                                isVoted ? "text-violet-300 font-medium" : "text-zinc-200"
+                              )}>
+                                {option.text}
+                              </span>
+                            </div>
+                            {showPollResults && (
+                              <span className={cn(
+                                "text-xs font-semibold tabular-nums",
+                                isVoted ? "text-violet-300" : isWinning ? "text-white" : "text-zinc-400"
+                              )}>
+                                {percentage}%
+                              </span>
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Vote count */}
+                  <div className="mt-2 text-xs text-zinc-500">
+                    {totalPollVotes} {totalPollVotes === 1 ? "vote" : "votes"}
+                    {!currentUserId && !isPollExpired && (
+                      <span className="ml-2 text-violet-400">
+                        <Link href="/signin" className="hover:underline">Sign in to vote</Link>
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+
               <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/5">
                 <div className="flex items-center gap-3">
                   {/* Like button */}
@@ -393,8 +638,8 @@ export function UpdateItem({ update, currentUserId, showAuthor = true }: UpdateI
                     <span className="hidden sm:inline">Share</span>
                   </button>
 
-                  {/* Actions menu for owner */}
-                  {isOwner && (
+                  {/* Actions menu */}
+                  {currentUserId && (
                     <div className="relative">
                       <button
                         onClick={() => setShowMenu(!showMenu)}
@@ -409,33 +654,57 @@ export function UpdateItem({ update, currentUserId, showAuthor = true }: UpdateI
                             className="fixed inset-0 z-10"
                             onClick={() => setShowMenu(false)}
                           />
-                          <div className="absolute right-0 bottom-full mb-1 z-20 w-32 rounded-lg border border-white/10 bg-zinc-800 shadow-xl py-1">
+                          <div className="absolute right-0 bottom-full mb-1 z-20 w-44 rounded-lg border border-white/10 bg-zinc-800 shadow-xl py-1">
+                            {/* Pin/Unpin option - available to all logged-in users */}
                             <button
-                              onClick={handleDelete}
-                              disabled={isDeleting}
-                              className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-400 hover:bg-zinc-700/50 disabled:opacity-50"
-                            >
-                              {isDeleting ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : (
-                                <Trash2 className="h-4 w-4" />
+                              onClick={handlePin}
+                              disabled={isPinning}
+                              className={cn(
+                                "flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-zinc-700/50 disabled:opacity-50",
+                                isPinned ? "text-orange-400" : "text-zinc-300"
                               )}
-                              Delete
+                            >
+                              {isPinning ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : isPinned ? (
+                                <PinOff className="h-4 w-4" />
+                              ) : (
+                                <Pin className="h-4 w-4" />
+                              )}
+                              {isPinned ? "Unpin from profile" : "Pin to profile"}
                             </button>
+
+                            {/* Delete option - only for owners */}
+                            {isOwner && (
+                              <button
+                                onClick={handleDelete}
+                                disabled={isDeleting}
+                                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-400 hover:bg-zinc-700/50 disabled:opacity-50"
+                              >
+                                {isDeleting ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Trash2 className="h-4 w-4" />
+                                )}
+                                Delete
+                              </button>
+                            )}
+
+                            {/* Report option - only for non-owners */}
+                            {!isOwner && (
+                              <div className="px-1">
+                                <ReportButton
+                                  contentType="DAILY_UPDATE"
+                                  contentId={update.id}
+                                  variant="menu-item"
+                                  className="w-full"
+                                />
+                              </div>
+                            )}
                           </div>
                         </>
                       )}
                     </div>
-                  )}
-
-                  {/* Report button for non-owners */}
-                  {!isOwner && currentUserId && (
-                    <ReportButton
-                      contentType="DAILY_UPDATE"
-                      contentId={update.id}
-                      variant="icon"
-                      className="opacity-0 group-hover:opacity-100"
-                    />
                   )}
                 </div>
               </div>

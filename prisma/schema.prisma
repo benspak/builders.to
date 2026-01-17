@@ -159,9 +159,8 @@ model User {
   proSubscription ProSubscription?
   customDomains   CustomDomain[]
 
-  // Polls
-  polls        Poll[]
-  pollComments PollComment[]
+  // Pinned Posts
+  pinnedPosts PinnedPost[]
 
   @@index([slug])
   @@index([stripeConnectId])
@@ -578,15 +577,53 @@ model DailyUpdate {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Poll attachment (optional) - X/Twitter style polls
+  pollQuestion  String?   // Poll question (if this update has a poll)
+  pollExpiresAt DateTime? // When the poll ends (7 days from creation)
+
   userId        String
   user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   likes         UpdateLike[]
   comments      UpdateComment[]
   notifications Notification[]
   views         UpdateView[] // View tracking
+  pinnedBy      PinnedPost[] // Users who have pinned this update
+  pollOptions   UpdatePollOption[] // Poll options if this is a poll update
+  pollVotes     UpdatePollVote[] // Votes on the poll
 
   @@index([userId])
   @@index([createdAt])
+}
+
+// Poll options for updates (up to 5 per update)
+model UpdatePollOption {
+  id    String @id @default(cuid())
+  text  String // Option text (max 50 chars)
+  order Int    @default(0) // Display order
+
+  updateId String
+  update   DailyUpdate @relation(fields: [updateId], references: [id], onDelete: Cascade)
+
+  votes UpdatePollVote[]
+
+  @@index([updateId])
+}
+
+// Poll votes - one vote per user per update poll
+model UpdatePollVote {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  userId   String
+  optionId String
+  updateId String // Denormalized for efficient querying
+
+  option UpdatePollOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  update DailyUpdate      @relation(fields: [updateId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, updateId]) // One vote per user per update poll
+  @@index([optionId])
+  @@index([updateId])
 }
 
 // Likes on daily updates
@@ -764,10 +801,6 @@ model Notification {
   feedEventCommentId String?
   feedEventComment   FeedEventComment? @relation(fields: [feedEventCommentId], references: [id], onDelete: Cascade)
 
-  // Optional link to poll
-  pollId String?
-  poll   Poll? @relation(fields: [pollId], references: [id], onDelete: Cascade)
-
   // Actor who triggered the notification (if applicable)
   actorId    String?
   actorName  String? // Denormalized for deleted users
@@ -777,7 +810,6 @@ model Notification {
   @@index([createdAt])
   @@index([projectId])
   @@index([feedEventCommentId])
-  @@index([pollId])
 }
 
 // Email preferences per user
@@ -1423,88 +1455,24 @@ model CustomDomain {
 }
 
 // ============================================
-// Polls System - X/Twitter-style polls
+// Pinned Posts - Users can pin any update to their profile
 // ============================================
 
-// Poll - a poll question with options
-model Poll {
+model PinnedPost {
   id        String   @id @default(cuid())
-  question  String   @db.Text // The poll question
+  order     Int      @default(0) // Display order (0 = first)
   createdAt DateTime @default(now())
-  expiresAt DateTime // When the poll ends (7 days from creation)
 
+  // The user whose profile displays this pinned post
   userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  options      PollOption[]
-  likes        PollLike[]
-  comments     PollComment[]
-  notifications Notification[]
+  // The update being pinned (can be from any user)
+  updateId String
 
+  user   User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  update DailyUpdate @relation(fields: [updateId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, updateId]) // Can only pin an update once per profile
   @@index([userId])
-  @@index([createdAt])
-  @@index([expiresAt])
-}
-
-// Poll options - up to 5 options per poll
-model PollOption {
-  id    String @id @default(cuid())
-  text  String // Option text (max 50 chars)
-  order Int    @default(0) // Display order
-
-  pollId String
-  poll   Poll   @relation(fields: [pollId], references: [id], onDelete: Cascade)
-
-  votes PollVote[]
-
-  @@index([pollId])
-}
-
-// Poll votes - one vote per user per poll
-model PollVote {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-
-  userId   String
-  optionId String
-  pollId   String // Denormalized for efficient querying
-
-  option PollOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, pollId]) // One vote per user per poll
-  @@index([optionId])
-  @@index([pollId])
-}
-
-// Likes on polls
-model PollLike {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-
-  userId String
-  pollId String
-
-  poll Poll @relation(fields: [pollId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, pollId])
-  @@index([pollId])
-}
-
-// Comments on polls
-model PollComment {
-  id        String   @id @default(cuid())
-  content   String   @db.Text
-  gifUrl    String? // Optional GIF attachment from Giphy
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  userId String
-  pollId String
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  poll Poll @relation(fields: [pollId], references: [id], onDelete: Cascade)
-
-  @@index([pollId])
-  @@index([userId])
-  @@index([createdAt])
+  @@index([updateId])
 }
