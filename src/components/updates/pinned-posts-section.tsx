@@ -1,16 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { Pin, User, Heart, X, Loader2, ExternalLink } from "lucide-react";
+import { Pin, User, Heart, X, Loader2, ExternalLink, BarChart3, Clock, Check } from "lucide-react";
 import { formatRelativeTime, cn } from "@/lib/utils";
 import { UpdateComments } from "./update-comments";
 import { ImageLightbox } from "@/components/ui/image-lightbox";
 import { MarkdownContent } from "@/components/ui/markdown-content";
 
 const TRUNCATE_LENGTH = 300;
+
+interface PollOption {
+  id: string;
+  text: string;
+  order: number;
+  _count: {
+    votes: number;
+  };
+}
 
 interface PinnedPost {
   id: string;
@@ -24,6 +33,11 @@ interface PinnedPost {
     likesCount?: number;
     commentsCount?: number;
     isLiked?: boolean;
+    // Poll data (optional)
+    pollQuestion?: string | null;
+    pollExpiresAt?: string | Date | null;
+    pollOptions?: PollOption[];
+    votedOptionId?: string | null;
     user: {
       id: string;
       name: string | null;
@@ -58,7 +72,50 @@ function PinnedPostItem({
   const [likesCount, setLikesCount] = useState(pinnedPost.update.likesCount ?? 0);
   const [isLiking, setIsLiking] = useState(false);
 
+  // Poll state
+  const [votedOptionId, setVotedOptionId] = useState<string | null>(pinnedPost.update.votedOptionId || null);
+  const [pollOptions, setPollOptions] = useState(pinnedPost.update.pollOptions || []);
+  const [isVoting, setIsVoting] = useState(false);
+
   const { update } = pinnedPost;
+
+  const hasPoll = !!update.pollQuestion && pollOptions.length > 0;
+  const isPollExpired = update.pollExpiresAt ? new Date() > new Date(update.pollExpiresAt) : false;
+  const hasVoted = !!votedOptionId;
+  const showPollResults = hasVoted || isPollExpired;
+
+  // Calculate total votes
+  const totalPollVotes = pollOptions.reduce((sum, opt) => sum + opt._count.votes, 0);
+
+  // Calculate time remaining for poll
+  const getPollTimeRemaining = () => {
+    if (!update.pollExpiresAt) return "";
+    const now = new Date();
+    const expires = new Date(update.pollExpiresAt);
+    const diff = expires.getTime() - now.getTime();
+
+    if (diff <= 0) return "Poll ended";
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+    if (days > 0) return `${days}d ${hours}h left`;
+    if (hours > 0) return `${hours}h left`;
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    return `${minutes}m left`;
+  };
+
+  const [pollTimeRemaining, setPollTimeRemaining] = useState(getPollTimeRemaining());
+
+  // Update poll time remaining every minute
+  useEffect(() => {
+    if (!hasPoll) return;
+    const interval = setInterval(() => {
+      setPollTimeRemaining(getPollTimeRemaining());
+    }, 60000);
+    return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [update.pollExpiresAt]);
   const displayName =
     update.user.displayName ||
     (update.user.firstName && update.user.lastName
@@ -127,6 +184,49 @@ function PinnedPostItem({
       console.error("Error liking update:", error);
     } finally {
       setIsLiking(false);
+    }
+  }
+
+  async function handleVote(optionId: string) {
+    if (!currentUserId || isVoting || isPollExpired || hasVoted) return;
+
+    setIsVoting(true);
+
+    // Optimistic update
+    setVotedOptionId(optionId);
+    setPollOptions(prev => prev.map(opt => ({
+      ...opt,
+      _count: {
+        votes: opt.id === optionId ? opt._count.votes + 1 : opt._count.votes,
+      },
+    })));
+
+    try {
+      const response = await fetch(`/api/updates/${update.id}/vote`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ optionId }),
+      });
+
+      if (!response.ok) {
+        // Revert on error
+        setVotedOptionId(null);
+        setPollOptions(pinnedPost.update.pollOptions || []);
+        const data = await response.json();
+        console.error("Vote error:", data.error);
+      } else {
+        const data = await response.json();
+        if (data.options) {
+          setPollOptions(data.options);
+        }
+      }
+    } catch (error) {
+      // Revert on error
+      setVotedOptionId(null);
+      setPollOptions(pinnedPost.update.pollOptions || []);
+      console.error("Error voting:", error);
+    } finally {
+      setIsVoting(false);
     }
   }
 
@@ -234,6 +334,98 @@ function PinnedPostItem({
             </div>
           )}
         </div>
+
+        {/* Poll attachment */}
+        {hasPoll && (
+          <div className="mt-4 rounded-xl border border-violet-500/20 bg-violet-500/5 p-4">
+            {/* Poll header */}
+            <div className="flex items-center gap-2 mb-3">
+              <BarChart3 className="h-4 w-4 text-violet-400" />
+              <span className="text-sm font-medium text-violet-400">Poll</span>
+              <div className="flex items-center gap-1 text-xs text-zinc-500">
+                <Clock className="h-3 w-3" />
+                <span className={isPollExpired ? "text-red-400" : ""}>{pollTimeRemaining}</span>
+              </div>
+            </div>
+
+            {/* Poll options */}
+            <div className="space-y-2">
+              {pollOptions.map((option) => {
+                const percentage = totalPollVotes > 0
+                  ? Math.round((option._count.votes / totalPollVotes) * 100)
+                  : 0;
+                const isVoted = votedOptionId === option.id;
+                const isWinning = showPollResults && option._count.votes === Math.max(...pollOptions.map(o => o._count.votes)) && option._count.votes > 0;
+
+                return (
+                  <button
+                    key={option.id}
+                    onClick={() => handleVote(option.id)}
+                    disabled={!currentUserId || isVoting || isPollExpired || hasVoted}
+                    className={cn(
+                      "relative w-full text-left rounded-lg border transition-all overflow-hidden",
+                      showPollResults
+                        ? "cursor-default"
+                        : "hover:border-violet-500/50 hover:bg-violet-500/5 cursor-pointer",
+                      isVoted
+                        ? "border-violet-500/50 bg-violet-500/10"
+                        : "border-white/10 bg-zinc-800/30",
+                      (!currentUserId || isPollExpired) && !showPollResults && "opacity-60 cursor-not-allowed"
+                    )}
+                  >
+                    {/* Progress bar background */}
+                    {showPollResults && (
+                      <div
+                        className={cn(
+                          "absolute inset-y-0 left-0 transition-all duration-500",
+                          isVoted
+                            ? "bg-violet-500/30"
+                            : isWinning
+                              ? "bg-violet-500/20"
+                              : "bg-zinc-700/50"
+                        )}
+                        style={{ width: `${percentage}%` }}
+                      />
+                    )}
+
+                    {/* Option content */}
+                    <div className="relative flex items-center justify-between px-3 py-2">
+                      <div className="flex items-center gap-2">
+                        {isVoted && (
+                          <Check className="h-3.5 w-3.5 text-violet-400" />
+                        )}
+                        <span className={cn(
+                          "text-sm",
+                          isVoted ? "text-violet-300 font-medium" : "text-zinc-200"
+                        )}>
+                          {option.text}
+                        </span>
+                      </div>
+                      {showPollResults && (
+                        <span className={cn(
+                          "text-xs font-semibold tabular-nums",
+                          isVoted ? "text-violet-300" : isWinning ? "text-white" : "text-zinc-400"
+                        )}>
+                          {percentage}%
+                        </span>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Vote count */}
+            <div className="mt-2 text-xs text-zinc-500">
+              {totalPollVotes} {totalPollVotes === 1 ? "vote" : "votes"}
+              {!currentUserId && !isPollExpired && (
+                <span className="ml-2 text-violet-400">
+                  <Link href="/signin" className="hover:underline">Sign in to vote</Link>
+                </span>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Actions */}
         <div className="flex items-center gap-3 mt-3 pt-3 border-t border-white/5">

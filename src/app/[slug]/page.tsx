@@ -476,13 +476,15 @@ export default async function SlugPage({ params }: PageProps) {
       }).then(pins => new Set(pins.map(p => p.updateId)))
     : new Set<string>();
 
-  // Get current user's poll votes for this user's updates (to show which option they voted for)
+  // Get current user's poll votes for this user's updates and pinned posts (to show which option they voted for)
   const userUpdateIds = user?.dailyUpdates?.map(u => u.id) || [];
-  const pollVotes = session?.user?.id && userUpdateIds.length > 0
+  const pinnedUpdateIds = user?.pinnedPosts?.map(p => p.update.id) || [];
+  const allUpdateIds = [...new Set([...userUpdateIds, ...pinnedUpdateIds])];
+  const pollVotes = session?.user?.id && allUpdateIds.length > 0
     ? await prisma.updatePollVote.findMany({
         where: {
           userId: session.user.id,
-          updateId: { in: userUpdateIds },
+          updateId: { in: allUpdateIds },
         },
         select: { updateId: true, optionId: true },
       })
