@@ -9,6 +9,7 @@ import { formatRelativeTime, cn } from "@/lib/utils";
 import { UpdateModal } from "./update-modal";
 import { ImageLightbox } from "@/components/ui/image-lightbox";
 import { YouTubeEmbed, extractYouTubeUrlFromText } from "@/components/ui/youtube-embed";
+import { AutoLinkPreview } from "@/components/ui/link-preview";
 import { ReportButton } from "@/components/ui/report-button";
 import { UserNameWithCompany } from "@/components/ui/user-name-with-company";
 import { MarkdownContent } from "@/components/ui/markdown-content";
@@ -420,6 +421,11 @@ export function UpdateItem({ update, currentUserId, showAuthor = true }: UpdateI
             {/* Auto-detected YouTube video from content */}
             {detectedVideoUrl && (
               <YouTubeEmbed url={detectedVideoUrl} />
+            )}
+
+            {/* Auto-detected builders.to link preview */}
+            {!detectedVideoUrl && (
+              <AutoLinkPreview content={update.content} className="mx-4 mt-4" maxPreviews={1} />
             )}
 
             <div className="p-4">

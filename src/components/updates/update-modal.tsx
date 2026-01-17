@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { formatRelativeTime, MENTION_REGEX, cn } from "@/lib/utils";
 import { YouTubeEmbed, extractYouTubeUrlFromText } from "@/components/ui/youtube-embed";
+import { AutoLinkPreview } from "@/components/ui/link-preview";
 import { ReportButton } from "@/components/ui/report-button";
 import { UserNameWithCompany } from "@/components/ui/user-name-with-company";
 import { MarkdownContent } from "@/components/ui/markdown-content";
@@ -731,6 +732,13 @@ export function UpdateModal({
             {detectedVideoUrl && (
               <div className="px-4 sm:px-6 pb-4">
                 <YouTubeEmbed url={detectedVideoUrl} />
+              </div>
+            )}
+
+            {/* Auto-detected builders.to link preview */}
+            {!detectedVideoUrl && (
+              <div className="px-4 sm:px-6 pb-4">
+                <AutoLinkPreview content={update.content} maxPreviews={1} />
               </div>
             )}
 
