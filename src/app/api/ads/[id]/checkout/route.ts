@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getStripe, SIDEBAR_AD_PRICE_CENTS, SIDEBAR_AD_DURATION_DAYS } from "@/lib/stripe";
+import { getStripe, SIDEBAR_AD_PRICE_CENTS, SIDEBAR_AD_DURATION_DAYS, MAX_ACTIVE_ADS, AD_SURCHARGE_CENTS } from "@/lib/stripe";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -63,9 +63,29 @@ export async function POST(request: Request, { params }: RouteParams) {
       });
     }
 
+    // Count user's current active ads to determine if surcharge applies
+    const activeAdsCount = await prisma.advertisement.count({
+      where: {
+        userId: session.user.id,
+        status: "ACTIVE",
+      },
+    });
+
+    const isOverLimit = activeAdsCount >= MAX_ACTIVE_ADS;
+    const totalPrice = isOverLimit
+      ? SIDEBAR_AD_PRICE_CENTS + AD_SURCHARGE_CENTS
+      : SIDEBAR_AD_PRICE_CENTS;
+
     // Create Stripe Checkout Session
     const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
     const stripe = getStripe();
+
+    const productName = isOverLimit
+      ? "Sidebar Advertisement - 1 Month (includes surcharge)"
+      : "Sidebar Advertisement - 1 Month";
+    const productDescription = isOverLimit
+      ? `Your ad "${ad.title}" will be displayed on the Builders.to feed for ${SIDEBAR_AD_DURATION_DAYS} days. Includes $5 surcharge for exceeding ${MAX_ACTIVE_ADS} active ads.`
+      : `Your ad "${ad.title}" will be displayed on the Builders.to feed for ${SIDEBAR_AD_DURATION_DAYS} days`;
 
     const checkoutSession = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
@@ -74,10 +94,10 @@ export async function POST(request: Request, { params }: RouteParams) {
           price_data: {
             currency: "usd",
             product_data: {
-              name: "Sidebar Advertisement - 1 Month",
-              description: `Your ad "${ad.title}" will be displayed on the Builders.to feed for ${SIDEBAR_AD_DURATION_DAYS} days`,
+              name: productName,
+              description: productDescription,
             },
-            unit_amount: SIDEBAR_AD_PRICE_CENTS,
+            unit_amount: totalPrice,
           },
           quantity: 1,
         },

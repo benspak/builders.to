@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { MAX_ACTIVE_ADS } from "@/lib/stripe";
 import { AdAnalytics, CheckoutButton } from "@/components/ads";
 import { DeleteAdButton } from "./delete-button";
 import { cn } from "@/lib/utils";
@@ -85,6 +86,15 @@ export default async function AdDetailPage({ params }: PageProps) {
   if (ad.userId !== session.user.id) {
     notFound();
   }
+
+  // Count active ads to determine if surcharge applies
+  const activeAdsCount = await prisma.advertisement.count({
+    where: {
+      userId: session.user.id,
+      status: "ACTIVE",
+    },
+  });
+  const isOverLimit = activeAdsCount >= MAX_ACTIVE_ADS;
 
   const status = statusConfig[ad.status];
   const StatusIcon = status.icon;
@@ -194,8 +204,17 @@ export default async function AdDetailPage({ params }: PageProps) {
                   Your ad will be displayed immediately after payment for 30 days.
                 </p>
               </div>
-              <CheckoutButton adId={ad.id} />
+              <CheckoutButton adId={ad.id} hasSurcharge={isOverLimit} />
             </div>
+            {isOverLimit && (
+              <div className="mt-4 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                <p className="text-sm text-amber-400">
+                  <strong>Ad Limit Reached:</strong> You currently have {activeAdsCount} active ads.
+                  An additional $5 surcharge applies for each ad over the {MAX_ACTIVE_ADS} ad limit.
+                  Total cost: $10 ($5 ad fee + $5 surcharge).
+                </p>
+              </div>
+            )}
           </div>
         )}
 

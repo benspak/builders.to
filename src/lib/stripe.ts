@@ -4,6 +4,10 @@ import Stripe from "stripe";
 export const SIDEBAR_AD_PRICE_CENTS = 500;
 export const SIDEBAR_AD_DURATION_DAYS = 30;
 
+// Ad limits and surcharge
+export const MAX_ACTIVE_ADS = 10; // Maximum active ads before surcharge applies
+export const AD_SURCHARGE_CENTS = 500; // $5 surcharge for ads over the limit
+
 // Services Marketplace pricing
 export const SERVICE_LISTING_FEE_CENTS = 100; // $1
 export const SERVICE_LISTING_DURATION_DAYS = 90;
