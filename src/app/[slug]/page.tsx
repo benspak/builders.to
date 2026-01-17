@@ -367,6 +367,20 @@ export default async function SlugPage({ params }: PageProps) {
           imageUrl: true,
           gifUrl: true,
           createdAt: true,
+          // Poll fields
+          pollQuestion: true,
+          pollExpiresAt: true,
+          pollOptions: {
+            orderBy: { order: "asc" },
+            select: {
+              id: true,
+              text: true,
+              order: true,
+              _count: {
+                select: { votes: true },
+              },
+            },
+          },
           likes: {
             select: {
               userId: true,
@@ -410,6 +424,20 @@ export default async function SlugPage({ params }: PageProps) {
               imageUrl: true,
               gifUrl: true,
               createdAt: true,
+              // Poll fields
+              pollQuestion: true,
+              pollExpiresAt: true,
+              pollOptions: {
+                orderBy: { order: "asc" },
+                select: {
+                  id: true,
+                  text: true,
+                  order: true,
+                  _count: {
+                    select: { votes: true },
+                  },
+                },
+              },
               user: {
                 select: {
                   id: true,
@@ -447,6 +475,19 @@ export default async function SlugPage({ params }: PageProps) {
         select: { updateId: true },
       }).then(pins => new Set(pins.map(p => p.updateId)))
     : new Set<string>();
+
+  // Get current user's poll votes for this user's updates (to show which option they voted for)
+  const userUpdateIds = user?.dailyUpdates?.map(u => u.id) || [];
+  const pollVotes = session?.user?.id && userUpdateIds.length > 0
+    ? await prisma.updatePollVote.findMany({
+        where: {
+          userId: session.user.id,
+          updateId: { in: userUpdateIds },
+        },
+        select: { updateId: true, optionId: true },
+      })
+    : [];
+  const pollVoteMap = new Map(pollVotes.map(v => [v.updateId, v.optionId]));
 
   // If no user found, check if it's a location page
   if (!user) {
@@ -1354,6 +1395,7 @@ export default async function SlugPage({ params }: PageProps) {
                     isLiked: session?.user?.id
                       ? pin.update.likes.some(like => like.userId === session.user.id)
                       : false,
+                    votedOptionId: pollVoteMap.get(pin.update.id) || null,
                   },
                 }))}
                 currentUserId={session?.user?.id}
@@ -1387,6 +1429,7 @@ export default async function SlugPage({ params }: PageProps) {
                     ? update.likes.some(like => like.userId === session.user.id)
                     : false,
                   isPinned: currentUserPinnedIds.has(update.id),
+                  votedOptionId: pollVoteMap.get(update.id) || null,
                   user: {
                     id: user.id,
                     name: user.name,
