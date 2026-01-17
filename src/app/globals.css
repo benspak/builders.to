@@ -33,13 +33,13 @@
   --background: #ffffff;
   --background-secondary: #f8fafc;
   --background-tertiary: #f1f5f9;
-  /* Improved text colors for better readability */
-  --foreground: #1e293b;
-  --foreground-muted: #334155;
-  --foreground-subtle: #64748b;
+  /* Improved text colors for better readability - darker for better contrast */
+  --foreground: #0f172a;
+  --foreground-muted: #1e293b;
+  --foreground-subtle: #475569;
   /* Light mode specific text shades */
-  --foreground-secondary: #475569;
-  --foreground-tertiary: #6b7280;
+  --foreground-secondary: #334155;
+  --foreground-tertiary: #64748b;
   --accent-orange: #ea580c;
   --accent-orange-hover: #c2410c;
   --accent-cyan: #0891b2;
@@ -90,7 +90,7 @@
 }
 
 [data-theme="light"] .text-zinc-300 {
-  color: var(--foreground-muted) !important;
+  color: var(--foreground) !important;
 }
 
 [data-theme="light"] .text-zinc-400 {
@@ -98,7 +98,7 @@
 }
 
 [data-theme="light"] .text-zinc-500 {
-  color: var(--foreground-subtle) !important;
+  color: var(--foreground-secondary) !important;
 }
 
 [data-theme="light"] .text-zinc-600 {
@@ -302,7 +302,6 @@
 
 /* Better timestamp/metadata text */
 [data-theme="light"] time,
-[data-theme="light"] [class*="text-zinc-500"],
 [data-theme="light"] [class*="text-gray-500"] {
   color: var(--foreground-tertiary) !important;
   font-weight: 500;
