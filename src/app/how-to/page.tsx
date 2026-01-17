@@ -36,10 +36,10 @@ export default function HowToPage() {
       <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           <Link
-            href="/"
+            href="/articles"
             className="text-orange-500 hover:text-orange-400 transition-colors text-sm"
           >
-            ← Back to Home
+            ← Back to Articles
           </Link>
         </div>
 

@@ -44,8 +44,8 @@ export function Footer() {
             <Link href="/llms.txt" className="transition-colors hover:opacity-80">
               llms.txt
             </Link>
-            <Link href="/how-to" className="transition-colors hover:opacity-80">
-              How To
+            <Link href="/articles" className="transition-colors hover:opacity-80">
+              Articles
             </Link>
             <Link href="/privacy" className="transition-colors hover:opacity-80">
               Privacy

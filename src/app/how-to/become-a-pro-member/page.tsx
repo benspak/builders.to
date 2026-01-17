@@ -26,6 +26,13 @@ export default function BecomeAProMemberPage() {
         {/* Breadcrumb */}
         <div className="mb-8 flex items-center gap-2 text-sm">
           <Link
+            href="/articles"
+            className="text-orange-500 hover:text-orange-400 transition-colors"
+          >
+            Articles
+          </Link>
+          <span className="text-zinc-600">/</span>
+          <Link
             href="/how-to"
             className="text-orange-500 hover:text-orange-400 transition-colors"
           >
@@ -496,12 +503,18 @@ export default function BecomeAProMemberPage() {
         </div>
 
         {/* Footer Navigation */}
-        <div className="mt-16 pt-8 border-t border-zinc-800">
+        <div className="mt-16 pt-8 border-t border-zinc-800 flex items-center justify-between">
           <Link
             href="/how-to"
             className="inline-flex items-center gap-2 text-orange-500 hover:text-orange-400 transition-colors"
           >
             ← Back to How To
+          </Link>
+          <Link
+            href="/articles"
+            className="inline-flex items-center gap-2 text-zinc-500 hover:text-zinc-400 transition-colors"
+          >
+            All Articles
           </Link>
         </div>
       </div>
