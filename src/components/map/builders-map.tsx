@@ -21,14 +21,14 @@ interface MapData {
 // Component to handle map resize on load
 function MapResizeHandler() {
   const map = useMap();
-  
+
   useEffect(() => {
     // Small delay to ensure container is rendered
     setTimeout(() => {
       map.invalidateSize();
     }, 100);
   }, [map]);
-  
+
   return null;
 }
 
@@ -115,13 +115,13 @@ export function BuildersMap() {
           worldCopyJump={true}
         >
           <MapResizeHandler />
-          
+
           {/* Dark map tiles from CartoDB */}
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
             url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
           />
-          
+
           {/* User markers */}
           {data.users.map((user) => (
             <CircleMarker

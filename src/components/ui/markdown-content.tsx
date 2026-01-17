@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import Link from "next/link";
 import Markdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { MENTION_REGEX } from "@/lib/utils";
 
 interface MarkdownContentProps {
@@ -110,8 +111,9 @@ function CustomLink({ href, children }: { href?: string; children?: React.ReactN
 
 export function MarkdownContent({ content, className = "" }: MarkdownContentProps) {
   return (
-    <div className={`prose prose-invert prose-zinc max-w-none prose-p:my-2 prose-headings:my-3 prose-ul:my-2 prose-ol:my-2 prose-li:my-0.5 prose-pre:my-2 prose-blockquote:my-2 prose-hr:my-4 ${className}`}>
+    <div className={`prose prose-invert prose-zinc max-w-none prose-p:my-2 prose-headings:my-3 prose-ul:my-2 prose-ol:my-2 prose-li:my-0.5 prose-pre:my-2 prose-blockquote:my-2 prose-hr:my-4 prose-table:my-4 ${className}`}>
       <Markdown
+        remarkPlugins={[remarkGfm]}
         components={{
           // Handle paragraphs with mentions
           p: ParagraphWithMentions,
@@ -154,6 +156,33 @@ export function MarkdownContent({ content, className = "" }: MarkdownContentProp
           h3: ({ children }) => <h3 className="text-base font-bold text-white"><TextWithMentions>{children}</TextWithMentions></h3>,
           // Style horizontal rules
           hr: () => <hr className="border-white/10" />,
+          // Style tables (requires remark-gfm)
+          table: ({ children }) => (
+            <div className="overflow-x-auto my-4">
+              <table className="min-w-full border-collapse border border-white/10 text-sm">
+                {children}
+              </table>
+            </div>
+          ),
+          thead: ({ children }) => (
+            <thead className="bg-zinc-800/50">{children}</thead>
+          ),
+          tbody: ({ children }) => (
+            <tbody className="divide-y divide-white/10">{children}</tbody>
+          ),
+          tr: ({ children }) => (
+            <tr className="border-b border-white/10">{children}</tr>
+          ),
+          th: ({ children }) => (
+            <th className="px-4 py-2 text-left font-semibold text-white border border-white/10">
+              {children}
+            </th>
+          ),
+          td: ({ children }) => (
+            <td className="px-4 py-2 text-zinc-300 border border-white/10">
+              {children}
+            </td>
+          ),
         }}
       >
         {content}
