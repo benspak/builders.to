@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -35,9 +33,13 @@
   --background: #ffffff;
   --background-secondary: #f8fafc;
   --background-tertiary: #f1f5f9;
-  --foreground: #0f172a;
-  --foreground-muted: #475569;
-  --foreground-subtle: #94a3b8;
+  /* Improved text colors for better readability */
+  --foreground: #1e293b;
+  --foreground-muted: #334155;
+  --foreground-subtle: #64748b;
+  /* Light mode specific text shades */
+  --foreground-secondary: #475569;
+  --foreground-tertiary: #6b7280;
   --accent-orange: #ea580c;
   --accent-orange-hover: #c2410c;
   --accent-cyan: #0891b2;
@@ -288,6 +290,52 @@
 [data-theme="light"] code {
   background-color: #f1f5f9 !important;
   color: #334155 !important;
+  font-weight: 500;
+}
+
+/* Improved small text rendering in light mode */
+[data-theme="light"] .text-xs,
+[data-theme="light"] .text-sm {
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+/* Better timestamp/metadata text */
+[data-theme="light"] time,
+[data-theme="light"] [class*="text-zinc-500"],
+[data-theme="light"] [class*="text-gray-500"] {
+  color: var(--foreground-tertiary) !important;
+  font-weight: 500;
+}
+
+/* Improve card title readability */
+[data-theme="light"] .card h1,
+[data-theme="light"] .card h2,
+[data-theme="light"] .card h3,
+[data-theme="light"] .card h4 {
+  color: var(--foreground) !important;
+  font-weight: 600;
+}
+
+/* Input placeholder improvements */
+[data-theme="light"] input::placeholder,
+[data-theme="light"] textarea::placeholder {
+  color: #9ca3af !important;
+  font-weight: 400;
+}
+
+/* Navigation text improvements */
+[data-theme="light"] nav a,
+[data-theme="light"] nav button {
+  font-weight: 500;
+}
+
+/* Badge text legibility */
+[data-theme="light"] [class*="badge"],
+[data-theme="light"] [class*="tag"],
+[data-theme="light"] .rounded-full.text-xs,
+[data-theme="light"] .rounded-full.text-sm {
+  font-weight: 500;
 }
 
 /* Additional text colors that might be used */
@@ -476,15 +524,57 @@ html {
 }
 
 body {
-  font-family: 'Outfit', system-ui, sans-serif;
+  font-family: var(--font-outfit), 'Outfit', system-ui, sans-serif;
   background: var(--background);
   color: var(--foreground);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "kern" 1, "liga" 1;
+}
+
+/* Light mode font rendering optimizations */
+[data-theme="light"] body {
+  /* Use subpixel antialiasing for better clarity on light backgrounds */
+  -webkit-font-smoothing: subpixel-antialiased;
+  -moz-osx-font-smoothing: auto;
+  /* Slightly increase letter spacing for better readability */
+  letter-spacing: -0.01em;
+}
+
+/* Improve heading weights in light mode */
+[data-theme="light"] h1,
+[data-theme="light"] h2,
+[data-theme="light"] h3,
+[data-theme="light"] h4,
+[data-theme="light"] h5,
+[data-theme="light"] h6 {
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+
+/* Improve body text contrast in light mode */
+[data-theme="light"] p,
+[data-theme="light"] span,
+[data-theme="light"] li,
+[data-theme="light"] td,
+[data-theme="light"] th,
+[data-theme="light"] label {
+  font-weight: 400;
+}
+
+/* Ensure links have proper weight */
+[data-theme="light"] a {
+  font-weight: 500;
+}
+
+/* Better font weight for buttons in light mode */
+[data-theme="light"] button {
+  font-weight: 500;
 }
 
 code, pre, .font-mono {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono), 'JetBrains Mono', monospace;
 }
 
 /* Custom scrollbar */

@@ -13,8 +13,8 @@ const config: Config = {
         foreground: "var(--foreground)",
       },
       fontFamily: {
-        sans: ["Outfit", "system-ui", "sans-serif"],
-        mono: ["JetBrains Mono", "monospace"],
+        sans: ["var(--font-outfit)", "Outfit", "system-ui", "sans-serif"],
+        mono: ["var(--font-mono)", "JetBrains Mono", "monospace"],
       },
       animation: {
         "float": "float 6s ease-in-out infinite",

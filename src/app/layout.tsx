@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
+import { Outfit, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/auth/auth-provider";
 import { ThemeProvider } from "@/components/ui/theme-provider";
@@ -8,6 +9,21 @@ import { Footer } from "@/components/ui/footer";
 import { ViewTracker } from "@/components/analytics/view-tracker";
 import { PWAProvider } from "@/components/pwa";
 import { AnnouncementBanner } from "@/components/ui/announcement-banner";
+
+// Optimize font loading with Next.js font system
+const outfit = Outfit({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-outfit",
+  weight: ["400", "500", "600", "700", "800"],
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-mono",
+  weight: ["400", "500", "600", "700"],
+});
 
 export const viewport: Viewport = {
   themeColor: "#f97316",
@@ -62,7 +78,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className={`${outfit.variable} ${jetbrainsMono.variable}`}>
       <head>
         {/* Prevent theme flash on page load */}
         <script
