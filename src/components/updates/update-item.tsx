@@ -4,9 +4,9 @@ import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { User, Trash2, Loader2, MoreHorizontal, Heart, ExternalLink, Link2, Check, Pin, PinOff, BarChart3, Clock } from "lucide-react";
+import { User, Trash2, Loader2, MoreHorizontal, Heart, ExternalLink, Link2, Check, Pin, PinOff, BarChart3, Clock, MessageCircle } from "lucide-react";
 import { formatRelativeTime, cn } from "@/lib/utils";
-import { UpdateComments } from "./update-comments";
+import { UpdateModal } from "./update-modal";
 import { ImageLightbox } from "@/components/ui/image-lightbox";
 import { YouTubeEmbed, extractYouTubeUrlFromText } from "@/components/ui/youtube-embed";
 import { ReportButton } from "@/components/ui/report-button";
@@ -78,6 +78,10 @@ export function UpdateItem({ update, currentUserId, showAuthor = true }: UpdateI
   const [copied, setCopied] = useState(false);
   const [isPinned, setIsPinned] = useState(update.isPinned ?? false);
   const [isPinning, setIsPinning] = useState(false);
+  const [commentsCount, setCommentsCount] = useState(update.commentsCount ?? 0);
+
+  // Modal state
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Poll state
   const [votedOptionId, setVotedOptionId] = useState<string | null>(update.votedOptionId || null);
@@ -371,7 +375,23 @@ export function UpdateItem({ update, currentUserId, showAuthor = true }: UpdateI
             </div>
           )}
 
-          <div className="rounded-xl border border-white/5 bg-zinc-800/30 overflow-hidden hover:border-white/10 transition-colors">
+          <div
+            className="rounded-xl border border-white/5 bg-zinc-800/30 overflow-hidden hover:border-white/10 hover:bg-zinc-800/50 transition-colors cursor-pointer"
+            onClick={(e) => {
+              // Don't open modal if clicking on interactive elements
+              const target = e.target as HTMLElement;
+              if (
+                target.closest("a") ||
+                target.closest("button") ||
+                target.closest("[role='button']") ||
+                target.closest("input") ||
+                target.closest("textarea")
+              ) {
+                return;
+              }
+              setIsModalOpen(true);
+            }}
+          >
             {/* Image attachment */}
             {update.imageUrl && (
               <ImageLightbox
@@ -542,69 +562,13 @@ export function UpdateItem({ update, currentUserId, showAuthor = true }: UpdateI
                   </button>
 
                   {/* Comments button */}
-                  <UpdateComments
-                    updateId={update.id}
-                    currentUserId={currentUserId}
-                    initialCommentsCount={update.commentsCount ?? 0}
+                  <button
+                    onClick={() => setIsModalOpen(true)}
+                    className="inline-flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-xs text-zinc-500 hover:text-orange-400 hover:bg-orange-500/10 transition-all"
                   >
-                    {/* Original content for modal */}
-                    <div className="flex items-start gap-3">
-                      {update.user.image ? (
-                        <Image
-                          src={update.user.image}
-                          alt={displayName}
-                          width={40}
-                          height={40}
-                          className="h-10 w-10 rounded-full object-cover ring-2 ring-white/5"
-                        />
-                      ) : (
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-pink-500">
-                          <User className="h-5 w-5 text-white" />
-                        </div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-medium text-white">{displayName}</span>
-                          <span className="text-xs text-zinc-500">{formatRelativeTime(update.createdAt)}</span>
-                        </div>
-                        {update.user.headline && (
-                          <p className="text-xs text-zinc-500 mb-2">{update.user.headline}</p>
-                        )}
-                        <div className="text-zinc-300 text-sm leading-relaxed">
-                          <MarkdownContent content={update.content} className="prose-sm" />
-                        </div>
-                        {update.imageUrl && (
-                          <div className="mt-3 rounded-xl overflow-hidden border border-white/10">
-                            <Image
-                              src={update.imageUrl}
-                              alt="Update image"
-                              width={500}
-                              height={300}
-                              className="w-full object-cover max-h-64"
-                            />
-                          </div>
-                        )}
-                        {update.gifUrl && (
-                          <div className="mt-3 rounded-xl overflow-hidden border border-white/10 relative">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                              src={update.gifUrl}
-                              alt="GIF"
-                              className="w-full object-contain max-h-64"
-                            />
-                            <div className="absolute bottom-2 left-2 px-2 py-1 rounded-md bg-black/60 text-xs text-fuchsia-300 font-medium">
-                              GIF
-                            </div>
-                          </div>
-                        )}
-                        {detectedVideoUrl && (
-                          <div className="mt-3">
-                            <YouTubeEmbed url={detectedVideoUrl} />
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </UpdateComments>
+                    <MessageCircle className="h-4 w-4" />
+                    {commentsCount > 0 && <span className="font-medium">{commentsCount}</span>}
+                  </button>
 
                   <time className="text-xs text-zinc-500">
                     {formatRelativeTime(update.createdAt)}
@@ -712,6 +676,35 @@ export function UpdateItem({ update, currentUserId, showAuthor = true }: UpdateI
           </div>
         </div>
       </div>
+
+      {/* Update Modal */}
+      <UpdateModal
+        update={{
+          ...update,
+          likesCount,
+          isLiked,
+          isPinned,
+          commentsCount,
+          pollOptions,
+          votedOptionId,
+        }}
+        currentUserId={currentUserId}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onLikeChange={(liked, count) => {
+          setIsLiked(liked);
+          setLikesCount(count);
+        }}
+        onPinChange={(pinned) => {
+          setIsPinned(pinned);
+        }}
+        onDelete={() => {
+          router.refresh();
+        }}
+        onCommentsCountChange={(count) => {
+          setCommentsCount(count);
+        }}
+      />
     </div>
   );
 }
