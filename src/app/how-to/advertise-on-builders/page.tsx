@@ -64,16 +64,16 @@ export default function AdvertiseOnBuildersPage() {
         {/* Quick Stats */}
         <div className="mb-12 grid grid-cols-2 sm:grid-cols-4 gap-4">
           <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 text-center">
-            <p className="text-2xl font-bold text-emerald-400">$5</p>
-            <p className="text-xs text-zinc-500 mt-1">Per Month</p>
+            <p className="text-2xl font-bold text-emerald-400">8</p>
+            <p className="text-xs text-zinc-500 mt-1">Limited Slots</p>
           </div>
           <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 text-center">
             <p className="text-2xl font-bold text-emerald-400">30</p>
             <p className="text-xs text-zinc-500 mt-1">Days Duration</p>
           </div>
           <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 text-center">
-            <p className="text-2xl font-bold text-emerald-400">Feed</p>
-            <p className="text-xs text-zinc-500 mt-1">Sidebar Placement</p>
+            <p className="text-2xl font-bold text-emerald-400">Dynamic</p>
+            <p className="text-xs text-zinc-500 mt-1">Pricing</p>
           </div>
           <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 text-center">
             <p className="text-2xl font-bold text-emerald-400">Real-time</p>
@@ -129,15 +129,15 @@ export default function AdvertiseOnBuildersPage() {
                 <ul className="space-y-2">
                   <li className="flex items-start gap-2">
                     <CheckCircle2 className="h-5 w-5 text-emerald-400 mt-0.5 shrink-0" />
-                    <span><strong className="text-white">$5 flat fee</strong> for 30 days of exposure (non-refundable once active)</span>
+                    <span><strong className="text-white">Limited to 8 slots</strong> platform-wide for premium exposure</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <CheckCircle2 className="h-5 w-5 text-emerald-400 mt-0.5 shrink-0" />
-                    <span><strong className="text-white">Prime placement</strong> in the feed sidebar and banner areas</span>
+                    <span><strong className="text-white">Dynamic pricing</strong> &mdash; price doubles when slots fill up, ensuring quality</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <CheckCircle2 className="h-5 w-5 text-emerald-400 mt-0.5 shrink-0" />
-                    <span><strong className="text-white">Real-time analytics</strong> with views, clicks, and CTR tracking</span>
+                    <span><strong className="text-white">30 days duration</strong> with real-time analytics (views, clicks, CTR)</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <CheckCircle2 className="h-5 w-5 text-emerald-400 mt-0.5 shrink-0" />
@@ -372,6 +372,31 @@ export default function AdvertiseOnBuildersPage() {
                 <h2 className="text-2xl font-semibold text-white">Paying for Your Ad</h2>
               </div>
 
+              <h3 className="text-lg font-medium text-white mt-6 mb-3">Dynamic Pricing System</h3>
+
+              <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-5 mb-6">
+                <h4 className="font-medium text-white mb-3">How It Works</h4>
+                <ul className="space-y-2 text-zinc-400 text-sm">
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-400 mt-0.5 shrink-0" />
+                    <span>Only <strong className="text-white">8 ad slots</strong> are available platform-wide</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-400 mt-0.5 shrink-0" />
+                    <span>Price <strong className="text-white">doubles</strong> each time all slots fill up</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-400 mt-0.5 shrink-0" />
+                    <span>Current price shown on the <Link href="/ads/new" className="text-emerald-400 hover:text-emerald-300">create ad page</Link></span>
+                  </li>
+                </ul>
+                <div className="mt-4 p-3 bg-zinc-800/50 rounded-lg">
+                  <p className="text-xs text-zinc-500">
+                    Example: Starting at $10/mo → $20/mo → $40/mo as demand increases
+                  </p>
+                </div>
+              </div>
+
               <h3 className="text-lg font-medium text-white mt-6 mb-3">Payment Options</h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -380,7 +405,7 @@ export default function AdvertiseOnBuildersPage() {
                     <CreditCard className="h-5 w-5 text-emerald-400" />
                     <h4 className="font-medium text-white">Pay with Card</h4>
                   </div>
-                  <p className="text-2xl font-bold text-white">$5</p>
+                  <p className="text-xl font-bold text-white">Current Price</p>
                   <p className="text-zinc-400 text-sm mt-2">
                     Standard Stripe checkout with credit/debit card
                   </p>
@@ -391,9 +416,9 @@ export default function AdvertiseOnBuildersPage() {
                     <Coins className="h-5 w-5 text-amber-400" />
                     <h4 className="font-medium text-white">Pay with Tokens</h4>
                   </div>
-                  <p className="text-2xl font-bold text-white">50 tokens</p>
+                  <p className="text-xl font-bold text-white">Dynamic</p>
                   <p className="text-zinc-400 text-sm mt-2">
-                    Use tokens earned through referrals, engagement, or purchases
+                    Token cost matches current price (10 tokens = $1)
                   </p>
                 </div>
               </div>
@@ -402,11 +427,11 @@ export default function AdvertiseOnBuildersPage() {
               <ol className="space-y-2 text-zinc-400">
                 <li className="flex items-start gap-2">
                   <span className="text-emerald-400 font-medium">1.</span>
-                  After creating your ad draft, click the <span className="text-emerald-400">&quot;Pay $5 to Activate&quot;</span> button
+                  After creating your ad draft, click the <span className="text-emerald-400">&quot;Activate&quot;</span> button
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-emerald-400 font-medium">2.</span>
-                  Complete payment securely via Stripe
+                  Complete payment securely via Stripe at the current tier price
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-emerald-400 font-medium">3.</span>
@@ -418,10 +443,10 @@ export default function AdvertiseOnBuildersPage() {
                 <div className="flex items-start gap-3">
                   <AlertTriangle className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
                   <div>
-                    <h4 className="font-medium text-amber-400">Ad Limits & Surcharges</h4>
+                    <h4 className="font-medium text-amber-400">Limited Availability</h4>
                     <p className="text-zinc-400 text-sm mt-1">
-                      You can have up to <span className="text-white">10 active ads</span> at the standard $5 rate.
-                      Each additional ad beyond 10 incurs a $5 surcharge ($10 total per ad).
+                      With only 8 slots available, ads sell out quickly. When all slots are filled,
+                      you&apos;ll need to wait for an existing ad to expire before purchasing.
                     </p>
                   </div>
                 </div>
@@ -645,8 +670,8 @@ export default function AdvertiseOnBuildersPage() {
                 <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5">
                   <h3 className="font-medium text-white">Can I run multiple ads at once?</h3>
                   <p className="text-zinc-400 text-sm mt-2">
-                    Yes! You can have multiple active ads. The first 10 ads are $5 each. Additional
-                    ads incur a $5 surcharge ($10 total per ad).
+                    Yes, as long as slots are available. The platform has 8 total ad slots shared
+                    among all advertisers. You can have multiple ads if you secure slots before they fill up.
                   </p>
                 </div>
 
@@ -682,12 +707,13 @@ export default function AdvertiseOnBuildersPage() {
               <h3 className="text-xl font-bold text-white mb-2">Ready to reach thousands of builders?</h3>
               <p className="text-zinc-400 mb-6">
                 Create your first ad and get in front of active developers, indie hackers, and startup founders.
+                Only 8 slots available!
               </p>
               <Link
                 href="/ads/new"
                 className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 px-6 py-3 text-sm font-semibold text-white transition-all hover:from-emerald-600 hover:to-teal-600"
               >
-                Create Your Ad &mdash; $5/mo
+                Create Your Ad
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </div>

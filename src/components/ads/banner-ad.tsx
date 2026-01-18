@@ -14,6 +14,13 @@ interface Advertisement {
   ctaText: string;
 }
 
+interface AdPricing {
+  currentPriceFormatted: string;
+  availableSlots: number;
+  totalSlots: number;
+  isSoldOut: boolean;
+}
+
 interface BannerAdProps {
   isAuthenticated?: boolean;
 }
@@ -32,11 +39,13 @@ function getVisitorId(): string {
 
 export function BannerAd({ isAuthenticated = false }: BannerAdProps) {
   const [ad, setAd] = useState<Advertisement | null>(null);
+  const [pricing, setPricing] = useState<AdPricing | null>(null);
   const [loading, setLoading] = useState(true);
   const [tracked, setTracked] = useState(false);
 
   useEffect(() => {
     fetchActiveAd();
+    fetchPricing();
   }, []);
 
   const trackView = useCallback(async (adId: string) => {
@@ -79,8 +88,23 @@ export function BannerAd({ isAuthenticated = false }: BannerAdProps) {
     }
   };
 
+  const fetchPricing = async () => {
+    try {
+      const res = await fetch("/api/ads/pricing");
+      if (res.ok) {
+        const data = await res.json();
+        setPricing(data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch ad pricing:", error);
+    }
+  };
+
   // Show placeholder if no active ads
   if (!loading && !ad) {
+    const priceDisplay = pricing?.currentPriceFormatted || "$10";
+    const isSoldOut = pricing?.isSoldOut ?? false;
+
     return (
       <div className="rounded-xl border border-zinc-800/50 bg-zinc-900/50 backdrop-blur-sm overflow-hidden">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-5">
@@ -99,7 +123,10 @@ export function BannerAd({ isAuthenticated = false }: BannerAdProps) {
                 Your Ad Could Be Here
               </h3>
               <p className="text-xs text-zinc-500 mt-0.5">
-                Reach thousands of builders for just $5/mo
+                {isSoldOut
+                  ? "All slots filled - join waitlist"
+                  : `Reach thousands of builders for ${priceDisplay}/mo`
+                }
               </p>
             </div>
           </div>
@@ -109,7 +136,7 @@ export function BannerAd({ isAuthenticated = false }: BannerAdProps) {
               className="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-medium text-white rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 transition-all shadow-lg shadow-emerald-500/20 whitespace-nowrap"
             >
               <Megaphone className="h-4 w-4" />
-              Create Ad — $5/mo
+              {isSoldOut ? "Join Waitlist" : `Create Ad — ${priceDisplay}/mo`}
             </Link>
           ) : (
             <Link

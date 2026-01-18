@@ -48,7 +48,7 @@ const articles = [
   {
     slug: "advertise-on-builders",
     title: "Advertise on Builders.to",
-    description: "Learn how to create sidebar ads that reach thousands of builders. $5/month for 30 days of exposure with real-time analytics.",
+    description: "Learn how to create sidebar ads that reach thousands of builders. Limited to 8 slots with dynamic pricing for premium exposure.",
     readTime: "5 min read",
     icon: Megaphone,
     iconColor: "text-emerald-400",

@@ -14,11 +14,19 @@ export const STREAK_MILESTONES = {
 } as const;
 
 // Redemption costs (in tokens)
-export const AD_REDEMPTION_COST = 50; // 50 tokens = $5 (sidebar ad)
+// Note: AD_REDEMPTION_COST is now dynamic based on pricing tier
+// Use getAdRedemptionCost() for current token cost
+export const AD_REDEMPTION_COST = 50; // @deprecated - Legacy value, actual cost is dynamic
 export const SERVICE_REDEMPTION_COST = 10; // 10 tokens = $1 (service listing)
 export const LOCAL_LISTING_REDEMPTION_COST = 10; // 10 tokens = $1 (local listing)
 
+// Calculate ad redemption cost based on current price (10 tokens = $1)
+export function getAdRedemptionCost(priceCents: number): number {
+  return Math.ceil(priceCents / 10);
+}
+
 // Gift token packages
+// Note: Ad package is dynamic based on current pricing
 export const GIFT_PACKAGES = [
   {
     id: "service_listing",
@@ -27,16 +35,11 @@ export const GIFT_PACKAGES = [
     label: "Service Listing",
     description: "Gift tokens so they can list a service"
   },
-  {
-    id: "ad_month",
-    tokens: 50,
-    priceInCents: 500,
-    label: "Ad for 1 Month",
-    description: "Gift tokens so they can display an ad for 1 month"
-  },
+  // Note: Ad gift package removed - use dynamic pricing endpoint
 ] as const;
 
 // Token purchase packages (for buying tokens for yourself)
+// Note: Ad pricing is now dynamic - check /api/ads/pricing for current token costs
 export const TOKEN_PURCHASE_PACKAGES = [
   {
     id: "starter",
@@ -48,16 +51,16 @@ export const TOKEN_PURCHASE_PACKAGES = [
   },
   {
     id: "builder",
-    tokens: 50,
-    priceInCents: 500,
+    tokens: 100,
+    priceInCents: 1000,
     label: "Builder Pack",
-    description: "Enough for a sidebar ad",
+    description: "Enough for ads at current pricing",
     popular: true,
   },
   {
     id: "pro",
-    tokens: 100,
-    priceInCents: 900,
+    tokens: 200,
+    priceInCents: 1800,
     label: "Pro Pack",
     description: "Best value - 10% savings",
     popular: false,

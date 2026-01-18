@@ -1,10 +1,10 @@
-import { Megaphone, ArrowLeft, AlertTriangle } from "lucide-react";
+import { Megaphone, ArrowLeft, AlertTriangle, Clock } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AdForm } from "@/components/ads";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { MAX_ACTIVE_ADS } from "@/lib/stripe";
+import { PLATFORM_AD_SLOTS, getCurrentAdPriceCents, formatAdPrice } from "@/lib/stripe";
 
 export const metadata = {
   title: "Create Ad - Builders.to",
@@ -20,14 +20,31 @@ export default async function NewAdPage() {
     redirect("/signin");
   }
 
-  // Count active ads to determine if surcharge applies
+  // Get current platform-wide active ads count
+  const now = new Date();
   const activeAdsCount = await prisma.advertisement.count({
     where: {
-      userId: session.user.id,
       status: "ACTIVE",
+      startDate: { lte: now },
+      endDate: { gt: now },
     },
   });
-  const isOverLimit = activeAdsCount >= MAX_ACTIVE_ADS;
+
+  // Get or create pricing config
+  let pricingConfig = await prisma.adPricingConfig.findUnique({
+    where: { id: "singleton" },
+  });
+
+  if (!pricingConfig) {
+    pricingConfig = await prisma.adPricingConfig.create({
+      data: { id: "singleton", currentTier: 0 },
+    });
+  }
+
+  const currentPriceCents = getCurrentAdPriceCents(pricingConfig.currentTier);
+  const currentPriceFormatted = formatAdPrice(currentPriceCents);
+  const availableSlots = Math.max(0, PLATFORM_AD_SLOTS - activeAdsCount);
+  const isSoldOut = availableSlots === 0;
 
   return (
     <div className="relative min-h-screen bg-zinc-950">
@@ -60,16 +77,32 @@ export default async function NewAdPage() {
           </div>
         </div>
 
-        {/* Surcharge Warning */}
-        {isOverLimit && (
+        {/* Sold Out Warning */}
+        {isSoldOut && (
+          <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 mb-8">
+            <div className="flex items-start gap-3">
+              <Clock className="h-5 w-5 text-red-400 shrink-0 mt-0.5" />
+              <div>
+                <h3 className="text-sm font-medium text-red-400">All Ad Slots Filled</h3>
+                <p className="text-xs text-zinc-400 mt-1">
+                  All {PLATFORM_AD_SLOTS} ad slots are currently in use. Create your ad now and it will
+                  be ready to activate as soon as a slot becomes available. Price will be {formatAdPrice(getCurrentAdPriceCents(pricingConfig.currentTier + 1))}/mo when slots reopen.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Scarcity Warning */}
+        {!isSoldOut && availableSlots <= 2 && (
           <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 mb-8">
             <div className="flex items-start gap-3">
               <AlertTriangle className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
               <div>
-                <h3 className="text-sm font-medium text-amber-400">Ad Limit Reached</h3>
+                <h3 className="text-sm font-medium text-amber-400">Limited Availability</h3>
                 <p className="text-xs text-zinc-400 mt-1">
-                  You currently have {activeAdsCount} active ads. An additional $5 surcharge applies
-                  for each ad over the {MAX_ACTIVE_ADS} ad limit.
+                  Only {availableSlots} of {PLATFORM_AD_SLOTS} ad slots remaining at {currentPriceFormatted}/mo.
+                  Price doubles to {formatAdPrice(getCurrentAdPriceCents(pricingConfig.currentTier + 1))}/mo when slots fill up.
                 </p>
               </div>
             </div>
@@ -81,24 +114,20 @@ export default async function NewAdPage() {
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-sm font-medium text-emerald-400">
-                Sidebar Ad - 30 Days {isOverLimit && "(+ Surcharge)"}
+                Sidebar Ad - 30 Days
               </h3>
               <p className="text-xs text-zinc-400 mt-1">
                 Displayed on the Builder Feed to thousands of daily visitors
               </p>
+              <p className="text-xs text-zinc-500 mt-2">
+                {availableSlots} of {PLATFORM_AD_SLOTS} slots available
+              </p>
             </div>
             <div className="text-right">
-              {isOverLimit ? (
-                <>
-                  <span className="text-2xl font-bold text-white">$10</span>
-                  <span className="text-sm text-zinc-500">/month</span>
-                  <p className="text-xs text-zinc-500 mt-1">$5 + $5 surcharge</p>
-                </>
-              ) : (
-                <>
-                  <span className="text-2xl font-bold text-white">$5</span>
-                  <span className="text-sm text-zinc-500">/month</span>
-                </>
+              <span className="text-2xl font-bold text-white">{currentPriceFormatted}</span>
+              <span className="text-sm text-zinc-500">/month</span>
+              {pricingConfig.currentTier > 0 && (
+                <p className="text-xs text-zinc-500 mt-1">Tier {pricingConfig.currentTier} pricing</p>
               )}
             </div>
           </div>

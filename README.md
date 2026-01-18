@@ -72,9 +72,10 @@ A members-only launchpad and community platform for indie hackers and builders. 
 
 ### 📢 Advertising
 
-- **Sidebar Ads** — $5 for 30 days of visibility
+- **Sidebar Ads** — Limited to 8 slots platform-wide with dynamic pricing
+- **Dynamic Pricing** — Price doubles when slots fill up (ensures quality exposure)
 - **Impression & Click Tracking** — Full analytics dashboard
-- **Token Redemption** — Use tokens to unlock free ad spots
+- **Token Redemption** — Use tokens to unlock ad spots
 
 ### 🔒 Security
 

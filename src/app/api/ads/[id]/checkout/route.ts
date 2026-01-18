@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getStripe, SIDEBAR_AD_PRICE_CENTS, SIDEBAR_AD_DURATION_DAYS, MAX_ACTIVE_ADS, AD_SURCHARGE_CENTS } from "@/lib/stripe";
+import { getStripe, SIDEBAR_AD_DURATION_DAYS, PLATFORM_AD_SLOTS, getCurrentAdPriceCents, formatAdPrice } from "@/lib/stripe";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -54,6 +54,40 @@ export async function POST(request: Request, { params }: RouteParams) {
       );
     }
 
+    // Check platform-wide slot availability
+    const now = new Date();
+    const activeAdsCount = await prisma.advertisement.count({
+      where: {
+        status: "ACTIVE",
+        startDate: { lte: now },
+        endDate: { gt: now },
+      },
+    });
+
+    const availableSlots = PLATFORM_AD_SLOTS - activeAdsCount;
+    if (availableSlots <= 0) {
+      return NextResponse.json(
+        {
+          error: "All ad slots are currently filled. Please try again when a slot becomes available.",
+          isSoldOut: true,
+        },
+        { status: 400 }
+      );
+    }
+
+    // Get current pricing tier
+    let pricingConfig = await prisma.adPricingConfig.findUnique({
+      where: { id: "singleton" },
+    });
+
+    if (!pricingConfig) {
+      pricingConfig = await prisma.adPricingConfig.create({
+        data: { id: "singleton", currentTier: 0 },
+      });
+    }
+
+    const currentPriceCents = getCurrentAdPriceCents(pricingConfig.currentTier);
+
     // If there's an existing pending payment session, we'll create a new one
     if (ad.status === "PENDING_PAYMENT" && ad.stripeSessionId) {
       // Clear the old session reference
@@ -63,29 +97,12 @@ export async function POST(request: Request, { params }: RouteParams) {
       });
     }
 
-    // Count user's current active ads to determine if surcharge applies
-    const activeAdsCount = await prisma.advertisement.count({
-      where: {
-        userId: session.user.id,
-        status: "ACTIVE",
-      },
-    });
-
-    const isOverLimit = activeAdsCount >= MAX_ACTIVE_ADS;
-    const totalPrice = isOverLimit
-      ? SIDEBAR_AD_PRICE_CENTS + AD_SURCHARGE_CENTS
-      : SIDEBAR_AD_PRICE_CENTS;
-
     // Create Stripe Checkout Session
     const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
     const stripe = getStripe();
 
-    const productName = isOverLimit
-      ? "Sidebar Advertisement - 1 Month (includes surcharge)"
-      : "Sidebar Advertisement - 1 Month";
-    const productDescription = isOverLimit
-      ? `Your ad "${ad.title}" will be displayed on the Builders.to feed for ${SIDEBAR_AD_DURATION_DAYS} days. Includes $5 surcharge for exceeding ${MAX_ACTIVE_ADS} active ads.`
-      : `Your ad "${ad.title}" will be displayed on the Builders.to feed for ${SIDEBAR_AD_DURATION_DAYS} days`;
+    const productName = "Sidebar Advertisement - 1 Month";
+    const productDescription = `Your ad "${ad.title}" will be displayed on the Builders.to feed for ${SIDEBAR_AD_DURATION_DAYS} days. ${availableSlots <= 2 ? `Only ${availableSlots} slot${availableSlots === 1 ? "" : "s"} remaining!` : ""}`;
 
     const checkoutSession = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
@@ -97,7 +114,7 @@ export async function POST(request: Request, { params }: RouteParams) {
               name: productName,
               description: productDescription,
             },
-            unit_amount: totalPrice,
+            unit_amount: currentPriceCents,
           },
           quantity: 1,
         },
@@ -109,6 +126,8 @@ export async function POST(request: Request, { params }: RouteParams) {
         adId: ad.id,
         userId: session.user.id,
         type: "sidebar_ad",
+        pricingTier: pricingConfig.currentTier.toString(),
+        priceCents: currentPriceCents.toString(),
       },
       customer_email: session.user.email || undefined,
     });
@@ -125,6 +144,9 @@ export async function POST(request: Request, { params }: RouteParams) {
     return NextResponse.json({
       url: checkoutSession.url,
       sessionId: checkoutSession.id,
+      priceCents: currentPriceCents,
+      priceFormatted: formatAdPrice(currentPriceCents),
+      availableSlots,
     });
   } catch (error) {
     console.error("Error creating checkout session:", error);

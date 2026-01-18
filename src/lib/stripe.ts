@@ -1,12 +1,34 @@
 import Stripe from "stripe";
 
-// Price for Sidebar Advertisement ($5/month)
-export const SIDEBAR_AD_PRICE_CENTS = 500;
+// ============================================
+// Dynamic Ad Pricing System
+// ============================================
+
+// Platform-wide ad slot limit
+export const PLATFORM_AD_SLOTS = 8;
+
+// Base price for ads (doubles each tier)
+export const BASE_AD_PRICE_CENTS = 500; // $5 starting price
+
+// Ad duration
 export const SIDEBAR_AD_DURATION_DAYS = 30;
 
-// Ad limits and surcharge
-export const MAX_ACTIVE_ADS = 10; // Maximum active ads before surcharge applies
-export const AD_SURCHARGE_CENTS = 500; // $5 surcharge for ads over the limit
+// Calculate current ad price based on pricing tier
+// Tier 0 = $5, Tier 1 = $10, Tier 2 = $20, Tier 3 = $40, etc.
+export function getCurrentAdPriceCents(pricingTier: number): number {
+  return BASE_AD_PRICE_CENTS * Math.pow(2, pricingTier);
+}
+
+// Format price for display (e.g., 1000 -> "$10")
+export function formatAdPrice(priceCents: number): string {
+  return `$${(priceCents / 100).toFixed(0)}`;
+}
+
+// Legacy exports for backward compatibility during migration
+// These will be removed after all references are updated
+export const SIDEBAR_AD_PRICE_CENTS = 500; // @deprecated - use getCurrentAdPriceCents()
+export const MAX_ACTIVE_ADS = 10; // @deprecated - use PLATFORM_AD_SLOTS
+export const AD_SURCHARGE_CENTS = 500; // @deprecated - surcharge system removed
 
 // Services Marketplace pricing
 export const SERVICE_LISTING_FEE_CENTS = 100; // $1

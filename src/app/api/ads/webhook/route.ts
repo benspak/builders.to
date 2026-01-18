@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getStripe, SIDEBAR_AD_DURATION_DAYS, SERVICE_LISTING_DURATION_DAYS, LOCAL_LISTING_PAID_DURATION_DAYS } from "@/lib/stripe";
+import { getStripe, SIDEBAR_AD_DURATION_DAYS, SERVICE_LISTING_DURATION_DAYS, LOCAL_LISTING_PAID_DURATION_DAYS, PLATFORM_AD_SLOTS } from "@/lib/stripe";
 import { giftTokens, grantTokens } from "@/lib/tokens";
 import Stripe from "stripe";
 
@@ -92,6 +92,34 @@ export async function POST(request: Request) {
         });
 
         console.log(`[Webhook] Ad ${adId} activated successfully`);
+
+        // Check if we need to increment the pricing tier
+        // This happens when all ad slots are filled
+        const now = new Date();
+        const activeAdsCount = await prisma.advertisement.count({
+          where: {
+            status: "ACTIVE",
+            startDate: { lte: now },
+            endDate: { gt: now },
+          },
+        });
+
+        // If all slots are now filled, increment the pricing tier for future ads
+        if (activeAdsCount >= PLATFORM_AD_SLOTS) {
+          const currentConfig = await prisma.adPricingConfig.findUnique({
+            where: { id: "singleton" },
+          });
+
+          if (currentConfig) {
+            await prisma.adPricingConfig.update({
+              where: { id: "singleton" },
+              data: {
+                currentTier: currentConfig.currentTier + 1,
+              },
+            });
+            console.log(`[Webhook] Ad slots filled (${activeAdsCount}/${PLATFORM_AD_SLOTS}). Pricing tier increased to ${currentConfig.currentTier + 1}`);
+          }
+        }
       } catch (error) {
         console.error("[Webhook] Error activating ad:", error);
         return NextResponse.json(

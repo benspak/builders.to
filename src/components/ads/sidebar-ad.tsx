@@ -14,6 +14,14 @@ interface Advertisement {
   ctaText: string;
 }
 
+interface AdPricing {
+  currentPriceFormatted: string;
+  availableSlots: number;
+  totalSlots: number;
+  isSoldOut: boolean;
+  scarcityMessage: string | null;
+}
+
 interface SidebarAdProps {
   isAuthenticated?: boolean;
 }
@@ -32,11 +40,13 @@ function getVisitorId(): string {
 
 export function SidebarAd({ isAuthenticated = false }: SidebarAdProps) {
   const [ad, setAd] = useState<Advertisement | null>(null);
+  const [pricing, setPricing] = useState<AdPricing | null>(null);
   const [loading, setLoading] = useState(true);
   const [tracked, setTracked] = useState(false);
 
   useEffect(() => {
     fetchActiveAd();
+    fetchPricing();
   }, []);
 
   const trackView = useCallback(async (adId: string) => {
@@ -93,8 +103,25 @@ export function SidebarAd({ isAuthenticated = false }: SidebarAdProps) {
     }
   };
 
+  const fetchPricing = async () => {
+    try {
+      const res = await fetch("/api/ads/pricing");
+      if (res.ok) {
+        const data = await res.json();
+        setPricing(data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch ad pricing:", error);
+    }
+  };
+
   // Show placeholder if no active ads
   if (!loading && !ad) {
+    const priceDisplay = pricing?.currentPriceFormatted || "$10";
+    const isSoldOut = pricing?.isSoldOut ?? false;
+    const availableSlots = pricing?.availableSlots ?? 0;
+    const totalSlots = pricing?.totalSlots ?? 8;
+
     return (
       <div className="rounded-xl border border-zinc-800/50 bg-zinc-900/50 backdrop-blur-sm overflow-hidden">
         <div className="flex items-center gap-2 px-4 py-3 border-b border-zinc-800/50 bg-zinc-900/80">
@@ -106,16 +133,27 @@ export function SidebarAd({ isAuthenticated = false }: SidebarAdProps) {
             <Megaphone className="h-6 w-6 text-emerald-500/60" />
           </div>
           <h3 className="text-sm font-medium text-white mb-1">Advertise Here</h3>
-          <p className="text-xs text-zinc-500 mb-4">
-            Reach thousands of builders for just $5/mo
+          <p className="text-xs text-zinc-500 mb-2">
+            Reach thousands of builders for {priceDisplay}/mo
           </p>
+          {/* Slot availability indicator */}
+          {!isSoldOut && availableSlots <= 3 && (
+            <p className="text-xs text-amber-400 mb-3">
+              Only {availableSlots} of {totalSlots} slots available!
+            </p>
+          )}
+          {isSoldOut && (
+            <p className="text-xs text-red-400 mb-3">
+              All slots filled - join waitlist
+            </p>
+          )}
           {isAuthenticated ? (
             <Link
               href="/ads/new"
               className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 transition-all shadow-lg shadow-emerald-500/20"
             >
               <Megaphone className="h-4 w-4" />
-              Create Ad — $5/mo
+              {isSoldOut ? "Join Waitlist" : `Create Ad — ${priceDisplay}/mo`}
             </Link>
           ) : (
             <Link

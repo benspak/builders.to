@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
-import { MAX_ACTIVE_ADS } from "@/lib/stripe";
+import { PLATFORM_AD_SLOTS, getCurrentAdPriceCents, formatAdPrice } from "@/lib/stripe";
 import { AdAnalytics, CheckoutButton } from "@/components/ads";
 import { DeleteAdButton } from "./delete-button";
 import { cn } from "@/lib/utils";
@@ -87,14 +87,31 @@ export default async function AdDetailPage({ params }: PageProps) {
     notFound();
   }
 
-  // Count active ads to determine if surcharge applies
+  // Get platform-wide active ads count for slot availability
+  const now = new Date();
   const activeAdsCount = await prisma.advertisement.count({
     where: {
-      userId: session.user.id,
       status: "ACTIVE",
+      startDate: { lte: now },
+      endDate: { gt: now },
     },
   });
-  const isOverLimit = activeAdsCount >= MAX_ACTIVE_ADS;
+
+  // Get pricing config
+  let pricingConfig = await prisma.adPricingConfig.findUnique({
+    where: { id: "singleton" },
+  });
+
+  if (!pricingConfig) {
+    pricingConfig = await prisma.adPricingConfig.create({
+      data: { id: "singleton", currentTier: 0 },
+    });
+  }
+
+  const currentPriceCents = getCurrentAdPriceCents(pricingConfig.currentTier);
+  const currentPriceFormatted = formatAdPrice(currentPriceCents);
+  const availableSlots = Math.max(0, PLATFORM_AD_SLOTS - activeAdsCount);
+  const isSoldOut = availableSlots === 0;
 
   const status = statusConfig[ad.status];
   const StatusIcon = status.icon;
@@ -201,20 +218,30 @@ export default async function AdDetailPage({ params }: PageProps) {
               <div>
                 <h3 className="text-lg font-semibold text-white mb-1">Ready to Go Live?</h3>
                 <p className="text-sm text-zinc-400">
-                  Your ad will be displayed immediately after payment for 30 days.
+                  {isSoldOut
+                    ? "All ad slots are currently filled. Create your ad and it will be ready when a slot opens."
+                    : `Your ad will be displayed immediately after payment for 30 days at ${currentPriceFormatted}/mo.`
+                  }
                 </p>
               </div>
-              <CheckoutButton adId={ad.id} hasSurcharge={isOverLimit} />
+              {!isSoldOut && <CheckoutButton adId={ad.id} />}
             </div>
-            {isOverLimit && (
-              <div className="mt-4 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
-                <p className="text-sm text-amber-400">
-                  <strong>Ad Limit Reached:</strong> You currently have {activeAdsCount} active ads.
-                  An additional $5 surcharge applies for each ad over the {MAX_ACTIVE_ADS} ad limit.
-                  Total cost: $10 ($5 ad fee + $5 surcharge).
-                </p>
-              </div>
-            )}
+            {/* Slot availability info */}
+            <div className="mt-4 p-3 rounded-lg bg-zinc-800/50 border border-zinc-700/30">
+              <p className="text-sm text-zinc-400">
+                <strong className="text-zinc-300">{availableSlots} of {PLATFORM_AD_SLOTS} slots available</strong>
+                {availableSlots <= 2 && availableSlots > 0 && (
+                  <span className="text-amber-400 ml-2">
+                    - Price increases to {formatAdPrice(getCurrentAdPriceCents(pricingConfig.currentTier + 1))}/mo when full!
+                  </span>
+                )}
+                {isSoldOut && (
+                  <span className="text-red-400 ml-2">
+                    - Check back soon for availability
+                  </span>
+                )}
+              </p>
+            </div>
           </div>
         )}
 
