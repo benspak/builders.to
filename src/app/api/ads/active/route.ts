@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+// Disable Next.js caching for this route
+export const dynamic = "force-dynamic";
+
 // GET /api/ads/active - Get all active ads for display on the feed
 export async function GET() {
   try {
@@ -23,7 +26,14 @@ export async function GET() {
       orderBy: { createdAt: "asc" }, // FIFO for fairness
     });
 
-    return NextResponse.json(activeAds);
+    // Return with no-cache headers to ensure fresh ads on each page view
+    return NextResponse.json(activeAds, {
+      headers: {
+        "Cache-Control": "no-store, no-cache, must-revalidate",
+        "Pragma": "no-cache",
+        "Expires": "0",
+      },
+    });
   } catch (error) {
     console.error("Error fetching active ads:", error);
     return NextResponse.json(

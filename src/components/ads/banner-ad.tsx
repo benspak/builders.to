@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { usePathname } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { ExternalLink, Megaphone } from "lucide-react";
+import { selectBestAd, recordAdImpression } from "./ad-impression-tracker";
 
 interface Advertisement {
   id: string;
@@ -42,11 +44,14 @@ export function BannerAd({ isAuthenticated = false }: BannerAdProps) {
   const [pricing, setPricing] = useState<AdPricing | null>(null);
   const [loading, setLoading] = useState(true);
   const [tracked, setTracked] = useState(false);
+  const pathname = usePathname();
 
+  // Re-fetch ads on route change to rotate ads per page view
   useEffect(() => {
+    setTracked(false); // Reset tracking for new page view
     fetchActiveAd();
     fetchPricing();
-  }, []);
+  }, [pathname]);
 
   const trackView = useCallback(async (adId: string) => {
     if (tracked) return;
@@ -72,13 +77,19 @@ export function BannerAd({ isAuthenticated = false }: BannerAdProps) {
 
   const fetchActiveAd = async () => {
     try {
-      const res = await fetch("/api/ads/active");
+      // Use cache: 'no-store' to bypass browser cache and get fresh ads
+      const res = await fetch("/api/ads/active", { cache: "no-store" });
       if (res.ok) {
         const ads: Advertisement[] = await res.json();
         if (ads.length > 0) {
-          // Randomly select one ad if multiple exist
-          const randomAd = ads[Math.floor(Math.random() * ads.length)];
-          setAd(randomAd);
+          // Select the best ad based on user's impression history
+          // Prioritizes ads the user hasn't seen or has seen fewer times
+          const selectedAd = selectBestAd(ads);
+          if (selectedAd) {
+            setAd(selectedAd);
+            // Record this impression locally
+            recordAdImpression(selectedAd.id);
+          }
         }
       }
     } catch (error) {

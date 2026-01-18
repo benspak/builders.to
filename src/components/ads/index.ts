@@ -4,3 +4,10 @@ export { AdForm } from "./ad-form";
 export { AdCard } from "./ad-card";
 export { AdAnalytics } from "./ad-analytics";
 export { CheckoutButton } from "./checkout-button";
+export {
+  recordAdImpression,
+  getAdImpressionCount,
+  hasSeenTooManyTimes,
+  selectBestAd,
+  getEligibleAds,
+} from "./ad-impression-tracker";
