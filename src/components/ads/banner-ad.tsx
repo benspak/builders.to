@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { ExternalLink, Megaphone } from "lucide-react";
-import { selectBestAd, recordAdImpression } from "./ad-impression-tracker";
+import { selectBestAd } from "./ad-impression-tracker";
 
 interface Advertisement {
   id: string;
@@ -14,6 +14,7 @@ interface Advertisement {
   imageUrl: string | null;
   linkUrl: string;
   ctaText: string;
+  viewCount: number;
 }
 
 interface AdPricing {
@@ -77,18 +78,21 @@ export function BannerAd({ isAuthenticated = false }: BannerAdProps) {
 
   const fetchActiveAd = async () => {
     try {
-      // Use cache: 'no-store' to bypass browser cache and get fresh ads
-      const res = await fetch("/api/ads/active", { cache: "no-store" });
+      // Pass visitorId to get server-side view counts for smart rotation
+      const visitorId = getVisitorId();
+      const url = visitorId
+        ? `/api/ads/active?visitorId=${encodeURIComponent(visitorId)}`
+        : "/api/ads/active";
+
+      const res = await fetch(url, { cache: "no-store" });
       if (res.ok) {
         const ads: Advertisement[] = await res.json();
         if (ads.length > 0) {
-          // Select the best ad based on user's impression history
+          // Select the best ad based on server-provided view counts
           // Prioritizes ads the user hasn't seen or has seen fewer times
           const selectedAd = selectBestAd(ads);
           if (selectedAd) {
             setAd(selectedAd);
-            // Record this impression locally
-            recordAdImpression(selectedAd.id);
           }
         }
       }
