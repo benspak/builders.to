@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import {
   Rocket,
   Users,
@@ -272,6 +273,47 @@ export default async function HomePage() {
                 </span>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Trusted By Section */}
+      <section className="relative py-12 border-y border-zinc-800/50">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <p className="text-center text-sm text-zinc-500 mb-8">
+            Companies that trust builders.to
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-12 sm:gap-16">
+            <a
+              href="https://blackbox.ai"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 opacity-70 hover:opacity-100 transition-opacity"
+            >
+              <Image
+                src="/logos/blackbox-ai.png"
+                alt="BLACKBOX AI"
+                width={40}
+                height={40}
+                className="rounded-lg"
+              />
+              <span className="text-lg font-semibold text-zinc-300">BLACKBOX AI</span>
+            </a>
+            <a
+              href="https://useslate.ai/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 opacity-70 hover:opacity-100 transition-opacity"
+            >
+              <Image
+                src="/logos/slate-ai.png"
+                alt="Slate AI"
+                width={40}
+                height={40}
+                className="rounded-lg"
+              />
+              <span className="text-lg font-semibold text-zinc-300">Slate AI</span>
+            </a>
           </div>
         </div>
       </section>
