@@ -6,6 +6,7 @@ import { Code, Copy, Check, ExternalLink } from "lucide-react";
 interface EmbedBadgeProps {
   projectSlug: string;
   projectTitle: string;
+  isPreview?: boolean;
 }
 
 type BadgeSize = "default" | "small";
@@ -15,7 +16,7 @@ const badgeSizes = {
   small: { width: 130, height: 40 },
 };
 
-export function EmbedBadge({ projectSlug, projectTitle }: EmbedBadgeProps) {
+export function EmbedBadge({ projectSlug, projectTitle, isPreview = false }: EmbedBadgeProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [theme, setTheme] = useState<"dark" | "light">("dark");
@@ -79,6 +80,14 @@ export function EmbedBadge({ projectSlug, projectTitle }: EmbedBadgeProps) {
             <p className="text-xs text-zinc-400">
               Add this badge to your website to link back to your project on Builders.to
             </p>
+
+            {isPreview && (
+              <div className="rounded-lg bg-amber-500/10 border border-amber-500/20 px-3 py-2">
+                <p className="text-xs text-amber-400">
+                  Preview only — save your project first to use this embed code
+                </p>
+              </div>
+            )}
 
             {/* Size & Theme Toggles */}
             <div className="flex flex-wrap items-center gap-4">
@@ -174,16 +183,18 @@ export function EmbedBadge({ projectSlug, projectTitle }: EmbedBadgeProps) {
               </div>
             </div>
 
-            {/* Link to project */}
-            <a
-              href={projectUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 text-xs text-orange-400 hover:text-orange-300 transition-colors"
-            >
-              <ExternalLink className="h-3 w-3" />
-              View your project page
-            </a>
+            {/* Link to project - only show if not preview */}
+            {!isPreview && (
+              <a
+                href={projectUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-xs text-orange-400 hover:text-orange-300 transition-colors"
+              >
+                <ExternalLink className="h-3 w-3" />
+                View your project page
+              </a>
+            )}
           </div>
         </>
       )}

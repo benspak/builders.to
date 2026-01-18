@@ -18,6 +18,7 @@ import {
 import { cn, generateSlug } from "@/lib/utils";
 import { ImageUpload, GalleryUpload } from "@/components/ui/image-upload";
 import { CoBuilderSelector, CoBuilder } from "./co-builder-selector";
+import { EmbedBadge } from "./embed-badge";
 
 interface Company {
   id: string;
@@ -138,7 +139,7 @@ export function ProjectForm({ initialData, initialCompanyId, githubPrefill }: Pr
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Client-side validation
     if (!formData.title.trim()) {
       setError("Project Name is required");
@@ -152,7 +153,7 @@ export function ProjectForm({ initialData, initialCompanyId, githubPrefill }: Pr
       setError("URL Slug is required");
       return;
     }
-    
+
     setLoading(true);
     setError("");
 
@@ -218,7 +219,7 @@ export function ProjectForm({ initialData, initialCompanyId, githubPrefill }: Pr
       <p className="text-sm text-zinc-500">
         Fields marked with <span className="text-red-400">*</span> are required
       </p>
-      
+
       {error && (
         <div className="rounded-xl bg-red-500/10 border border-red-500/20 px-4 py-3 text-sm text-red-400">
           {error}
@@ -429,6 +430,23 @@ export function ProjectForm({ initialData, initialCompanyId, githubPrefill }: Pr
           Add up to 10 additional screenshots to showcase your project
         </p>
       </div>
+
+      {/* Embed Badge - Show for both new (with slug) and editing */}
+      {(isEditing && initialData?.slug) || (!isEditing && formData.slug) ? (
+        <div>
+          <label className="block text-sm font-medium text-zinc-300 mb-3">
+            Embed Badge {!isEditing && <span className="text-xs text-zinc-500 font-normal">(preview)</span>}
+          </label>
+          <p className="text-xs text-zinc-500 mb-3">
+            Add a badge to your website that links back to your project on Builders.to
+          </p>
+          <EmbedBadge
+            projectSlug={isEditing ? initialData!.slug! : formData.slug}
+            projectTitle={isEditing ? initialData!.title : formData.title || "Your Project"}
+            isPreview={!isEditing}
+          />
+        </div>
+      ) : null}
 
       {/* URLs Section */}
       <div className="space-y-4">
