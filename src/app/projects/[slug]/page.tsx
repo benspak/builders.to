@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { DeleteProjectButton } from "@/components/projects/delete-project-button";
 import { ReportButton } from "@/components/ui/report-button";
+import { EmbedBadge } from "@/components/projects/embed-badge";
 import ReactMarkdown from "react-markdown";
 
 interface ProjectPageProps {
@@ -317,6 +318,16 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                 docsUrl={project.docsUrl}
                 changelogUrl={project.changelogUrl}
               />
+
+              {/* Embed Badge - Only show to owner */}
+              {isOwner && (
+                <div className="mt-4 pt-4 border-t border-zinc-700/50">
+                  <EmbedBadge
+                    projectSlug={project.slug}
+                    projectTitle={project.title}
+                  />
+                </div>
+              )}
             </div>
           </div>
         </header>

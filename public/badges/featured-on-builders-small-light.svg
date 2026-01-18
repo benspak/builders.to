@@ -1,0 +1,26 @@
+<svg width="130" height="40" viewBox="0 0 130 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="badgeGradient" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ea580c"/>
+      <stop offset="50%" stop-color="#f97316"/>
+      <stop offset="100%" stop-color="#fb923c"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="130" height="40" rx="6" fill="#fafafa"/>
+  <rect x="0.5" y="0.5" width="129" height="39" rx="5.5" stroke="#e4e4e7"/>
+
+  <!-- Logo container -->
+  <rect x="6" y="6" width="28" height="28" rx="6" fill="url(#badgeGradient)"/>
+
+  <!-- Stacked blocks (logo) -->
+  <rect x="10" y="25" width="16" height="4" rx="1" fill="white"/>
+  <rect x="10" y="20" width="12" height="4" rx="1" fill="white" fill-opacity="0.9"/>
+  <rect x="10" y="15" width="8" height="4" rx="1" fill="white" fill-opacity="0.8"/>
+  <circle cx="24" cy="17" r="2" fill="white" fill-opacity="0.95"/>
+
+  <!-- Text -->
+  <text x="40" y="17" font-family="system-ui, -apple-system, sans-serif" font-size="9" fill="#71717a">Featured on</text>
+  <text x="40" y="29" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="600" fill="#18181b">Builders<tspan fill="#f97316">.to</tspan></text>
+</svg>
