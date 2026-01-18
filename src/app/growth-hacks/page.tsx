@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { Zap, Award, Clock, TrendingUp } from "lucide-react";
+import { Zap, Award, Clock, TrendingUp, Eye, Lightbulb, DollarSign } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Growth Hacks - Builders.to",
@@ -19,7 +19,36 @@ const articles = [
     iconBg: "bg-amber-500/10",
     stats: "1.2M+ visitors",
   },
-  // Add more growth hack articles here as they are created
+  {
+    slug: "build-in-public",
+    title: "How to Build in Public",
+    description: "The complete 2026 guide for indie hackers. Learn daily update strategies, what to share vs. keep private, and grow your audience while building.",
+    readTime: "12 min read",
+    icon: Eye,
+    iconColor: "text-emerald-400",
+    iconBg: "bg-emerald-500/10",
+    stats: "3x engagement",
+  },
+  {
+    slug: "micro-saas-ideas",
+    title: "50 Micro-SaaS Ideas",
+    description: "A curated list of 50 micro-SaaS ideas you can build and launch in 30 days. Each idea is validated, achievable, and has real revenue potential.",
+    readTime: "10 min read",
+    icon: Lightbulb,
+    iconColor: "text-amber-400",
+    iconBg: "bg-amber-500/10",
+    stats: "50 ideas",
+  },
+  {
+    slug: "indie-hacker-revenue-streams",
+    title: "How Indie Hackers Make Money",
+    description: "Discover the 8 revenue streams successful indie hackers use beyond SaaS. From freelancing to acquisitions, learn to diversify your income.",
+    readTime: "10 min read",
+    icon: DollarSign,
+    iconColor: "text-emerald-400",
+    iconBg: "bg-emerald-500/10",
+    stats: "8 streams",
+  },
 ];
 
 export default function GrowthHacksPage() {

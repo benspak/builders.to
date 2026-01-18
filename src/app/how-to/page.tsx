@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { BookOpen, User, Clock, Crown } from "lucide-react";
+import { BookOpen, User, Clock, Crown, Rocket, Users } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "How To - Builders.to",
@@ -27,7 +27,24 @@ const articles = [
     iconColor: "text-amber-400",
     iconBg: "bg-amber-500/10",
   },
-  // Add more articles here as they are created
+  {
+    slug: "idea-to-first-customer",
+    title: "From Idea to First Customer",
+    description: "The complete roadmap for indie hackers to go from idea to paying customer. Validate, build, launch, and get paid.",
+    readTime: "15 min read",
+    icon: Rocket,
+    iconColor: "text-violet-400",
+    iconBg: "bg-violet-500/10",
+  },
+  {
+    slug: "find-technical-cofounder",
+    title: "Find a Technical Co-founder",
+    description: "How to find the right technical co-founder without getting scammed. Where to look, red flags, and equity splits.",
+    readTime: "12 min read",
+    icon: Users,
+    iconColor: "text-cyan-400",
+    iconBg: "bg-cyan-500/10",
+  },
 ];
 
 export default function HowToPage() {

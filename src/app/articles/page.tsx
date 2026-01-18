@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { BookOpen, FileText, Clock, User, Crown, ArrowRight, Zap, Award, TrendingUp } from "lucide-react";
+import { BookOpen, FileText, Clock, User, Crown, ArrowRight, Zap, Award, TrendingUp, Eye, Rocket, Lightbulb, Users, DollarSign } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Articles - Builders.to",
@@ -35,6 +35,24 @@ const categories = [
         iconColor: "text-amber-400",
         iconBg: "bg-amber-500/10",
       },
+      {
+        slug: "idea-to-first-customer",
+        title: "From Idea to First Customer",
+        description: "The complete roadmap for indie hackers to go from idea to paying customer. Validate, build, launch, and get paid.",
+        readTime: "15 min read",
+        icon: Rocket,
+        iconColor: "text-violet-400",
+        iconBg: "bg-violet-500/10",
+      },
+      {
+        slug: "find-technical-cofounder",
+        title: "Find a Technical Co-founder",
+        description: "How to find the right technical co-founder without getting scammed. Where to look, red flags, and equity splits.",
+        readTime: "12 min read",
+        icon: Users,
+        iconColor: "text-cyan-400",
+        iconBg: "bg-cyan-500/10",
+      },
     ],
   },
   {
@@ -53,6 +71,33 @@ const categories = [
         icon: Award,
         iconColor: "text-amber-400",
         iconBg: "bg-amber-500/10",
+      },
+      {
+        slug: "build-in-public",
+        title: "How to Build in Public",
+        description: "The complete 2026 guide for indie hackers. Learn daily update strategies, what to share, and grow your audience while building.",
+        readTime: "12 min read",
+        icon: Eye,
+        iconColor: "text-emerald-400",
+        iconBg: "bg-emerald-500/10",
+      },
+      {
+        slug: "micro-saas-ideas",
+        title: "50 Micro-SaaS Ideas",
+        description: "A curated list of 50 micro-SaaS ideas you can build and launch in 30 days. Validated, achievable, with real revenue potential.",
+        readTime: "10 min read",
+        icon: Lightbulb,
+        iconColor: "text-amber-400",
+        iconBg: "bg-amber-500/10",
+      },
+      {
+        slug: "indie-hacker-revenue-streams",
+        title: "How Indie Hackers Make Money",
+        description: "Discover the 8 revenue streams successful indie hackers use beyond SaaS. Diversify your income and build a sustainable business.",
+        readTime: "10 min read",
+        icon: DollarSign,
+        iconColor: "text-emerald-400",
+        iconBg: "bg-emerald-500/10",
       },
     ],
   },
