@@ -56,6 +56,7 @@ export default async function LocalPage({ searchParams }: PageProps) {
       select: {
         city: true,
         state: true,
+        country: true,
         locationSlug: true,
       },
     }),
@@ -116,8 +117,10 @@ export default async function LocalPage({ searchParams }: PageProps) {
   // Group builders by locationSlug
   const builderLocationMap = new Map<string, LocationData>();
   for (const builder of builders) {
-    if (builder.locationSlug && builder.city && builder.state) {
-      const location = `${builder.city}, ${builder.state}`;
+    // Use country (primary) or state (legacy) for location display
+    const locationPart = builder.country || builder.state;
+    if (builder.locationSlug && builder.city && locationPart) {
+      const location = `${builder.city}, ${locationPart}`;
       const existing = builderLocationMap.get(builder.locationSlug);
       if (existing) {
         existing.count += 1;
