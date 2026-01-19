@@ -11,6 +11,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = await auth();
     const { id: feedEventId } = await params;
 
     const comments = await prisma.feedEventComment.findMany({
@@ -20,6 +21,10 @@ export async function GET(
         id: true,
         content: true,
         gifUrl: true,
+        imageUrl: true,
+        videoUrl: true,
+        pollQuestion: true,
+        pollExpiresAt: true,
         createdAt: true,
         updatedAt: true,
         user: {
@@ -32,10 +37,40 @@ export async function GET(
             slug: true,
           },
         },
+        pollOptions: {
+          orderBy: { order: "asc" },
+          select: {
+            id: true,
+            text: true,
+            order: true,
+            _count: {
+              select: { votes: true },
+            },
+          },
+        },
       },
     });
 
-    return NextResponse.json(comments);
+    // Get user's votes if logged in
+    let userVotes: { commentId: string; optionId: string }[] = [];
+    if (session?.user?.id) {
+      const votes = await prisma.feedEventCommentPollVote.findMany({
+        where: {
+          userId: session.user.id,
+          commentId: { in: comments.map(c => c.id) },
+        },
+        select: { commentId: true, optionId: true },
+      });
+      userVotes = votes;
+    }
+
+    // Add votedOptionId to each comment
+    const commentsWithVotes = comments.map(comment => ({
+      ...comment,
+      votedOptionId: userVotes.find(v => v.commentId === comment.id)?.optionId || null,
+    }));
+
+    return NextResponse.json(commentsWithVotes);
   } catch (error) {
     console.error("Error fetching feed event comments:", error);
     return NextResponse.json(
@@ -68,20 +103,49 @@ export async function POST(
 
     const { id: feedEventId } = await params;
     const body = await request.json();
-    const { content, gifUrl } = body;
+    const { content, gifUrl, imageUrl, videoUrl, pollOptions } = body;
 
-    if (!content || content.trim().length === 0) {
+    // Allow submit if there's text OR media
+    if (!content?.trim() && !gifUrl && !imageUrl) {
       return NextResponse.json(
-        { error: "Content is required" },
+        { error: "Content or media is required" },
         { status: 400 }
       );
     }
 
-    if (content.length > 1000) {
+    if (content && content.length > 1000) {
       return NextResponse.json(
         { error: "Comment must be 1000 characters or less" },
         { status: 400 }
       );
+    }
+
+    // Validate poll options if provided
+    let validatedPollOptions: { text: string; order: number }[] | null = null;
+    if (pollOptions && Array.isArray(pollOptions) && pollOptions.length > 0) {
+      if (pollOptions.length < 2) {
+        return NextResponse.json(
+          { error: "At least 2 poll options are required" },
+          { status: 400 }
+        );
+      }
+      if (pollOptions.length > 5) {
+        return NextResponse.json(
+          { error: "Maximum 5 poll options allowed" },
+          { status: 400 }
+        );
+      }
+
+      validatedPollOptions = pollOptions.map((opt: string, index: number) => {
+        const text = typeof opt === "string" ? opt.trim() : "";
+        if (!text || text.length === 0) {
+          throw new Error(`Option ${index + 1} is empty`);
+        }
+        if (text.length > 50) {
+          throw new Error(`Option ${index + 1} must be 50 characters or less`);
+        }
+        return { text, order: index };
+      });
     }
 
     // Check if feed event exists and get the owner info
@@ -123,17 +187,39 @@ export async function POST(
       },
     });
 
+    // Calculate poll expiration (7 days from now) if poll is included
+    let pollExpiresAt: Date | null = null;
+    if (validatedPollOptions) {
+      pollExpiresAt = new Date();
+      pollExpiresAt.setDate(pollExpiresAt.getDate() + 7);
+    }
+
     const comment = await prisma.feedEventComment.create({
       data: {
-        content: content.trim(),
+        content: content?.trim() || " ",
         gifUrl: gifUrl || null,
+        imageUrl: imageUrl || null,
+        videoUrl: videoUrl || null,
         userId: session.user.id,
         feedEventId,
+        // Poll fields
+        pollQuestion: validatedPollOptions ? (content?.trim() || "Poll") : null,
+        pollExpiresAt: pollExpiresAt,
+        // Create poll options if present
+        ...(validatedPollOptions && {
+          pollOptions: {
+            create: validatedPollOptions,
+          },
+        }),
       },
       select: {
         id: true,
         content: true,
         gifUrl: true,
+        imageUrl: true,
+        videoUrl: true,
+        pollQuestion: true,
+        pollExpiresAt: true,
         createdAt: true,
         updatedAt: true,
         user: {
@@ -144,6 +230,17 @@ export async function POST(
             lastName: true,
             image: true,
             slug: true,
+          },
+        },
+        pollOptions: {
+          orderBy: { order: "asc" },
+          select: {
+            id: true,
+            text: true,
+            order: true,
+            _count: {
+              select: { votes: true },
+            },
           },
         },
       },
@@ -235,7 +332,13 @@ export async function POST(
       }
     }
 
-    return NextResponse.json(comment, { status: 201 });
+    // Add votedOptionId for consistency
+    const responseComment = {
+      ...comment,
+      votedOptionId: null,
+    };
+
+    return NextResponse.json(responseComment, { status: 201 });
   } catch (error) {
     console.error("Error creating feed event comment:", error);
     return NextResponse.json(

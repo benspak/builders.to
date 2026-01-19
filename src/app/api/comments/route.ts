@@ -96,7 +96,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json([]);
     }
 
-    // Fetch comments from FeedEventComment
+    // Fetch comments from FeedEventComment with poll data
     const comments = await prisma.feedEventComment.findMany({
       where: { feedEventId: feedEvent.id },
       orderBy: { createdAt: "desc" },
@@ -104,6 +104,10 @@ export async function GET(request: NextRequest) {
         id: true,
         content: true,
         gifUrl: true,
+        imageUrl: true,
+        videoUrl: true,
+        pollQuestion: true,
+        pollExpiresAt: true,
         createdAt: true,
         updatedAt: true,
         userId: true,
@@ -118,13 +122,44 @@ export async function GET(request: NextRequest) {
             slug: true,
           },
         },
+        pollOptions: {
+          orderBy: { order: "asc" },
+          select: {
+            id: true,
+            text: true,
+            order: true,
+            _count: {
+              select: { votes: true },
+            },
+          },
+        },
       },
     });
+
+    // Get user's votes if logged in
+    let userVotes: { commentId: string; optionId: string }[] = [];
+    if (session?.user?.id) {
+      const votes = await prisma.feedEventCommentPollVote.findMany({
+        where: {
+          userId: session.user.id,
+          commentId: { in: comments.map(c => c.id) },
+        },
+        select: { commentId: true, optionId: true },
+      });
+      userVotes = votes;
+    }
 
     // Transform to match the expected format (with placeholder like data for compatibility)
     const commentsWithLikeStatus = comments.map(comment => ({
       id: comment.id,
       content: comment.content,
+      gifUrl: comment.gifUrl,
+      imageUrl: comment.imageUrl,
+      videoUrl: comment.videoUrl,
+      pollQuestion: comment.pollQuestion,
+      pollExpiresAt: comment.pollExpiresAt,
+      pollOptions: comment.pollOptions,
+      votedOptionId: userVotes.find(v => v.commentId === comment.id)?.optionId || null,
       createdAt: comment.createdAt,
       updatedAt: comment.updatedAt,
       userId: comment.userId,
@@ -169,13 +204,49 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { projectId, content, gifUrl } = body;
+    const { projectId, content, gifUrl, imageUrl, videoUrl, pollOptions } = body;
 
-    if (!projectId || !content) {
+    if (!projectId) {
       return NextResponse.json(
-        { error: "Project ID and content are required" },
+        { error: "Project ID is required" },
         { status: 400 }
       );
+    }
+
+    // Allow submit if there's text OR media
+    if (!content?.trim() && !gifUrl && !imageUrl) {
+      return NextResponse.json(
+        { error: "Content or media is required" },
+        { status: 400 }
+      );
+    }
+
+    // Validate poll options if provided
+    let validatedPollOptions: { text: string; order: number }[] | null = null;
+    if (pollOptions && Array.isArray(pollOptions) && pollOptions.length > 0) {
+      if (pollOptions.length < 2) {
+        return NextResponse.json(
+          { error: "At least 2 poll options are required" },
+          { status: 400 }
+        );
+      }
+      if (pollOptions.length > 5) {
+        return NextResponse.json(
+          { error: "Maximum 5 poll options allowed" },
+          { status: 400 }
+        );
+      }
+
+      validatedPollOptions = pollOptions.map((opt: string, index: number) => {
+        const text = typeof opt === "string" ? opt.trim() : "";
+        if (!text || text.length === 0) {
+          throw new Error(`Option ${index + 1} is empty`);
+        }
+        if (text.length > 50) {
+          throw new Error(`Option ${index + 1} must be 50 characters or less`);
+        }
+        return { text, order: index };
+      });
     }
 
     // Check if project exists and get owner info
@@ -217,18 +288,40 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    // Calculate poll expiration (7 days from now) if poll is included
+    let pollExpiresAt: Date | null = null;
+    if (validatedPollOptions) {
+      pollExpiresAt = new Date();
+      pollExpiresAt.setDate(pollExpiresAt.getDate() + 7);
+    }
+
     // Create comment in FeedEventComment
     const comment = await prisma.feedEventComment.create({
       data: {
-        content: content.trim(),
+        content: content?.trim() || " ",
         gifUrl: gifUrl || null,
+        imageUrl: imageUrl || null,
+        videoUrl: videoUrl || null,
         userId: session.user.id,
         feedEventId: feedEvent.id,
+        // Poll fields
+        pollQuestion: validatedPollOptions ? (content?.trim() || "Poll") : null,
+        pollExpiresAt: pollExpiresAt,
+        // Create poll options if present
+        ...(validatedPollOptions && {
+          pollOptions: {
+            create: validatedPollOptions,
+          },
+        }),
       },
       select: {
         id: true,
         content: true,
         gifUrl: true,
+        imageUrl: true,
+        videoUrl: true,
+        pollQuestion: true,
+        pollExpiresAt: true,
         createdAt: true,
         updatedAt: true,
         userId: true,
@@ -240,6 +333,17 @@ export async function POST(request: NextRequest) {
             lastName: true,
             image: true,
             slug: true,
+          },
+        },
+        pollOptions: {
+          orderBy: { order: "asc" },
+          select: {
+            id: true,
+            text: true,
+            order: true,
+            _count: {
+              select: { votes: true },
+            },
           },
         },
       },
@@ -333,6 +437,13 @@ export async function POST(request: NextRequest) {
     const responseComment = {
       id: comment.id,
       content: comment.content,
+      gifUrl: comment.gifUrl,
+      imageUrl: comment.imageUrl,
+      videoUrl: comment.videoUrl,
+      pollQuestion: comment.pollQuestion,
+      pollExpiresAt: comment.pollExpiresAt,
+      pollOptions: comment.pollOptions,
+      votedOptionId: null,
       createdAt: comment.createdAt,
       updatedAt: comment.updatedAt,
       userId: comment.userId,

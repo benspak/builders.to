@@ -1,11 +1,14 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { User, MoreHorizontal, Pencil, Trash2, Loader2, X, Check, Heart } from "lucide-react";
+import { User, MoreHorizontal, Pencil, Trash2, Loader2, X, Check, Heart, BarChart3, Clock } from "lucide-react";
 import { formatRelativeTime, cn, MENTION_REGEX } from "@/lib/utils";
+import { ImageLightbox } from "@/components/ui/image-lightbox";
+import { YouTubeEmbed, extractYouTubeUrlFromText } from "@/components/ui/youtube-embed";
 
 // Component to render content with clickable @mentions
 function ContentWithMentions({ content }: { content: string }) {
@@ -63,10 +66,21 @@ function ContentWithMentions({ content }: { content: string }) {
   );
 }
 
+interface PollOption {
+  id: string;
+  text: string;
+  order: number;
+  _count: {
+    votes: number;
+  };
+}
+
 interface Comment {
   id: string;
   content: string;
   gifUrl?: string | null;
+  imageUrl?: string | null;
+  videoUrl?: string | null;
   createdAt: string | Date;
   user: {
     id: string;
@@ -76,16 +90,24 @@ interface Comment {
   };
   likesCount?: number;
   isLiked?: boolean;
+  // Poll data (optional)
+  pollQuestion?: string | null;
+  pollExpiresAt?: string | Date | null;
+  pollOptions?: PollOption[];
+  votedOptionId?: string | null;
 }
 
 interface CommentItemProps {
   comment: Comment;
   onDeleted?: () => void;
   onUpdated?: () => void;
+  /** API endpoint type for voting on polls */
+  pollVoteEndpoint?: "feed-event-comment" | "update-comment";
 }
 
-export function CommentItem({ comment, onDeleted, onUpdated }: CommentItemProps) {
+export function CommentItem({ comment, onDeleted, onUpdated, pollVoteEndpoint = "feed-event-comment" }: CommentItemProps) {
   const { data: session } = useSession();
+  const router = useRouter();
   const [showMenu, setShowMenu] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(comment.content);
@@ -94,6 +116,56 @@ export function CommentItem({ comment, onDeleted, onUpdated }: CommentItemProps)
   const [likesCount, setLikesCount] = useState(comment.likesCount || 0);
   const [isLiked, setIsLiked] = useState(comment.isLiked || false);
   const [likeLoading, setLikeLoading] = useState(false);
+
+  // Poll state
+  const [votedOptionId, setVotedOptionId] = useState<string | null>(comment.votedOptionId || null);
+  const [pollOptions, setPollOptions] = useState(comment.pollOptions || []);
+  const [isVoting, setIsVoting] = useState(false);
+
+  const hasPoll = !!comment.pollQuestion && pollOptions.length > 0;
+  const isPollExpired = comment.pollExpiresAt ? new Date() > new Date(comment.pollExpiresAt) : false;
+  const hasVoted = !!votedOptionId;
+  const showPollResults = hasVoted || isPollExpired;
+
+  // Calculate total votes
+  const totalPollVotes = pollOptions.reduce((sum, opt) => sum + opt._count.votes, 0);
+
+  // Calculate time remaining for poll
+  const getPollTimeRemaining = () => {
+    if (!comment.pollExpiresAt) return "";
+    const now = new Date();
+    const expires = new Date(comment.pollExpiresAt);
+    const diff = expires.getTime() - now.getTime();
+
+    if (diff <= 0) return "Poll ended";
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+    if (days > 0) return `${days}d ${hours}h left`;
+    if (hours > 0) return `${hours}h left`;
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    return `${minutes}m left`;
+  };
+
+  const [pollTimeRemaining, setPollTimeRemaining] = useState(getPollTimeRemaining());
+
+  // Update poll time remaining every minute
+  useEffect(() => {
+    if (!hasPoll) return;
+    const interval = setInterval(() => {
+      setPollTimeRemaining(getPollTimeRemaining());
+    }, 60000);
+    return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [comment.pollExpiresAt]);
+
+  // Auto-detect YouTube video URL from content
+  const detectedVideoUrl = useMemo(() => {
+    // First check explicit videoUrl, then try to extract from content
+    if (comment.videoUrl) return comment.videoUrl;
+    return extractYouTubeUrlFromText(comment.content);
+  }, [comment.videoUrl, comment.content]);
 
   const isOwner = session?.user?.id === comment.user.id;
 
@@ -172,6 +244,53 @@ export function CommentItem({ comment, onDeleted, onUpdated }: CommentItemProps)
       setDeleting(false);
     }
   };
+
+  async function handleVote(optionId: string) {
+    if (!session?.user?.id) {
+      router.push("/signin");
+      return;
+    }
+    if (isVoting || isPollExpired || hasVoted) return;
+
+    setIsVoting(true);
+
+    // Optimistic update
+    setVotedOptionId(optionId);
+    setPollOptions(prev => prev.map(opt => ({
+      ...opt,
+      _count: {
+        votes: opt.id === optionId ? opt._count.votes + 1 : opt._count.votes,
+      },
+    })));
+
+    try {
+      const response = await fetch(`/api/comment-polls/${comment.id}/vote`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ optionId, type: pollVoteEndpoint }),
+      });
+
+      if (!response.ok) {
+        // Revert on error
+        setVotedOptionId(null);
+        setPollOptions(comment.pollOptions || []);
+        const data = await response.json();
+        console.error("Vote error:", data.error);
+      } else {
+        const data = await response.json();
+        if (data.options) {
+          setPollOptions(data.options);
+        }
+      }
+    } catch (error) {
+      // Revert on error
+      setVotedOptionId(null);
+      setPollOptions(comment.pollOptions || []);
+      console.error("Error voting:", error);
+    } finally {
+      setIsVoting(false);
+    }
+  }
 
   return (
     <div className={cn(
@@ -319,6 +438,18 @@ export function CommentItem({ comment, onDeleted, onUpdated }: CommentItemProps)
                 </p>
               )}
 
+              {/* Display Image if present */}
+              {comment.imageUrl && (
+                <div className="mt-2 rounded-lg overflow-hidden max-w-sm">
+                  <ImageLightbox
+                    src={comment.imageUrl}
+                    alt="Comment image"
+                    containerClassName="relative aspect-video max-h-48 bg-zinc-900"
+                    className="object-cover"
+                  />
+                </div>
+              )}
+
               {/* Display GIF if present */}
               {comment.gifUrl && (
                 <div className="mt-2 rounded-lg overflow-hidden max-w-xs">
@@ -328,6 +459,108 @@ export function CommentItem({ comment, onDeleted, onUpdated }: CommentItemProps)
                     alt="GIF"
                     className="w-full h-auto max-h-48 object-contain rounded-lg"
                   />
+                  <div className="absolute bottom-2 left-2 px-2 py-1 rounded-md bg-black/60 text-xs text-fuchsia-300 font-medium">
+                    GIF
+                  </div>
+                </div>
+              )}
+
+              {/* Display YouTube video if present */}
+              {detectedVideoUrl && (
+                <div className="mt-2 max-w-sm">
+                  <YouTubeEmbed url={detectedVideoUrl} />
+                </div>
+              )}
+
+              {/* Poll attachment */}
+              {hasPoll && (
+                <div className="mt-3 rounded-xl border border-violet-500/20 bg-violet-500/5 p-3">
+                  {/* Poll header */}
+                  <div className="flex items-center gap-2 mb-2">
+                    <BarChart3 className="h-3.5 w-3.5 text-violet-400" />
+                    <span className="text-xs font-medium text-violet-400">Poll</span>
+                    <div className="flex items-center gap-1 text-xs text-zinc-500">
+                      <Clock className="h-3 w-3" />
+                      <span className={isPollExpired ? "text-red-400" : ""}>{pollTimeRemaining}</span>
+                    </div>
+                  </div>
+
+                  {/* Poll options */}
+                  <div className="space-y-1.5">
+                    {pollOptions.map((option) => {
+                      const percentage = totalPollVotes > 0
+                        ? Math.round((option._count.votes / totalPollVotes) * 100)
+                        : 0;
+                      const isVoted = votedOptionId === option.id;
+                      const isWinning = showPollResults && option._count.votes === Math.max(...pollOptions.map(o => o._count.votes)) && option._count.votes > 0;
+
+                      return (
+                        <button
+                          key={option.id}
+                          onClick={() => handleVote(option.id)}
+                          disabled={!session?.user?.id || isVoting || isPollExpired || hasVoted}
+                          className={cn(
+                            "relative w-full text-left rounded-lg border transition-all overflow-hidden",
+                            showPollResults
+                              ? "cursor-default"
+                              : "hover:border-violet-500/50 hover:bg-violet-500/5 cursor-pointer",
+                            isVoted
+                              ? "border-violet-500/50 bg-violet-500/10"
+                              : "border-white/10 bg-zinc-800/30",
+                            (!session?.user?.id || isPollExpired) && !showPollResults && "opacity-60 cursor-not-allowed"
+                          )}
+                        >
+                          {/* Progress bar background */}
+                          {showPollResults && (
+                            <div
+                              className={cn(
+                                "absolute inset-y-0 left-0 transition-all duration-500",
+                                isVoted
+                                  ? "bg-violet-500/30"
+                                  : isWinning
+                                    ? "bg-violet-500/20"
+                                    : "bg-zinc-700/50"
+                              )}
+                              style={{ width: `${percentage}%` }}
+                            />
+                          )}
+
+                          {/* Option content */}
+                          <div className="relative flex items-center justify-between px-2.5 py-1.5">
+                            <div className="flex items-center gap-1.5">
+                              {isVoted && (
+                                <Check className="h-3 w-3 text-violet-400" />
+                              )}
+                              <span className={cn(
+                                "text-xs",
+                                isVoted ? "text-violet-300 font-medium" : "text-zinc-200"
+                              )}>
+                                {option.text}
+                              </span>
+                            </div>
+                            {showPollResults && (
+                              <span className={cn(
+                                "text-xs font-semibold tabular-nums",
+                                isVoted ? "text-violet-300" : isWinning ? "text-white" : "text-zinc-400"
+                              )}>
+                                {percentage}%
+                              </span>
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Vote count */}
+                  <div className="mt-1.5 text-xs text-zinc-500">
+                    {totalPollVotes} {totalPollVotes === 1 ? "vote" : "votes"}
+                    {!session?.user?.id && !isPollExpired && (
+                      <span className="ml-2 text-violet-400">
+                        <Link href="/signin" className="hover:underline">Sign in to vote</Link>
+                      </span>
+                    )}
+                  </div>
                 </div>
               )}
 

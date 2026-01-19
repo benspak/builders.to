@@ -653,17 +653,56 @@ model UpdateComment {
   id        String   @id @default(cuid())
   content   String   @db.Text
   gifUrl    String? // Optional GIF attachment from Giphy
+  imageUrl  String? // Optional image attachment
+  videoUrl  String? // Optional video embed URL (YouTube)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // Poll attachment (optional) - X/Twitter style polls
+  pollQuestion  String?   // Poll question (if this comment has a poll)
+  pollExpiresAt DateTime? // When the poll ends (7 days from creation)
 
   userId   String
   updateId String
 
-  user   User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  update DailyUpdate @relation(fields: [updateId], references: [id], onDelete: Cascade)
+  user        User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  update      DailyUpdate               @relation(fields: [updateId], references: [id], onDelete: Cascade)
+  pollOptions UpdateCommentPollOption[] // Poll options if this is a poll comment
+  pollVotes   UpdateCommentPollVote[] // Votes on the poll
 
   @@index([updateId])
   @@index([userId])
+}
+
+// Poll options for update comments (up to 5 per comment)
+model UpdateCommentPollOption {
+  id    String @id @default(cuid())
+  text  String // Option text (max 50 chars)
+  order Int    @default(0) // Display order
+
+  commentId String
+  comment   UpdateComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  votes UpdateCommentPollVote[]
+
+  @@index([commentId])
+}
+
+// Poll votes for update comments - one vote per user per comment poll
+model UpdateCommentPollVote {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  userId    String
+  optionId  String
+  commentId String // Denormalized for efficient querying
+
+  option  UpdateCommentPollOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  comment UpdateComment           @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, commentId]) // One vote per user per comment poll
+  @@index([optionId])
+  @@index([commentId])
 }
 
 // User follows - social connections between builders
@@ -749,8 +788,14 @@ model FeedEventComment {
   id        String   @id @default(cuid())
   content   String   @db.Text
   gifUrl    String? // Optional GIF attachment from Giphy
+  imageUrl  String? // Optional image attachment
+  videoUrl  String? // Optional video embed URL (YouTube)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // Poll attachment (optional) - X/Twitter style polls
+  pollQuestion  String?   // Poll question (if this comment has a poll)
+  pollExpiresAt DateTime? // When the poll ends (7 days from creation)
 
   userId      String
   feedEventId String
@@ -758,10 +803,43 @@ model FeedEventComment {
   user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   feedEvent     FeedEvent      @relation(fields: [feedEventId], references: [id], onDelete: Cascade)
   notifications Notification[]
+  pollOptions   FeedEventCommentPollOption[] // Poll options if this is a poll comment
+  pollVotes     FeedEventCommentPollVote[] // Votes on the poll
 
   @@index([feedEventId])
   @@index([userId])
   @@index([createdAt])
+}
+
+// Poll options for feed event comments (up to 5 per comment)
+model FeedEventCommentPollOption {
+  id    String @id @default(cuid())
+  text  String // Option text (max 50 chars)
+  order Int    @default(0) // Display order
+
+  commentId String
+  comment   FeedEventComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  votes FeedEventCommentPollVote[]
+
+  @@index([commentId])
+}
+
+// Poll votes for feed event comments - one vote per user per comment poll
+model FeedEventCommentPollVote {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  userId    String
+  optionId  String
+  commentId String // Denormalized for efficient querying
+
+  option  FeedEventCommentPollOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  comment FeedEventComment           @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, commentId]) // One vote per user per comment poll
+  @@index([optionId])
+  @@index([commentId])
 }
 
 // Notification types

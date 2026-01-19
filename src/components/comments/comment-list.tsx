@@ -1,14 +1,29 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { CommentForm } from "./comment-form";
+import { RichCommentForm } from "./rich-comment-form";
 import { CommentItem } from "./comment-item";
 import { MessageSquare, Loader2 } from "lucide-react";
+
+interface PollOption {
+  id: string;
+  text: string;
+  order: number;
+  _count: {
+    votes: number;
+  };
+}
 
 interface Comment {
   id: string;
   content: string;
   gifUrl?: string | null;
+  imageUrl?: string | null;
+  videoUrl?: string | null;
+  pollQuestion?: string | null;
+  pollExpiresAt?: string | null;
+  pollOptions?: PollOption[];
+  votedOptionId?: string | null;
   createdAt: string;
   user: {
     id: string;
@@ -43,6 +58,30 @@ export function CommentList({ projectId }: CommentListProps) {
     fetchComments();
   }, [fetchComments]);
 
+  async function handleSubmitComment(data: {
+    content: string;
+    imageUrl?: string | null;
+    gifUrl?: string | null;
+    videoUrl?: string | null;
+    pollOptions?: string[];
+  }) {
+    const response = await fetch("/api/comments", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        projectId,
+        ...data,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Failed to post comment");
+    }
+
+    fetchComments();
+  }
+
   return (
     <div id="comments" className="space-y-6">
       <div className="flex items-center gap-2">
@@ -53,7 +92,10 @@ export function CommentList({ projectId }: CommentListProps) {
       </div>
 
       {/* Comment Form */}
-      <CommentForm projectId={projectId} onCommentAdded={fetchComments} />
+      <RichCommentForm
+        onSubmit={handleSubmitComment}
+        placeholder="Share your thoughts... Use @ to mention someone"
+      />
 
       {/* Comments List */}
       {loading ? (
@@ -73,6 +115,7 @@ export function CommentList({ projectId }: CommentListProps) {
               comment={comment}
               onDeleted={fetchComments}
               onUpdated={fetchComments}
+              pollVoteEndpoint="feed-event-comment"
             />
           ))}
         </div>
