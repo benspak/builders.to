@@ -5,7 +5,6 @@ import {
   Users,
   Building2,
   Sparkles,
-  Store,
   MapPin,
   Trophy,
   Coins,
@@ -34,16 +33,16 @@ export const dynamic = "force-dynamic";
 
 async function getStats() {
   try {
-    const [projectCount, userCount, companyCount, serviceCount, updateCount] = await Promise.all([
+    const [projectCount, userCount, companyCount, updateCount, localListingCount] = await Promise.all([
       prisma.project.count(),
       prisma.user.count(),
       prisma.company.count(),
-      prisma.serviceListing.count({ where: { status: "ACTIVE" } }),
       prisma.dailyUpdate.count(),
+      prisma.localListing.count({ where: { status: "ACTIVE" } }),
     ]);
-    return { projectCount, userCount, companyCount, serviceCount, updateCount };
+    return { projectCount, userCount, companyCount, updateCount, localListingCount };
   } catch {
-    return { projectCount: 0, userCount: 0, companyCount: 0, serviceCount: 0, updateCount: 0 };
+    return { projectCount: 0, userCount: 0, companyCount: 0, updateCount: 0, localListingCount: 0 };
   }
 }
 
@@ -79,22 +78,13 @@ export default async function HomePage() {
       stats: `${stats.companyCount.toLocaleString()} companies`,
     },
     {
-      icon: Store,
-      title: "Services Marketplace",
-      description:
-        "Hire verified builders with proven track records. MVP builds, design, marketing, AI integration, DevOps, and more.",
-      href: "/services",
-      color: "emerald",
-      stats: `${stats.serviceCount.toLocaleString()} services`,
-    },
-    {
       icon: MapPin,
       title: "Builders Local",
       description:
-        "Find builders, services, jobs, and opportunities in your city. Local classifieds for the builder community.",
+        "Advertise your services for free, find jobs, housing, and opportunities in your city. Local classifieds for the builder community.",
       href: "/local",
       color: "cyan",
-      stats: "By city",
+      stats: `${stats.localListingCount.toLocaleString()} listings`,
     },
     {
       icon: Briefcase,

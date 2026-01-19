@@ -65,8 +65,8 @@ export async function POST() {
     }
 
     const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
-    const returnUrl = `${baseUrl}/services/seller?onboarding=complete`;
-    const refreshUrl = `${baseUrl}/services/seller?onboarding=refresh`;
+    const returnUrl = `${baseUrl}/settings?onboarding=complete`;
+    const refreshUrl = `${baseUrl}/settings?onboarding=refresh`;
 
     // If user already has a Connect account, create a new link
     if (user.stripeConnectId) {

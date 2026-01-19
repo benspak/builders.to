@@ -5,7 +5,7 @@ import { CreditCard, Coins, Loader2, Check, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-type ItemType = "ad" | "service" | "local-listing";
+type ItemType = "ad" | "local-listing";
 
 interface TokenCheckoutProps {
   itemId: string;
@@ -27,10 +27,6 @@ const apiPaths: Record<ItemType, { checkout: string; redeem: string }> = {
   ad: {
     checkout: "/api/ads",
     redeem: "/api/ads",
-  },
-  service: {
-    checkout: "/api/services",
-    redeem: "/api/services",
   },
   "local-listing": {
     checkout: "/api/local-listings",

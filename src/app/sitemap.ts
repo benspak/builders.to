@@ -36,12 +36,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     },
     {
-      url: `${BASE_URL}/services`,
-      lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 0.8,
-    },
-    {
       url: `${BASE_URL}/local`,
       lastModified: new Date(),
       changeFrequency: "daily",
@@ -72,12 +66,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let projects: Array<{ slug: string | null; updatedAt: Date }> = [];
   let companies: Array<{ slug: string | null; updatedAt: Date }> = [];
   let users: Array<{ slug: string | null; updatedAt: Date }> = [];
-  let services: Array<{ slug: string | null; updatedAt: Date }> = [];
   let localListings: Array<{ slug: string | null; updatedAt: Date }> = [];
   let locations: Array<{ locationSlug: string | null }> = [];
 
   try {
-    [projects, companies, users, services, localListings, locations] = await Promise.all([
+    [projects, companies, users, localListings, locations] = await Promise.all([
       // Projects with slugs
       prisma.project.findMany({
         where: { slug: { not: null } },
@@ -93,15 +86,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       // Users with public profiles (have slug)
       prisma.user.findMany({
         where: { slug: { not: null } },
-        select: { slug: true, updatedAt: true },
-        orderBy: { updatedAt: "desc" },
-      }),
-      // Active service listings
-      prisma.serviceListing.findMany({
-        where: {
-          status: "ACTIVE",
-          slug: { not: null },
-        },
         select: { slug: true, updatedAt: true },
         orderBy: { updatedAt: "desc" },
       }),
@@ -170,16 +154,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.5,
     }));
 
-  // Generate service listing pages
-  const servicePages: MetadataRoute.Sitemap = services
-    .filter((s) => s.slug)
-    .map((service) => ({
-      url: `${BASE_URL}/services/${service.slug}`,
-      lastModified: service.updatedAt,
-      changeFrequency: "weekly" as const,
-      priority: 0.6,
-    }));
-
   // Generate local listing pages
   const localListingPages: MetadataRoute.Sitemap = localListings
     .filter((l) => l.slug)
@@ -206,7 +180,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...companyPages,
     ...userPages,
     ...userUpdatesPages,
-    ...servicePages,
     ...localListingPages,
     ...locationPages,
   ];

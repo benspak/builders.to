@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export type SearchResultType = "user" | "project" | "listing" | "service" | "update";
+export type SearchResultType = "user" | "project" | "listing" | "update";
 
 export interface UnifiedSearchResult {
   id: string;
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const query = searchParams.get("q")?.trim() || "";
-    const types = searchParams.get("types")?.split(",") || ["user", "project", "listing", "service", "update"];
+    const types = searchParams.get("types")?.split(",") || ["user", "project", "listing", "update"];
     const limit = Math.min(parseInt(searchParams.get("limit") || "5"), 20);
 
     if (!query || query.length < 2) {
@@ -203,64 +203,6 @@ export async function GET(request: NextRequest) {
                   name: listing.user.displayName || listing.user.name,
                   image: listing.user.image,
                   slug: listing.user.slug,
-                },
-              },
-            });
-          });
-        })
-      );
-    }
-
-    // Search Services
-    if (types.includes("service")) {
-      searchPromises.push(
-        prisma.serviceListing.findMany({
-          where: {
-            status: "ACTIVE",
-            expiresAt: { gt: new Date() },
-            OR: [
-              { title: { contains: query, mode: "insensitive" } },
-              { description: { contains: query, mode: "insensitive" } },
-            ],
-          },
-          select: {
-            id: true,
-            slug: true,
-            title: true,
-            description: true,
-            category: true,
-            priceInCents: true,
-            user: {
-              select: {
-                name: true,
-                displayName: true,
-                image: true,
-                slug: true,
-              },
-            },
-          },
-          take: limit,
-          orderBy: { createdAt: "desc" },
-        }).then((services) => {
-          services.forEach((service) => {
-            const price = (service.priceInCents / 100).toLocaleString("en-US", {
-              style: "currency",
-              currency: "USD",
-              minimumFractionDigits: 0,
-            });
-            results.push({
-              id: service.id,
-              type: "service",
-              title: service.title,
-              subtitle: `${price} • ${service.category.replace(/_/g, " ")}`,
-              imageUrl: service.user.image,
-              url: `/services/${service.slug || service.id}`,
-              meta: {
-                category: service.category,
-                author: {
-                  name: service.user.displayName || service.user.name,
-                  image: service.user.image,
-                  slug: service.user.slug,
                 },
               },
             });

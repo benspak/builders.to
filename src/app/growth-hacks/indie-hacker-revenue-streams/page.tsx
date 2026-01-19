@@ -552,11 +552,11 @@ export default function IndieHackerRevenueStreamsPage() {
               Get Started Free
             </Link>
             <Link
-              href="/services"
+              href="/local"
               className="inline-flex items-center gap-2 rounded-lg border border-zinc-700 bg-zinc-800 px-6 py-3 font-medium text-white transition-colors hover:bg-zinc-700"
             >
               <Briefcase className="h-4 w-4" />
-              Browse Services
+              Browse Local Services
             </Link>
           </div>
         </div>

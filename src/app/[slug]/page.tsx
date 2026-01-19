@@ -19,9 +19,6 @@ import {
   Flame,
   Star,
   MessageCircle,
-  Store,
-  DollarSign,
-  Clock,
   ArrowLeft,
   Coins,
 } from "lucide-react";
@@ -392,23 +389,6 @@ export default async function SlugPage({ params }: PageProps) {
               comments: true,
             },
           },
-        },
-      },
-      // Services marketplace listings
-      serviceListings: {
-        where: {
-          status: "ACTIVE",
-          expiresAt: { gt: new Date() },
-        },
-        orderBy: { createdAt: "desc" },
-        select: {
-          id: true,
-          slug: true,
-          title: true,
-          description: true,
-          category: true,
-          priceInCents: true,
-          deliveryDays: true,
         },
       },
       // Pinned posts on profile
@@ -1135,66 +1115,6 @@ export default async function SlugPage({ params }: PageProps) {
                       </div>
                     </Link>
                   ))}
-                </div>
-              </div>
-            )}
-
-            {/* Services - Sidebar on desktop */}
-            {user.serviceListings.length > 0 && (
-              <div className="rounded-2xl border border-white/10 bg-zinc-900/50 backdrop-blur-sm p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <Store className="h-4 w-4 text-amber-500" />
-                  <h3 className="text-sm font-semibold text-white">Services</h3>
-                  <span className="text-xs text-zinc-500">({user.serviceListings.length})</span>
-                </div>
-
-                <div className="space-y-3">
-                  {user.serviceListings.map((service) => {
-                    const formatPrice = (cents: number) => {
-                      return new Intl.NumberFormat("en-US", {
-                        style: "currency",
-                        currency: "USD",
-                        minimumFractionDigits: 0,
-                      }).format(cents / 100);
-                    };
-
-                    const categoryLabels: Record<string, string> = {
-                      MVP_BUILD: "MVP Build",
-                      DESIGN: "Design",
-                      MARKETING: "Marketing",
-                      AI_INTEGRATION: "AI Integration",
-                      DEVOPS: "DevOps",
-                      AUDIT: "Audit",
-                      OTHER: "Other",
-                    };
-
-                    return (
-                      <Link
-                        key={service.id}
-                        href={`/services/${service.slug || service.id}`}
-                        className="block p-3 -mx-2 rounded-lg hover:bg-zinc-800/50 transition-colors group"
-                      >
-                        <div className="flex items-center gap-2 mb-1">
-                          <h4 className="text-sm font-medium text-white group-hover:text-amber-400 transition-colors truncate">
-                            {service.title}
-                          </h4>
-                        </div>
-                        <p className="text-xs text-zinc-500 line-clamp-1">
-                          {categoryLabels[service.category] || "Other"}
-                        </p>
-                        <div className="mt-2 flex items-center gap-3 text-xs">
-                          <span className="flex items-center gap-1 text-emerald-400 font-medium">
-                            <DollarSign className="h-3 w-3" />
-                            {formatPrice(service.priceInCents)}
-                          </span>
-                          <span className="flex items-center gap-1 text-zinc-500">
-                            <Clock className="h-3 w-3" />
-                            {service.deliveryDays}d
-                          </span>
-                        </div>
-                      </Link>
-                    );
-                  })}
                 </div>
               </div>
             )}

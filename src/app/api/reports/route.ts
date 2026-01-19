@@ -288,7 +288,7 @@ function generateReportEmailHtml(data: {
       contentUrl = `${baseUrl}/projects/${contentId}`;
       break;
     case "SERVICE_LISTING":
-      contentUrl = `${baseUrl}/services/${contentId}`;
+      contentUrl = `${baseUrl}/local?category=services`;
       break;
     case "LOCAL_LISTING":
       contentUrl = `${baseUrl}/listing/${contentId}`;
