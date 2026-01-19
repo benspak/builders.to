@@ -25,7 +25,7 @@ import {
   ArrowLeft,
   Coins,
 } from "lucide-react";
-import { FollowButton, FollowStats, GiftTokensButton, GiftSuccessToast } from "@/components/profile";
+import { FollowButton, FollowStats, GiftTokensButton, GiftSuccessToast, PeopleAlsoViewed, ProfileViewTracker } from "@/components/profile";
 import { ReportButton } from "@/components/ui/report-button";
 import { ProBadgeWithTooltip } from "@/components/ui/pro-badge";
 import { Suspense } from "react";
@@ -686,6 +686,13 @@ export default async function SlugPage({ params }: PageProps) {
 
   return (
     <div className="relative min-h-screen bg-zinc-950">
+      {/* Profile View Tracker - tracks profile views for "People also viewed" */}
+      {!isOwnProfile && (
+        <Suspense fallback={null}>
+          <ProfileViewTracker userId={user.id} />
+        </Suspense>
+      )}
+
       {/* Gift Success Toast */}
       <Suspense fallback={null}>
         <GiftSuccessToast />
@@ -1190,6 +1197,14 @@ export default async function SlugPage({ params }: PageProps) {
                   })}
                 </div>
               </div>
+            )}
+
+            {/* People Also Viewed - LinkedIn-style recommendations */}
+            {!isOwnProfile && (
+              <PeopleAlsoViewed
+                userId={user.id}
+                currentUserId={session?.user?.id}
+              />
             )}
           </div>
 

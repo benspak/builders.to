@@ -164,6 +164,11 @@ model User {
   // Pinned Posts
   pinnedPosts PinnedPost[]
 
+  // Profile Views (for "People also viewed" feature)
+  profileViews         ProfileView[] @relation("ProfileViewed")   // Views of this profile
+  profileViewsAsViewer ProfileView[] @relation("ProfileViewer")   // Profiles this user has viewed
+  profileViewsAsReferrer ProfileView[] @relation("ProfileReferrer") // Views where this profile was the referrer
+
   @@index([slug])
   @@index([stripeConnectId])
   @@index([locationSlug])
@@ -1314,6 +1319,27 @@ model LocalListingClick {
 
   @@index([listingId])
   @@index([createdAt])
+}
+
+// Profile views - track when someone views a user profile
+// Used for "People also viewed" feature (like LinkedIn)
+model ProfileView {
+  id              String   @id @default(cuid())
+  viewedUserId    String   // The profile being viewed
+  viewerVisitorId String?  // Anonymous session identifier for logged-out users
+  viewerUserId    String?  // Logged-in user who viewed (optional)
+  referrerUserId  String?  // The profile they came from (for "also viewed" logic)
+  createdAt       DateTime @default(now())
+
+  viewedUser   User  @relation("ProfileViewed", fields: [viewedUserId], references: [id], onDelete: Cascade)
+  viewerUser   User? @relation("ProfileViewer", fields: [viewerUserId], references: [id], onDelete: SetNull)
+  referrerUser User? @relation("ProfileReferrer", fields: [referrerUserId], references: [id], onDelete: SetNull)
+
+  @@index([viewedUserId])
+  @@index([viewerUserId])
+  @@index([referrerUserId])
+  @@index([createdAt])
+  @@index([viewedUserId, referrerUserId]) // For "also viewed" queries
 }
 
 // ============================================
