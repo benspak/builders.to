@@ -322,11 +322,12 @@ export default async function ServicesPage({ searchParams }: ServicesPageProps) 
             </div>
             <div>
               <h3 className="text-sm font-medium text-amber-400 mb-1">
-                Credibility-First Marketplace
+                Credibility-First Marketplace — No Platform Fees
               </h3>
               <p className="text-xs text-zinc-400">
                 Every seller has at least 1 launched project. See their proof of work before you hire.
                 No bids, no races to the bottom—just verified builders with real track records.
+                Sellers keep 100% of their earnings.
               </p>
             </div>
           </div>

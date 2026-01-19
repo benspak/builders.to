@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Users, MessageSquare, Home, ShoppingBag, Briefcase, LayoutGrid } from "lucide-react";
+import { Users, MessageSquare, Home, ShoppingBag, Briefcase, LayoutGrid, Wrench } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LocalListingCategory, CATEGORY_LABELS, CATEGORY_COLORS } from "./types";
 
 const CategoryIcons = {
+  SERVICES: Wrench,
   COMMUNITY: Users,
   DISCUSSION: MessageSquare,
   COWORKING_HOUSING: Home,
@@ -22,6 +23,7 @@ interface LocalCategoryFilterProps {
 }
 
 const categories: { value: LocalListingCategory | "JOBS"; label: string; color: string }[] = [
+  { value: "SERVICES", label: CATEGORY_LABELS.SERVICES, color: CATEGORY_COLORS.SERVICES },
   { value: "COMMUNITY", label: CATEGORY_LABELS.COMMUNITY, color: CATEGORY_COLORS.COMMUNITY },
   { value: "DISCUSSION", label: CATEGORY_LABELS.DISCUSSION, color: CATEGORY_COLORS.DISCUSSION },
   { value: "COWORKING_HOUSING", label: CATEGORY_LABELS.COWORKING_HOUSING, color: CATEGORY_COLORS.COWORKING_HOUSING },

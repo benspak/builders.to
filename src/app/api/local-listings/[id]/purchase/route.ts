@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getStripe, SERVICE_PLATFORM_FEE_PERCENT } from "@/lib/stripe";
+import { getStripe } from "@/lib/stripe";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -94,10 +94,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // Calculate platform fee (5%)
-    const platformFeeInCents = Math.round(
-      (listing.priceInCents * SERVICE_PLATFORM_FEE_PERCENT) / 100
-    );
+    // No platform fee - services are free to advertise
+    const platformFeeInCents = 0;
 
     // Create the order record first
     const order = await prisma.localListingOrder.create({
@@ -106,7 +104,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         buyerId: session.user.id,
         notes: notes || null,
         priceInCents: listing.priceInCents,
-        platformFeeInCents,
+        platformFeeInCents: null, // No platform fee
         status: "PENDING_PAYMENT",
       },
     });
@@ -141,9 +139,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         sellerId: listing.userId,
       },
       customer_email: session.user.email || undefined,
-      // Destination charge with application fee
+      // Direct transfer to seller - no platform fee
       payment_intent_data: {
-        application_fee_amount: platformFeeInCents,
         transfer_data: {
           destination: listing.user.stripeConnectId,
         },

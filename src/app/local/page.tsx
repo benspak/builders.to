@@ -230,7 +230,7 @@ export default async function LocalPage({ searchParams }: PageProps) {
             Local builder network
           </h1>
           <p className="text-xl text-zinc-400 max-w-2xl mx-auto mb-6">
-            Find services, jobs, housing, and meet builders, founders, and entrepreneurs in your area.
+            Advertise your services for free, find jobs, housing, and meet builders, founders, and entrepreneurs in your area.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4 mb-8">
             <Link

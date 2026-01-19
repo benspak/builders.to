@@ -27,18 +27,14 @@ A members-only launchpad and community platform for indie hackers and builders. 
 - **Compensation Transparency** — Salary ranges, equity, and currency options
 - **Remote Filtering** — Location-based or remote opportunities
 
-### 🛠️ Services Marketplace
-
-- **Builder-to-Builder Services** — MVP Build, Design, Marketing, AI Integration, DevOps, Audit
-- **Stripe Connect Payments** — Secure escrow with 5% platform fee
-- **Portfolio Proof-of-Work** — Link your projects as portfolio pieces
-- **90-Day Active Listings** — $1 listing fee for quality control
-
 ### 📍 Builders Local
 
-- **Local Classifieds** — Craigslist-style listings by location
-- **Categories** — Community, Services, Discussion, Coworking/Housing, For Sale
+- **Local Builder Network** — Find services, jobs, and meet builders in your area
+- **Services** — Advertise your services for free (requires 1 launched project)
+- **Categories** — Services, Community, Discussion, Coworking/Housing, For Sale
+- **No Platform Fees** — Sellers keep 100% of their earnings
 - **Location Discovery** — Find builders in your city
+- **Credibility-First** — Only builders with launched projects can post
 
 ### 🪙 Token System
 

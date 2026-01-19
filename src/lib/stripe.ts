@@ -33,8 +33,8 @@ export const AD_SURCHARGE_CENTS = 500; // @deprecated - surcharge system removed
 // Services Marketplace pricing
 export const SERVICE_LISTING_FEE_CENTS = 100; // $1
 export const SERVICE_LISTING_DURATION_DAYS = 90;
-export const SERVICE_PLATFORM_FEE_PERCENT = 5;
-export const MIN_LAUNCHED_PROJECTS_FOR_LISTING = 1;
+export const SERVICE_PLATFORM_FEE_PERCENT = 0; // No platform fee - services are free to advertise
+export const MIN_LAUNCHED_PROJECTS_FOR_LISTING = 1; // Required to post on Local
 
 // Local Listings pricing
 export const LOCAL_LISTING_FEE_CENTS = 100; // $1 for Services category
