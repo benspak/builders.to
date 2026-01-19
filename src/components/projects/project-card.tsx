@@ -59,7 +59,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
   const projectUrl = `/projects/${project.slug || project.id}`;
 
   return (
-    <div className="card card-hover group relative flex flex-col overflow-hidden">
+    <div className="card card-hover group relative flex flex-col overflow-hidden min-h-[420px]">
       {/* Image */}
       {project.imageUrl && (
         <div className="relative h-48 aspect-video overflow-hidden">
@@ -97,7 +97,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
         </div>
 
         {/* Status badge and Milestones */}
-        <div className="mt-6 flex flex-wrap items-center gap-2">
+        <div className="mt-6 mb-6 flex flex-wrap items-center gap-2">
           <span
             className={cn(
               "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium border",
@@ -134,7 +134,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
         </div>
 
         {/* Footer */}
-        <div className="mt-auto pt-4 flex items-center justify-between border-t border-white/5">
+        <div className="mt-auto pt-6 flex items-center justify-between border-t border-white/5">
           {/* Author & Co-Builders */}
           <div className="flex items-center gap-2">
             {/* Stacked Avatars */}
