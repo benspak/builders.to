@@ -62,12 +62,12 @@ export function ProjectCard({ project }: ProjectCardProps) {
     <div className="card card-hover group relative flex flex-col overflow-hidden">
       {/* Image */}
       {project.imageUrl && (
-        <div className="relative h-48 w-full overflow-hidden">
+        <div className="relative h-48 aspect-video overflow-hidden">
           <Image
             src={project.imageUrl}
             alt={project.title}
             fill
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
+            className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 to-transparent" />
         </div>
@@ -97,7 +97,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
         </div>
 
         {/* Status badge and Milestones */}
-        <div className="mt-4 flex flex-wrap items-center gap-2">
+        <div className="mt-6 flex flex-wrap items-center gap-2">
           <span
             className={cn(
               "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium border",
