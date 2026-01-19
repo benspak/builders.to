@@ -2,19 +2,20 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Trophy, User, Rocket, Users, Coins } from "lucide-react";
+import { Trophy, User, Rocket, Users, Flame } from "lucide-react";
 
 interface TopBuilder {
   id: string;
   name: string | null;
-  displayName: string | null;
+  displayName?: string | null;
   firstName: string | null;
   lastName: string | null;
   image: string | null;
   slug: string | null;
   headline: string | null;
   totalProjects: number;
-  lifetimeTokensEarned: number;
+  currentStreak: number;
+  longestStreak: number;
   launchedProjects: number;
   coLaunchedProjects: number;
   rankingScore: number;
@@ -80,7 +81,7 @@ export function TopBuilders({ builders }: TopBuildersProps) {
         </div>
         <div>
           <h3 className="text-sm font-semibold text-white">Top Builders</h3>
-          <p className="text-[10px] text-zinc-500">Launches, collabs & engagement</p>
+          <p className="text-[10px] text-zinc-500">Launches, collabs & streaks</p>
         </div>
       </div>
 
@@ -129,7 +130,7 @@ export function TopBuilders({ builders }: TopBuildersProps) {
               </div>
 
               {/* Stats */}
-              <div className="flex items-center gap-1.5 shrink-0" title={`${builder.launchedProjects} launched, ${builder.coLaunchedProjects} co-launched, ${builder.lifetimeTokensEarned} tokens`}>
+              <div className="flex items-center gap-1.5 shrink-0" title={`${builder.launchedProjects} launched, ${builder.coLaunchedProjects} co-launched, ${builder.currentStreak} day streak (best: ${builder.longestStreak})`}>
                 {/* Launched Projects */}
                 <div className="flex items-center gap-0.5">
                   <Rocket className="h-3 w-3 text-emerald-500" />
@@ -146,12 +147,12 @@ export function TopBuilders({ builders }: TopBuildersProps) {
                     </span>
                   </div>
                 )}
-                {/* Lifetime Tokens */}
-                {builder.lifetimeTokensEarned > 0 && (
+                {/* Current Streak */}
+                {builder.currentStreak > 0 && (
                   <div className="flex items-center gap-0.5 pl-1 border-l border-zinc-700">
-                    <Coins className="h-2.5 w-2.5 text-amber-400" />
-                    <span className="text-[10px] text-amber-400">
-                      {builder.lifetimeTokensEarned}
+                    <Flame className="h-2.5 w-2.5 text-orange-400" />
+                    <span className="text-[10px] text-orange-400">
+                      {builder.currentStreak}
                     </span>
                   </div>
                 )}

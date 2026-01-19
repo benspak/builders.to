@@ -82,7 +82,7 @@ async function TopBuildersSection() {
     // Fetch top builders with ranking based on:
     // 1. LAUNCHED projects (owned) - highest weight
     // 2. LAUNCHED projects (co-built) - medium weight
-    // 3. Lifetime tokens earned - rewards engagement & profile completion
+    // 3. Streaks - rewards consistent daily engagement
     const buildersWithStats = await prisma.user.findMany({
       where: {
         OR: [
@@ -98,7 +98,8 @@ async function TopBuildersSection() {
         image: true,
         slug: true,
         headline: true,
-        lifetimeTokensEarned: true,
+        currentStreak: true,
+        longestStreak: true,
         projects: {
           where: { status: "LAUNCHED" },
           select: { id: true },
@@ -117,15 +118,18 @@ async function TopBuildersSection() {
     });
 
     // Calculate ranking score and sort
+    // Score formula: (launched projects * 10) + (co-launched * 5) + (current streak * 2) + longest streak
     const topBuilders = buildersWithStats
       .map(builder => {
         const launchedProjects = builder.projects.length;
         const coLaunchedProjects = builder.coBuilderOn.length;
-        const lifetimeTokens = builder.lifetimeTokensEarned ?? 0;
+        const currentStreak = builder.currentStreak ?? 0;
+        const longestStreak = builder.longestStreak ?? 0;
         const rankingScore =
           (launchedProjects * 10) +
           (coLaunchedProjects * 5) +
-          lifetimeTokens;
+          (currentStreak * 2) +
+          longestStreak;
 
         return {
           id: builder.id,
@@ -135,7 +139,8 @@ async function TopBuildersSection() {
           image: builder.image,
           slug: builder.slug,
           headline: builder.headline,
-          lifetimeTokensEarned: lifetimeTokens,
+          currentStreak,
+          longestStreak,
           launchedProjects,
           coLaunchedProjects,
           totalProjects: builder._count.projects + builder._count.coBuilderOn,
