@@ -17,15 +17,17 @@ export default async function ProtectedLayout({
   }
 
   // Check if user has 2FA enabled and needs verification
-  // Also fetch email to check if we need to collect it
+  // Also fetch email and verification status
   let userEmail: string | null = null;
+  let emailVerified = false;
   if (session.user?.id) {
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { twoFactorEnabled: true, email: true },
+      select: { twoFactorEnabled: true, email: true, emailVerified: true },
     });
 
     userEmail = user?.email || null;
+    emailVerified = !!user?.emailVerified;
 
     if (user?.twoFactorEnabled) {
       // Check if 2FA has been verified for this session
@@ -41,7 +43,11 @@ export default async function ProtectedLayout({
   return (
     <>
       <ReferralProcessor />
-      <EmailCollectionWrapper userId={session.user!.id} userEmail={userEmail}>
+      <EmailCollectionWrapper 
+        userId={session.user!.id} 
+        userEmail={userEmail}
+        emailVerified={emailVerified}
+      >
         {children}
       </EmailCollectionWrapper>
     </>

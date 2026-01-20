@@ -117,8 +117,8 @@ export async function GET(
         // Streak data
         currentStreak: true,
         longestStreak: true,
-        // Email - only include for own profile (private data)
-        ...(isOwnProfile && { email: true }),
+        // Email and verification - only include for own profile (private data)
+        ...(isOwnProfile && { email: true, emailVerified: true }),
       },
     });
 
@@ -155,7 +155,8 @@ export async function PATCH(
 
     const body = await request.json();
     const {
-      email,
+      // Note: email updates now go through the verification flow (/api/email/verify/send)
+      // Direct email updates via this endpoint are no longer supported
       slug: customSlug,
       displayName,
       city,
@@ -256,34 +257,6 @@ export async function PATCH(
       slug = await getUniqueSlug(generateSlug(baseName), id);
     }
 
-    // Validate email if provided
-    const trimmedEmail = email?.trim() || null;
-    if (trimmedEmail) {
-      // Basic email format validation
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(trimmedEmail)) {
-        return NextResponse.json(
-          { error: "Invalid email format" },
-          { status: 400 }
-        );
-      }
-
-      // Check for uniqueness if email is being changed
-      const existingUser = await prisma.user.findFirst({
-        where: {
-          email: trimmedEmail,
-          NOT: { id },
-        },
-      });
-
-      if (existingUser) {
-        return NextResponse.json(
-          { error: "This email is already in use by another account" },
-          { status: 400 }
-        );
-      }
-    }
-
     // Validate URLs
     const urlFields = { websiteUrl, twitterUrl, youtubeUrl, linkedinUrl, twitchUrl, githubUrl, producthuntUrl, featuredVideoUrl, calendarUrl };
     for (const [key, value] of Object.entries(urlFields)) {
@@ -346,8 +319,7 @@ export async function PATCH(
       where: { id },
       data: {
         slug,
-        // Update email if provided
-        ...(email !== undefined && { email: trimmedEmail }),
+        // Note: email updates now go through verification flow
         // Update image if provided (allow null to clear)
         ...(image !== undefined && { image: image?.trim() || null }),
         displayName: displayName?.trim() || null,
@@ -382,6 +354,7 @@ export async function PATCH(
         id: true,
         name: true,
         email: true,
+        emailVerified: true,
         slug: true,
         username: true,
         displayName: true,
