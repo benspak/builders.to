@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { generateLocationSlug } from "@/lib/utils";
-import { calculateProfileCompleteness } from "@/lib/profile-completeness";
-import { grantProfileCompletionBonus } from "@/lib/tokens";
 
 // Helper to transliterate special characters for URL-safe slugs
 function transliterateForSlug(str: string): string {
@@ -411,28 +409,6 @@ export async function PATCH(
           ...(typeof dailyDigest === "boolean" && { dailyDigest }),
         },
       });
-    }
-
-    // Check profile completeness and grant bonus if 100%
-    const profileCompleteness = calculateProfileCompleteness({
-      displayName: user.displayName,
-      city: user.city,
-      country: user.country,
-      headline: user.headline,
-      bio: user.bio,
-      websiteUrl: user.websiteUrl,
-      twitterUrl: user.twitterUrl,
-      youtubeUrl: user.youtubeUrl,
-      linkedinUrl: user.linkedinUrl,
-      twitchUrl: user.twitchUrl,
-      githubUrl: user.githubUrl,
-      producthuntUrl: user.producthuntUrl,
-      status: user.status,
-    });
-
-    // Grant 10 tokens if profile is 100% complete (only once per user)
-    if (profileCompleteness.score >= 100) {
-      await grantProfileCompletionBonus(id);
     }
 
     return NextResponse.json(user);

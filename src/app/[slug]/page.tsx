@@ -22,7 +22,7 @@ import {
   ArrowLeft,
   Coins,
 } from "lucide-react";
-import { FollowButton, FollowStats, GiftTokensButton, GiftSuccessToast, PeopleAlsoViewed, ProfileViewTracker } from "@/components/profile";
+import { FollowButton, FollowStats, GiftSuccessToast, PeopleAlsoViewed, ProfileViewTracker } from "@/components/profile";
 import { ReportButton } from "@/components/ui/report-button";
 import { ProBadgeWithTooltip } from "@/components/ui/pro-badge";
 import { Suspense } from "react";
@@ -801,11 +801,6 @@ export default async function SlugPage({ params }: PageProps) {
                       </Link>
                     ) : (
                       <>
-                        <GiftTokensButton
-                          recipientId={user.id}
-                          recipientName={displayName}
-                          currentUserId={session?.user?.id}
-                        />
                         <FollowButton
                           userId={user.id}
                           isFollowing={isFollowing}
