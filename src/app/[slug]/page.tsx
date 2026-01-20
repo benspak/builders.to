@@ -20,7 +20,6 @@ import {
   Star,
   MessageCircle,
   ArrowLeft,
-  Coins,
 } from "lucide-react";
 import { FollowButton, FollowStats, GiftSuccessToast, PeopleAlsoViewed, ProfileViewTracker } from "@/components/profile";
 import { ReportButton } from "@/components/ui/report-button";
@@ -279,9 +278,6 @@ export default async function SlugPage({ params }: PageProps) {
       // Streak tracking
       currentStreak: true,
       longestStreak: true,
-      // Token system
-      tokenBalance: true,
-      lifetimeTokensEarned: true,
       // Pro subscription status
       proSubscription: {
         select: {
@@ -938,27 +934,6 @@ export default async function SlugPage({ params }: PageProps) {
                           {totalUpvotes} upvote{totalUpvotes !== 1 ? "s" : ""}
                         </div>
                         <div className="text-xs text-zinc-500">Community support</div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Token Balance */}
-                  {user.tokenBalance > 0 && (
-                    <div className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-amber-500/10 to-transparent border border-amber-500/20">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/20">
-                        <Coins className="h-4 w-4 text-amber-400" />
-                      </div>
-                      <div>
-                        <div className="text-sm font-medium text-white">
-                          {user.tokenBalance} token{user.tokenBalance !== 1 ? "s" : ""}
-                        </div>
-                        <div className="text-xs text-zinc-500">
-                          {isOwnProfile ? (
-                            <a href="/tokens" className="text-amber-400 hover:underline">Manage tokens →</a>
-                          ) : (
-                            "Available balance"
-                          )}
-                        </div>
                       </div>
                     </div>
                   )}
