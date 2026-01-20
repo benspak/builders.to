@@ -102,7 +102,7 @@ export function Navbar() {
                     style={{ color: "var(--foreground-muted)" }}
                   >
                     <Video className="h-3.5 w-3.5 text-purple-400" />
-                    Streamers
+                    Streams
                   </Link>
                 </div>
               </>
@@ -174,7 +174,7 @@ export function Navbar() {
             style={{ color: "var(--foreground-muted)" }}
           >
             <Video className="h-3.5 w-3.5 text-purple-400" />
-            Streamers
+            Streams
           </Link>
           {/* Mobile Search */}
           <div className="sm:hidden">

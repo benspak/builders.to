@@ -207,7 +207,8 @@ export function CombinedFeed({
   const projectStatusChangeEvents = feedEvents.filter((e) => e.type === "PROJECT_STATUS_CHANGE");
   const projectCreatedEvents = feedEvents.filter((e) => e.type === "PROJECT_CREATED");
   const jobPostedEvents = feedEvents.filter((e) => e.type === "JOB_POSTED");
-  const userJoinedEvents = feedEvents.filter((e) => e.type === "USER_JOINED");
+  // NOTE: Disabled USER_JOINED events - too many sign-ups were cluttering the feed
+  // const userJoinedEvents = feedEvents.filter((e) => e.type === "USER_JOINED");
   const listingCreatedEvents = feedEvents.filter((e) => e.type === "LISTING_CREATED");
 
   // Combine and sort by date
@@ -218,7 +219,8 @@ export function CombinedFeed({
     ...projectStatusChangeEvents.map((e) => ({ type: "projectStatusChange" as const, data: e })),
     ...projectCreatedEvents.map((e) => ({ type: "projectCreated" as const, data: e })),
     ...jobPostedEvents.map((e) => ({ type: "jobPosted" as const, data: e })),
-    ...userJoinedEvents.map((e) => ({ type: "userJoined" as const, data: e })),
+    // NOTE: Disabled USER_JOINED events - too many sign-ups were cluttering the feed
+    // ...userJoinedEvents.map((e) => ({ type: "userJoined" as const, data: e })),
     ...listingCreatedEvents.map((e) => ({ type: "listingCreated" as const, data: e })),
   ].sort((a, b) => {
     const dateA = new Date(a.data.createdAt).getTime();

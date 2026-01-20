@@ -247,17 +247,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         // Generate a unique referral code for the new user (for tracking)
         await generateReferralCode(user.id);
 
-        // Create a feed event to announce the new user
-        // Don't use email as display name
-        const displayName = (safeName || oauthUsername) || "A new builder";
-        await prisma.feedEvent.create({
-          data: {
-            type: "USER_JOINED",
-            userId: user.id,
-            title: `${displayName} joined the community`,
-            description: "Welcome to Builders.to! 🎉",
-          },
-        });
+        // NOTE: Disabled USER_JOINED feed events - too many sign-ups were cluttering the feed
+        // const displayName = (safeName || oauthUsername) || "A new builder";
+        // await prisma.feedEvent.create({
+        //   data: {
+        //     type: "USER_JOINED",
+        //     userId: user.id,
+        //     title: `${displayName} joined the community`,
+        //     description: "Welcome to Builders.to! 🎉",
+        //   },
+        // });
       }
     },
   },
