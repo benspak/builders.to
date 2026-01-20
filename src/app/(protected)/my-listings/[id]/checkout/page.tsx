@@ -3,9 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { MapPin, ArrowLeft, Clock, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
-import { TokenCheckout } from "@/components/ui/token-checkout";
-import { LOCAL_LISTING_REDEMPTION_COST } from "@/lib/tokens";
+import { MapPin, ArrowLeft, Clock, CheckCircle2, AlertCircle, Loader2, CreditCard } from "lucide-react";
 import { LOCAL_LISTING_FEE_CENTS } from "@/lib/stripe";
 
 export default function LocalListingCheckoutPage() {
@@ -20,6 +18,8 @@ export default function LocalListingCheckoutPage() {
     status: string;
   } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [processing, setProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const cancelled = searchParams.get("cancelled") === "true";
   const listingId = params.id as string;
@@ -42,10 +42,27 @@ export default function LocalListingCheckoutPage() {
     fetchListing();
   }, [listingId]);
 
-  const handleSuccess = () => {
-    // Redirect to my listings after successful activation
-    router.push("/my-listings?activated=true");
+  const handleCheckout = async () => {
+    setProcessing(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/local-listings/${listingId}/checkout`, { method: "POST" });
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to create checkout");
+      }
+
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to start checkout");
+      setProcessing(false);
+    }
   };
+
+  const priceDisplay = (LOCAL_LISTING_FEE_CENTS / 100).toFixed(2);
 
   return (
     <div className="relative min-h-screen bg-zinc-950">
@@ -128,20 +145,45 @@ export default function LocalListingCheckoutPage() {
               </div>
             </div>
 
-            {/* Payment Options */}
+            {/* Payment Section */}
             {loading ? (
               <div className="flex items-center justify-center py-8">
                 <Loader2 className="h-6 w-6 animate-spin text-emerald-400" />
               </div>
             ) : (
-              <TokenCheckout
-                itemId={listingId}
-                itemType="local-listing"
-                itemTitle={listing?.title || "Local Listing"}
-                priceCents={LOCAL_LISTING_FEE_CENTS}
-                tokenCost={LOCAL_LISTING_REDEMPTION_COST}
-                onSuccess={handleSuccess}
-              />
+              <div className="space-y-4">
+                {/* Error Message */}
+                {error && (
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/20">
+                    <AlertCircle className="h-4 w-4 text-red-400" />
+                    <span className="text-sm text-red-400">{error}</span>
+                  </div>
+                )}
+
+                {/* Checkout Button */}
+                <button
+                  onClick={handleCheckout}
+                  disabled={processing}
+                  className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-semibold text-white rounded-lg transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 shadow-emerald-500/20"
+                >
+                  {processing ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <CreditCard className="h-4 w-4" />
+                      Pay ${priceDisplay}
+                    </>
+                  )}
+                </button>
+
+                {/* Info Text */}
+                <p className="text-xs text-center text-zinc-500">
+                  Secure payment via Stripe
+                </p>
+              </div>
             )}
           </div>
         </div>

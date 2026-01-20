@@ -4,10 +4,7 @@ import Twitter from "next-auth/providers/twitter";
 import GitHub from "next-auth/providers/github";
 import Resend from "next-auth/providers/resend";
 import { prisma } from "@/lib/prisma";
-import {
-  generateReferralCode,
-  grantWelcomeBonus,
-} from "@/lib/tokens";
+import { generateReferralCode } from "@/lib/tokens";
 import { generateMagicLinkEmail } from "@/lib/magic-link-email";
 
 // Store for temporarily holding username during OAuth flow
@@ -247,15 +244,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           },
         });
 
-        // Generate a unique referral code for the new user
+        // Generate a unique referral code for the new user (for tracking)
         await generateReferralCode(user.id);
-
-        // Grant welcome bonus tokens to the new user
-        try {
-          await grantWelcomeBonus(user.id);
-        } catch (error) {
-          console.error("Failed to grant welcome bonus:", error);
-        }
 
         // Create a feed event to announce the new user
         // Don't use email as display name

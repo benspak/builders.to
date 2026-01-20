@@ -4,7 +4,6 @@ import { getStripe } from "@/lib/stripe";
 import {
   activateProSubscription,
   updateProSubscriptionStatus,
-  grantProTokens,
 } from "@/lib/stripe-subscription";
 
 // Route segment config for webhook handling
@@ -157,9 +156,6 @@ export async function POST(request: Request) {
           periodEnd || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // Default to 30 days from now
         );
 
-        // Grant initial tokens
-        await grantProTokens(userId);
-
         console.log(`[Pro Webhook] Activated Pro subscription for user ${userId}`);
         break;
       }
@@ -198,9 +194,6 @@ export async function POST(request: Request) {
           invoicePeriodStart || undefined,
           invoicePeriodEnd || undefined
         );
-
-        // Grant monthly tokens (handles duplicate prevention internally)
-        await grantProTokens(userId);
 
         console.log(`[Pro Webhook] Invoice paid for user ${userId}`);
         break;

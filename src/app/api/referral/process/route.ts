@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { findUserByReferralCode, grantReferralReward } from "@/lib/tokens";
+import { findUserByReferralCode } from "@/lib/tokens";
 import { REFERRAL_CODE_COOKIE } from "@/middleware";
 
 /**
@@ -79,18 +79,11 @@ export async function POST() {
       );
     }
 
-    // Link the referral
+    // Link the referral (for tracking purposes)
     await prisma.user.update({
       where: { id: session.user.id },
       data: { referredById: referrerId },
     });
-
-    // Grant referral reward to the referrer
-    await grantReferralReward(
-      referrerId,
-      session.user.id,
-      currentUser?.name || undefined
-    );
 
     // Clear the cookie
     cookieStore.delete(REFERRAL_CODE_COOKIE);

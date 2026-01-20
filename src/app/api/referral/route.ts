@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { getReferralCode, getReferralStats, REFERRAL_REWARD_TOKENS } from "@/lib/tokens";
+import { getReferralCode, getReferralStats } from "@/lib/tokens";
 
 /**
  * GET /api/referral
@@ -30,10 +30,8 @@ export async function GET() {
     return NextResponse.json({
       referralCode,
       referralLink,
-      rewardPerReferral: REFERRAL_REWARD_TOKENS,
       stats: {
         totalReferrals: stats.totalReferrals,
-        totalEarned: stats.totalEarned,
         referrals: stats.referrals.map((r) => ({
           id: r.id,
           name: r.name,

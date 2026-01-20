@@ -1,7 +1,6 @@
 import Stripe from "stripe";
 import { getStripe } from "./stripe";
 import { prisma } from "./prisma";
-import { grantTokens } from "./tokens";
 
 /**
  * Stripe Subscription utilities for Pro Membership
@@ -15,7 +14,6 @@ import { grantTokens } from "./tokens";
 // Pro subscription pricing
 export const PRO_MONTHLY_PRICE_CENTS = 399; // $3.99
 export const PRO_YEARLY_PRICE_CENTS = 3999; // $39.99
-export const PRO_TOKENS_PER_MONTH = 50;
 
 // Get price IDs from environment
 export function getProPriceId(plan: "MONTHLY" | "YEARLY"): string {
@@ -189,52 +187,6 @@ export async function getProSubscriptionStatus(userId: string): Promise<{
     currentPeriodEnd: subscription.currentPeriodEnd,
     cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
   };
-}
-
-/**
- * Grant monthly tokens to a Pro subscriber
- * Called by webhook when invoice is paid
- */
-export async function grantProTokens(userId: string): Promise<boolean> {
-  try {
-    const subscription = await prisma.proSubscription.findUnique({
-      where: { userId },
-      select: { lastTokenGrantAt: true, currentPeriodStart: true },
-    });
-
-    if (!subscription) {
-      return false;
-    }
-
-    // Prevent duplicate grants in the same billing period
-    const periodStart = subscription.currentPeriodStart;
-    if (subscription.lastTokenGrantAt && periodStart) {
-      if (subscription.lastTokenGrantAt >= periodStart) {
-        console.log("[Pro Subscription] Tokens already granted for this period");
-        return false;
-      }
-    }
-
-    // Grant tokens
-    await grantTokens(
-      userId,
-      PRO_TOKENS_PER_MONTH,
-      "PRO_SUBSCRIPTION_GRANT",
-      "Monthly Pro subscription token grant"
-    );
-
-    // Update last grant time
-    await prisma.proSubscription.update({
-      where: { userId },
-      data: { lastTokenGrantAt: new Date() },
-    });
-
-    console.log(`[Pro Subscription] Granted ${PRO_TOKENS_PER_MONTH} tokens to user ${userId}`);
-    return true;
-  } catch (error) {
-    console.error("[Pro Subscription] Failed to grant tokens:", error);
-    return false;
-  }
 }
 
 /**
