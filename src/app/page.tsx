@@ -7,7 +7,6 @@ import {
   Sparkles,
   MapPin,
   Trophy,
-  Coins,
   Bell,
   Briefcase,
   ArrowRight,
@@ -121,11 +120,6 @@ export default async function HomePage() {
       icon: Heart,
       title: "Follow System",
       description: "Build your network by following builders and getting followed back.",
-    },
-    {
-      icon: Coins,
-      title: "Token System",
-      description: "Earn tokens through engagement, referrals, streaks, and profile completion. Gift tokens to support fellow builders.",
     },
     {
       icon: Bell,

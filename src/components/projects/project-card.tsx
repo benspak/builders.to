@@ -62,12 +62,12 @@ export function ProjectCard({ project }: ProjectCardProps) {
     <div className="card card-hover group relative flex flex-col overflow-hidden min-h-[420px]">
       {/* Image */}
       {project.imageUrl && (
-        <div className="relative h-48 aspect-video overflow-hidden">
+        <div className="relative w-full aspect-video overflow-hidden">
           <Image
             src={project.imageUrl}
             alt={project.title}
             fill
-            className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 to-transparent" />
         </div>
