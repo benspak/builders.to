@@ -59,7 +59,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
   const projectUrl = `/projects/${project.slug || project.id}`;
 
   return (
-    <div className="card card-hover group relative flex flex-col overflow-hidden min-h-[420px]">
+    <div className="card card-hover group relative flex flex-col overflow-hidden min-h-[420px] w-full max-w-full">
       {/* Image */}
       {project.imageUrl && (
         <div className="relative w-full aspect-video overflow-hidden">

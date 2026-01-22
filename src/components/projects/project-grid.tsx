@@ -106,12 +106,12 @@ export function ProjectGrid({
   }
 
   return (
-    <div>
+    <div className="w-full overflow-hidden">
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {projects.map((project, index) => (
           <div
             key={project.id}
-            className="animate-fade-in opacity-0"
+            className="animate-fade-in opacity-0 min-w-0"
             style={{ animationDelay: `${index * 0.05}s` }}
           >
             <ProjectCard project={project} />

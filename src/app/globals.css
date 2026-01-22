@@ -583,6 +583,7 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
 body {
@@ -593,6 +594,8 @@ body {
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   font-feature-settings: "kern" 1, "liga" 1;
+  overflow-x: hidden;
+  max-width: 100vw;
 }
 
 /* Light mode font rendering optimizations */
