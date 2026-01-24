@@ -140,15 +140,6 @@ model User {
   localListingRatingsReceived LocalListingRating[]  @relation("LocalListingRated")
   localListingOrders          LocalListingOrder[]   @relation("LocalListingBuyer")
 
-  // Token System
-  tokenBalance         Int                @default(0) // Current token balance
-  lifetimeTokensEarned Int                @default(0) // Total tokens earned (public metric for ranking)
-  referralCode         String?            @unique // Unique referral code for sharing
-  referredById         String? // Who referred this user
-  referredBy           User?              @relation("Referrals", fields: [referredById], references: [id], onDelete: SetNull)
-  referrals            User[]             @relation("Referrals") // Users this user referred
-  tokenTransactions    TokenTransaction[]
-
   // Push Notification Subscriptions
   pushSubscriptions PushSubscription[]
 
@@ -159,7 +150,6 @@ model User {
 
   // Pro Subscription
   proSubscription ProSubscription?
-  customDomains   CustomDomain[]
 
   // Pinned Posts
   pinnedPosts PinnedPost[]
@@ -169,10 +159,15 @@ model User {
   profileViewsAsViewer ProfileView[] @relation("ProfileViewer")   // Profiles this user has viewed
   profileViewsAsReferrer ProfileView[] @relation("ProfileReferrer") // Views where this profile was the referrer
 
+  // Cross-Platform Posting
+  platformConnections PlatformConnection[]
+  crossPosts          CrossPost[]
+  agentSuggestions    AgentSuggestion[]
+  aiProfile           UserAIProfile?
+
   @@index([slug])
   @@index([stripeConnectId])
   @@index([locationSlug])
-  @@index([referralCode])
 }
 
 model Project {
@@ -1289,43 +1284,6 @@ model LocalListingOrder {
 }
 
 // ============================================
-// Token System - In-app currency for rewards
-// ============================================
-
-enum TokenTransactionType {
-  WELCOME_BONUS // New user signup bonus (5 tokens)
-  REFERRAL_REWARD // Referrer gets tokens when referee signs up (10 tokens)
-  STREAK_BONUS // Bonus for maintaining daily update streaks
-  ENGAGEMENT_BONUS // Bonus for posting updates, commenting, etc.
-  PROFILE_COMPLETION // Bonus for reaching 100% profile completeness (10 tokens)
-  AD_REDEMPTION // Spent tokens to unlock an advertisement
-  SERVICE_REDEMPTION // Spent tokens to unlock a service listing
-  LOCAL_LISTING_REDEMPTION // Spent tokens to unlock a local listing
-  GIFT_SENT // Tokens sent as a gift to another user
-  GIFT_RECEIVED // Tokens received as a gift from another user
-  GIFT_PURCHASED // Tokens purchased to gift (paid with Stripe)
-  ADMIN_ADJUSTMENT // Manual adjustment by admin
-  PRO_SUBSCRIPTION_GRANT // Monthly 50 tokens from Pro subscription
-}
-
-// Track all token movements for audit/history
-model TokenTransaction {
-  id          String               @id @default(cuid())
-  userId      String
-  amount      Int // Positive = earned, Negative = spent
-  type        TokenTransactionType
-  description String? // Human-readable description
-  metadata    Json? // Store referral IDs, streak days, item IDs, etc.
-  createdAt   DateTime             @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([createdAt])
-  @@index([type])
-}
-
-// ============================================
 // View & Click Tracking - Analytics
 // ============================================
 
@@ -1529,9 +1487,6 @@ model ProSubscription {
   currentPeriodEnd   DateTime?
   cancelAtPeriodEnd  Boolean   @default(false)
 
-  // Token tracking
-  lastTokenGrantAt DateTime? // Prevents duplicate grants
-
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -1539,25 +1494,6 @@ model ProSubscription {
 
   @@index([stripeSubscriptionId])
   @@index([status])
-}
-
-// Custom domain mapping for Pro users
-model CustomDomain {
-  id     String @id @default(cuid())
-  userId String
-  domain String @unique // e.g., "portfolio.johndoe.com"
-
-  // Verification
-  verified   Boolean   @default(false)
-  verifiedAt DateTime?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([domain])
-  @@index([userId])
 }
 
 // ============================================
@@ -1593,4 +1529,151 @@ model AdPricingConfig {
   id          String   @id @default("singleton")
   currentTier Int      @default(0) // 0 = $5, 1 = $10, 2 = $20, etc.
   lastUpdated DateTime @default(now()) @updatedAt
+}
+
+// ============================================
+// Cross-Platform Posting System
+// ============================================
+
+enum SocialPlatform {
+  TWITTER
+  LINKEDIN
+  BUILDERS
+}
+
+enum CrossPostStatus {
+  DRAFT
+  SCHEDULED
+  PUBLISHING
+  PUBLISHED
+  FAILED
+}
+
+enum SuggestionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  PUBLISHED
+}
+
+enum CrossPostMediaType {
+  IMAGE
+  VIDEO
+  LINK
+}
+
+// Platform connections - OAuth tokens for external platforms
+model PlatformConnection {
+  id               String         @id @default(cuid())
+  userId           String
+  platform         SocialPlatform
+  platformUserId   String?
+  platformUsername String?
+  displayName      String?
+  avatar           String?
+  accessToken      String         @db.Text // Encrypted
+  refreshToken     String?        @db.Text // Encrypted
+  tokenExpiresAt   DateTime?
+  scopes           String[]       @default([])
+  followerCount    Int?
+  connectedAt      DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, platform])
+  @@index([userId])
+  @@index([platform])
+}
+
+// Cross-platform posts - posts that can be published to multiple platforms
+model CrossPost {
+  id              String           @id @default(cuid())
+  userId          String
+  content         String           @db.Text
+  platforms       SocialPlatform[]
+  status          CrossPostStatus  @default(DRAFT)
+  scheduledAt     DateTime?
+  publishedAt     DateTime?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  user          User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  platformPosts CrossPlatformPost[]
+  media         CrossPostMedia[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([scheduledAt])
+  @@index([createdAt])
+}
+
+// Per-platform post status - tracks publishing status for each platform
+model CrossPlatformPost {
+  id             String          @id @default(cuid())
+  crossPostId    String
+  platform       SocialPlatform
+  platformPostId String? // ID on the external platform
+  url            String? // URL to the post on the platform
+  status         CrossPostStatus @default(DRAFT)
+  error          String? // Error message if failed
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  crossPost CrossPost @relation(fields: [crossPostId], references: [id], onDelete: Cascade)
+
+  @@unique([crossPostId, platform])
+  @@index([crossPostId])
+  @@index([platform])
+  @@index([status])
+}
+
+// Media attachments for cross-posts
+model CrossPostMedia {
+  id          String             @id @default(cuid())
+  crossPostId String
+  type        CrossPostMediaType @default(IMAGE)
+  url         String
+  thumbnail   String?
+  altText     String?
+  order       Int                @default(0)
+  createdAt   DateTime           @default(now())
+
+  crossPost CrossPost @relation(fields: [crossPostId], references: [id], onDelete: Cascade)
+
+  @@index([crossPostId])
+  @@index([order])
+}
+
+// AI-generated content suggestions for agentic workflows
+model AgentSuggestion {
+  id         String           @id @default(cuid())
+  userId     String
+  content    String           @db.Text
+  platforms  SocialPlatform[]
+  status     SuggestionStatus @default(PENDING)
+  reasoning  String?          @db.Text // Why the AI suggested this
+  feedback   Json? // Stores edit distance, rejection reason, etc.
+  createdAt  DateTime         @default(now())
+  reviewedAt DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// User AI profile - stores preferences for AI content generation
+model UserAIProfile {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  interests    String[] @default([])
+  toneContext  Json? // Preferred tone settings
+  postingStyle Json? // Style preferences
+  autoSuggest  Boolean  @default(true) // Whether to auto-generate suggestions
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

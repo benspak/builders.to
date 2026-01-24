@@ -109,9 +109,6 @@ export async function DELETE(
       // Delete user's email preferences
       await tx.emailPreferences.deleteMany({ where: { userId } });
 
-      // Delete user's token transactions
-      await tx.tokenTransaction.deleteMany({ where: { userId } });
-
       // Delete user's content reports (as reporter)
       await tx.report.deleteMany({ where: { reporterId: userId } });
 

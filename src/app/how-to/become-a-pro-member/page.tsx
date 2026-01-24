@@ -3,15 +3,14 @@ import type { Metadata } from "next";
 import {
   Crown,
   BadgeCheck,
-  Coins,
-  Globe,
   ArrowRight,
   CreditCard,
   Settings,
   CheckCircle2,
   Sparkles,
   RefreshCw,
-  Link as LinkIcon,
+  Calendar,
+  Brain,
 } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -50,7 +49,7 @@ export default function BecomeAProMemberPage() {
             </div>
             <div>
               <h1 className="text-3xl font-bold text-white">Become a Pro Member</h1>
-              <p className="text-zinc-400 mt-1">3 min read</p>
+              <p className="text-zinc-400 mt-1">2 min read</p>
             </div>
           </div>
         </div>
@@ -66,7 +65,6 @@ export default function BecomeAProMemberPage() {
               { href: "#benefits", label: "Pro Membership Benefits" },
               { href: "#pricing", label: "Pricing Plans" },
               { href: "#how-to-subscribe", label: "How to Subscribe" },
-              { href: "#custom-domains", label: "Setting Up Custom Domains" },
               { href: "#managing-subscription", label: "Managing Your Subscription" },
               { href: "#faq", label: "Frequently Asked Questions" },
             ].map((item) => (
@@ -92,12 +90,12 @@ export default function BecomeAProMemberPage() {
               <p className="leading-relaxed">
                 <span className="text-amber-400 font-semibold">Builders Pro</span> is a premium membership
                 tier that unlocks exclusive features and benefits on Builders.to. Pro members get a verified
-                badge, monthly token grants, and the ability to use custom domains for their profiles.
+                badge, access to AI-powered features, and the ability to display &quot;Open to Meeting&quot; status.
               </p>
               <p className="leading-relaxed mt-4">
                 By becoming a Pro member, you support the continued development of Builders.to while
-                gaining access to powerful features that help you stand out in the community and promote
-                your work more effectively.
+                gaining access to powerful features that help you stand out in the community and connect
+                with other builders more effectively.
               </p>
             </section>
 
@@ -128,55 +126,35 @@ export default function BecomeAProMemberPage() {
                   </div>
                 </div>
 
-                {/* Monthly Tokens */}
+                {/* Open to Meeting */}
                 <div className="rounded-xl border border-amber-500/30 bg-gradient-to-r from-amber-500/10 to-orange-500/10 p-6">
                   <div className="flex items-start gap-4">
                     <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/20">
-                      <Coins className="h-6 w-6 text-amber-400" />
+                      <Calendar className="h-6 w-6 text-amber-400" />
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold text-white">50 Tokens Per Month</h3>
+                      <h3 className="text-lg font-semibold text-white">Open to Meeting Status</h3>
                       <p className="text-zinc-400 mt-2">
-                        Receive 50 tokens automatically credited to your account every month. Use these
-                        tokens to:
+                        Display an &quot;Open to Meeting&quot; badge on your profile and let other builders know
+                        you&apos;re available for conversations. Link your calendar URL so others can easily
+                        book time with you for collaboration, mentorship, or networking.
                       </p>
-                      <ul className="mt-3 space-y-2 text-zinc-400">
-                        <li className="flex items-start gap-2">
-                          <CheckCircle2 className="h-5 w-5 text-amber-400 mt-0.5 shrink-0" />
-                          <span>Promote your projects with advertisements</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <CheckCircle2 className="h-5 w-5 text-amber-400 mt-0.5 shrink-0" />
-                          <span>List services in the marketplace</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <CheckCircle2 className="h-5 w-5 text-amber-400 mt-0.5 shrink-0" />
-                          <span>Post local classifieds</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <CheckCircle2 className="h-5 w-5 text-amber-400 mt-0.5 shrink-0" />
-                          <span>Gift tokens to other builders</span>
-                        </li>
-                      </ul>
                     </div>
                   </div>
                 </div>
 
-                {/* Custom Domains */}
+                {/* AI Features */}
                 <div className="rounded-xl border border-amber-500/30 bg-gradient-to-r from-amber-500/10 to-orange-500/10 p-6">
                   <div className="flex items-start gap-4">
                     <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/20">
-                      <Globe className="h-6 w-6 text-amber-400" />
+                      <Brain className="h-6 w-6 text-amber-400" />
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold text-white">Custom Domain Mapping</h3>
+                      <h3 className="text-lg font-semibold text-white">AI-Powered Features</h3>
                       <p className="text-zinc-400 mt-2">
-                        Map your own domain to your Builders.to profile. Instead of sharing
-                        <span className="text-orange-400"> builders.to/your-username</span>, you can use
-                        your own domain like <span className="text-amber-400">portfolio.yourdomain.com</span>.
-                      </p>
-                      <p className="text-zinc-500 text-sm mt-2">
-                        This is perfect for creating a professional portfolio or personal brand presence.
+                        Access AI-powered agentic workflows for content creation. Get smart suggestions
+                        for your posts, remixes of your content for different platforms, and AI assistance
+                        to help you engage more effectively with the community.
                       </p>
                     </div>
                   </div>
@@ -317,73 +295,11 @@ export default function BecomeAProMemberPage() {
                     <p className="font-medium text-white">Enjoy Pro Benefits!</p>
                     <p className="text-zinc-400 text-sm mt-1">
                       After successful payment, you&apos;ll be redirected back to Builders.to.
-                      Your Pro badge will appear immediately, and your 50 tokens will be credited.
+                      Your Pro badge will appear immediately and all Pro features will be unlocked.
                     </p>
                   </div>
                 </li>
               </ol>
-            </section>
-
-            {/* Setting Up Custom Domains */}
-            <section id="custom-domains">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-zinc-800">
-                  <LinkIcon className="h-5 w-5 text-amber-400" />
-                </div>
-                <h2 className="text-2xl font-semibold text-white">Setting Up Custom Domains</h2>
-              </div>
-
-              <p className="leading-relaxed">
-                Once you&apos;re a Pro member, you can map a custom domain to your profile:
-              </p>
-
-              <ol className="mt-6 space-y-4">
-                <li className="flex items-start gap-4">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-cyan-500/20 text-sm font-bold text-cyan-400 shrink-0">1</span>
-                  <div>
-                    <p className="font-medium text-white">Add Your Domain</p>
-                    <p className="text-zinc-400 text-sm mt-1">
-                      In the Pro Membership section of your settings, scroll down to &quot;Custom Domains&quot;.
-                      Enter your domain (e.g., <span className="text-amber-400">portfolio.yourdomain.com</span>)
-                      and click &quot;Add&quot;.
-                    </p>
-                  </div>
-                </li>
-                <li className="flex items-start gap-4">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-cyan-500/20 text-sm font-bold text-cyan-400 shrink-0">2</span>
-                  <div>
-                    <p className="font-medium text-white">Configure DNS</p>
-                    <p className="text-zinc-400 text-sm mt-1">
-                      Go to your domain registrar (Cloudflare, Namecheap, GoDaddy, etc.) and add a
-                      CNAME record:
-                    </p>
-                    <div className="mt-3 rounded-lg bg-zinc-800/70 p-4 font-mono text-sm">
-                      <p className="text-zinc-400">Type: <span className="text-amber-400">CNAME</span></p>
-                      <p className="text-zinc-400">Name: <span className="text-amber-400">portfolio</span> (or your subdomain)</p>
-                      <p className="text-zinc-400">Target: <span className="text-amber-400">builders.to</span></p>
-                    </div>
-                  </div>
-                </li>
-                <li className="flex items-start gap-4">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-cyan-500/20 text-sm font-bold text-cyan-400 shrink-0">3</span>
-                  <div>
-                    <p className="font-medium text-white">Verify Your Domain</p>
-                    <p className="text-zinc-400 text-sm mt-1">
-                      After DNS propagation (usually 5-30 minutes, but can take up to 48 hours),
-                      click the &quot;Verify&quot; button next to your domain. Once verified, visitors to your
-                      custom domain will see your Builders.to profile.
-                    </p>
-                  </div>
-                </li>
-              </ol>
-
-              <div className="mt-6 rounded-xl bg-cyan-500/10 border border-cyan-500/20 p-4">
-                <p className="text-sm text-cyan-300">
-                  <strong>Tip:</strong> Using a subdomain (like portfolio.yourdomain.com) is easier
-                  to configure than a root domain. Most domain registrars have straightforward
-                  CNAME setup guides.
-                </p>
-              </div>
             </section>
 
             {/* Managing Your Subscription */}
@@ -416,11 +332,7 @@ export default function BecomeAProMemberPage() {
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="h-5 w-5 text-zinc-500 mt-0.5 shrink-0" />
-                  <span>Any unused tokens remain in your account</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="h-5 w-5 text-zinc-500 mt-0.5 shrink-0" />
-                  <span>Custom domains will stop working after your subscription ends</span>
+                  <span>Your Pro badge and features will be removed after the period ends</span>
                 </li>
               </ul>
 
@@ -438,15 +350,6 @@ export default function BecomeAProMemberPage() {
 
               <div className="space-y-6">
                 <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5">
-                  <h3 className="font-medium text-white">When do I receive my monthly tokens?</h3>
-                  <p className="text-zinc-400 text-sm mt-2">
-                    Your 50 tokens are credited automatically at the start of each billing period.
-                    For monthly subscribers, this happens every month on your subscription renewal date.
-                    For yearly subscribers, tokens are granted monthly throughout your subscription year.
-                  </p>
-                </div>
-
-                <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5">
                   <h3 className="font-medium text-white">Can I switch from monthly to yearly (or vice versa)?</h3>
                   <p className="text-zinc-400 text-sm mt-2">
                     To switch plans, cancel your current subscription and wait for it to expire,
@@ -456,19 +359,20 @@ export default function BecomeAProMemberPage() {
                 </div>
 
                 <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5">
-                  <h3 className="font-medium text-white">What happens to my custom domain if I cancel?</h3>
+                  <h3 className="font-medium text-white">How do I enable &quot;Open to Meeting&quot;?</h3>
                   <p className="text-zinc-400 text-sm mt-2">
-                    Your custom domain will continue working until your subscription period ends.
-                    After that, visitors to your custom domain will no longer see your profile.
-                    You can always resubscribe to restore custom domain functionality.
+                    Once you&apos;re a Pro member, go to your profile settings and toggle on the
+                    &quot;Open to Meeting&quot; option. You can also add your calendar URL (like Calendly
+                    or Cal.com) so others can book time with you directly.
                   </p>
                 </div>
 
                 <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5">
-                  <h3 className="font-medium text-white">Do unused tokens roll over?</h3>
+                  <h3 className="font-medium text-white">What AI features are included?</h3>
                   <p className="text-zinc-400 text-sm mt-2">
-                    Yes! All tokens you earn or receive are permanently in your account and never
-                    expire. You can accumulate tokens over time and use them whenever you want.
+                    Pro members get access to AI-powered content suggestions, post variations,
+                    and agentic workflows that help you create engaging content for the community.
+                    These features help you save time while creating quality posts.
                   </p>
                 </div>
 

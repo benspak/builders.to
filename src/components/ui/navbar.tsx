@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import { useState } from "react";
 import { UserMenu } from "@/components/auth/user-menu";
 import { SearchCommand } from "@/components/ui/search-command";
-import { Plus, Rocket, ChevronDown, Sparkles, Menu, X, MapPin, Megaphone, Building2, Rss, FolderKanban, Globe, Video } from "lucide-react";
+import { Plus, Rocket, ChevronDown, Sparkles, Menu, X, MapPin, Megaphone, Building2, Rss, FolderKanban, Globe, Video, Pen, Send } from "lucide-react";
 import { BuildersLogo } from "@/components/ui/builders-logo";
 import { cn } from "@/lib/utils";
 
@@ -206,6 +206,15 @@ export function Navbar() {
                       }}
                     >
                       <Link
+                        href="/compose"
+                        onClick={() => setMobileShareOpen(false)}
+                        className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-white/5"
+                        style={{ color: "var(--foreground-muted)" }}
+                      >
+                        <Send className="h-4 w-4 text-purple-400" />
+                        <span>Cross-Post</span>
+                      </Link>
+                      <Link
                         href="/projects/new"
                         onClick={() => setMobileShareOpen(false)}
                         className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-white/5"
@@ -258,6 +267,20 @@ export function Navbar() {
                       onClick={() => setShareOpen(false)}
                     />
                     <div className="absolute right-0 top-full z-20 mt-2 w-52 rounded-xl border border-white/10 bg-zinc-900/95 p-2 shadow-xl backdrop-blur-xl">
+                      <Link
+                        href="/compose"
+                        onClick={() => setShareOpen(false)}
+                        className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-zinc-300 transition-colors hover:bg-white/5 hover:text-white"
+                      >
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-500/10">
+                          <Send className="h-4 w-4 text-purple-400" />
+                        </div>
+                        <div>
+                          <div className="font-medium">Cross-Post</div>
+                          <div className="text-xs text-zinc-500">Post to multiple platforms</div>
+                        </div>
+                      </Link>
+
                       <Link
                         href="/projects/new"
                         onClick={() => setShareOpen(false)}

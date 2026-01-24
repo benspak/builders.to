@@ -4,7 +4,6 @@ import Twitter from "next-auth/providers/twitter";
 import GitHub from "next-auth/providers/github";
 import Resend from "next-auth/providers/resend";
 import { prisma } from "@/lib/prisma";
-import { generateReferralCode } from "@/lib/tokens";
 import { generateMagicLinkEmail } from "@/lib/magic-link-email";
 
 // Store for temporarily holding username during OAuth flow
@@ -243,9 +242,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               }),
           },
         });
-
-        // Generate a unique referral code for the new user (for tracking)
-        await generateReferralCode(user.id);
 
         // NOTE: Disabled USER_JOINED feed events - too many sign-ups were cluttering the feed
         // const displayName = (safeName || oauthUsername) || "A new builder";

@@ -181,10 +181,6 @@ export function NotificationList({ onItemClick, showMarkAllRead = true }: Notifi
       }
       return `/feed`;
     }
-    // Token gifts link to the tokens page
-    if (notification.type === "TOKEN_GIFTED") {
-      return `/tokens`;
-    }
     return null;
   };
 

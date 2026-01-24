@@ -2,7 +2,6 @@ import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { ReferralProcessor } from "@/components/auth/referral-processor";
 import { EmailCollectionWrapper } from "@/components/profile/email-collection-wrapper";
 
 export default async function ProtectedLayout({
@@ -41,15 +40,12 @@ export default async function ProtectedLayout({
   }
 
   return (
-    <>
-      <ReferralProcessor />
-      <EmailCollectionWrapper 
-        userId={session.user!.id} 
-        userEmail={userEmail}
-        emailVerified={emailVerified}
-      >
-        {children}
-      </EmailCollectionWrapper>
-    </>
+    <EmailCollectionWrapper 
+      userId={session.user!.id} 
+      userEmail={userEmail}
+      emailVerified={emailVerified}
+    >
+      {children}
+    </EmailCollectionWrapper>
   );
 }

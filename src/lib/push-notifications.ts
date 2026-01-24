@@ -115,22 +115,6 @@ export async function notifyProjectUpvote(
 }
 
 /**
- * Send push notification for token gift
- */
-export async function notifyTokenGift(
-  recipientId: string,
-  senderName: string,
-  amount: number
-): Promise<void> {
-  await sendUserPushNotification(recipientId, {
-    title: 'You received tokens! 🎁',
-    body: `${senderName} gifted you ${amount} tokens`,
-    url: '/tokens',
-    tag: 'gift',
-  });
-}
-
-/**
  * Send push notification for milestone achievement
  */
 export async function notifyMilestoneCelebration(

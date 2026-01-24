@@ -35,8 +35,6 @@ Disallow: /notifications
 Disallow: /my-companies
 Disallow: /my-listings
 Disallow: /purchases
-Disallow: /referrals
-Disallow: /tokens
 Disallow: /updates
 
 # Protect advertising management

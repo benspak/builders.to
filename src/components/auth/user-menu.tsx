@@ -4,7 +4,7 @@ import { signOut, useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { LogOut, User, ChevronDown, Settings, Megaphone, Bell, Building2, MapPin, Sun, Moon, HelpCircle } from "lucide-react";
+import { LogOut, User, ChevronDown, Settings, Megaphone, Bell, Building2, MapPin, Sun, Moon, HelpCircle, Sparkles, Link2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/components/ui/theme-provider";
 
@@ -191,6 +191,26 @@ export function UserMenu() {
             >
               <MapPin className="h-4 w-4" />
               My Listings
+            </Link>
+
+            <Link
+              href="/suggestions"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-black/5 dark:hover:bg-white/5"
+              style={{ color: "var(--foreground-muted)" }}
+            >
+              <Sparkles className="h-4 w-4 text-purple-400" />
+              AI Suggestions
+            </Link>
+
+            <Link
+              href="/settings/platforms"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-black/5 dark:hover:bg-white/5"
+              style={{ color: "var(--foreground-muted)" }}
+            >
+              <Link2 className="h-4 w-4" />
+              Connected Platforms
             </Link>
 
             <Link
