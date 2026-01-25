@@ -3,9 +3,21 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { SuggestionStatus } from "@prisma/client";
-import { Sparkles, RefreshCw, Loader2, Info } from "lucide-react";
+import { Sparkles, RefreshCw, Loader2, Info, ChevronDown, ChevronUp, Settings2 } from "lucide-react";
 import { SuggestionCard } from "./suggestion-card";
 import { cn } from "@/lib/utils";
+
+// Tone presets matching the openai.service.ts
+const TONE_OPTIONS = [
+  { value: "professional", label: "Professional", description: "Authoritative and business-focused" },
+  { value: "casual", label: "Casual", description: "Friendly and conversational" },
+  { value: "witty", label: "Witty", description: "Clever humor and wordplay" },
+  { value: "inspirational", label: "Inspirational", description: "Motivating and encouraging" },
+  { value: "educational", label: "Educational", description: "Informative and clear" },
+  { value: "provocative", label: "Provocative", description: "Thought-provoking and bold" },
+] as const;
+
+type ToneOption = typeof TONE_OPTIONS[number]["value"];
 
 interface SuggestionStats {
   total: number;
@@ -24,6 +36,11 @@ export function SuggestionsPanel() {
   const [isLoading, setIsLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // AI refinement options
+  const [showRefinementOptions, setShowRefinementOptions] = useState(false);
+  const [selectedTone, setSelectedTone] = useState<ToneOption>("professional");
+  const [customPrompt, setCustomPrompt] = useState("");
 
   // Fetch suggestions and stats
   const fetchData = async () => {
@@ -66,7 +83,11 @@ export function SuggestionsPanel() {
       const response = await fetch("/api/agent/suggestions/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ count: 3 }),
+        body: JSON.stringify({ 
+          count: 3,
+          tone: selectedTone,
+          customPrompt: customPrompt.trim() || undefined,
+        }),
       });
 
       if (!response.ok) {
@@ -138,19 +159,88 @@ export function SuggestionsPanel() {
             </span>
           )}
         </div>
-        <button
-          onClick={generateSuggestions}
-          disabled={isGenerating}
-          className="flex items-center gap-2 px-4 py-2 text-sm bg-purple-500 text-white rounded-lg hover:bg-purple-600 disabled:opacity-50"
-        >
-          {isGenerating ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <RefreshCw className="w-4 h-4" />
-          )}
-          Generate New
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowRefinementOptions(!showRefinementOptions)}
+            className={cn(
+              "flex items-center gap-2 px-3 py-2 text-sm border rounded-lg transition-colors",
+              showRefinementOptions 
+                ? "bg-purple-50 border-purple-200 text-purple-700 dark:bg-purple-900/20 dark:border-purple-800 dark:text-purple-400"
+                : "hover:bg-muted"
+            )}
+          >
+            <Settings2 className="w-4 h-4" />
+            Refine
+            {showRefinementOptions ? (
+              <ChevronUp className="w-3 h-3" />
+            ) : (
+              <ChevronDown className="w-3 h-3" />
+            )}
+          </button>
+          <button
+            onClick={generateSuggestions}
+            disabled={isGenerating}
+            className="flex items-center gap-2 px-4 py-2 text-sm bg-purple-500 text-white rounded-lg hover:bg-purple-600 disabled:opacity-50"
+          >
+            {isGenerating ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <RefreshCw className="w-4 h-4" />
+            )}
+            Generate New
+          </button>
+        </div>
       </div>
+
+      {/* Refinement Options Panel */}
+      {showRefinementOptions && (
+        <div className="p-4 bg-muted/50 rounded-lg border space-y-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Tone</label>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+              {TONE_OPTIONS.map((tone) => (
+                <button
+                  key={tone.value}
+                  onClick={() => setSelectedTone(tone.value)}
+                  className={cn(
+                    "p-2 text-left rounded-lg border transition-colors",
+                    selectedTone === tone.value
+                      ? "bg-purple-100 border-purple-300 dark:bg-purple-900/30 dark:border-purple-700"
+                      : "hover:bg-muted"
+                  )}
+                >
+                  <p className="text-sm font-medium">{tone.label}</p>
+                  <p className="text-xs text-muted-foreground">{tone.description}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">
+              Custom Prompt <span className="text-muted-foreground font-normal">(optional)</span>
+            </label>
+            <textarea
+              value={customPrompt}
+              onChange={(e) => setCustomPrompt(e.target.value)}
+              placeholder="Add specific guidance for the AI, e.g., 'Focus on SaaS metrics and growth tactics' or 'Write about lessons learned from bootstrapping'"
+              className="w-full px-3 py-2 text-sm border rounded-lg bg-background resize-none focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              rows={3}
+              maxLength={500}
+            />
+            <p className="text-xs text-muted-foreground text-right">
+              {customPrompt.length}/500 characters
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+            <Info className="w-4 h-4 text-purple-500 flex-shrink-0" />
+            <p className="text-xs text-muted-foreground">
+              Posts are limited to 500 characters for optimal engagement. Select a tone and optionally add custom guidance to refine your suggestions.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Stats */}
       {stats && (

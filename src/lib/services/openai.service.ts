@@ -41,6 +41,7 @@ export interface ContentGenerationOptions {
   interests?: string[];
   originalContent?: string; // For remix
   action?: 'generate' | 'remix' | 'expand' | 'shorten' | 'improve';
+  maxLength?: number; // Custom max character limit (default: platform limit or 500)
 }
 
 export interface GeneratedContent {
@@ -64,15 +65,22 @@ export async function generateContent(
     interests = [],
     originalContent,
     action = 'generate',
+    maxLength,
   } = options;
 
   const toneInstruction = TONE_PRESETS[tone];
   const platformConfig = platform ? PLATFORM_CONSTRAINTS[platform] : null;
+  
+  // Use custom maxLength if provided, otherwise use platform limit, default to 500
+  const effectiveMaxLength = maxLength || platformConfig?.maxLength || 500;
 
   let systemPrompt = `You are a social media content expert helping solo founders and indie hackers create engaging content. ${toneInstruction}.`;
 
+  // Always enforce the character limit
+  systemPrompt += ` IMPORTANT: Keep the content under ${effectiveMaxLength} characters. Be concise and impactful.`;
+
   if (platformConfig) {
-    systemPrompt += ` Write content optimized for ${platform}: ${platformConfig.style} Maximum ${platformConfig.maxLength} characters.`;
+    systemPrompt += ` Write content optimized for ${platform}: ${platformConfig.style}`;
   }
 
   if (interests.length > 0) {
@@ -120,14 +128,36 @@ export async function generateContent(
       temperature: 0.7,
     });
 
-    const content = completion.choices[0]?.message?.content || '';
+    let content = completion.choices[0]?.message?.content || '';
+    content = content.trim();
+    
+    // Enforce character limit as a safety net
+    if (content.length > effectiveMaxLength) {
+      // Try to truncate at a sentence boundary
+      const truncated = content.slice(0, effectiveMaxLength);
+      const lastSentenceEnd = Math.max(
+        truncated.lastIndexOf('. '),
+        truncated.lastIndexOf('! '),
+        truncated.lastIndexOf('? ')
+      );
+      
+      if (lastSentenceEnd > effectiveMaxLength * 0.7) {
+        content = truncated.slice(0, lastSentenceEnd + 1);
+      } else {
+        // Fall back to word boundary
+        const lastSpace = truncated.lastIndexOf(' ');
+        content = lastSpace > effectiveMaxLength * 0.8 
+          ? truncated.slice(0, lastSpace) + '...'
+          : truncated.slice(0, effectiveMaxLength - 3) + '...';
+      }
+    }
 
     // Extract hashtags if present
     const hashtagRegex = /#\w+/g;
     const hashtags = content.match(hashtagRegex) || [];
 
     return {
-      content: content.trim(),
+      content: content,
       platform: platform,
       hashtags: hashtags.map((h) => h.slice(1)), // Remove # prefix
       estimatedEngagement: estimateEngagement(content),
@@ -317,7 +347,8 @@ export async function generateImage(
  */
 export async function generateContentIdeas(
   userId: string,
-  count: number = 5
+  count: number = 5,
+  customPrompt?: string
 ): Promise<string[]> {
   // Get user AI profile
   const aiProfile = await prisma.userAIProfile.findUnique({
@@ -333,6 +364,7 @@ export async function generateContentIdeas(
 
 ${interests.length > 0 ? `User interests: ${interests.join(', ')}` : 'Interests: startups, building in public, indie hacking'}
 ${toneContext?.preferredTone ? `Preferred tone: ${toneContext.preferredTone}` : ''}
+${customPrompt ? `\nUser's specific guidance: ${customPrompt}` : ''}
 
 Each idea should be specific enough to inspire a post. Include a mix of:
 - Personal stories/lessons learned

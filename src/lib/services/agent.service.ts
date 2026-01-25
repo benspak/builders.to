@@ -13,6 +13,11 @@ export interface SuggestionWithFeedback extends AgentSuggestion {
   editDistance?: number;
 }
 
+export interface GenerateSuggestionsOptions {
+  tone?: TonePreset;
+  customPrompt?: string;
+}
+
 /**
  * Get user's pending suggestions
  */
@@ -160,7 +165,8 @@ export async function markSuggestionPublished(
  */
 export async function generateSuggestionsForUser(
   userId: string,
-  count: number = 3
+  count: number = 3,
+  options: GenerateSuggestionsOptions = {}
 ): Promise<AgentSuggestion[]> {
   // Check if user has Pro subscription (agentic features are Pro-only)
   const user = await prisma.user.findUnique({
@@ -184,13 +190,23 @@ export async function generateSuggestionsForUser(
   // Get user preferences from AI profile
   const interests = user.aiProfile?.interests || [];
   const toneContext = user.aiProfile?.toneContext as Record<string, unknown> | null;
-  const preferredTone = (toneContext?.preferredTone as TonePreset) || 'professional';
+  
+  // Use provided tone or fall back to user's profile preference
+  const preferredTone = options.tone || (toneContext?.preferredTone as TonePreset) || 'professional';
 
   // Get recent feedback to learn from
   const recentFeedback = await getRecentFeedback(userId);
 
-  // Generate content ideas first
-  const ideas = await generateContentIdeas(userId, count);
+  // Build context from feedback and custom prompt
+  let contextString = buildContextFromFeedback(recentFeedback);
+  if (options.customPrompt) {
+    contextString = contextString 
+      ? `${contextString}. User guidance: ${options.customPrompt}`
+      : `User guidance: ${options.customPrompt}`;
+  }
+
+  // Generate content ideas first (passing custom prompt for better idea generation)
+  const ideas = await generateContentIdeas(userId, count, options.customPrompt);
 
   // Generate full content for each idea
   const suggestions: AgentSuggestion[] = [];
@@ -205,7 +221,8 @@ export async function generateSuggestionsForUser(
         tone: preferredTone,
         platform: targetPlatform,
         interests,
-        context: buildContextFromFeedback(recentFeedback),
+        context: contextString,
+        maxLength: 500, // Enforce 500 character limit
       });
 
       const suggestion = await createSuggestion(userId, {
