@@ -225,7 +225,7 @@ export function ConnectedPlatforms() {
       <div className="p-4 bg-muted rounded-lg">
         <h4 className="text-sm font-medium mb-2">About Platform Connections</h4>
         <p className="text-xs text-muted-foreground">
-          Connect your social media accounts to post content across multiple platforms simultaneously. 
+          Connect your social media accounts to post content across multiple platforms simultaneously.
           Your credentials are securely encrypted and stored. You can disconnect at any time.
         </p>
         <a

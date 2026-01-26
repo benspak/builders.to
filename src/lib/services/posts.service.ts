@@ -27,10 +27,10 @@ export async function createPost(
   // Validate platforms are connected (except BUILDERS which is always available)
   const connections = await getUserConnections(userId);
   const connectedPlatforms = connections.map((c) => c.platform);
-  
+
   const externalPlatforms = platforms.filter((p) => p !== SocialPlatform.BUILDERS);
   const invalidPlatforms = externalPlatforms.filter((p) => !connectedPlatforms.includes(p));
-  
+
   if (invalidPlatforms.length > 0) {
     throw new Error(`Platforms not connected: ${invalidPlatforms.join(', ')}`);
   }
@@ -334,7 +334,7 @@ async function publishToPlatform(
 ): Promise<{ id: string; url?: string } | null> {
   // Get media URLs if any
   const mediaUrls = post.media?.map((m) => m.url) || [];
-  
+
   try {
     switch (platform) {
       case SocialPlatform.TWITTER: {
@@ -371,23 +371,23 @@ async function publishToPlatform(
             content: post.content,
           },
         });
-        
+
         // Update user streak
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        
+
         const user = await prisma.user.findUnique({
           where: { id: userId },
           select: { lastActivityDate: true, currentStreak: true, longestStreak: true },
         });
-        
+
         if (user) {
           const lastActivity = user.lastActivityDate ? new Date(user.lastActivityDate) : null;
           lastActivity?.setHours(0, 0, 0, 0);
-          
+
           const yesterday = new Date(today);
           yesterday.setDate(yesterday.getDate() - 1);
-          
+
           let newStreak = 1;
           if (lastActivity) {
             if (lastActivity.getTime() === yesterday.getTime()) {
@@ -396,7 +396,7 @@ async function publishToPlatform(
               newStreak = user.currentStreak;
             }
           }
-          
+
           await prisma.user.update({
             where: { id: userId },
             data: {
@@ -406,7 +406,7 @@ async function publishToPlatform(
             },
           });
         }
-        
+
         return {
           id: update.id,
           url: `/feed#update-${update.id}`,

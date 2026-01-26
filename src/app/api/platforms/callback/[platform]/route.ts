@@ -22,7 +22,7 @@ export async function GET(
   { params }: { params: Promise<{ platform: string }> }
 ) {
   const baseUrl = getBaseUrl(request);
-  
+
   try {
     const session = await auth();
 
@@ -53,7 +53,7 @@ export async function GET(
     if (error) {
       const errorDescription = searchParams.get("error_description");
       console.error(`OAuth error for ${platform}:`, error, errorDescription);
-      
+
       // Map common OAuth errors to user-friendly messages
       let errorCode = error;
       if (error === "access_denied") {
@@ -61,7 +61,7 @@ export async function GET(
       } else if (errorDescription?.includes("callback")) {
         errorCode = "callback_not_configured";
       }
-      
+
       return NextResponse.redirect(
         new URL(`/settings/platforms?error=${errorCode}`, baseUrl)
       );

@@ -11,19 +11,19 @@ import prisma from '@/lib/prisma';
 const TWITTER_API_BASE = 'https://api.twitter.com/2';
 const TWITTER_UPLOAD_API = 'https://upload.twitter.com/1.1';
 
-// Character limits
-export const TWITTER_MAX_CHARS = 280;
+// Character limits (X Pro supports up to 25,000 chars, but we limit to 3000 for cross-posting)
+export const TWITTER_MAX_CHARS = 3000;
 export const TWITTER_MAX_MEDIA = 4; // Twitter allows up to 4 images per tweet
 
 // Validate environment variables
 function getTwitterCredentials(): { clientId: string; clientSecret: string } {
   const clientId = process.env.TWITTER_CLIENT_ID;
   const clientSecret = process.env.TWITTER_CLIENT_SECRET;
-  
+
   if (!clientId || !clientSecret) {
     throw new Error('Twitter credentials not configured. Please set TWITTER_CLIENT_ID and TWITTER_CLIENT_SECRET environment variables.');
   }
-  
+
   return { clientId, clientSecret };
 }
 
@@ -58,19 +58,19 @@ export function validateTweetContent(text: string): { valid: boolean; error?: st
   if (!text || text.trim().length === 0) {
     return { valid: false, error: 'Tweet content cannot be empty' };
   }
-  
+
   // Twitter counts characters differently - URLs count as 23 chars
   // For simplicity, we'll use a basic character count
   // A more accurate implementation would use twitter-text library
   const charCount = text.length;
-  
+
   if (charCount > TWITTER_MAX_CHARS) {
-    return { 
-      valid: false, 
-      error: `Tweet exceeds ${TWITTER_MAX_CHARS} character limit (${charCount} characters)` 
+    return {
+      valid: false,
+      error: `Tweet exceeds ${TWITTER_MAX_CHARS} character limit (${charCount} characters)`
     };
   }
-  
+
   return { valid: true };
 }
 
@@ -80,7 +80,7 @@ export function validateTweetContent(text: string): { valid: boolean; error?: st
 export async function refreshTwitterToken(refreshToken: string): Promise<PlatformTokens | null> {
   try {
     const { clientId, clientSecret } = getTwitterCredentials();
-    
+
     const response = await fetch('https://api.twitter.com/2/oauth2/token', {
       method: 'POST',
       headers: {
@@ -184,13 +184,13 @@ export async function uploadTwitterMedia(
       console.error('Failed to fetch media from URL:', mediaUrl);
       return null;
     }
-    
+
     const mediaBuffer = await mediaResponse.arrayBuffer();
     const mediaBase64 = Buffer.from(mediaBuffer).toString('base64');
-    
+
     // Determine media type from URL or content-type
     const contentType = mediaResponse.headers.get('content-type') || 'image/jpeg';
-    
+
     // Upload to Twitter using v1.1 media upload endpoint
     // Note: Twitter API v2 doesn't have a media upload endpoint yet,
     // so we use the v1.1 endpoint which works with OAuth 2.0 bearer tokens
@@ -237,7 +237,7 @@ export async function postTweet(
   if (!validation.valid) {
     throw new Error(validation.error);
   }
-  
+
   const accessToken = await getValidTokens(userId);
 
   if (!accessToken) {
@@ -260,7 +260,7 @@ export async function postTweet(
       // Limit to max allowed media
       const mediaToUpload = options.mediaUrls.slice(0, TWITTER_MAX_MEDIA);
       const mediaIds: string[] = [];
-      
+
       for (const mediaUrl of mediaToUpload) {
         const mediaId = await uploadTwitterMedia(accessToken, mediaUrl);
         if (mediaId) {
@@ -269,7 +269,7 @@ export async function postTweet(
           console.warn(`Failed to upload media: ${mediaUrl}`);
         }
       }
-      
+
       if (mediaIds.length > 0) {
         body.media = { media_ids: mediaIds };
       }
@@ -287,7 +287,7 @@ export async function postTweet(
     if (!response.ok) {
       const error = await response.json();
       console.error('Twitter post error:', error);
-      
+
       // Provide more helpful error messages
       if (error.detail?.includes('duplicate')) {
         throw new Error('This tweet has already been posted (duplicate content)');
@@ -298,7 +298,7 @@ export async function postTweet(
       if (error.status === 401 || error.title === 'Unauthorized') {
         throw new Error('Twitter authentication failed. Please reconnect your account.');
       }
-      
+
       throw new Error(error.detail || error.title || 'Failed to post tweet');
     }
 
@@ -405,7 +405,7 @@ export async function connectTwitterAccount(
   try {
     const { clientId, clientSecret } = getTwitterCredentials();
     const redirectUri = `${process.env.NEXTAUTH_URL}/api/platforms/callback/twitter`;
-    
+
     // Exchange code for tokens
     const tokenResponse = await fetch('https://api.twitter.com/2/oauth2/token', {
       method: 'POST',
@@ -471,7 +471,7 @@ export async function connectTwitterAccount(
 export function getTwitterAuthUrl(state: string, codeChallenge: string): string {
   const { clientId } = getTwitterCredentials();
   const redirectUri = `${process.env.NEXTAUTH_URL}/api/platforms/callback/twitter`;
-  
+
   const params = new URLSearchParams({
     response_type: 'code',
     client_id: clientId,

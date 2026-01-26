@@ -20,7 +20,7 @@ export type TonePreset = keyof typeof TONE_PRESETS;
 // Platform-specific constraints
 const PLATFORM_CONSTRAINTS = {
   TWITTER: {
-    maxLength: 280,
+    maxLength: 3000,
     style: 'concise and punchy, optimized for engagement. Use hashtags sparingly.',
   },
   LINKEDIN: {
@@ -28,7 +28,7 @@ const PLATFORM_CONSTRAINTS = {
     style: 'professional and value-driven, with clear takeaways. Can be longer-form.',
   },
   BUILDERS: {
-    maxLength: 5000,
+    maxLength: 3000,
     style: 'founder-focused, sharing genuine insights and progress updates.',
   },
 };

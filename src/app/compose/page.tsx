@@ -49,7 +49,7 @@ export default async function ComposePage() {
       <div className="mt-8 p-4 bg-muted rounded-lg max-w-xl">
         <h3 className="font-medium mb-2">Tips</h3>
         <ul className="text-sm text-muted-foreground space-y-2">
-          <li>• Keep Twitter posts under 280 characters</li>
+          <li>• Cross-posting supports up to 3000 characters on all platforms</li>
           <li>• LinkedIn favors professional, value-driven content</li>
           <li>• Use the AI assistant to improve engagement</li>
         </ul>

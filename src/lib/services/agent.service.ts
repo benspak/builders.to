@@ -359,8 +359,8 @@ function selectBestPlatform(content: string, availablePlatforms: SocialPlatform[
 
   const contentLength = content.length;
 
-  // Short content -> Twitter
-  if (contentLength <= 280 && availablePlatforms.includes(SocialPlatform.TWITTER)) {
+  // Short content -> Twitter (X Pro supports longer posts now)
+  if (contentLength <= 3000 && availablePlatforms.includes(SocialPlatform.TWITTER)) {
     return SocialPlatform.TWITTER;
   }
 

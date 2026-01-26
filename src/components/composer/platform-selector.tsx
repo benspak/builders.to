@@ -10,7 +10,7 @@ const PLATFORMS = {
     name: "Twitter/X",
     icon: "𝕏",
     color: "bg-black text-white",
-    maxLength: 280,
+    maxLength: 3000,
   },
   LINKEDIN: {
     name: "LinkedIn",
@@ -22,7 +22,7 @@ const PLATFORMS = {
     name: "Builders.to",
     icon: "B",
     color: "bg-gradient-to-br from-yellow-500 to-orange-500 text-white",
-    maxLength: 10000,
+    maxLength: 3000,
   },
 };
 
