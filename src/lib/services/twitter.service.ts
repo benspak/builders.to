@@ -476,8 +476,9 @@ export function getTwitterAuthUrl(state: string, codeChallenge: string): string 
     response_type: 'code',
     client_id: clientId,
     redirect_uri: redirectUri,
-    // Request media upload scope for posting images/videos
-    scope: 'tweet.read tweet.write users.read offline.access media.write',
+    // Scopes for reading/writing tweets and refreshing tokens
+    // Media uploads use v1.1 endpoint which works with these scopes
+    scope: 'tweet.read tweet.write users.read offline.access',
     state,
     code_challenge: codeChallenge,
     code_challenge_method: 'S256',

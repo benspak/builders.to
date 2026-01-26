@@ -44,8 +44,10 @@ export function ConnectedPlatforms() {
         no_code: "Authorization code missing",
         invalid_state: "Invalid state - please try again",
         no_verifier: "Missing verification code",
-        connection_failed: "Failed to connect platform",
+        connection_failed: "Failed to connect platform. Please try again.",
         callback_error: "An error occurred during connection",
+        access_denied: "You denied access to the app. Please try again and approve the connection.",
+        callback_not_configured: "The callback URL is not configured in the app settings. Please contact support.",
       };
       setErrorMessage(errorMessages[error] || `Connection error: ${error}`);
     }

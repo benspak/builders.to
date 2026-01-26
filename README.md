@@ -184,8 +184,13 @@ Open [http://localhost:3000](http://localhost:3000) to see the app.
 2. Create a project and app
 3. Enable OAuth 2.0 with:
    - Type: Web App
-   - Callback URL: `http://localhost:3000/api/auth/callback/twitter`
+   - **Callback URLs (add BOTH)**:
+     - `http://localhost:3000/api/auth/callback/twitter` (for login)
+     - `http://localhost:3000/api/platforms/callback/twitter` (for cross-posting)
+   - For production, add both URLs with your domain (e.g., `https://builders.to/api/auth/callback/twitter` and `https://builders.to/api/platforms/callback/twitter`)
 4. Copy Client ID and Client Secret to `.env`
+
+> **Note**: The app requires two callback URLs because login (NextAuth) and platform connection (cross-posting) use separate OAuth flows.
 
 ### GitHub
 
@@ -281,7 +286,9 @@ Configure these environment variables in the Render dashboard:
 5. **RESEND_API_KEY**: From Resend Dashboard
 
 **Important**: Update your OAuth callback URLs to use your production domain:
-- Twitter: `https://your-domain.com/api/auth/callback/twitter`
+- Twitter (both required):
+  - `https://your-domain.com/api/auth/callback/twitter` (login)
+  - `https://your-domain.com/api/platforms/callback/twitter` (cross-posting)
 - GitHub: `https://your-domain.com/api/auth/callback/github`
 
 ## 📜 Available Scripts

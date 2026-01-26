@@ -5,11 +5,24 @@ import { cookies } from "next/headers";
 import { connectTwitterAccount } from "@/lib/services/twitter.service";
 import { connectLinkedInAccount } from "@/lib/services/linkedin.service";
 
+// Get the base URL for redirects - use NEXTAUTH_URL in production to avoid proxy issues
+function getBaseUrl(request: NextRequest): string {
+  // In production, always use NEXTAUTH_URL to ensure correct domain
+  if (process.env.NEXTAUTH_URL) {
+    return process.env.NEXTAUTH_URL;
+  }
+  // Fallback to request URL for development
+  const url = new URL(request.url);
+  return `${url.protocol}//${url.host}`;
+}
+
 // GET /api/platforms/callback/[platform] - Handle OAuth callback
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ platform: string }> }
 ) {
+  const baseUrl = getBaseUrl(request);
+  
   try {
     const session = await auth();
 
@@ -17,7 +30,7 @@ export async function GET(
       // Redirect to login with return URL
       const returnUrl = encodeURIComponent(request.url);
       return NextResponse.redirect(
-        new URL(`/login?callbackUrl=${returnUrl}`, request.url)
+        new URL(`/login?callbackUrl=${returnUrl}`, baseUrl)
       );
     }
 
@@ -27,7 +40,7 @@ export async function GET(
     // Validate platform
     if (!Object.values(SocialPlatform).includes(platformUpper) || platformUpper === "BUILDERS") {
       return NextResponse.redirect(
-        new URL("/settings/platforms?error=invalid_platform", request.url)
+        new URL("/settings/platforms?error=invalid_platform", baseUrl)
       );
     }
 
@@ -38,15 +51,25 @@ export async function GET(
 
     // Check for OAuth error
     if (error) {
-      console.error(`OAuth error for ${platform}:`, error);
+      const errorDescription = searchParams.get("error_description");
+      console.error(`OAuth error for ${platform}:`, error, errorDescription);
+      
+      // Map common OAuth errors to user-friendly messages
+      let errorCode = error;
+      if (error === "access_denied") {
+        errorCode = "access_denied";
+      } else if (errorDescription?.includes("callback")) {
+        errorCode = "callback_not_configured";
+      }
+      
       return NextResponse.redirect(
-        new URL(`/settings/platforms?error=${error}`, request.url)
+        new URL(`/settings/platforms?error=${errorCode}`, baseUrl)
       );
     }
 
     if (!code) {
       return NextResponse.redirect(
-        new URL("/settings/platforms?error=no_code", request.url)
+        new URL("/settings/platforms?error=no_code", baseUrl)
       );
     }
 
@@ -56,7 +79,7 @@ export async function GET(
 
     if (!state || state !== storedState) {
       return NextResponse.redirect(
-        new URL("/settings/platforms?error=invalid_state", request.url)
+        new URL("/settings/platforms?error=invalid_state", baseUrl)
       );
     }
 
@@ -73,7 +96,7 @@ export async function GET(
 
         if (!codeVerifier) {
           return NextResponse.redirect(
-            new URL("/settings/platforms?error=no_verifier", request.url)
+            new URL("/settings/platforms?error=no_verifier", baseUrl)
           );
         }
 
@@ -87,23 +110,23 @@ export async function GET(
 
       default:
         return NextResponse.redirect(
-          new URL("/settings/platforms?error=unsupported", request.url)
+          new URL("/settings/platforms?error=unsupported", baseUrl)
         );
     }
 
     if (!success) {
       return NextResponse.redirect(
-        new URL("/settings/platforms?error=connection_failed", request.url)
+        new URL("/settings/platforms?error=connection_failed", baseUrl)
       );
     }
 
     return NextResponse.redirect(
-      new URL(`/settings/platforms?success=${platform}`, request.url)
+      new URL(`/settings/platforms?success=${platform}`, baseUrl)
     );
   } catch (error) {
     console.error("Error handling OAuth callback:", error);
     return NextResponse.redirect(
-      new URL("/settings/platforms?error=callback_error", request.url)
+      new URL("/settings/platforms?error=callback_error", baseUrl)
     );
   }
 }
