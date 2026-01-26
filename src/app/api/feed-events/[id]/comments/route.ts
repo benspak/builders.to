@@ -320,12 +320,13 @@ export async function POST(
           data: mentionNotifications,
         });
 
-        // Send push notifications to mentioned users
+        // Send push notifications to mentioned users - link to feed with event anchor
+        const feedEventUrl = `/feed#event-${feedEvent.id}`;
         for (const notification of mentionNotifications) {
           sendUserPushNotification(notification.userId, {
             title: 'You were mentioned',
             body: `${commenterName} mentioned you in a comment`,
-            url: '/feed',
+            url: feedEventUrl,
             tag: 'mention',
           }).catch(console.error);
         }

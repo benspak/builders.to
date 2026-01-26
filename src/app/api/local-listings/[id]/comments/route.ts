@@ -434,8 +434,10 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
           data: mentionNotifications,
         });
 
-        // Send push notifications to mentioned users
-        const listingUrl = listing.slug ? `/local/${listing.slug}` : '/local';
+        // Send push notifications to mentioned users - link to listing with comment anchor
+        const listingUrl = listing.slug 
+          ? `/local/${listing.slug}#comment-${comment.id}` 
+          : '/local';
         for (const notification of mentionNotifications) {
           sendUserPushNotification(notification.userId, {
             title: 'You were mentioned',

@@ -155,6 +155,11 @@ export async function POST(
         id: true,
         content: true,
         userId: true,
+        user: {
+          select: {
+            slug: true,
+          },
+        },
       },
     });
 
@@ -294,6 +299,7 @@ export async function POST(
           message: truncatedContent,
           userId: mentionedUser.id,
           updateId: update.id,
+          updateCommentId: comment.id,
           actorId: session.user.id,
           actorName: commenterName,
           actorImage: currentUser?.image,
@@ -305,11 +311,14 @@ export async function POST(
         });
 
         // Send push notifications to mentioned users
+        const updateUrl = update.user?.slug 
+          ? `/${update.user.slug}/updates/${update.id}#comment-${comment.id}`
+          : `/updates`;
         for (const notification of mentionNotifications) {
           sendUserPushNotification(notification.userId, {
             title: 'You were mentioned',
             body: `${commenterName} mentioned you in a comment`,
-            url: '/updates',
+            url: updateUrl,
             tag: 'mention',
           }).catch(console.error);
         }

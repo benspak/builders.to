@@ -660,10 +660,11 @@ model UpdateComment {
   userId   String
   updateId String
 
-  user        User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  update      DailyUpdate               @relation(fields: [updateId], references: [id], onDelete: Cascade)
-  pollOptions UpdateCommentPollOption[] // Poll options if this is a poll comment
-  pollVotes   UpdateCommentPollVote[] // Votes on the poll
+  user          User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  update        DailyUpdate               @relation(fields: [updateId], references: [id], onDelete: Cascade)
+  pollOptions   UpdateCommentPollOption[] // Poll options if this is a poll comment
+  pollVotes     UpdateCommentPollVote[] // Votes on the poll
+  notifications Notification[] // Notifications that reference this comment
 
   @@index([updateId])
   @@index([userId])
@@ -881,6 +882,10 @@ model Notification {
   feedEventCommentId String?
   feedEventComment   FeedEventComment? @relation(fields: [feedEventCommentId], references: [id], onDelete: Cascade)
 
+  // Optional link to update comment (for direct reply navigation)
+  updateCommentId String?
+  updateComment   UpdateComment? @relation(fields: [updateCommentId], references: [id], onDelete: Cascade)
+
   // Actor who triggered the notification (if applicable)
   actorId    String?
   actorName  String? // Denormalized for deleted users
@@ -890,6 +895,7 @@ model Notification {
   @@index([createdAt])
   @@index([projectId])
   @@index([feedEventCommentId])
+  @@index([updateCommentId])
 }
 
 // Email preferences per user

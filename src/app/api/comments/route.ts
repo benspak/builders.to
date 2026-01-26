@@ -421,7 +421,9 @@ export async function POST(request: NextRequest) {
         });
 
         // Send push notifications to mentioned users
-        const projectUrl = project.slug ? `/projects/${project.slug}` : '/projects';
+        const projectUrl = project.slug 
+          ? `/projects/${project.slug}#comment-${comment.id}` 
+          : '/projects';
         for (const notification of mentionNotifications) {
           sendUserPushNotification(notification.userId, {
             title: 'You were mentioned',

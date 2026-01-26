@@ -42,6 +42,10 @@ export interface Notification {
     id: string;
     feedEventId: string;
   } | null;
+  updateComment?: {
+    id: string;
+    updateId: string;
+  } | null;
   update?: {
     id: string;
     user?: {
@@ -172,9 +176,17 @@ export function NotificationList({ onItemClick, showMarkAllRead = true }: Notifi
       return `/${notification.update.user.slug}`;
     }
     if (notification.type === "USER_MENTIONED") {
-      // If mentioned on a feed event comment, link to feed
+      // If mentioned on a feed event comment, link to feed with event anchor
       if (notification.feedEventComment?.feedEventId) {
         return `/feed#event-${notification.feedEventComment.feedEventId}`;
+      }
+      // If mentioned on an update comment, link to the update with comment anchor
+      if (notification.updateComment?.id && notification.update?.user?.slug && notification.update?.id) {
+        return `/${notification.update.user.slug}/updates/${notification.update.id}#comment-${notification.updateComment.id}`;
+      }
+      // If mentioned on a project comment, link to the project with comment anchor
+      if (notification.feedEventComment?.id && notification.project?.slug) {
+        return `/projects/${notification.project.slug}#comment-${notification.feedEventComment.id}`;
       }
       if (notification.project?.slug) {
         return `/projects/${notification.project.slug}`;
