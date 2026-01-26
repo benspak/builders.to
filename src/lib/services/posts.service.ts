@@ -329,13 +329,18 @@ export async function publishPost(
  */
 async function publishToPlatform(
   userId: string,
-  post: CrossPost,
+  post: CrossPost & { media?: { url: string }[] },
   platform: SocialPlatform
 ): Promise<{ id: string; url?: string } | null> {
+  // Get media URLs if any
+  const mediaUrls = post.media?.map((m) => m.url) || [];
+  
   try {
     switch (platform) {
       case SocialPlatform.TWITTER: {
-        const result = await postTweet(userId, post.content);
+        const result = await postTweet(userId, post.content, {
+          mediaUrls: mediaUrls.length > 0 ? mediaUrls : undefined,
+        });
         if (result) {
           return {
             id: result.id,
@@ -346,7 +351,9 @@ async function publishToPlatform(
       }
 
       case SocialPlatform.LINKEDIN: {
-        const result = await postToLinkedIn(userId, post.content);
+        const result = await postToLinkedIn(userId, post.content, {
+          mediaUrls: mediaUrls.length > 0 ? mediaUrls : undefined,
+        });
         if (result) {
           return {
             id: result.id,

@@ -5,6 +5,8 @@ import GitHub from "next-auth/providers/github";
 import Resend from "next-auth/providers/resend";
 import { prisma } from "@/lib/prisma";
 import { generateMagicLinkEmail } from "@/lib/magic-link-email";
+import { generateWelcomeEmail } from "@/lib/welcome-email";
+import { sendEmail } from "@/lib/email";
 
 // Store for temporarily holding username during OAuth flow
 // This is needed because the adapter doesn't pass custom fields
@@ -242,6 +244,28 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               }),
           },
         });
+
+        // Send welcome email to new users (if they have an email)
+        if (user.email) {
+          const displayName = safeName || oauthUsername || "Builder";
+          const baseUrl = process.env.NEXTAUTH_URL || "https://builders.to";
+          
+          const { html, text } = generateWelcomeEmail({
+            userName: displayName,
+            userSlug: slug,
+            baseUrl,
+          });
+
+          // Send asynchronously - don't block user creation if email fails
+          sendEmail({
+            to: user.email,
+            subject: "Welcome to Builders.to! 🎉",
+            html,
+            text,
+          }).catch((error) => {
+            console.error("Failed to send welcome email:", error);
+          });
+        }
 
         // NOTE: Disabled USER_JOINED feed events - too many sign-ups were cluttering the feed
         // const displayName = (safeName || oauthUsername) || "A new builder";

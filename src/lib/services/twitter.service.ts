@@ -9,6 +9,23 @@ import {
 import prisma from '@/lib/prisma';
 
 const TWITTER_API_BASE = 'https://api.twitter.com/2';
+const TWITTER_UPLOAD_API = 'https://upload.twitter.com/1.1';
+
+// Character limits
+export const TWITTER_MAX_CHARS = 280;
+export const TWITTER_MAX_MEDIA = 4; // Twitter allows up to 4 images per tweet
+
+// Validate environment variables
+function getTwitterCredentials(): { clientId: string; clientSecret: string } {
+  const clientId = process.env.TWITTER_CLIENT_ID;
+  const clientSecret = process.env.TWITTER_CLIENT_SECRET;
+  
+  if (!clientId || !clientSecret) {
+    throw new Error('Twitter credentials not configured. Please set TWITTER_CLIENT_ID and TWITTER_CLIENT_SECRET environment variables.');
+  }
+  
+  return { clientId, clientSecret };
+}
 
 interface TwitterUser {
   id: string;
@@ -30,28 +47,56 @@ interface TwitterTweet {
   };
 }
 
+interface MediaUploadResponse {
+  media_id_string: string;
+}
+
+/**
+ * Validate tweet content length
+ */
+export function validateTweetContent(text: string): { valid: boolean; error?: string } {
+  if (!text || text.trim().length === 0) {
+    return { valid: false, error: 'Tweet content cannot be empty' };
+  }
+  
+  // Twitter counts characters differently - URLs count as 23 chars
+  // For simplicity, we'll use a basic character count
+  // A more accurate implementation would use twitter-text library
+  const charCount = text.length;
+  
+  if (charCount > TWITTER_MAX_CHARS) {
+    return { 
+      valid: false, 
+      error: `Tweet exceeds ${TWITTER_MAX_CHARS} character limit (${charCount} characters)` 
+    };
+  }
+  
+  return { valid: true };
+}
+
 /**
  * Refresh Twitter access token
  */
 export async function refreshTwitterToken(refreshToken: string): Promise<PlatformTokens | null> {
   try {
+    const { clientId, clientSecret } = getTwitterCredentials();
+    
     const response = await fetch('https://api.twitter.com/2/oauth2/token', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
-        Authorization: `Basic ${Buffer.from(
-          `${process.env.TWITTER_CLIENT_ID}:${process.env.TWITTER_CLIENT_SECRET}`
-        ).toString('base64')}`,
+        Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`,
       },
       body: new URLSearchParams({
         grant_type: 'refresh_token',
         refresh_token: refreshToken,
-        client_id: process.env.TWITTER_CLIENT_ID || '',
+        client_id: clientId,
       }),
     });
 
     if (!response.ok) {
-      console.error('Twitter token refresh failed:', await response.text());
+      const errorText = await response.text();
+      console.error('Twitter token refresh failed:', errorText);
       return null;
     }
 
@@ -124,7 +169,59 @@ async function getValidTokens(userId: string): Promise<string | null> {
 }
 
 /**
- * Post a tweet
+ * Upload media to Twitter
+ * Twitter API v1.1 is still used for media uploads as v2 doesn't support it directly
+ * Note: This requires OAuth 1.0a or OAuth 2.0 with appropriate scopes
+ */
+export async function uploadTwitterMedia(
+  accessToken: string,
+  mediaUrl: string
+): Promise<string | null> {
+  try {
+    // Fetch the media from the URL
+    const mediaResponse = await fetch(mediaUrl);
+    if (!mediaResponse.ok) {
+      console.error('Failed to fetch media from URL:', mediaUrl);
+      return null;
+    }
+    
+    const mediaBuffer = await mediaResponse.arrayBuffer();
+    const mediaBase64 = Buffer.from(mediaBuffer).toString('base64');
+    
+    // Determine media type from URL or content-type
+    const contentType = mediaResponse.headers.get('content-type') || 'image/jpeg';
+    
+    // Upload to Twitter using v1.1 media upload endpoint
+    // Note: Twitter API v2 doesn't have a media upload endpoint yet,
+    // so we use the v1.1 endpoint which works with OAuth 2.0 bearer tokens
+    const uploadResponse = await fetch(`${TWITTER_UPLOAD_API}/media/upload.json`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        media_data: mediaBase64,
+        media_category: contentType.startsWith('video/') ? 'tweet_video' : 'tweet_image',
+      }),
+    });
+
+    if (!uploadResponse.ok) {
+      const errorText = await uploadResponse.text();
+      console.error('Twitter media upload failed:', errorText);
+      return null;
+    }
+
+    const uploadData: MediaUploadResponse = await uploadResponse.json();
+    return uploadData.media_id_string;
+  } catch (error) {
+    console.error('Twitter media upload error:', error);
+    return null;
+  }
+}
+
+/**
+ * Post a tweet with optional media
  */
 export async function postTweet(
   userId: string,
@@ -132,12 +229,19 @@ export async function postTweet(
   options?: {
     replyTo?: string;
     quoteTweetId?: string;
+    mediaUrls?: string[];
   }
 ): Promise<{ id: string; text: string } | null> {
+  // Validate content length
+  const validation = validateTweetContent(text);
+  if (!validation.valid) {
+    throw new Error(validation.error);
+  }
+  
   const accessToken = await getValidTokens(userId);
 
   if (!accessToken) {
-    throw new Error('Twitter not connected or token expired');
+    throw new Error('Twitter not connected or token expired. Please reconnect your Twitter account.');
   }
 
   try {
@@ -149,6 +253,26 @@ export async function postTweet(
 
     if (options?.quoteTweetId) {
       body.quote_tweet_id = options.quoteTweetId;
+    }
+
+    // Upload media if provided
+    if (options?.mediaUrls && options.mediaUrls.length > 0) {
+      // Limit to max allowed media
+      const mediaToUpload = options.mediaUrls.slice(0, TWITTER_MAX_MEDIA);
+      const mediaIds: string[] = [];
+      
+      for (const mediaUrl of mediaToUpload) {
+        const mediaId = await uploadTwitterMedia(accessToken, mediaUrl);
+        if (mediaId) {
+          mediaIds.push(mediaId);
+        } else {
+          console.warn(`Failed to upload media: ${mediaUrl}`);
+        }
+      }
+      
+      if (mediaIds.length > 0) {
+        body.media = { media_ids: mediaIds };
+      }
     }
 
     const response = await fetch(`${TWITTER_API_BASE}/tweets`, {
@@ -163,7 +287,19 @@ export async function postTweet(
     if (!response.ok) {
       const error = await response.json();
       console.error('Twitter post error:', error);
-      throw new Error(error.detail || 'Failed to post tweet');
+      
+      // Provide more helpful error messages
+      if (error.detail?.includes('duplicate')) {
+        throw new Error('This tweet has already been posted (duplicate content)');
+      }
+      if (error.detail?.includes('rate limit')) {
+        throw new Error('Twitter rate limit reached. Please try again later.');
+      }
+      if (error.status === 401 || error.title === 'Unauthorized') {
+        throw new Error('Twitter authentication failed. Please reconnect your account.');
+      }
+      
+      throw new Error(error.detail || error.title || 'Failed to post tweet');
     }
 
     const { data } = await response.json();
@@ -267,6 +403,7 @@ export async function connectTwitterAccount(
   codeVerifier: string
 ): Promise<boolean> {
   try {
+    const { clientId, clientSecret } = getTwitterCredentials();
     const redirectUri = `${process.env.NEXTAUTH_URL}/api/platforms/callback/twitter`;
     
     // Exchange code for tokens
@@ -274,21 +411,20 @@ export async function connectTwitterAccount(
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
-        Authorization: `Basic ${Buffer.from(
-          `${process.env.TWITTER_CLIENT_ID}:${process.env.TWITTER_CLIENT_SECRET}`
-        ).toString('base64')}`,
+        Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`,
       },
       body: new URLSearchParams({
         code,
         grant_type: 'authorization_code',
-        client_id: process.env.TWITTER_CLIENT_ID || '',
+        client_id: clientId,
         redirect_uri: redirectUri,
         code_verifier: codeVerifier,
       }),
     });
 
     if (!tokenResponse.ok) {
-      console.error('Twitter token exchange failed:', await tokenResponse.text());
+      const errorText = await tokenResponse.text();
+      console.error('Twitter token exchange failed:', errorText);
       return false;
     }
 
@@ -308,6 +444,7 @@ export async function connectTwitterAccount(
     const user = await getTwitterUser(tokens.accessToken);
 
     if (!user) {
+      console.error('Failed to fetch Twitter user profile');
       return false;
     }
 
@@ -332,13 +469,15 @@ export async function connectTwitterAccount(
  * Generate Twitter OAuth authorization URL
  */
 export function getTwitterAuthUrl(state: string, codeChallenge: string): string {
+  const { clientId } = getTwitterCredentials();
   const redirectUri = `${process.env.NEXTAUTH_URL}/api/platforms/callback/twitter`;
   
   const params = new URLSearchParams({
     response_type: 'code',
-    client_id: process.env.TWITTER_CLIENT_ID || '',
+    client_id: clientId,
     redirect_uri: redirectUri,
-    scope: 'tweet.read tweet.write users.read offline.access',
+    // Request media upload scope for posting images/videos
+    scope: 'tweet.read tweet.write users.read offline.access media.write',
     state,
     code_challenge: codeChallenge,
     code_challenge_method: 'S256',
