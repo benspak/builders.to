@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { BookOpen, User, Clock, Crown, Rocket, Users, Megaphone } from "lucide-react";
+import { BookOpen, User, Clock, Crown, Rocket, Users, Megaphone, DollarSign } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "How To - Builders.to",
@@ -26,6 +26,15 @@ const articles = [
     icon: Crown,
     iconColor: "text-amber-400",
     iconBg: "bg-amber-500/10",
+  },
+  {
+    slug: "earn-from-posting",
+    title: "Earn From Posting",
+    description: "Learn how Pro members can earn real money ($0.05-$0.07 per post) for creating quality content on Builders.to.",
+    readTime: "3 min read",
+    icon: DollarSign,
+    iconColor: "text-emerald-400",
+    iconBg: "bg-emerald-500/10",
   },
   {
     slug: "idea-to-first-customer",

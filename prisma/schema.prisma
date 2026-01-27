@@ -155,8 +155,8 @@ model User {
   pinnedPosts PinnedPost[]
 
   // Profile Views (for "People also viewed" feature)
-  profileViews         ProfileView[] @relation("ProfileViewed")   // Views of this profile
-  profileViewsAsViewer ProfileView[] @relation("ProfileViewer")   // Profiles this user has viewed
+  profileViews           ProfileView[] @relation("ProfileViewed") // Views of this profile
+  profileViewsAsViewer   ProfileView[] @relation("ProfileViewer") // Profiles this user has viewed
   profileViewsAsReferrer ProfileView[] @relation("ProfileReferrer") // Views where this profile was the referrer
 
   // Cross-Platform Posting
@@ -164,6 +164,11 @@ model User {
   crossPosts          CrossPost[]
   agentSuggestions    AgentSuggestion[]
   aiProfile           UserAIProfile?
+
+  // Pro User Rewards System
+  postRewards  PostReward[]
+  userEarnings UserEarnings?
+  payouts      Payout[]
 
   @@index([slug])
   @@index([stripeConnectId])
@@ -580,11 +585,11 @@ model DailyUpdate {
   updatedAt DateTime @updatedAt
 
   // Poll attachment (optional) - X/Twitter style polls
-  pollQuestion  String?   // Poll question (if this update has a poll)
+  pollQuestion  String? // Poll question (if this update has a poll)
   pollExpiresAt DateTime? // When the poll ends (7 days from creation)
 
   userId        String
-  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user          User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   likes         UpdateLike[]
   comments      UpdateComment[]
   notifications Notification[]
@@ -592,6 +597,7 @@ model DailyUpdate {
   pinnedBy      PinnedPost[] // Users who have pinned this update
   pollOptions   UpdatePollOption[] // Poll options if this is a poll update
   pollVotes     UpdatePollVote[] // Votes on the poll
+  rewards       PostReward[] // Rewards earned from this update
 
   @@index([userId])
   @@index([createdAt])
@@ -654,7 +660,7 @@ model UpdateComment {
   updatedAt DateTime @updatedAt
 
   // Poll attachment (optional) - X/Twitter style polls
-  pollQuestion  String?   // Poll question (if this comment has a poll)
+  pollQuestion  String? // Poll question (if this comment has a poll)
   pollExpiresAt DateTime? // When the poll ends (7 days from creation)
 
   userId   String
@@ -790,14 +796,14 @@ model FeedEventComment {
   updatedAt DateTime @updatedAt
 
   // Poll attachment (optional) - X/Twitter style polls
-  pollQuestion  String?   // Poll question (if this comment has a poll)
+  pollQuestion  String? // Poll question (if this comment has a poll)
   pollExpiresAt DateTime? // When the poll ends (7 days from creation)
 
   userId      String
   feedEventId String
 
-  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  feedEvent     FeedEvent      @relation(fields: [feedEventId], references: [id], onDelete: Cascade)
+  user          User                         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  feedEvent     FeedEvent                    @relation(fields: [feedEventId], references: [id], onDelete: Cascade)
   notifications Notification[]
   pollOptions   FeedEventCommentPollOption[] // Poll options if this is a poll comment
   pollVotes     FeedEventCommentPollVote[] // Votes on the poll
@@ -1259,9 +1265,9 @@ model LocalListingRating {
 
 // Orders for FOR_SALE local listings
 model LocalListingOrder {
-  id           String                  @id @default(cuid())
-  status       LocalListingOrderStatus @default(PENDING_PAYMENT)
-  notes        String?                 @db.Text // Buyer's notes/requirements
+  id     String                  @id @default(cuid())
+  status LocalListingOrderStatus @default(PENDING_PAYMENT)
+  notes  String?                 @db.Text // Buyer's notes/requirements
 
   // Pricing at time of purchase
   priceInCents       Int // Item price at time of purchase
@@ -1367,10 +1373,10 @@ model LocalListingClick {
 // Used for "People also viewed" feature (like LinkedIn)
 model ProfileView {
   id              String   @id @default(cuid())
-  viewedUserId    String   // The profile being viewed
-  viewerVisitorId String?  // Anonymous session identifier for logged-out users
-  viewerUserId    String?  // Logged-in user who viewed (optional)
-  referrerUserId  String?  // The profile they came from (for "also viewed" logic)
+  viewedUserId    String // The profile being viewed
+  viewerVisitorId String? // Anonymous session identifier for logged-out users
+  viewerUserId    String? // Logged-in user who viewed (optional)
+  referrerUserId  String? // The profile they came from (for "also viewed" logic)
   createdAt       DateTime @default(now())
 
   viewedUser   User  @relation("ProfileViewed", fields: [viewedUserId], references: [id], onDelete: Cascade)
@@ -1594,15 +1600,15 @@ model PlatformConnection {
 
 // Cross-platform posts - posts that can be published to multiple platforms
 model CrossPost {
-  id              String           @id @default(cuid())
-  userId          String
-  content         String           @db.Text
-  platforms       SocialPlatform[]
-  status          CrossPostStatus  @default(DRAFT)
-  scheduledAt     DateTime?
-  publishedAt     DateTime?
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
+  id          String           @id @default(cuid())
+  userId      String
+  content     String           @db.Text
+  platforms   SocialPlatform[]
+  status      CrossPostStatus  @default(DRAFT)
+  scheduledAt DateTime?
+  publishedAt DateTime?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
 
   user          User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   platformPosts CrossPlatformPost[]
@@ -1682,4 +1688,109 @@ model UserAIProfile {
   updatedAt    DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ============================================
+// Pro User Rewards System - Pay pro users for posting
+// ============================================
+
+enum RewardStatus {
+  PENDING // Awaiting payout
+  PROCESSING // Payout in progress
+  PAID // Successfully paid out
+  FAILED // Payout failed
+  CANCELLED // Cancelled by admin
+}
+
+enum RewardType {
+  BASE_POST // Base $0.05 for posting
+  ENGAGEMENT_BONUS // Bonus from likes (up to $0.02)
+}
+
+// Individual rewards earned from posts
+model PostReward {
+  id            String       @id @default(cuid())
+  userId        String
+  dailyUpdateId String
+  type          RewardType
+  amount        Int // Amount in cents (use decimal math in code for sub-cent)
+  status        RewardStatus @default(PENDING)
+  payoutId      String? // Reference to Payout record when paid
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dailyUpdate DailyUpdate @relation(fields: [dailyUpdateId], references: [id], onDelete: Cascade)
+  payout      Payout?     @relation(fields: [payoutId], references: [id])
+
+  @@index([userId])
+  @@index([dailyUpdateId])
+  @@index([status])
+  @@index([payoutId])
+}
+
+// Aggregated user earnings tracking
+model UserEarnings {
+  id               String    @id @default(cuid())
+  userId           String    @unique
+  pendingAmount    Int       @default(0) // Cents awaiting payout (stored as integer, sub-cents handled in code)
+  lifetimeEarnings Int       @default(0) // Total cents earned all-time
+  earnedToday      Boolean   @default(false) // Whether user earned reward today (reset daily)
+  lastPostDate     DateTime? // For daily reset tracking
+  lastPayoutAt     DateTime?
+  isPaused         Boolean   @default(false) // Admin pause flag
+  isFlagged        Boolean   @default(false) // Admin fraud flag
+  flagReason       String? // Reason for flagging
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([isPaused])
+  @@index([isFlagged])
+}
+
+// Payout records - batches of rewards paid out together
+model Payout {
+  id               String       @id @default(cuid())
+  userId           String
+  amount           Int // Amount in cents
+  status           RewardStatus @default(PROCESSING)
+  stripeTransferId String? // Stripe Transfer ID
+  failureReason    String? // Error message if failed
+  createdAt        DateTime     @default(now())
+  completedAt      DateTime?
+
+  user    User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rewards PostReward[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// Platform-wide reward settings (singleton-ish, one active config)
+model RewardSettings {
+  id                   String   @id @default("default")
+  baseRewardCents      Int      @default(5) // $0.05 base rate
+  engagementBonusCents Int      @default(1) // $0.005 per tier (stored as 0.5 cents, use decimal in code)
+  likesPerTier         Int      @default(5) // 5 likes = 1 tier
+  maxBonusCents        Int      @default(2) // $0.02 max engagement bonus
+  minCharCount         Int      @default(100) // Minimum characters for eligible post
+  maxPostsPerDay       Int      @default(1) // 1 post per day can earn
+  minPayoutCents       Int      @default(500) // $5 minimum for payout
+  globalPayoutsPaused  Boolean  @default(false) // Pause all payouts platform-wide
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+// Content hashes for duplicate detection
+model PostContentHash {
+  id        String   @id @default(cuid())
+  userId    String
+  hash      String // SHA-256 of normalized content
+  createdAt DateTime @default(now())
+
+  @@unique([userId, hash])
+  @@index([userId])
 }

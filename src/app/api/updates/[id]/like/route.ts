@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { notifyLike } from "@/lib/push-notifications";
+import { updateEngagementBonus } from "@/lib/services/rewards.service";
 
 // POST /api/updates/[id]/like - Toggle like on an update
 export async function POST(
@@ -63,6 +64,11 @@ export async function POST(
         where: { updateId },
       });
 
+      // Update engagement bonus (runs async, doesn't block response)
+      updateEngagementBonus(updateId).catch((error) => {
+        console.error("[Rewards] Error updating engagement bonus:", error);
+      });
+
       return NextResponse.json({
         liked: false,
         likesCount,
@@ -120,6 +126,11 @@ export async function POST(
           updateUrl
         ).catch(console.error);
       }
+
+      // Update engagement bonus (runs async, doesn't block response)
+      updateEngagementBonus(updateId).catch((error) => {
+        console.error("[Rewards] Error updating engagement bonus:", error);
+      });
 
       return NextResponse.json({
         liked: true,

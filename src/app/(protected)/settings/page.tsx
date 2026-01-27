@@ -9,7 +9,8 @@ import { NotificationSettings } from "@/components/pwa";
 import { TwoFactorSettings } from "@/components/auth/two-factor";
 import { DeleteAccount } from "@/components/settings/delete-account";
 import { ProSubscription } from "@/components/settings/pro-subscription";
-import { Settings, User, ArrowLeft, Bell, Crown } from "lucide-react";
+import { EarningsDashboard } from "@/components/settings/earnings-dashboard";
+import { Settings, User, ArrowLeft, Bell, Crown, DollarSign } from "lucide-react";
 
 export const metadata = {
   title: "Settings - Builders.to",
@@ -132,6 +133,15 @@ export default async function SettingsPage() {
             <h2 className="text-lg font-semibold text-white">Pro Membership</h2>
           </div>
           <ProSubscription />
+        </div>
+
+        {/* Creator Rewards Section */}
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-4">
+            <DollarSign className="h-5 w-5 text-emerald-400" />
+            <h2 className="text-lg font-semibold text-white">Creator Rewards</h2>
+          </div>
+          <EarningsDashboard />
         </div>
 
         {/* Settings Card */}

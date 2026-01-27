@@ -311,7 +311,7 @@ export async function POST(
         });
 
         // Send push notifications to mentioned users
-        const updateUrl = update.user?.slug 
+        const updateUrl = update.user?.slug
           ? `/${update.user.slug}/updates/${update.id}#comment-${comment.id}`
           : `/updates`;
         for (const notification of mentionNotifications) {

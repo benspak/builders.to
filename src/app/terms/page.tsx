@@ -20,7 +20,7 @@ export default function TermsOfServicePage() {
         </div>
 
         <h1 className="text-4xl font-bold text-white mb-2">Terms of Service</h1>
-        <p className="text-zinc-500 mb-12">Last updated: January 14, 2026</p>
+        <p className="text-zinc-500 mb-12">Last updated: January 26, 2026</p>
 
         <div className="prose prose-invert prose-zinc max-w-none">
           <div className="space-y-8 text-zinc-300">
@@ -49,6 +49,9 @@ export default function TermsOfServicePage() {
                 <li>Posting and browsing local classifieds</li>
                 <li>Earning and using virtual tokens</li>
                 <li>Purchasing and displaying advertisements</li>
+                <li>Subscribing to Pro plans for enhanced features and rewards</li>
+                <li>Using AI-powered content generation and analysis tools</li>
+                <li>Cross-posting content to connected social media platforms (Twitter/X, LinkedIn)</li>
               </ul>
             </section>
 
@@ -116,7 +119,19 @@ export default function TermsOfServicePage() {
                 <li>Promotes illegal products or services</li>
               </ul>
 
-              <h3 className="text-xl font-medium text-white mt-6 mb-3">4.3 Content Moderation</h3>
+              <h3 className="text-xl font-medium text-white mt-6 mb-3">4.3 AI-Generated Content</h3>
+              <p className="leading-relaxed mb-4">
+                When using our AI content generation features:
+              </p>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>You are responsible for reviewing and editing AI-generated content before posting</li>
+                <li>AI-generated content is subject to the same content guidelines as manually created content</li>
+                <li>You may not use AI features to generate content that violates these Terms</li>
+                <li>AI suggestions are provided as-is without guarantees of accuracy or appropriateness</li>
+                <li>DALL-E image generation (Pro feature) is subject to OpenAI&apos;s content policies</li>
+              </ul>
+
+              <h3 className="text-xl font-medium text-white mt-6 mb-3">4.4 Content Moderation</h3>
               <p className="leading-relaxed">
                 We reserve the right, but have no obligation, to review, edit, or remove any User
                 Content at our sole discretion. We may remove content that violates these Terms or
@@ -126,7 +141,33 @@ export default function TermsOfServicePage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">5. Services Marketplace</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">5. Cross-Platform Posting</h2>
+
+              <h3 className="text-xl font-medium text-white mt-6 mb-3">5.1 Platform Connections</h3>
+              <p className="leading-relaxed mb-4">
+                You may connect your Twitter/X and LinkedIn accounts to enable cross-posting. By connecting:
+              </p>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>You authorize us to post content on your behalf to connected platforms</li>
+                <li>You are responsible for complying with each platform&apos;s terms of service</li>
+                <li>We store encrypted OAuth tokens to maintain your connections</li>
+                <li>You can disconnect platforms at any time, which revokes our access</li>
+              </ul>
+
+              <h3 className="text-xl font-medium text-white mt-6 mb-3">5.2 Cross-Posted Content</h3>
+              <p className="leading-relaxed mb-4">
+                When cross-posting content:
+              </p>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>Content is adapted to each platform&apos;s requirements (character limits, media formats)</li>
+                <li>You are responsible for the content posted to external platforms</li>
+                <li>We are not responsible for how external platforms handle your content</li>
+                <li>Scheduled posts will be published at the specified time if your connection is active</li>
+              </ul>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-semibold text-white mb-4">6. Services Marketplace</h2>
 
               <h3 className="text-xl font-medium text-white mt-6 mb-3">6.1 Service Providers</h3>
               <p className="leading-relaxed">
@@ -161,7 +202,7 @@ export default function TermsOfServicePage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">6. Local Listings and Classifieds</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">7. Local Listings and Classifieds</h2>
               <p className="leading-relaxed mb-4">
                 Local listings allow users to post classifieds in various categories. You agree that:
               </p>
@@ -175,7 +216,7 @@ export default function TermsOfServicePage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">7. Advertising</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">8. Advertising</h2>
               <p className="leading-relaxed mb-4">
                 Users may purchase advertisements to be displayed on the platform. Advertisers agree:
               </p>
@@ -189,7 +230,21 @@ export default function TermsOfServicePage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">8. Acceptable Use</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">9. Pro Subscriptions</h2>
+              <p className="mb-4">Pro subscription plans provide enhanced features:</p>
+              <ul className="list-disc pl-6 space-y-2">
+                <li><strong className="text-white">Plan Options:</strong> Monthly ($3.99/month) or Yearly ($39.99/year) billing</li>
+                <li><strong className="text-white">Pro Rewards:</strong> Pro users may earn money for quality content. Rewards are discretionary and subject to our policies.</li>
+                <li><strong className="text-white">DALL-E Access:</strong> Pro users can generate AI images. Usage is subject to OpenAI&apos;s policies.</li>
+                <li><strong className="text-white">Billing:</strong> Subscriptions are billed through Stripe and auto-renew unless cancelled.</li>
+                <li><strong className="text-white">Cancellation:</strong> You may cancel at any time. Access continues until the end of the billing period.</li>
+                <li><strong className="text-white">Refunds:</strong> Subscription payments are generally non-refundable except as required by law.</li>
+                <li><strong className="text-white">Feature Changes:</strong> We may modify Pro features at any time with reasonable notice.</li>
+              </ul>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-semibold text-white mb-4">10. Acceptable Use</h2>
               <p className="mb-4">You agree not to:</p>
               <ul className="list-disc pl-6 space-y-2">
                 <li>Use the Service for any illegal purpose</li>
@@ -204,34 +259,38 @@ export default function TermsOfServicePage() {
                 <li>Create fake accounts or artificially inflate engagement metrics</li>
                 <li>Use the platform for money laundering or financial fraud</li>
                 <li>Post false or misleading information about businesses or individuals</li>
+                <li>Abuse AI features to generate spam, misleading content, or policy-violating material</li>
+                <li>Use cross-posting features to spam connected platforms</li>
               </ul>
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">9. Payments and Refunds</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">11. Payments and Refunds</h2>
               <p className="leading-relaxed mb-4">
                 All payments are processed through Stripe. By making payments, you agree to Stripe&apos;s
                 terms of service. Regarding refunds:
               </p>
               <ul className="list-disc pl-6 space-y-2">
+                <li>Pro subscription payments are generally non-refundable except as required by law</li>
                 <li>Service listing fees and advertisement purchases are generally non-refundable once activated</li>
                 <li>Service order disputes should be resolved between buyer and seller</li>
                 <li>We may issue refunds at our discretion for technical errors or extenuating circumstances</li>
                 <li>Chargebacks may result in account suspension pending investigation</li>
+                <li>Pro rewards payouts are processed through Stripe and subject to minimum payout thresholds</li>
               </ul>
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">10. Intellectual Property</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">12. Intellectual Property</h2>
 
-              <h3 className="text-xl font-medium text-white mt-6 mb-3">11.1 Our Property</h3>
+              <h3 className="text-xl font-medium text-white mt-6 mb-3">12.1 Our Property</h3>
               <p className="leading-relaxed">
                 The Service, including its design, features, and content (excluding User Content),
                 is owned by Builders.to and protected by copyright, trademark, and other laws.
                 You may not copy, modify, or distribute our intellectual property without permission.
               </p>
 
-              <h3 className="text-xl font-medium text-white mt-6 mb-3">11.2 Trademarks</h3>
+              <h3 className="text-xl font-medium text-white mt-6 mb-3">12.2 Trademarks</h3>
               <p className="leading-relaxed">
                 &quot;Builders.to&quot; and associated logos are trademarks of Builders.to. You may not
                 use these trademarks without our prior written consent.
@@ -239,51 +298,61 @@ export default function TermsOfServicePage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">11. Third-Party Services</h2>
-              <p className="leading-relaxed">
-                The Service may contain links to third-party websites or services that are not
-                owned or controlled by Builders.to. We have no control over and assume no
-                responsibility for the content, privacy policies, or practices of third-party
-                sites. Your use of third-party services is at your own risk.
+              <h2 className="text-2xl font-semibold text-white mb-4">13. Third-Party Services</h2>
+              <p className="leading-relaxed mb-4">
+                The Service integrates with and links to third-party services:
+              </p>
+              <ul className="list-disc pl-6 space-y-2">
+                <li><strong className="text-white">Payment Processing:</strong> Stripe handles all payments. Use is subject to Stripe&apos;s terms.</li>
+                <li><strong className="text-white">Social Platforms:</strong> Twitter/X and LinkedIn integrations are subject to their respective terms.</li>
+                <li><strong className="text-white">AI Services:</strong> OpenAI powers our content generation. Use is subject to OpenAI&apos;s policies.</li>
+                <li><strong className="text-white">Media Services:</strong> Giphy, YouTube, and Twitch embeds are subject to their terms.</li>
+              </ul>
+              <p className="mt-4">
+                We have no control over and assume no responsibility for the content, privacy policies, 
+                or practices of third-party services. Your use of third-party services is at your own risk.
               </p>
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">12. Disclaimer of Warranties</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">14. Disclaimer of Warranties</h2>
               <p className="leading-relaxed uppercase text-sm">
                 THE SERVICE IS PROVIDED &quot;AS IS&quot; AND &quot;AS AVAILABLE&quot; WITHOUT WARRANTIES OF ANY
                 KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO IMPLIED WARRANTIES
                 OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT. WE
                 DO NOT WARRANT THAT THE SERVICE WILL BE UNINTERRUPTED, SECURE, OR ERROR-FREE.
-                WE DO NOT GUARANTEE THE ACCURACY OF TOKEN BALANCES OR ANY
-                METRICS DISPLAYED ON THE PLATFORM.
+                WE DO NOT GUARANTEE THE ACCURACY OF TOKEN BALANCES, PRO REWARDS CALCULATIONS, 
+                AI-GENERATED CONTENT, OR ANY METRICS DISPLAYED ON THE PLATFORM. AI FEATURES ARE PROVIDED 
+                WITHOUT WARRANTIES REGARDING ACCURACY, APPROPRIATENESS, OR FITNESS FOR ANY PURPOSE.
               </p>
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">13. Limitation of Liability</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">15. Limitation of Liability</h2>
               <p className="leading-relaxed uppercase text-sm">
                 TO THE MAXIMUM EXTENT PERMITTED BY LAW, BUILDERS.TO SHALL NOT BE LIABLE FOR ANY
                 INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR ANY LOSS
                 OF PROFITS OR REVENUES, WHETHER INCURRED DIRECTLY OR INDIRECTLY, OR ANY LOSS OF
                 DATA, USE, GOODWILL, OR OTHER INTANGIBLE LOSSES, RESULTING FROM YOUR USE OF THE
-                SERVICE, INCLUDING BUT NOT LIMITED TO LOSSES RELATED TO THE TOKEN SYSTEM OR
-                SERVICE MARKETPLACE TRANSACTIONS.
+                SERVICE, INCLUDING BUT NOT LIMITED TO LOSSES RELATED TO THE TOKEN SYSTEM, PRO 
+                REWARDS, SERVICE MARKETPLACE TRANSACTIONS, AI-GENERATED CONTENT, OR CROSS-POSTED 
+                CONTENT ON THIRD-PARTY PLATFORMS.
               </p>
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">14. Indemnification</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">16. Indemnification</h2>
               <p className="leading-relaxed">
                 You agree to indemnify, defend, and hold harmless Builders.to and its officers,
                 directors, employees, and agents from any claims, damages, losses, liabilities,
                 and expenses (including legal fees) arising from your use of the Service, your
-                User Content, your service marketplace activities, or your violation of these Terms.
+                User Content (including AI-generated content), your service marketplace activities, 
+                content cross-posted to external platforms, or your violation of these Terms.
               </p>
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">15. Termination</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">17. Termination</h2>
               <p className="leading-relaxed mb-4">
                 We may suspend or terminate your access to the Service at any time, with or
                 without cause, and with or without notice. Upon termination:
@@ -291,8 +360,11 @@ export default function TermsOfServicePage() {
               <ul className="list-disc pl-6 space-y-2">
                 <li>Your right to use the Service will immediately cease</li>
                 <li>Any unused tokens or coins will be forfeited</li>
+                <li>Pro subscription will be cancelled without refund for the current period</li>
+                <li>Pending Pro rewards may be forfeited</li>
                 <li>Active service orders may be cancelled</li>
                 <li>Active listings and advertisements may be removed</li>
+                <li>Connected platform authorizations will be revoked</li>
               </ul>
               <p className="mt-4">
                 All provisions of these Terms that by their nature should survive termination
@@ -301,7 +373,7 @@ export default function TermsOfServicePage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">16. Modifications to Terms</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">18. Modifications to Terms</h2>
               <p className="leading-relaxed">
                 We reserve the right to modify these Terms at any time. We will notify users of
                 material changes by updating the &quot;Last updated&quot; date. Your continued use of the
@@ -310,7 +382,7 @@ export default function TermsOfServicePage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">17. Governing Law</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">19. Governing Law</h2>
               <p className="leading-relaxed">
                 These Terms shall be governed by and construed in accordance with the laws of
                 the jurisdiction in which Builders.to operates, without regard to conflict of
@@ -319,7 +391,7 @@ export default function TermsOfServicePage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">18. Dispute Resolution</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">20. Dispute Resolution</h2>
               <p className="leading-relaxed">
                 Any disputes arising from these Terms or your use of the Service shall first
                 be attempted to be resolved through good-faith negotiation. If negotiation fails,
@@ -329,7 +401,7 @@ export default function TermsOfServicePage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">19. Severability</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">21. Severability</h2>
               <p className="leading-relaxed">
                 If any provision of these Terms is found to be unenforceable or invalid, that
                 provision shall be limited or eliminated to the minimum extent necessary, and
@@ -338,7 +410,7 @@ export default function TermsOfServicePage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">20. Entire Agreement</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">22. Entire Agreement</h2>
               <p className="leading-relaxed">
                 These Terms, together with our Privacy Policy, constitute the entire agreement
                 between you and Builders.to regarding your use of the Service and supersede any
@@ -347,7 +419,7 @@ export default function TermsOfServicePage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">21. Contact Us</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">23. Contact Us</h2>
               <p className="leading-relaxed">
                 If you have any questions about these Terms, please contact us through our
                 community channels:

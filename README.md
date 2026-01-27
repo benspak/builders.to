@@ -13,6 +13,21 @@ A members-only launchpad and community platform for indie hackers and builders. 
 - **Milestone Tracking** — Celebrate achievements: v1 shipped, first user, first customer, MRR milestones, profitability, and more
 - **Top Builders Ranking** — Leaderboard based on launched projects, engagement, and community contribution
 
+### 🤖 AI-Powered Content
+
+- **AI Content Generation** — Generate posts and updates with GPT-4 Turbo
+- **Content Analysis** — Get AI suggestions to improve engagement
+- **Content Variations** — Generate multiple versions of your content
+- **Content Ideas** — AI suggests post ideas based on your profile and interests
+- **DALL-E Image Generation** — Create AI images for your posts (Pro feature)
+
+### 🔗 Cross-Platform Posting
+
+- **Twitter/X Integration** — Post directly to Twitter with full media support
+- **LinkedIn Integration** — Share updates to your LinkedIn feed
+- **Scheduled Posts** — Schedule your content for optimal timing
+- **Platform-Specific Optimization** — AI tailors content for each platform
+
 ### 🏢 Companies & Startups
 
 - **Company Profiles** — Showcase your startup with traction badges, tech stack, and team
@@ -32,9 +47,11 @@ A members-only launchpad and community platform for indie hackers and builders. 
 - **Local Builder Network** — Find services, jobs, and meet builders in your area
 - **Services** — Advertise your services for free (requires 1 launched project)
 - **Categories** — Services, Community, Discussion, Coworking/Housing, For Sale
-- **No Platform Fees** — Sellers keep 100% of their earnings
+- **No Platform Fees** — Sellers keep 100% of their earnings via Stripe Connect
 - **Location Discovery** — Find builders in your city
+- **Map View** — Interactive map showing builders and services near you
 - **Credibility-First** — Only builders with launched projects can post
+- **Privacy-First Location** — Coordinates offset ~10 miles for privacy
 
 ### 🪙 Token System
 
@@ -44,6 +61,15 @@ A members-only launchpad and community platform for indie hackers and builders. 
 - **Streak Bonuses** — Daily update streaks earn bonus tokens
 - **Profile Completion** — 10 tokens for completing your profile
 - **Token Gifting** — Send tokens to support fellow builders
+
+### ⭐ Pro Subscription
+
+- **Pro Monthly** — $3.99/month for premium features
+- **Pro Yearly** — $39.99/year (save ~17%)
+- **Pro Rewards** — Earn real money for quality content
+- **DALL-E Image Generation** — Create AI images for posts
+- **Enhanced AI Features** — Priority access to AI content tools
+- **Pro Badge** — Stand out in the community
 
 ### 🔔 Notifications & Engagement
 
@@ -99,6 +125,9 @@ A members-only launchpad and community platform for indie hackers and builders. 
 | **Image Processing** | Sharp |
 | **2FA** | OTPAuth + QRCode |
 | **Markdown** | react-markdown |
+| **AI** | OpenAI GPT-4 Turbo + DALL-E 3 |
+| **Geocoding** | OpenStreetMap Nominatim |
+| **Maps** | Interactive map components |
 
 ## 🚀 Getting Started
 
@@ -151,6 +180,9 @@ STRIPE_WEBHOOK_SECRET=""
 
 # Giphy (https://developers.giphy.com)
 NEXT_PUBLIC_GIPHY_API_KEY=""
+
+# OpenAI (https://platform.openai.com)
+OPENAI_API_KEY=""
 
 # Web Push VAPID Keys (generate with: npm run generate-vapid-keys)
 NEXT_PUBLIC_VAPID_PUBLIC_KEY=""
@@ -324,6 +356,10 @@ The database includes 40+ models covering:
 - **Advertising**: Advertisement, AdView, AdClick
 - **Analytics**: SiteView, ProjectView, ProjectClick, UpdateView, LocalListingView
 - **Social**: Follow, Report
+- **Subscriptions**: Pro subscriptions, Stripe integration
+- **Rewards**: Post rewards, earnings, payouts
+- **Platforms**: Connected platforms (Twitter, LinkedIn), OAuth tokens
+- **AI**: User interests, tone preferences, posting style
 
 ## 🔮 Future Improvements
 

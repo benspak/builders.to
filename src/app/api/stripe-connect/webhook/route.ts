@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyWebhookSignature } from "@/lib/stripe-connect";
 import { SERVICE_LISTING_DURATION_DAYS } from "@/lib/stripe";
+import { RewardStatus } from "@prisma/client";
 import type Stripe from "stripe";
 
 // Ensure webhook is always dynamic and uses Node.js runtime
@@ -152,6 +153,122 @@ export async function POST(request: Request) {
               data: { status: "REFUNDED" },
             });
             console.log("[Stripe Connect Webhook] Service order refunded:", order.id);
+          }
+        }
+        break;
+      }
+
+      case "transfer.created": {
+        // Handle creator payout transfer created
+        const transfer = event.data.object as Stripe.Transfer;
+        const payoutId = transfer.metadata?.payoutId;
+
+        if (payoutId) {
+          console.log("[Stripe Connect Webhook] Transfer created for payout:", payoutId);
+          // Transfer is already marked as PROCESSING in our system
+        }
+        break;
+      }
+
+      case "transfer.reversed": {
+        // Handle transfer reversal (e.g., payout failed)
+        const transfer = event.data.object as Stripe.Transfer;
+        const payoutId = transfer.metadata?.payoutId;
+        const userId = transfer.metadata?.userId;
+
+        if (payoutId) {
+          console.log("[Stripe Connect Webhook] Transfer reversed for payout:", payoutId);
+
+          // Get the payout to find the amount
+          const payout = await prisma.payout.findUnique({
+            where: { id: payoutId },
+            include: { rewards: true },
+          });
+
+          if (payout) {
+            // Mark payout as failed
+            await prisma.payout.update({
+              where: { id: payoutId },
+              data: {
+                status: RewardStatus.FAILED,
+                failureReason: "Transfer was reversed",
+              },
+            });
+
+            // Restore pending rewards
+            await prisma.postReward.updateMany({
+              where: {
+                id: { in: payout.rewards.map((r) => r.id) },
+              },
+              data: {
+                status: RewardStatus.PENDING,
+                payoutId: null,
+              },
+            });
+
+            // Restore pending amount in earnings
+            if (userId) {
+              await prisma.userEarnings.update({
+                where: { userId },
+                data: {
+                  pendingAmount: { increment: payout.amount },
+                },
+              });
+            }
+
+            console.log("[Stripe Connect Webhook] Payout reversed and rewards restored:", payoutId);
+          }
+        }
+        break;
+      }
+
+      case "transfer.failed": {
+        // Handle failed transfer
+        const transfer = event.data.object as Stripe.Transfer;
+        const payoutId = transfer.metadata?.payoutId;
+        const userId = transfer.metadata?.userId;
+
+        if (payoutId) {
+          console.log("[Stripe Connect Webhook] Transfer failed for payout:", payoutId);
+
+          // Get the payout to find the amount
+          const payout = await prisma.payout.findUnique({
+            where: { id: payoutId },
+            include: { rewards: true },
+          });
+
+          if (payout && payout.status !== RewardStatus.FAILED) {
+            // Mark payout as failed
+            await prisma.payout.update({
+              where: { id: payoutId },
+              data: {
+                status: RewardStatus.FAILED,
+                failureReason: "Stripe transfer failed",
+              },
+            });
+
+            // Restore pending rewards
+            await prisma.postReward.updateMany({
+              where: {
+                id: { in: payout.rewards.map((r) => r.id) },
+              },
+              data: {
+                status: RewardStatus.PENDING,
+                payoutId: null,
+              },
+            });
+
+            // Restore pending amount in earnings
+            if (userId) {
+              await prisma.userEarnings.update({
+                where: { userId },
+                data: {
+                  pendingAmount: { increment: payout.amount },
+                },
+              });
+            }
+
+            console.log("[Stripe Connect Webhook] Payout failed and rewards restored:", payoutId);
           }
         }
         break;
