@@ -182,6 +182,11 @@ export function ProjectForm({ initialData, initialCompanyId, githubPrefill }: Pr
 
       if (!response.ok) {
         const data = await response.json();
+        // Handle profile incomplete error with redirect
+        if (data.code === "PROFILE_INCOMPLETE") {
+          router.push("/settings?reason=profile-incomplete");
+          return;
+        }
         throw new Error(data.error || "Something went wrong");
       }
 

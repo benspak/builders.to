@@ -135,6 +135,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check if user has completed their profile (username and image required to share)
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { username: true, image: true },
+    });
+
+    if (!user?.username || !user?.image) {
+      const missingFields = [];
+      if (!user?.username) missingFields.push("username");
+      if (!user?.image) missingFields.push("profile image");
+      
+      return NextResponse.json(
+        { 
+          error: `Please complete your profile before sharing a project. Missing: ${missingFields.join(" and ")}.`,
+          code: "PROFILE_INCOMPLETE",
+          missingFields,
+        },
+        { status: 400 }
+      );
+    }
+
     const body = await request.json();
     const { title, tagline, description, url, githubUrl, imageUrl, status, companyId, slug, demoUrl, docsUrl, changelogUrl, coBuilderIds } = body;
 
