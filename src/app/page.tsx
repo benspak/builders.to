@@ -18,8 +18,6 @@ import {
   Globe,
   Map,
   Share2,
-  DollarSign,
-  Crown,
 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
@@ -404,87 +402,6 @@ export default async function HomePage() {
                 </div>
               );
             })}
-          </div>
-        </div>
-      </section>
-
-      {/* Creator Rewards Section */}
-      <section className="relative py-20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="rounded-3xl border border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-cyan-500/5 p-8 sm:p-12">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-              <div>
-                <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-4 py-2 text-sm text-emerald-400 mb-6">
-                  <DollarSign className="h-4 w-4" />
-                  <span>Pro Feature</span>
-                </div>
-                <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-                  Get paid to{" "}
-                  <span className="text-emerald-400">build in public</span>
-                </h2>
-                <p className="text-lg text-zinc-400 mb-6">
-                  Pro members earn real money for posting quality content. Share your journey,
-                  get engagement, and watch your earnings grow.
-                </p>
-                <ul className="space-y-3 mb-8">
-                  <li className="flex items-center gap-3 text-zinc-300">
-                    <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0" />
-                    <span>Earn <strong className="text-white">$0.05-$0.07</strong> per qualifying post</span>
-                  </li>
-                  <li className="flex items-center gap-3 text-zinc-300">
-                    <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0" />
-                    <span>Bonus rewards based on engagement</span>
-                  </li>
-                  <li className="flex items-center gap-3 text-zinc-300">
-                    <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0" />
-                    <span>Automatic payouts at $5 threshold</span>
-                  </li>
-                </ul>
-                <Link
-                  href="/how-to/earn-from-posting"
-                  className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-cyan-500 px-6 py-3 text-sm font-semibold text-white transition-all hover:from-emerald-400 hover:to-cyan-400"
-                >
-                  Learn How to Earn
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </div>
-              <div className="flex flex-col items-center lg:items-end">
-                <div className="rounded-2xl border border-zinc-800 bg-zinc-900/80 backdrop-blur-sm p-6 w-full max-w-sm">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-600">
-                      <DollarSign className="h-5 w-5 text-white" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-zinc-400">Monthly potential</p>
-                      <p className="text-xl font-bold text-white">Up to $2.10</p>
-                    </div>
-                  </div>
-                  <div className="space-y-3 pt-4 border-t border-zinc-800">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-zinc-400">Base reward</span>
-                      <span className="text-white font-medium">$0.05/post</span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-zinc-400">Engagement bonus</span>
-                      <span className="text-emerald-400 font-medium">+$0.02 max</span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-zinc-400">Daily limit</span>
-                      <span className="text-white font-medium">1 post/day</span>
-                    </div>
-                  </div>
-                  <div className="mt-4 pt-4 border-t border-zinc-800">
-                    <Link
-                      href="/how-to/become-a-pro-member"
-                      className="flex items-center justify-center gap-2 w-full rounded-lg bg-amber-500/10 border border-amber-500/30 px-4 py-2 text-sm text-amber-400 hover:bg-amber-500/20 transition-colors"
-                    >
-                      <Crown className="h-4 w-4" />
-                      Requires Pro Membership
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </section>

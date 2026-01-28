@@ -5,12 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { ProfileForm } from "@/components/profile/profile-form";
 import { ProfileCompleteness } from "@/components/profile/profile-completeness";
 import { calculateProfileCompleteness } from "@/lib/profile-completeness";
-import { NotificationSettings } from "@/components/pwa";
-import { TwoFactorSettings } from "@/components/auth/two-factor";
-import { DeleteAccount } from "@/components/settings/delete-account";
-import { ProSubscription } from "@/components/settings/pro-subscription";
-import { EarningsDashboard } from "@/components/settings/earnings-dashboard";
-import { Settings, User, ArrowLeft, Bell, Crown, DollarSign } from "lucide-react";
+import { Settings, User, ArrowLeft, ChevronRight } from "lucide-react";
 
 export const metadata = {
   title: "Settings - Builders.to",
@@ -126,25 +121,7 @@ export default async function SettingsPage() {
           <ProfileCompleteness result={completeness} className="mb-8" />
         )}
 
-        {/* Pro Membership Section */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-4">
-            <Crown className="h-5 w-5 text-amber-400" />
-            <h2 className="text-lg font-semibold text-white">Pro Membership</h2>
-          </div>
-          <ProSubscription />
-        </div>
-
-        {/* Creator Rewards Section */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-4">
-            <DollarSign className="h-5 w-5 text-emerald-400" />
-            <h2 className="text-lg font-semibold text-white">Creator Rewards</h2>
-          </div>
-          <EarningsDashboard />
-        </div>
-
-        {/* Settings Card */}
+        {/* Personal Information Card */}
         <div className="rounded-2xl border border-white/10 bg-zinc-900/50 backdrop-blur-sm p-6 sm:p-8">
           <div className="flex items-center gap-3 mb-6 pb-6 border-b border-white/5">
             <User className="h-5 w-5 text-orange-500" />
@@ -154,24 +131,21 @@ export default async function SettingsPage() {
           <ProfileForm user={user} />
         </div>
 
-        {/* Push Notifications Section */}
-        <div className="mt-8">
-          <div className="flex items-center gap-3 mb-4">
-            <Bell className="h-5 w-5 text-orange-500" />
-            <h2 className="text-lg font-semibold text-white">Push Notifications</h2>
+        {/* Account Settings Link */}
+        <Link href="/settings/account" className="block mt-8">
+          <div className="rounded-2xl border border-white/10 bg-zinc-900/50 backdrop-blur-sm p-6 hover:border-white/20 transition-colors">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Settings className="h-5 w-5 text-orange-500" />
+                <div>
+                  <h2 className="text-lg font-semibold text-white">Account Settings</h2>
+                  <p className="text-sm text-zinc-400">Manage subscription, notifications, security & more</p>
+                </div>
+              </div>
+              <ChevronRight className="h-5 w-5 text-zinc-500" />
+            </div>
           </div>
-          <NotificationSettings />
-        </div>
-
-        {/* Two-Factor Authentication Section */}
-        <div className="mt-8">
-          <TwoFactorSettings />
-        </div>
-
-        {/* Delete Account Section */}
-        <div className="mt-12">
-          <DeleteAccount userId={user.id} />
-        </div>
+        </Link>
       </div>
     </div>
   );
