@@ -69,7 +69,6 @@ export function ProjectCard({ project }: ProjectCardProps) {
             fill
             className="object-cover transition-transform duration-500 group-hover:scale-105"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 to-transparent" />
         </div>
       )}
 
