@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { MapPin, Building2, ArrowRight, Globe, Users, Plus, Megaphone, LayoutList, Newspaper, Briefcase } from "lucide-react";
+import { MapPin, Building2, ArrowRight, Globe, Users, Plus, Megaphone, LayoutList, Briefcase } from "lucide-react";
 import { LocalListingCard } from "@/components/local/local-listing-card";
 import { LocalCategoryFilter } from "@/components/local/local-category-filter";
 import { CATEGORY_LABELS } from "@/components/local/types";
@@ -412,46 +412,6 @@ export default async function LocalPage({ searchParams }: PageProps) {
               </section>
             )}
 
-            {/* Listings by Location Section - shows locations that have active listings */}
-            {listingLocations.length > 0 && (
-              <section>
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-500/20 border border-cyan-500/30">
-                    <Newspaper className="h-5 w-5 text-cyan-400" />
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-bold text-white">Listings by Location</h2>
-                    <p className="text-sm text-zinc-400">{totalListings} listings across {listingLocations.length} locations</p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {listingLocations.slice(0, 6).map((loc) => (
-                    <Link
-                      key={loc.locationSlug}
-                      href={`/${loc.locationSlug}`}
-                      className="group relative overflow-hidden rounded-2xl border border-white/10 bg-zinc-900/50 backdrop-blur-sm p-6 hover:border-cyan-500/30 hover:bg-zinc-900/70 transition-all"
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <MapPin className="h-5 w-5 text-cyan-400" />
-                            <h3 className="text-lg font-semibold text-white group-hover:text-cyan-400 transition-colors">
-                              {loc.location}
-                            </h3>
-                          </div>
-                          <div className="flex items-center gap-1 text-sm text-zinc-400">
-                            <Megaphone className="h-3.5 w-3.5" />
-                            {loc.count} {loc.count === 1 ? "listing" : "listings"}
-                          </div>
-                        </div>
-                        <ArrowRight className="h-5 w-5 text-zinc-600 group-hover:text-cyan-400 group-hover:translate-x-1 transition-all" />
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </section>
-            )}
-
             {/* Builders Section */}
             {builderLocations.length > 0 && (
               <section>
@@ -465,7 +425,7 @@ export default async function LocalPage({ searchParams }: PageProps) {
                   </div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {builderLocations.slice(0, 6).map((loc) => (
+                  {builderLocations.map((loc) => (
                     <Link
                       key={loc.locationSlug}
                       href={`/${loc.locationSlug}`}
@@ -492,45 +452,6 @@ export default async function LocalPage({ searchParams }: PageProps) {
               </section>
             )}
 
-            {/* Companies Section */}
-            {companyLocations.length > 0 && (
-              <section>
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/20 border border-emerald-500/30">
-                    <Building2 className="h-5 w-5 text-emerald-400" />
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-bold text-white">Companies by Location</h2>
-                    <p className="text-sm text-zinc-400">{totalCompanies} companies across {companyLocations.length} locations</p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {companyLocations.slice(0, 6).map((loc) => (
-                    <Link
-                      key={loc.locationSlug}
-                      href={`/${loc.locationSlug}`}
-                      className="group relative overflow-hidden rounded-2xl border border-white/10 bg-zinc-900/50 backdrop-blur-sm p-6 hover:border-emerald-500/30 hover:bg-zinc-900/70 transition-all"
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <MapPin className="h-5 w-5 text-emerald-400" />
-                            <h3 className="text-lg font-semibold text-white group-hover:text-emerald-400 transition-colors">
-                              {loc.location}
-                            </h3>
-                          </div>
-                          <div className="flex items-center gap-1 text-sm text-zinc-400">
-                            <Building2 className="h-3.5 w-3.5" />
-                            {loc.count} {loc.count === 1 ? "company" : "companies"}
-                          </div>
-                        </div>
-                        <ArrowRight className="h-5 w-5 text-zinc-600 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </section>
-            )}
           </div>
         )}
       </div>
