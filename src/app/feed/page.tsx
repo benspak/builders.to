@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { Loader2, Sparkles } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
-import { CombinedFeed, TopBuilders, OpenJobs, UserInterviewCTA } from "@/components/feed";
+import { CombinedFeed, TopBuilders, OpenJobs, RecentListings } from "@/components/feed";
 import { SiteViewsCounter } from "@/components/analytics/site-views-counter";
 import { SidebarAd } from "@/components/ads";
 
@@ -519,6 +519,42 @@ async function SidebarAdSection() {
   return <SidebarAd isAuthenticated={isAuthenticated} />;
 }
 
+async function RecentListingsSection() {
+  try {
+    const listings = await prisma.localListing.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 3,
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        description: true,
+        category: true,
+        city: true,
+        state: true,
+        locationSlug: true,
+        priceInCents: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            displayName: true,
+            firstName: true,
+            lastName: true,
+            image: true,
+            slug: true,
+          },
+        },
+      },
+    });
+
+    return <RecentListings listings={listings} />;
+  } catch (error) {
+    console.error("Error fetching recent listings:", error);
+    return null;
+  }
+}
+
 export default function FeedPage() {
   return (
     <div className="relative min-h-screen" style={{ background: "var(--background)" }}>
@@ -599,8 +635,33 @@ export default function FeedPage() {
           {/* Right Sidebar - Open Jobs */}
           <aside className="xl:w-72 shrink-0 order-2 xl:order-3">
             <div className="xl:sticky xl:top-24 xl:max-h-[calc(100vh-8rem)] xl:overflow-y-auto space-y-6 xl:pb-4">
-              {/* User Interview CTA Section */}
-              <UserInterviewCTA />
+              {/* Recent Local Listings Section */}
+              <Suspense
+                fallback={
+                  <div className="rounded-xl border border-zinc-800/50 bg-zinc-900/50 overflow-hidden animate-pulse">
+                    <div className="px-4 py-3 border-b border-zinc-800/50">
+                      <div className="flex items-center gap-2">
+                        <div className="h-8 w-8 bg-zinc-800 rounded-lg" />
+                        <div className="h-5 w-24 bg-zinc-800 rounded" />
+                      </div>
+                    </div>
+                    <div className="divide-y divide-zinc-800/30">
+                      {[1, 2, 3].map((i) => (
+                        <div key={i} className="flex items-start gap-3 px-4 py-3">
+                          <div className="h-10 w-10 bg-zinc-800 rounded-lg" />
+                          <div className="flex-1">
+                            <div className="h-4 w-32 bg-zinc-800 rounded mb-1" />
+                            <div className="h-3 w-20 bg-zinc-800 rounded mb-2" />
+                            <div className="h-3 w-24 bg-zinc-800 rounded" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                }
+              >
+                <RecentListingsSection />
+              </Suspense>
 
               {/* Sidebar Ad Section */}
               <Suspense
