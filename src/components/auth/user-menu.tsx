@@ -4,7 +4,7 @@ import { signOut, useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { LogOut, User, ChevronDown, Settings, Megaphone, Bell, Building2, MapPin, Sun, Moon, HelpCircle, Link2 } from "lucide-react";
+import { LogOut, User, ChevronDown, Settings, Megaphone, Bell, Building2, MapPin, Sun, Moon, HelpCircle, Link2, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/components/ui/theme-provider";
 
@@ -20,6 +20,7 @@ export function UserMenu() {
   const [userSlug, setUserSlug] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [unreadMessages, setUnreadMessages] = useState(0);
 
   useEffect(() => {
     async function fetchUserProfile() {
@@ -55,6 +56,29 @@ export function UserMenu() {
     }
     fetchUnreadCount();
     const interval = setInterval(fetchUnreadCount, 60000);
+    return () => clearInterval(interval);
+  }, [session?.user?.id]);
+
+  useEffect(() => {
+    async function fetchUnreadMessages() {
+      if (session?.user?.id) {
+        try {
+          const response = await fetch("/api/messages/conversations");
+          if (response.ok) {
+            const data = await response.json();
+            const unread = data.conversations?.reduce(
+              (sum: number, c: { unreadCount?: number }) => sum + (c.unreadCount || 0),
+              0
+            ) || 0;
+            setUnreadMessages(unread);
+          }
+        } catch (error) {
+          console.error("Failed to fetch unread messages:", error);
+        }
+      }
+    }
+    fetchUnreadMessages();
+    const interval = setInterval(fetchUnreadMessages, 60000);
     return () => clearInterval(interval);
   }, [session?.user?.id]);
 
@@ -130,6 +154,24 @@ export function UserMenu() {
                 {unreadCount > 0 && (
                   <span className="flex h-5 w-5 items-center justify-center rounded-full bg-orange-500 text-[10px] font-bold text-white">
                     {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
+              </Link>
+
+              {/* Messages */}
+              <Link
+                href="/messages"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors hover:bg-black/5 dark:hover:bg-white/5"
+                style={{ color: "var(--foreground-muted)" }}
+              >
+                <div className="flex items-center gap-2">
+                  <MessageCircle className="h-4 w-4" />
+                  Messages
+                </div>
+                {unreadMessages > 0 && (
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-500 text-[10px] font-bold text-white">
+                    {unreadMessages > 9 ? "9+" : unreadMessages}
                   </span>
                 )}
               </Link>

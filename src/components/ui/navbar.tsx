@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import { useState } from "react";
 import { UserMenu } from "@/components/auth/user-menu";
 import { SearchCommand } from "@/components/ui/search-command";
-import { Plus, Rocket, ChevronDown, Sparkles, Menu, X, MapPin, Megaphone, Building2, Rss, FolderKanban, Globe, Pen, Send } from "lucide-react";
+import { Plus, Rocket, ChevronDown, Sparkles, Menu, X, MapPin, Megaphone, Building2, Rss, FolderKanban, Globe, Pen, Send, CalendarDays, Coffee } from "lucide-react";
 import { BuildersLogo } from "@/components/ui/builders-logo";
 import { cn } from "@/lib/utils";
 
@@ -95,6 +95,24 @@ export function Navbar() {
                     <Globe className="h-3.5 w-3.5 text-cyan-400" />
                     Map
                   </Link>
+                  <Link
+                    href="/events"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-white/5"
+                    style={{ color: "var(--foreground-muted)" }}
+                  >
+                    <CalendarDays className="h-3.5 w-3.5 text-violet-400" />
+                    Events
+                  </Link>
+                  <Link
+                    href="/coworking"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-white/5"
+                    style={{ color: "var(--foreground-muted)" }}
+                  >
+                    <Coffee className="h-3.5 w-3.5 text-amber-400" />
+                    Coworking
+                  </Link>
                 </div>
               </>
             )}
@@ -158,6 +176,22 @@ export function Navbar() {
           >
             <Globe className="h-3.5 w-3.5 text-cyan-400" />
             Map
+          </Link>
+          <Link
+            href="/events"
+            className="hidden lg:flex items-center gap-1.5 text-sm font-medium transition-colors"
+            style={{ color: "var(--foreground-muted)" }}
+          >
+            <CalendarDays className="h-3.5 w-3.5 text-violet-400" />
+            Events
+          </Link>
+          <Link
+            href="/coworking"
+            className="hidden lg:flex items-center gap-1.5 text-sm font-medium transition-colors"
+            style={{ color: "var(--foreground-muted)" }}
+          >
+            <Coffee className="h-3.5 w-3.5 text-amber-400" />
+            Coworking
           </Link>
           {/* Mobile Search */}
           <div className="sm:hidden">
@@ -223,6 +257,24 @@ export function Navbar() {
                       >
                         <Megaphone className="h-4 w-4 text-emerald-400" />
                         <span>Post Listing</span>
+                      </Link>
+                      <Link
+                        href="/events/new"
+                        onClick={() => setMobileShareOpen(false)}
+                        className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-white/5"
+                        style={{ color: "var(--foreground-muted)" }}
+                      >
+                        <CalendarDays className="h-4 w-4 text-violet-400" />
+                        <span>Host Event</span>
+                      </Link>
+                      <Link
+                        href="/coworking/new"
+                        onClick={() => setMobileShareOpen(false)}
+                        className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-white/5"
+                        style={{ color: "var(--foreground-muted)" }}
+                      >
+                        <Coffee className="h-4 w-4 text-amber-400" />
+                        <span>Host Coworking</span>
                       </Link>
                     </div>
                   </>
@@ -303,6 +355,34 @@ export function Navbar() {
                         <div>
                           <div className="font-medium">Post Listing</div>
                           <div className="text-xs text-zinc-500">Promote your business locally</div>
+                        </div>
+                      </Link>
+
+                      <Link
+                        href="/events/new"
+                        onClick={() => setShareOpen(false)}
+                        className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-zinc-300 transition-colors hover:bg-white/5 hover:text-white"
+                      >
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-500/10">
+                          <CalendarDays className="h-4 w-4 text-violet-400" />
+                        </div>
+                        <div>
+                          <div className="font-medium">Host Event</div>
+                          <div className="text-xs text-zinc-500">Organize a meetup or workshop</div>
+                        </div>
+                      </Link>
+
+                      <Link
+                        href="/coworking/new"
+                        onClick={() => setShareOpen(false)}
+                        className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-zinc-300 transition-colors hover:bg-white/5 hover:text-white"
+                      >
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/10">
+                          <Coffee className="h-4 w-4 text-amber-400" />
+                        </div>
+                        <div>
+                          <div className="font-medium">Host Coworking</div>
+                          <div className="text-xs text-zinc-500">Find coworking buddies nearby</div>
                         </div>
                       </Link>
                     </div>
