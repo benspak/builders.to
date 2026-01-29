@@ -18,6 +18,8 @@ import {
   Globe,
   Map,
   Share2,
+  CalendarDays,
+  Coffee,
 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
@@ -113,6 +115,24 @@ export default async function HomePage() {
       color: "cyan",
       stats: "Global",
     },
+    {
+      icon: CalendarDays,
+      title: "Events & Meetups",
+      description:
+        "Host and discover builder meetups, workshops, and networking events. RSVP to in-person or virtual gatherings.",
+      href: "/events",
+      color: "violet",
+      stats: "Community",
+    },
+    {
+      icon: Coffee,
+      title: "Coworking Sessions",
+      description:
+        "Find coworking buddies nearby. Host sessions at cafes or coworking spaces and work alongside fellow builders.",
+      href: "/coworking",
+      color: "amber",
+      stats: "Local",
+    },
   ];
 
   const builderFeatures = [
@@ -135,6 +155,16 @@ export default async function HomePage() {
       icon: Bell,
       title: "Notifications & Digest",
       description: "Real-time notifications, push alerts, daily and weekly digests of activity.",
+    },
+    {
+      icon: MessageSquare,
+      title: "Direct Messages",
+      description: "Connect privately with builders through direct messaging with rich media support.",
+    },
+    {
+      icon: MapPin,
+      title: "Nearby Discovery",
+      description: "Find builders, events, and coworking sessions within your radius.",
     },
   ];
 
@@ -384,7 +414,7 @@ export default async function HomePage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
             {builderFeatures.map((feature) => {
               const Icon = feature.icon;
               return (

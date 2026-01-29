@@ -20,7 +20,7 @@ export default function TermsOfServicePage() {
         </div>
 
         <h1 className="text-4xl font-bold text-white mb-2">Terms of Service</h1>
-        <p className="text-zinc-500 mb-12">Last updated: January 26, 2026</p>
+        <p className="text-zinc-500 mb-12">Last updated: January 29, 2026</p>
 
         <div className="prose prose-invert prose-zinc max-w-none">
           <div className="space-y-8 text-zinc-300">
@@ -52,6 +52,10 @@ export default function TermsOfServicePage() {
                 <li>Subscribing to Pro plans for enhanced features and rewards</li>
                 <li>Using AI-powered content generation and analysis tools</li>
                 <li>Cross-posting content to connected social media platforms (Twitter/X, LinkedIn)</li>
+                <li>Hosting and attending events and meetups</li>
+                <li>Creating and joining coworking sessions</li>
+                <li>Sending and receiving direct messages with other builders</li>
+                <li>Discovering nearby builders, events, and coworking sessions</li>
               </ul>
             </section>
 
@@ -138,6 +142,13 @@ export default function TermsOfServicePage() {
                 that we find objectionable for any reason. Users may report content through our
                 reporting system, and we will review flagged content as appropriate.
               </p>
+
+              <h3 className="text-xl font-medium text-white mt-6 mb-3">4.5 Threaded Comments</h3>
+              <p className="leading-relaxed">
+                Comments on projects, updates, events, and listings support threaded replies.
+                All content guidelines apply equally to replies. Reply chains may be collapsed
+                or moderated if they violate our policies or become disruptive.
+              </p>
             </section>
 
             <section>
@@ -216,7 +227,98 @@ export default function TermsOfServicePage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">8. Advertising</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">8. Events and Meetups</h2>
+
+              <h3 className="text-xl font-medium text-white mt-6 mb-3">8.1 Event Hosts</h3>
+              <p className="leading-relaxed mb-4">
+                If you host events on the platform, you agree to:
+              </p>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>Provide accurate event information including date, time, and location</li>
+                <li>Update or cancel events promptly if circumstances change</li>
+                <li>Ensure venues are appropriate and accessible for advertised capacity</li>
+                <li>Not host events for illegal activities or purposes that violate these Terms</li>
+                <li>Take reasonable responsibility for attendee safety at physical events</li>
+              </ul>
+
+              <h3 className="text-xl font-medium text-white mt-6 mb-3">8.2 Event Attendees</h3>
+              <p className="leading-relaxed mb-4">
+                If you attend events, you agree to:
+              </p>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>RSVP honestly and update your status if plans change</li>
+                <li>Behave respectfully toward hosts and other attendees</li>
+                <li>Follow venue rules and local laws</li>
+                <li>Understand that Builders.to is not responsible for event quality, safety, or outcomes</li>
+              </ul>
+
+              <h3 className="text-xl font-medium text-white mt-6 mb-3">8.3 Platform Role</h3>
+              <p className="leading-relaxed">
+                Builders.to facilitates event discovery and RSVPs but is not an event organizer or
+                venue. We are not responsible for the quality, safety, or legality of events. All
+                liability for events rests with the hosts and attendees.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-semibold text-white mb-4">9. Coworking Sessions</h2>
+
+              <h3 className="text-xl font-medium text-white mt-6 mb-3">9.1 Session Hosts</h3>
+              <p className="leading-relaxed mb-4">
+                If you host coworking sessions, you agree to:
+              </p>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>Provide accurate venue and timing information</li>
+                <li>Respond to join requests in a reasonable timeframe</li>
+                <li>Ensure the venue permits groups and has adequate space</li>
+                <li>Cancel or update sessions if plans change</li>
+                <li>Respect venue rules and other patrons</li>
+              </ul>
+
+              <h3 className="text-xl font-medium text-white mt-6 mb-3">9.2 Session Participants</h3>
+              <p className="leading-relaxed mb-4">
+                If you join coworking sessions, you agree to:
+              </p>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>Arrive on time and notify hosts if plans change</li>
+                <li>Be respectful of hosts, other participants, and venue staff</li>
+                <li>Cover your own expenses (food, drinks, venue fees)</li>
+                <li>Maintain a professional and productive environment</li>
+              </ul>
+
+              <h3 className="text-xl font-medium text-white mt-6 mb-3">9.3 Platform Role</h3>
+              <p className="leading-relaxed">
+                Builders.to facilitates coworking session discovery and coordination but is not
+                responsible for the venue, safety, or interactions between participants. All
+                liability rests with hosts and participants.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-semibold text-white mb-4">10. Direct Messaging</h2>
+
+              <h3 className="text-xl font-medium text-white mt-6 mb-3">10.1 Acceptable Use</h3>
+              <p className="leading-relaxed mb-4">
+                Direct messaging is provided for legitimate communication between builders. You agree not to:
+              </p>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>Send spam, unsolicited promotions, or bulk messages</li>
+                <li>Harass, threaten, or abuse other users</li>
+                <li>Share illegal content or content that violates these Terms</li>
+                <li>Impersonate others or send deceptive messages</li>
+                <li>Use messaging to circumvent platform rules or fees</li>
+              </ul>
+
+              <h3 className="text-xl font-medium text-white mt-6 mb-3">10.2 Privacy and Moderation</h3>
+              <p className="leading-relaxed">
+                Messages are private between participants. However, we may access message content
+                to investigate reports of abuse, harassment, or Terms violations. Users can report
+                abusive messages, and we may take action including account suspension for violations.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-semibold text-white mb-4">11. Advertising</h2>
               <p className="leading-relaxed mb-4">
                 Users may purchase advertisements to be displayed on the platform. Advertisers agree:
               </p>
@@ -230,7 +332,7 @@ export default function TermsOfServicePage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">9. Pro Subscriptions</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">12. Pro Subscriptions</h2>
               <p className="mb-4">Pro subscription plans provide enhanced features:</p>
               <ul className="list-disc pl-6 space-y-2">
                 <li><strong className="text-white">Plan Options:</strong> Monthly ($3.99/month) or Yearly ($39.99/year) billing</li>
@@ -244,7 +346,7 @@ export default function TermsOfServicePage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">10. Acceptable Use</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">13. Acceptable Use</h2>
               <p className="mb-4">You agree not to:</p>
               <ul className="list-disc pl-6 space-y-2">
                 <li>Use the Service for any illegal purpose</li>
@@ -265,7 +367,7 @@ export default function TermsOfServicePage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">11. Payments and Refunds</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">14. Payments and Refunds</h2>
               <p className="leading-relaxed mb-4">
                 All payments are processed through Stripe. By making payments, you agree to Stripe&apos;s
                 terms of service. Regarding refunds:
@@ -281,7 +383,7 @@ export default function TermsOfServicePage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">12. Intellectual Property</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">15. Intellectual Property</h2>
 
               <h3 className="text-xl font-medium text-white mt-6 mb-3">12.1 Our Property</h3>
               <p className="leading-relaxed">
@@ -298,7 +400,7 @@ export default function TermsOfServicePage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">13. Third-Party Services</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">16. Third-Party Services</h2>
               <p className="leading-relaxed mb-4">
                 The Service integrates with and links to third-party services:
               </p>
@@ -309,50 +411,53 @@ export default function TermsOfServicePage() {
                 <li><strong className="text-white">Media Services:</strong> Giphy, YouTube, and Twitch embeds are subject to their terms.</li>
               </ul>
               <p className="mt-4">
-                We have no control over and assume no responsibility for the content, privacy policies, 
+                We have no control over and assume no responsibility for the content, privacy policies,
                 or practices of third-party services. Your use of third-party services is at your own risk.
               </p>
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">14. Disclaimer of Warranties</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">17. Disclaimer of Warranties</h2>
               <p className="leading-relaxed uppercase text-sm">
                 THE SERVICE IS PROVIDED &quot;AS IS&quot; AND &quot;AS AVAILABLE&quot; WITHOUT WARRANTIES OF ANY
                 KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO IMPLIED WARRANTIES
                 OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT. WE
                 DO NOT WARRANT THAT THE SERVICE WILL BE UNINTERRUPTED, SECURE, OR ERROR-FREE.
-                WE DO NOT GUARANTEE THE ACCURACY OF TOKEN BALANCES, PRO REWARDS CALCULATIONS, 
-                AI-GENERATED CONTENT, OR ANY METRICS DISPLAYED ON THE PLATFORM. AI FEATURES ARE PROVIDED 
+                WE DO NOT GUARANTEE THE ACCURACY OF TOKEN BALANCES, PRO REWARDS CALCULATIONS,
+                AI-GENERATED CONTENT, OR ANY METRICS DISPLAYED ON THE PLATFORM. AI FEATURES ARE PROVIDED
                 WITHOUT WARRANTIES REGARDING ACCURACY, APPROPRIATENESS, OR FITNESS FOR ANY PURPOSE.
+                WE DO NOT GUARANTEE THE SAFETY, QUALITY, OR OUTCOMES OF EVENTS, COWORKING SESSIONS,
+                OR INTERACTIONS RESULTING FROM DIRECT MESSAGING OR NEARBY DISCOVERY FEATURES.
               </p>
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">15. Limitation of Liability</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">18. Limitation of Liability</h2>
               <p className="leading-relaxed uppercase text-sm">
                 TO THE MAXIMUM EXTENT PERMITTED BY LAW, BUILDERS.TO SHALL NOT BE LIABLE FOR ANY
                 INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR ANY LOSS
                 OF PROFITS OR REVENUES, WHETHER INCURRED DIRECTLY OR INDIRECTLY, OR ANY LOSS OF
                 DATA, USE, GOODWILL, OR OTHER INTANGIBLE LOSSES, RESULTING FROM YOUR USE OF THE
-                SERVICE, INCLUDING BUT NOT LIMITED TO LOSSES RELATED TO THE TOKEN SYSTEM, PRO 
-                REWARDS, SERVICE MARKETPLACE TRANSACTIONS, AI-GENERATED CONTENT, OR CROSS-POSTED 
-                CONTENT ON THIRD-PARTY PLATFORMS.
+                SERVICE, INCLUDING BUT NOT LIMITED TO LOSSES RELATED TO THE TOKEN SYSTEM, PRO
+                REWARDS, SERVICE MARKETPLACE TRANSACTIONS, AI-GENERATED CONTENT, OR CROSS-POSTED
+                CONTENT ON THIRD-PARTY PLATFORMS, EVENTS, COWORKING SESSIONS, OR INTERACTIONS
+                FACILITATED THROUGH DIRECT MESSAGING OR NEARBY DISCOVERY FEATURES.
               </p>
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">16. Indemnification</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">19. Indemnification</h2>
               <p className="leading-relaxed">
                 You agree to indemnify, defend, and hold harmless Builders.to and its officers,
                 directors, employees, and agents from any claims, damages, losses, liabilities,
                 and expenses (including legal fees) arising from your use of the Service, your
-                User Content (including AI-generated content), your service marketplace activities, 
+                User Content (including AI-generated content), your service marketplace activities,
                 content cross-posted to external platforms, or your violation of these Terms.
               </p>
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">17. Termination</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">20. Termination</h2>
               <p className="leading-relaxed mb-4">
                 We may suspend or terminate your access to the Service at any time, with or
                 without cause, and with or without notice. Upon termination:
@@ -365,6 +470,8 @@ export default function TermsOfServicePage() {
                 <li>Active service orders may be cancelled</li>
                 <li>Active listings and advertisements may be removed</li>
                 <li>Connected platform authorizations will be revoked</li>
+                <li>Hosted events and coworking sessions may be cancelled</li>
+                <li>Direct message history may be deleted</li>
               </ul>
               <p className="mt-4">
                 All provisions of these Terms that by their nature should survive termination
@@ -373,7 +480,7 @@ export default function TermsOfServicePage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">18. Modifications to Terms</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">21. Modifications to Terms</h2>
               <p className="leading-relaxed">
                 We reserve the right to modify these Terms at any time. We will notify users of
                 material changes by updating the &quot;Last updated&quot; date. Your continued use of the
@@ -382,7 +489,7 @@ export default function TermsOfServicePage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">19. Governing Law</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">22. Governing Law</h2>
               <p className="leading-relaxed">
                 These Terms shall be governed by and construed in accordance with the laws of
                 the jurisdiction in which Builders.to operates, without regard to conflict of
@@ -391,7 +498,7 @@ export default function TermsOfServicePage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">20. Dispute Resolution</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">23. Dispute Resolution</h2>
               <p className="leading-relaxed">
                 Any disputes arising from these Terms or your use of the Service shall first
                 be attempted to be resolved through good-faith negotiation. If negotiation fails,
@@ -401,7 +508,7 @@ export default function TermsOfServicePage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">21. Severability</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">24. Severability</h2>
               <p className="leading-relaxed">
                 If any provision of these Terms is found to be unenforceable or invalid, that
                 provision shall be limited or eliminated to the minimum extent necessary, and
@@ -410,7 +517,7 @@ export default function TermsOfServicePage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">22. Entire Agreement</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">25. Entire Agreement</h2>
               <p className="leading-relaxed">
                 These Terms, together with our Privacy Policy, constitute the entire agreement
                 between you and Builders.to regarding your use of the Service and supersede any
@@ -419,7 +526,7 @@ export default function TermsOfServicePage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">23. Contact Us</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">26. Contact Us</h2>
               <p className="leading-relaxed">
                 If you have any questions about these Terms, please contact us through our
                 community channels:

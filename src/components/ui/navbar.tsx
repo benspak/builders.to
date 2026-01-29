@@ -14,6 +14,7 @@ export function Navbar() {
   const [shareOpen, setShareOpen] = useState(false);
   const [mobileShareOpen, setMobileShareOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [localOpen, setLocalOpen] = useState(false);
 
   return (
     <header
@@ -153,14 +154,76 @@ export function Navbar() {
             <FolderKanban className="h-3.5 w-3.5 text-sky-400" />
             Projects
           </Link>
-          <Link
-            href="/local"
-            className="hidden lg:flex items-center gap-1.5 text-sm font-medium transition-colors"
-            style={{ color: "var(--foreground-muted)" }}
-          >
-            <MapPin className="h-3.5 w-3.5 text-emerald-400" />
-            Local
-          </Link>
+
+          {/* Local Dropdown - consolidates location-based features */}
+          <div className="relative hidden lg:block">
+            <button
+              onClick={() => setLocalOpen(!localOpen)}
+              className="flex items-center gap-1.5 text-sm font-medium transition-colors"
+              style={{ color: "var(--foreground-muted)" }}
+            >
+              <MapPin className="h-3.5 w-3.5 text-emerald-400" />
+              Local
+              <ChevronDown className={cn(
+                "h-3 w-3 transition-transform",
+                localOpen && "rotate-180"
+              )} />
+            </button>
+
+            {localOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-10"
+                  onClick={() => setLocalOpen(false)}
+                />
+                <div
+                  className="absolute left-0 top-full z-20 mt-2 w-48 rounded-xl border p-2 shadow-2xl"
+                  style={{
+                    background: "var(--background-secondary)",
+                    borderColor: "var(--card-border)"
+                  }}
+                >
+                  <Link
+                    href="/local"
+                    onClick={() => setLocalOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-white/5"
+                    style={{ color: "var(--foreground-muted)" }}
+                  >
+                    <MapPin className="h-3.5 w-3.5 text-emerald-400" />
+                    Listings
+                  </Link>
+                  <Link
+                    href="/events"
+                    onClick={() => setLocalOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-white/5"
+                    style={{ color: "var(--foreground-muted)" }}
+                  >
+                    <CalendarDays className="h-3.5 w-3.5 text-violet-400" />
+                    Events
+                  </Link>
+                  <Link
+                    href="/coworking"
+                    onClick={() => setLocalOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-white/5"
+                    style={{ color: "var(--foreground-muted)" }}
+                  >
+                    <Coffee className="h-3.5 w-3.5 text-amber-400" />
+                    Coworking
+                  </Link>
+                  <Link
+                    href="/map"
+                    onClick={() => setLocalOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-white/5"
+                    style={{ color: "var(--foreground-muted)" }}
+                  >
+                    <Globe className="h-3.5 w-3.5 text-cyan-400" />
+                    Map
+                  </Link>
+                </div>
+              </>
+            )}
+          </div>
+
           <Link
             href="/companies"
             className="hidden lg:flex items-center gap-1.5 text-sm font-medium transition-colors"
@@ -168,30 +231,6 @@ export function Navbar() {
           >
             <Building2 className="h-3.5 w-3.5 text-blue-400" />
             Companies
-          </Link>
-          <Link
-            href="/map"
-            className="hidden lg:flex items-center gap-1.5 text-sm font-medium transition-colors"
-            style={{ color: "var(--foreground-muted)" }}
-          >
-            <Globe className="h-3.5 w-3.5 text-cyan-400" />
-            Map
-          </Link>
-          <Link
-            href="/events"
-            className="hidden lg:flex items-center gap-1.5 text-sm font-medium transition-colors"
-            style={{ color: "var(--foreground-muted)" }}
-          >
-            <CalendarDays className="h-3.5 w-3.5 text-violet-400" />
-            Events
-          </Link>
-          <Link
-            href="/coworking"
-            className="hidden lg:flex items-center gap-1.5 text-sm font-medium transition-colors"
-            style={{ color: "var(--foreground-muted)" }}
-          >
-            <Coffee className="h-3.5 w-3.5 text-amber-400" />
-            Coworking
           </Link>
           {/* Mobile Search */}
           <div className="sm:hidden">

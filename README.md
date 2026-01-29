@@ -53,6 +53,44 @@ A members-only launchpad and community platform for indie hackers and builders. 
 - **Credibility-First** — Only builders with launched projects can post
 - **Privacy-First Location** — Coordinates offset ~10 miles for privacy
 
+### 📅 Events & Meetups
+
+- **Host Events** — Create in-person meetups, workshops, or virtual events
+- **Event Types** — Support for physical, virtual, and hybrid events
+- **RSVP System** — Track attendance with Going, Interested, and Not Going statuses
+- **Nearby Events** — Discover events within your radius using geolocation
+- **Event Comments** — Threaded discussions on event pages
+
+### ☕ Coworking Sessions
+
+- **Find Coworking Buddies** — Match with nearby builders for focused work sessions
+- **Host Sessions** — Create coworking sessions at cafes, libraries, or coworking spaces
+- **Request to Join** — Request to join sessions, hosts approve participants
+- **Venue Types** — Support for cafes, coworking spaces, libraries, and custom venues
+- **Session Capacity** — Set maximum buddies per session
+
+### 💬 Direct Messaging
+
+- **Private Conversations** — Send direct messages to other builders
+- **Rich Media Support** — Share images and GIFs in conversations
+- **Read Receipts** — See when messages are read
+- **Conversation Management** — Mute or archive conversations
+- **Unread Indicators** — Track unread message counts
+
+### 🗺️ Nearby Discovery
+
+- **Find Nearby Builders** — Discover users within a customizable radius
+- **Location-Based Filtering** — Filter events, sessions, and users by distance
+- **Geolocation Support** — Use browser location for automatic nearby search
+- **Radius Options** — Search within 5, 10, 25, or 50 km
+
+### 💬 Threaded Conversations
+
+- **Reply Chains** — Reply directly to comments creating threaded discussions
+- **Nested Replies** — Visual indentation for reply threads
+- **Reply Notifications** — Get notified when someone replies to your comment
+- **Works Everywhere** — Threaded comments on updates, projects, listings, and events
+
 ### 🪙 Token System
 
 - **In-App Currency** — Earn tokens through engagement
@@ -343,7 +381,7 @@ npm run generate-vapid-keys   # Generate VAPID keys for push notifications
 
 ## 🗂️ Database Schema
 
-The database includes 40+ models covering:
+The database includes 50+ models covering:
 
 - **Users & Auth**: User, Account, Session, VerificationToken
 - **Projects**: Project, ProjectImage, ProjectMilestone, ProjectCoBuilder, Upvote, Comment
@@ -351,6 +389,9 @@ The database includes 40+ models covering:
 - **Feed**: FeedEvent, FeedEventLike, FeedEventComment, DailyUpdate, UpdateLike, UpdateComment
 - **Marketplace**: ServiceListing, ServicePortfolio, ServiceOrder
 - **Local**: LocalListing, LocalListingImage, LocalListingComment, LocalListingFlag, LocalListingRating
+- **Events**: Event, EventAttendee, EventComment
+- **Coworking**: CoworkingSession, CoworkingBuddy
+- **Messaging**: Conversation, ConversationParticipant, Message
 - **Tokens**: TokenTransaction
 - **Notifications**: Notification, EmailPreferences, PushSubscription
 - **Advertising**: Advertisement, AdView, AdClick

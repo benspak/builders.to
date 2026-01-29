@@ -20,7 +20,7 @@ export default function PrivacyPolicyPage() {
         </div>
 
         <h1 className="text-4xl font-bold text-white mb-2">Privacy Policy</h1>
-        <p className="text-zinc-500 mb-12">Last updated: January 26, 2026</p>
+        <p className="text-zinc-500 mb-12">Last updated: January 29, 2026</p>
 
         <div className="prose prose-invert prose-zinc max-w-none">
           <div className="space-y-8 text-zinc-300">
@@ -49,6 +49,9 @@ export default function PrivacyPolicyPage() {
                 <li><strong className="text-white">Local Listings:</strong> Classified listings you create, including contact information you choose to share.</li>
                 <li><strong className="text-white">Job Postings:</strong> Information about roles and positions you post for your company.</li>
                 <li><strong className="text-white">AI Preferences:</strong> Your interests, tone preferences, and posting style preferences when using AI content features.</li>
+                <li><strong className="text-white">Events:</strong> Event details you create including title, description, date, time, location, and whether events are physical, virtual, or hybrid.</li>
+                <li><strong className="text-white">Coworking Sessions:</strong> Session details including venue name, address, date, time, and maximum participants.</li>
+                <li><strong className="text-white">Direct Messages:</strong> Private messages you send to other users, including text content, images, and GIFs.</li>
               </ul>
 
               <h3 className="text-xl font-medium text-white mt-6 mb-3">2.2 Information Collected Automatically</h3>
@@ -57,6 +60,7 @@ export default function PrivacyPolicyPage() {
                 <li><strong className="text-white">Device Information:</strong> Browser type, operating system, and device identifiers.</li>
                 <li><strong className="text-white">Log Data:</strong> IP address, access times, referring URLs, and request data.</li>
                 <li><strong className="text-white">Analytics:</strong> View counts, click tracking, and engagement metrics for projects, listings, and advertisements.</li>
+                <li><strong className="text-white">Browser Geolocation:</strong> When you use nearby features (events, coworking, users), we may request your browser location with your permission to find content within your radius.</li>
               </ul>
 
               <h3 className="text-xl font-medium text-white mt-6 mb-3">2.3 Information from Third Parties</h3>
@@ -82,7 +86,7 @@ export default function PrivacyPolicyPage() {
                 <li>Provide, maintain, and improve our services</li>
                 <li>Create and manage your account</li>
                 <li>Display your projects, profile, and content to the community</li>
-                <li>Enable interactions between community members (comments, upvotes, follows)</li>
+                <li>Enable interactions between community members (comments, upvotes, follows, direct messages)</li>
                 <li>Process token rewards for engagement, referrals, and profile completion</li>
                 <li>Process Pro subscription payments and rewards payouts through Stripe</li>
                 <li>Process payments through Stripe for services, listings, and advertisements</li>
@@ -94,6 +98,9 @@ export default function PrivacyPolicyPage() {
                 <li>Protect against fraud, abuse, and policy violations</li>
                 <li>Comply with legal obligations</li>
                 <li>Generate anonymized analytics and statistics</li>
+                <li>Facilitate event RSVPs and coworking session coordination</li>
+                <li>Find nearby users, events, and coworking sessions based on your location</li>
+                <li>Enable private messaging between community members</li>
               </ul>
             </section>
 
@@ -140,7 +147,7 @@ export default function PrivacyPolicyPage() {
               <h2 className="text-2xl font-semibold text-white mb-4">7. Information Sharing</h2>
               <p className="mb-4">We may share your information in the following circumstances:</p>
               <ul className="list-disc pl-6 space-y-2">
-                <li><strong className="text-white">Public Content:</strong> Your profile, projects, companies, updates, comments, service listings, local listings, and job postings are publicly visible to other users and visitors.</li>
+                <li><strong className="text-white">Public Content:</strong> Your profile, projects, companies, updates, comments, service listings, local listings, job postings, events, and coworking sessions are publicly visible to other users and visitors.</li>
                 <li><strong className="text-white">Leaderboards:</strong> Token earnings and streak data may appear on public leaderboards.</li>
                 <li><strong className="text-white">Service Providers:</strong> We share information with third-party vendors who assist in operating our services:
                   <ul className="list-disc pl-6 mt-2 space-y-1">
@@ -183,7 +190,7 @@ export default function PrivacyPolicyPage() {
               <p className="mb-4">You have the following rights regarding your information:</p>
               <ul className="list-disc pl-6 space-y-2">
                 <li><strong className="text-white">Access and Update:</strong> You can access and update your profile information through your account settings.</li>
-                <li><strong className="text-white">Delete Content:</strong> You can delete your projects, companies, updates, comments, and listings.</li>
+                <li><strong className="text-white">Delete Content:</strong> You can delete your projects, companies, updates, comments, listings, events, coworking sessions, and direct messages.</li>
                 <li><strong className="text-white">Account Deletion:</strong> To delete your account entirely, please contact us through our community channels.</li>
                 <li><strong className="text-white">Email Preferences:</strong> You can opt out of daily and weekly digest emails in your settings.</li>
                 <li><strong className="text-white">Push Notifications:</strong> You can disable push notifications through your browser settings or account preferences.</li>
@@ -216,7 +223,33 @@ export default function PrivacyPolicyPage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">11. Cookies and Tracking</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">11. Direct Messaging</h2>
+              <p className="leading-relaxed mb-4">
+                We provide direct messaging features to facilitate private communication between builders:
+              </p>
+              <ul className="list-disc pl-6 space-y-2">
+                <li><strong className="text-white">Message Content:</strong> Your messages, including text, images, and GIFs, are stored to deliver them to recipients and maintain conversation history.</li>
+                <li><strong className="text-white">Read Receipts:</strong> We track when messages are read to provide read receipt functionality.</li>
+                <li><strong className="text-white">Message Retention:</strong> Messages are retained as long as either participant&apos;s account is active. You can delete individual messages or entire conversations.</li>
+                <li><strong className="text-white">Privacy:</strong> Direct messages are private between participants and are not publicly visible. However, we may access message content to investigate reported abuse or violations of our Terms.</li>
+              </ul>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-semibold text-white mb-4">12. Events and Coworking Sessions</h2>
+              <p className="leading-relaxed mb-4">
+                When you create or participate in events and coworking sessions:
+              </p>
+              <ul className="list-disc pl-6 space-y-2">
+                <li><strong className="text-white">Event Information:</strong> Event details including title, description, date, location, and attendee list are publicly visible.</li>
+                <li><strong className="text-white">RSVP Data:</strong> Your RSVP status (Going, Interested, Not Going) is visible to other users viewing the event.</li>
+                <li><strong className="text-white">Coworking Sessions:</strong> Session details and participant lists are publicly visible to facilitate meetups.</li>
+                <li><strong className="text-white">Location Data:</strong> Physical event and coworking session locations are displayed to help users find nearby gatherings. The same ~10 mile privacy offset applies.</li>
+              </ul>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-semibold text-white mb-4">13. Cookies and Tracking</h2>
               <p className="leading-relaxed">
                 We use essential cookies to maintain your session and authentication state. These cookies
                 are necessary for the proper functioning of our service. We may also use analytics tools
@@ -226,7 +259,7 @@ export default function PrivacyPolicyPage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">12. Push Notifications</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">14. Push Notifications</h2>
               <p className="leading-relaxed">
                 Our platform supports web push notifications through the Progressive Web App (PWA) functionality.
                 Push notifications are entirely opt-in and require your explicit permission. You can manage or
@@ -236,7 +269,7 @@ export default function PrivacyPolicyPage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">13. Children&apos;s Privacy</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">15. Children&apos;s Privacy</h2>
               <p className="leading-relaxed">
                 Our services are not intended for children under 13 years of age. We do not knowingly
                 collect personal information from children under 13. If you believe we have collected
@@ -245,7 +278,7 @@ export default function PrivacyPolicyPage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">14. International Data Transfers</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">16. International Data Transfers</h2>
               <p className="leading-relaxed">
                 Your information may be transferred to and processed in countries other than your country
                 of residence. These countries may have data protection laws that are different from your
@@ -254,19 +287,19 @@ export default function PrivacyPolicyPage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">15. Data Retention</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">17. Data Retention</h2>
               <p className="leading-relaxed">
                 We retain your information for as long as your account is active or as needed to provide
                 services. We may retain certain information for legitimate business purposes, legal compliance,
                 dispute resolution, or to enforce our agreements. Token transaction history is retained
                 for audit purposes. Pro subscription and rewards data is retained for financial records.
-                Platform connection tokens are deleted when you disconnect a platform. Anonymized analytics 
+                Platform connection tokens are deleted when you disconnect a platform. Anonymized analytics
                 data may be retained indefinitely.
               </p>
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">16. Changes to This Policy</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">18. Changes to This Policy</h2>
               <p className="leading-relaxed">
                 We may update this Privacy Policy from time to time. We will notify you of any changes
                 by posting the new Privacy Policy on this page and updating the &quot;Last updated&quot; date.
@@ -276,7 +309,7 @@ export default function PrivacyPolicyPage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">17. Contact Us</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">19. Contact Us</h2>
               <p className="leading-relaxed">
                 If you have any questions about this Privacy Policy or our privacy practices, please
                 contact us through our community channels:
