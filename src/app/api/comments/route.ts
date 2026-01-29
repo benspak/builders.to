@@ -62,12 +62,44 @@ async function getOrCreateFeedEventForProject(projectId: string) {
   return feedEvent;
 }
 
+// Helper function to build nested comment tree
+function buildCommentTree<T extends { id: string; parentId: string | null }>(
+  comments: T[]
+): (T & { replies: T[] })[] {
+  const commentMap = new Map<string, T & { replies: T[] }>();
+  const rootComments: (T & { replies: T[] })[] = [];
+
+  // First pass: create map with empty replies arrays
+  comments.forEach(comment => {
+    commentMap.set(comment.id, { ...comment, replies: [] });
+  });
+
+  // Second pass: build tree structure
+  comments.forEach(comment => {
+    const commentWithReplies = commentMap.get(comment.id)!;
+    if (comment.parentId) {
+      const parent = commentMap.get(comment.parentId);
+      if (parent) {
+        parent.replies.push(commentWithReplies);
+      } else {
+        // Parent not found, treat as root comment
+        rootComments.push(commentWithReplies);
+      }
+    } else {
+      rootComments.push(commentWithReplies);
+    }
+  });
+
+  return rootComments;
+}
+
 // GET /api/comments - Get comments for a project (via FeedEventComment)
 export async function GET(request: NextRequest) {
   try {
     const session = await auth();
     const { searchParams } = new URL(request.url);
     const projectId = searchParams.get("projectId");
+    const flat = searchParams.get("flat") === "true";
 
     if (!projectId) {
       return NextResponse.json(
@@ -99,7 +131,7 @@ export async function GET(request: NextRequest) {
     // Fetch comments from FeedEventComment with poll data
     const comments = await prisma.feedEventComment.findMany({
       where: { feedEventId: feedEvent.id },
-      orderBy: { createdAt: "desc" },
+      orderBy: { createdAt: "asc" },
       select: {
         id: true,
         content: true,
@@ -108,6 +140,7 @@ export async function GET(request: NextRequest) {
         videoUrl: true,
         pollQuestion: true,
         pollExpiresAt: true,
+        parentId: true,
         createdAt: true,
         updatedAt: true,
         userId: true,
@@ -132,6 +165,9 @@ export async function GET(request: NextRequest) {
               select: { votes: true },
             },
           },
+        },
+        _count: {
+          select: { replies: true },
         },
       },
     });
@@ -159,6 +195,7 @@ export async function GET(request: NextRequest) {
       pollQuestion: comment.pollQuestion,
       pollExpiresAt: comment.pollExpiresAt,
       pollOptions: comment.pollOptions,
+      parentId: comment.parentId,
       votedOptionId: userVotes.find(v => v.commentId === comment.id)?.optionId || null,
       createdAt: comment.createdAt,
       updatedAt: comment.updatedAt,
@@ -173,9 +210,16 @@ export async function GET(request: NextRequest) {
       },
       likesCount: 0, // FeedEventComment doesn't have likes, set to 0 for compatibility
       isLiked: false,
+      replyCount: comment._count.replies,
     }));
 
-    return NextResponse.json(commentsWithLikeStatus);
+    // Return flat list or threaded tree based on query param
+    if (flat) {
+      return NextResponse.json(commentsWithLikeStatus);
+    }
+
+    const threadedComments = buildCommentTree(commentsWithLikeStatus);
+    return NextResponse.json(threadedComments);
   } catch (error) {
     console.error("Error fetching comments:", error);
     return NextResponse.json(
@@ -204,7 +248,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { projectId, content, gifUrl, imageUrl, videoUrl, pollOptions } = body;
+    const { projectId, content, gifUrl, imageUrl, videoUrl, pollOptions, parentId } = body;
 
     if (!projectId) {
       return NextResponse.json(
@@ -277,6 +321,41 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // If this is a reply, verify parent comment exists and belongs to the same feed event
+    let parentComment = null;
+    if (parentId) {
+      parentComment = await prisma.feedEventComment.findUnique({
+        where: { id: parentId },
+        select: {
+          id: true,
+          feedEventId: true,
+          userId: true,
+          user: {
+            select: {
+              id: true,
+              name: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+        },
+      });
+
+      if (!parentComment) {
+        return NextResponse.json(
+          { error: "Parent comment not found" },
+          { status: 404 }
+        );
+      }
+
+      if (parentComment.feedEventId !== feedEvent.id) {
+        return NextResponse.json(
+          { error: "Parent comment does not belong to this project" },
+          { status: 400 }
+        );
+      }
+    }
+
     // Get current user info for notification
     const currentUser = await prisma.user.findUnique({
       where: { id: session.user.id },
@@ -304,6 +383,7 @@ export async function POST(request: NextRequest) {
         videoUrl: videoUrl || null,
         userId: session.user.id,
         feedEventId: feedEvent.id,
+        parentId: parentId || null,
         // Poll fields
         pollQuestion: validatedPollOptions ? (content?.trim() || "Poll") : null,
         pollExpiresAt: pollExpiresAt,
@@ -322,6 +402,7 @@ export async function POST(request: NextRequest) {
         videoUrl: true,
         pollQuestion: true,
         pollExpiresAt: true,
+        parentId: true,
         createdAt: true,
         updatedAt: true,
         userId: true,
@@ -346,6 +427,9 @@ export async function POST(request: NextRequest) {
             },
           },
         },
+        _count: {
+          select: { replies: true },
+        },
       },
     });
 
@@ -358,8 +442,40 @@ export async function POST(request: NextRequest) {
       ? content.substring(0, 100) + "..."
       : content;
 
-    // Create notification for project owner (if not self-comment)
-    if (project.userId !== session.user.id) {
+    // Create notification for reply to comment author (if this is a reply and not self-reply)
+    if (parentComment && parentComment.userId !== session.user.id) {
+      await prisma.notification.create({
+        data: {
+          type: "COMMENT_REPLIED",
+          title: `${commenterName} replied to your comment`,
+          message: truncatedContent,
+          userId: parentComment.userId,
+          projectId: project.id,
+          feedEventId: feedEvent.id,
+          feedEventCommentId: comment.id,
+          actorId: session.user.id,
+          actorName: commenterName,
+          actorImage: currentUser?.image,
+        },
+      });
+
+      // Send push notification for reply
+      const projectUrl = project.slug
+        ? `/projects/${project.slug}#comment-${comment.id}`
+        : '/projects';
+      sendUserPushNotification(parentComment.userId, {
+        title: 'New reply to your comment',
+        body: `${commenterName} replied to your comment`,
+        url: projectUrl,
+        tag: 'comment-reply',
+      }).catch(console.error);
+    }
+
+    // Create notification for project owner (if not self-comment and not already notified as parent author)
+    const shouldNotifyOwner = project.userId !== session.user.id &&
+      (!parentComment || parentComment.userId !== project.userId);
+
+    if (shouldNotifyOwner) {
       await prisma.notification.create({
         data: {
           type: "FEED_EVENT_COMMENTED",
@@ -445,6 +561,7 @@ export async function POST(request: NextRequest) {
       pollQuestion: comment.pollQuestion,
       pollExpiresAt: comment.pollExpiresAt,
       pollOptions: comment.pollOptions,
+      parentId: comment.parentId,
       votedOptionId: null,
       createdAt: comment.createdAt,
       updatedAt: comment.updatedAt,
@@ -458,6 +575,8 @@ export async function POST(request: NextRequest) {
       },
       likesCount: 0,
       isLiked: false,
+      replyCount: comment._count.replies,
+      replies: [],
     };
 
     return NextResponse.json(responseComment, { status: 201 });

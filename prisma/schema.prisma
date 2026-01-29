@@ -170,6 +170,19 @@ model User {
   userEarnings UserEarnings?
   payouts      Payout[]
 
+  // Events & Meetups
+  organizedEvents Event[]         @relation("EventOrganizer")
+  eventAttendees  EventAttendee[]
+  eventComments   EventComment[]
+
+  // Direct Messaging
+  conversationParticipants ConversationParticipant[]
+  sentMessages             Message[]
+
+  // Coworking Buddy Matching
+  hostedSessions   CoworkingSession[] @relation("CoworkingHost")
+  coworkingBuddies CoworkingBuddy[]
+
   @@index([slug])
   @@index([stripeConnectId])
   @@index([locationSlug])
@@ -266,12 +279,18 @@ model Comment {
   userId    String
   projectId String
 
+  // Threading support - self-referential relation for reply chains
+  parentId String?
+  parent   Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies  Comment[] @relation("CommentReplies")
+
   user    User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   project Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
   likes   CommentLike[]
 
   @@index([projectId])
   @@index([userId])
+  @@index([parentId])
 }
 
 // Likes on project comments
@@ -666,6 +685,11 @@ model UpdateComment {
   userId   String
   updateId String
 
+  // Threading support - self-referential relation for reply chains
+  parentId String?
+  parent   UpdateComment?  @relation("UpdateCommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies  UpdateComment[] @relation("UpdateCommentReplies")
+
   user          User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
   update        DailyUpdate               @relation(fields: [updateId], references: [id], onDelete: Cascade)
   pollOptions   UpdateCommentPollOption[] // Poll options if this is a poll comment
@@ -674,6 +698,7 @@ model UpdateComment {
 
   @@index([updateId])
   @@index([userId])
+  @@index([parentId])
 }
 
 // Poll options for update comments (up to 5 per comment)
@@ -734,6 +759,7 @@ enum FeedEventType {
   JOB_POSTED // A new job/role was posted by a company
   USER_JOINED // A new user signed up
   LISTING_CREATED // A new local listing was created
+  EVENT_CREATED // A new community event was created
 }
 
 // Feed events - aggregated activity feed
@@ -802,6 +828,11 @@ model FeedEventComment {
   userId      String
   feedEventId String
 
+  // Threading support - self-referential relation for reply chains
+  parentId String?
+  parent   FeedEventComment?  @relation("FeedEventCommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies  FeedEventComment[] @relation("FeedEventCommentReplies")
+
   user          User                         @relation(fields: [userId], references: [id], onDelete: Cascade)
   feedEvent     FeedEvent                    @relation(fields: [feedEventId], references: [id], onDelete: Cascade)
   notifications Notification[]
@@ -811,6 +842,7 @@ model FeedEventComment {
   @@index([feedEventId])
   @@index([userId])
   @@index([createdAt])
+  @@index([parentId])
 }
 
 // Poll options for feed event comments (up to 5 per comment)
@@ -850,6 +882,7 @@ enum NotificationType {
   MILESTONE_CELEBRATED // Multiple people celebrated (batched)
   UPDATE_LIKED // Someone liked your daily update
   UPDATE_COMMENTED // Someone commented on your daily update
+  COMMENT_REPLIED // Someone replied to your comment
   USER_MENTIONED // Someone mentioned you in an update
   WEEKLY_DIGEST // Weekly summary notification
   PROJECT_UPVOTED // Someone upvoted your project
@@ -1209,12 +1242,18 @@ model LocalListingComment {
   userId    String
   listingId String
 
+  // Threading support - self-referential relation for reply chains
+  parentId String?
+  parent   LocalListingComment?  @relation("LocalListingCommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies  LocalListingComment[] @relation("LocalListingCommentReplies")
+
   user    User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   listing LocalListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
 
   @@index([listingId])
   @@index([userId])
   @@index([createdAt])
+  @@index([parentId])
 }
 
 // Flag/report a listing
@@ -1793,4 +1832,216 @@ model PostContentHash {
 
   @@unique([userId, hash])
   @@index([userId])
+}
+
+// ============================================
+// Events & Meetups System
+// ============================================
+
+enum EventRsvpStatus {
+  GOING
+  INTERESTED
+  NOT_GOING
+}
+
+model Event {
+  id          String   @id @default(cuid())
+  title       String
+  description String   @db.Text
+
+  // Date/time
+  startsAt DateTime
+  endsAt   DateTime?
+  timezone String    @default("UTC")
+
+  // Location (virtual or physical)
+  isVirtual  Boolean @default(false)
+  virtualUrl String? // Video call link for virtual events
+  venue      String? // Venue name
+  address    String? // Full address
+  city       String?
+  state      String?
+  country    String?
+  latitude   Float?
+  longitude  Float?
+
+  // Capacity and settings
+  maxAttendees Int?
+  isPublic     Boolean @default(true) // Public events visible to all
+
+  // Metadata
+  imageUrl  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organizerId String
+  organizer   User            @relation("EventOrganizer", fields: [organizerId], references: [id], onDelete: Cascade)
+  attendees   EventAttendee[]
+  comments    EventComment[]
+
+  @@index([startsAt])
+  @@index([city, country])
+  @@index([organizerId])
+  @@index([isPublic, startsAt])
+}
+
+model EventAttendee {
+  id        String          @id @default(cuid())
+  status    EventRsvpStatus @default(GOING)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  userId  String
+  eventId String
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, eventId])
+  @@index([eventId])
+  @@index([status])
+}
+
+// Comments on events
+model EventComment {
+  id        String   @id @default(cuid())
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId  String
+  eventId String
+
+  // Threading support
+  parentId String?
+  parent   EventComment?  @relation("EventCommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies  EventComment[] @relation("EventCommentReplies")
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId])
+  @@index([userId])
+  @@index([parentId])
+}
+
+// ============================================
+// Direct Messaging System
+// ============================================
+
+model Conversation {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  participants ConversationParticipant[]
+  messages     Message[]
+}
+
+model ConversationParticipant {
+  id         String    @id @default(cuid())
+  lastReadAt DateTime?
+  mutedUntil DateTime?
+  isArchived Boolean   @default(false)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  userId         String
+  conversationId String
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, conversationId])
+  @@index([conversationId])
+  @@index([userId])
+}
+
+model Message {
+  id        String    @id @default(cuid())
+  content   String    @db.Text
+  gifUrl    String? // Optional GIF attachment
+  imageUrl  String? // Optional image attachment
+  createdAt DateTime  @default(now())
+  editedAt  DateTime?
+
+  senderId       String
+  conversationId String
+
+  sender       User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+  @@index([senderId])
+}
+
+// ============================================
+// Coworking Buddy Matching System
+// ============================================
+
+enum VenueType {
+  CAFE
+  COWORKING_SPACE
+  LIBRARY
+  OTHER
+}
+
+enum BuddyStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+model CoworkingSession {
+  id String @id @default(cuid())
+
+  // When
+  date      DateTime @db.Date
+  startTime String // "09:00" format
+  endTime   String? // "17:00" or null for flexible
+
+  // Where
+  venueName String
+  venueType VenueType
+  address   String?
+  city      String
+  state     String?
+  country   String
+  latitude  Float?
+  longitude Float?
+
+  // Details
+  maxBuddies  Int     @default(1)
+  description String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  hostId  String
+  host    User             @relation("CoworkingHost", fields: [hostId], references: [id], onDelete: Cascade)
+  buddies CoworkingBuddy[]
+
+  @@index([date, city])
+  @@index([hostId])
+  @@index([city, country])
+}
+
+model CoworkingBuddy {
+  id        String      @id @default(cuid())
+  status    BuddyStatus @default(PENDING)
+  message   String? // Optional message when requesting to join
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  userId    String
+  sessionId String
+
+  user    User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session CoworkingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, sessionId])
+  @@index([sessionId])
+  @@index([status])
 }

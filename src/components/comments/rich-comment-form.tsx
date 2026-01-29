@@ -31,6 +31,8 @@ export interface RichCommentFormProps {
   disabled?: boolean;
   showAvatar?: boolean;
   compact?: boolean;
+  autoFocus?: boolean;
+  onCancel?: () => void;
   className?: string;
 }
 
@@ -41,6 +43,8 @@ export function RichCommentForm({
   disabled = false,
   showAvatar = true,
   compact = false,
+  autoFocus = false,
+  onCancel,
   className,
 }: RichCommentFormProps) {
   const { data: session } = useSession();
@@ -401,6 +405,7 @@ export function RichCommentForm({
             placeholder={placeholder}
             rows={compact ? 2 : 3}
             disabled={disabled || isSubmitting}
+            autoFocus={autoFocus}
             className={cn(
               "w-full rounded-xl border border-white/10 bg-zinc-800/50 px-4 py-3 text-sm text-white placeholder:text-zinc-500 focus:border-orange-500/50 focus:outline-none focus:ring-1 focus:ring-orange-500/50 disabled:opacity-50 resize-y min-h-[60px]",
               compact && "min-h-[48px] py-2"
@@ -615,19 +620,31 @@ export function RichCommentForm({
           </button>
         </div>
 
-        {/* Submit button */}
-        <button
-          type="submit"
-          disabled={isSubmitting || isUploading || (!content.trim() && !imageUrl && !gifUrl) || content.length > maxLength}
-          className="inline-flex items-center gap-2 rounded-xl bg-orange-500/20 text-orange-400 px-4 py-2 text-sm font-medium hover:bg-orange-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isSubmitting ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Send className="h-4 w-4" />
+        {/* Action buttons */}
+        <div className="flex items-center gap-2">
+          {onCancel && (
+            <button
+              type="button"
+              onClick={onCancel}
+              disabled={isSubmitting}
+              className="rounded-lg px-3 py-1.5 text-sm text-zinc-400 hover:text-white hover:bg-zinc-800/50 transition-colors disabled:opacity-50"
+            >
+              Cancel
+            </button>
           )}
-          <span className="hidden sm:inline">Post</span>
-        </button>
+          <button
+            type="submit"
+            disabled={isSubmitting || isUploading || (!content.trim() && !imageUrl && !gifUrl) || content.length > maxLength}
+            className="inline-flex items-center gap-2 rounded-xl bg-orange-500/20 text-orange-400 px-4 py-2 text-sm font-medium hover:bg-orange-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isSubmitting ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Send className="h-4 w-4" />
+            )}
+            <span className="hidden sm:inline">{compact ? "Reply" : "Post"}</span>
+          </button>
+        </div>
       </div>
 
       {/* GIF Picker Modal */}

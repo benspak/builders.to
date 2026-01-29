@@ -63,6 +63,37 @@ async function getOrCreateFeedEventForListing(listingId: string) {
   return feedEvent;
 }
 
+// Helper function to build nested comment tree
+function buildCommentTree<T extends { id: string; parentId: string | null }>(
+  comments: T[]
+): (T & { replies: T[] })[] {
+  const commentMap = new Map<string, T & { replies: T[] }>();
+  const rootComments: (T & { replies: T[] })[] = [];
+
+  // First pass: create map with empty replies arrays
+  comments.forEach(comment => {
+    commentMap.set(comment.id, { ...comment, replies: [] });
+  });
+
+  // Second pass: build tree structure
+  comments.forEach(comment => {
+    const commentWithReplies = commentMap.get(comment.id)!;
+    if (comment.parentId) {
+      const parent = commentMap.get(comment.parentId);
+      if (parent) {
+        parent.replies.push(commentWithReplies);
+      } else {
+        // Parent not found, treat as root comment
+        rootComments.push(commentWithReplies);
+      }
+    } else {
+      rootComments.push(commentWithReplies);
+    }
+  });
+
+  return rootComments;
+}
+
 /**
  * GET /api/local-listings/[id]/comments
  * Get comments for a listing (via FeedEventComment)
@@ -74,6 +105,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "20");
     const skip = (page - 1) * limit;
+    const flat = searchParams.get("flat") === "true";
 
     // Verify listing exists and is accessible
     const listing = await prisma.localListing.findUnique({
@@ -129,6 +161,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
           videoUrl: true,
           pollQuestion: true,
           pollExpiresAt: true,
+          parentId: true,
           createdAt: true,
           updatedAt: true,
           user: {
@@ -153,6 +186,9 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
               },
             },
           },
+          _count: {
+            select: { replies: true },
+          },
         },
       }),
       prisma.feedEventComment.count({ where: { feedEventId: feedEvent.id } }),
@@ -171,14 +207,29 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       userVotes = votes;
     }
 
-    // Add votedOptionId to each comment
+    // Add votedOptionId and replyCount to each comment
     const commentsWithVotes = comments.map(comment => ({
       ...comment,
       votedOptionId: userVotes.find(v => v.commentId === comment.id)?.optionId || null,
+      replyCount: comment._count.replies,
     }));
 
+    // Return flat list or threaded tree based on query param
+    if (flat) {
+      return NextResponse.json({
+        comments: commentsWithVotes,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
+      });
+    }
+
+    const threadedComments = buildCommentTree(commentsWithVotes);
     return NextResponse.json({
-      comments: commentsWithVotes,
+      comments: threadedComments,
       pagination: {
         page,
         limit,
@@ -218,7 +269,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     const { id: listingId } = await params;
     const body = await request.json();
-    const { content, gifUrl, imageUrl, videoUrl, pollOptions } = body;
+    const { content, gifUrl, imageUrl, videoUrl, pollOptions, parentId } = body;
 
     // Allow submit if there's text OR media
     if (!content?.trim() && !gifUrl && !imageUrl) {
@@ -293,6 +344,41 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       );
     }
 
+    // If this is a reply, verify parent comment exists and belongs to the same feed event
+    let parentComment = null;
+    if (parentId) {
+      parentComment = await prisma.feedEventComment.findUnique({
+        where: { id: parentId },
+        select: {
+          id: true,
+          feedEventId: true,
+          userId: true,
+          user: {
+            select: {
+              id: true,
+              name: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+        },
+      });
+
+      if (!parentComment) {
+        return NextResponse.json(
+          { error: "Parent comment not found" },
+          { status: 404 }
+        );
+      }
+
+      if (parentComment.feedEventId !== feedEvent.id) {
+        return NextResponse.json(
+          { error: "Parent comment does not belong to this listing" },
+          { status: 400 }
+        );
+      }
+    }
+
     // Get current user info for notification
     const currentUser = await prisma.user.findUnique({
       where: { id: session.user.id },
@@ -320,6 +406,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         videoUrl: videoUrl || null,
         userId: session.user.id,
         feedEventId: feedEvent.id,
+        parentId: parentId || null,
         // Poll fields
         pollQuestion: validatedPollOptions ? (content?.trim() || "Poll") : null,
         pollExpiresAt: pollExpiresAt,
@@ -338,6 +425,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         videoUrl: true,
         pollQuestion: true,
         pollExpiresAt: true,
+        parentId: true,
         createdAt: true,
         updatedAt: true,
         user: {
@@ -362,6 +450,9 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
             },
           },
         },
+        _count: {
+          select: { replies: true },
+        },
       },
     });
 
@@ -374,8 +465,39 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       ? content.trim().substring(0, 100) + "..."
       : content.trim();
 
-    // Create notification for listing owner (if not self-comment)
-    if (listing.userId !== session.user.id) {
+    // Create notification for reply to comment author (if this is a reply and not self-reply)
+    if (parentComment && parentComment.userId !== session.user.id) {
+      await prisma.notification.create({
+        data: {
+          type: "COMMENT_REPLIED",
+          title: `${commenterName} replied to your comment`,
+          message: truncatedContent,
+          userId: parentComment.userId,
+          feedEventId: feedEvent.id,
+          feedEventCommentId: comment.id,
+          actorId: session.user.id,
+          actorName: commenterName,
+          actorImage: currentUser?.image,
+        },
+      });
+
+      // Send push notification for reply
+      const listingUrl = listing.slug
+        ? `/local/${listing.slug}#comment-${comment.id}`
+        : '/local';
+      sendUserPushNotification(parentComment.userId, {
+        title: 'New reply to your comment',
+        body: `${commenterName} replied to your comment`,
+        url: listingUrl,
+        tag: 'comment-reply',
+      }).catch(console.error);
+    }
+
+    // Create notification for listing owner (if not self-comment and not already notified as parent author)
+    const shouldNotifyOwner = listing.userId !== session.user.id &&
+      (!parentComment || parentComment.userId !== listing.userId);
+
+    if (shouldNotifyOwner) {
       await prisma.notification.create({
         data: {
           type: "FEED_EVENT_COMMENTED",
@@ -449,10 +571,12 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       }
     }
 
-    // Add votedOptionId for consistency
+    // Add votedOptionId and replyCount for consistency
     const responseComment = {
       ...comment,
       votedOptionId: null,
+      replyCount: comment._count.replies,
+      replies: [],
     };
 
     return NextResponse.json(responseComment, { status: 201 });

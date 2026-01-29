@@ -5,6 +5,37 @@ import { rateLimit, RATE_LIMITS, rateLimitResponse } from "@/lib/rate-limit";
 import { extractMentions } from "@/lib/utils";
 import { notifyNewComment, sendUserPushNotification } from "@/lib/push-notifications";
 
+// Helper function to build nested comment tree
+function buildCommentTree<T extends { id: string; parentId: string | null }>(
+  comments: T[]
+): (T & { replies: T[] })[] {
+  const commentMap = new Map<string, T & { replies: T[] }>();
+  const rootComments: (T & { replies: T[] })[] = [];
+
+  // First pass: create map with empty replies arrays
+  comments.forEach(comment => {
+    commentMap.set(comment.id, { ...comment, replies: [] });
+  });
+
+  // Second pass: build tree structure
+  comments.forEach(comment => {
+    const commentWithReplies = commentMap.get(comment.id)!;
+    if (comment.parentId) {
+      const parent = commentMap.get(comment.parentId);
+      if (parent) {
+        parent.replies.push(commentWithReplies);
+      } else {
+        // Parent not found, treat as root comment
+        rootComments.push(commentWithReplies);
+      }
+    } else {
+      rootComments.push(commentWithReplies);
+    }
+  });
+
+  return rootComments;
+}
+
 // GET /api/updates/[id]/comments - Get comments for an update
 export async function GET(
   request: NextRequest,
@@ -13,6 +44,8 @@ export async function GET(
   try {
     const session = await auth();
     const { id: updateId } = await params;
+    const { searchParams } = new URL(request.url);
+    const flat = searchParams.get("flat") === "true"; // Optional param to return flat list
 
     const comments = await prisma.updateComment.findMany({
       where: { updateId },
@@ -25,6 +58,7 @@ export async function GET(
         videoUrl: true,
         pollQuestion: true,
         pollExpiresAt: true,
+        parentId: true,
         createdAt: true,
         updatedAt: true,
         user: {
@@ -48,6 +82,9 @@ export async function GET(
             },
           },
         },
+        _count: {
+          select: { replies: true },
+        },
       },
     });
 
@@ -64,13 +101,21 @@ export async function GET(
       userVotes = votes;
     }
 
-    // Add votedOptionId to each comment
+    // Add votedOptionId and replyCount to each comment
     const commentsWithVotes = comments.map(comment => ({
       ...comment,
       votedOptionId: userVotes.find(v => v.commentId === comment.id)?.optionId || null,
+      replyCount: comment._count.replies,
     }));
 
-    return NextResponse.json(commentsWithVotes);
+    // Return flat list or threaded tree based on query param
+    if (flat) {
+      return NextResponse.json(commentsWithVotes);
+    }
+
+    // Build threaded tree structure
+    const threadedComments = buildCommentTree(commentsWithVotes);
+    return NextResponse.json(threadedComments);
   } catch (error) {
     console.error("Error fetching comments:", error);
     return NextResponse.json(
@@ -103,7 +148,7 @@ export async function POST(
 
     const { id: updateId } = await params;
     const body = await request.json();
-    const { content, gifUrl, imageUrl, videoUrl, pollOptions } = body;
+    const { content, gifUrl, imageUrl, videoUrl, pollOptions, parentId } = body;
 
     // Allow submit if there's text OR media
     if (!content?.trim() && !gifUrl && !imageUrl) {
@@ -170,6 +215,41 @@ export async function POST(
       );
     }
 
+    // If this is a reply, verify parent comment exists and belongs to the same update
+    let parentComment = null;
+    if (parentId) {
+      parentComment = await prisma.updateComment.findUnique({
+        where: { id: parentId },
+        select: {
+          id: true,
+          updateId: true,
+          userId: true,
+          user: {
+            select: {
+              id: true,
+              name: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+        },
+      });
+
+      if (!parentComment) {
+        return NextResponse.json(
+          { error: "Parent comment not found" },
+          { status: 404 }
+        );
+      }
+
+      if (parentComment.updateId !== updateId) {
+        return NextResponse.json(
+          { error: "Parent comment does not belong to this update" },
+          { status: 400 }
+        );
+      }
+    }
+
     // Get current user info for notification
     const currentUser = await prisma.user.findUnique({
       where: { id: session.user.id },
@@ -196,6 +276,7 @@ export async function POST(
         videoUrl: videoUrl || null,
         userId: session.user.id,
         updateId,
+        parentId: parentId || null,
         // Poll fields
         pollQuestion: validatedPollOptions ? (content?.trim() || "Poll") : null,
         pollExpiresAt: pollExpiresAt,
@@ -214,6 +295,7 @@ export async function POST(
         videoUrl: true,
         pollQuestion: true,
         pollExpiresAt: true,
+        parentId: true,
         createdAt: true,
         updatedAt: true,
         user: {
@@ -237,6 +319,9 @@ export async function POST(
             },
           },
         },
+        _count: {
+          select: { replies: true },
+        },
       },
     });
 
@@ -249,8 +334,43 @@ export async function POST(
       ? content.trim().substring(0, 100) + "..."
       : content.trim();
 
-    // Create notification for update owner (if not self-comment)
-    if (update.userId !== session.user.id) {
+    // Create notification for reply to comment author (if this is a reply and not self-reply)
+    if (parentComment && parentComment.userId !== session.user.id) {
+      const parentAuthorName = parentComment.user.firstName && parentComment.user.lastName
+        ? `${parentComment.user.firstName} ${parentComment.user.lastName}`
+        : parentComment.user.name || "Someone";
+
+      await prisma.notification.create({
+        data: {
+          type: "COMMENT_REPLIED",
+          title: `${commenterName} replied to your comment`,
+          message: truncatedContent,
+          userId: parentComment.userId,
+          updateId: update.id,
+          updateCommentId: comment.id,
+          actorId: session.user.id,
+          actorName: commenterName,
+          actorImage: currentUser?.image,
+        },
+      });
+
+      // Send push notification for reply
+      const updateUrl = update.user?.slug
+        ? `/${update.user.slug}/updates/${update.id}#comment-${comment.id}`
+        : `/updates`;
+      sendUserPushNotification(parentComment.userId, {
+        title: 'New reply to your comment',
+        body: `${commenterName} replied to your comment`,
+        url: updateUrl,
+        tag: 'comment-reply',
+      }).catch(console.error);
+    }
+
+    // Create notification for update owner (if not self-comment and not already notified as parent author)
+    const shouldNotifyUpdateOwner = update.userId !== session.user.id &&
+      (!parentComment || parentComment.userId !== update.userId);
+
+    if (shouldNotifyUpdateOwner) {
       await prisma.notification.create({
         data: {
           type: "UPDATE_COMMENTED",
@@ -325,10 +445,12 @@ export async function POST(
       }
     }
 
-    // Add votedOptionId for consistency
+    // Add votedOptionId and replyCount for consistency
     const responseComment = {
       ...comment,
       votedOptionId: null,
+      replyCount: comment._count.replies,
+      replies: [], // Empty replies array for new comments
     };
 
     return NextResponse.json(responseComment, { status: 201 });
