@@ -275,6 +275,7 @@ export async function POST(request: NextRequest) {
           title: `New event: ${event.title}`,
           description: event.description.slice(0, 500),
           userId: session.user.id,
+          eventId: event.id,
         },
       });
     }
