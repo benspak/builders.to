@@ -144,6 +144,8 @@ export const RATE_LIMITS = {
   upload: { limit: 10, windowMs: 15 * 60 * 1000, name: "upload" }, // 10 per 15 min
   createProject: { limit: 5, windowMs: 60 * 60 * 1000, name: "createProject" }, // 5 per hour
   createCompany: { limit: 5, windowMs: 60 * 60 * 1000, name: "createCompany" }, // 5 per hour
+  create: { limit: 10, windowMs: 60 * 60 * 1000, name: "create" }, // 10 per hour (generic)
+  createEvent: { limit: 10, windowMs: 60 * 60 * 1000, name: "createEvent" }, // 10 per hour
 
   // Moderate limits
   comment: { limit: 30, windowMs: 60 * 60 * 1000, name: "comment" }, // 30 per hour

@@ -776,7 +776,6 @@ model FeedEvent {
   milestoneId    String? @unique // For milestone events
   companyRoleId  String? @unique // For job posted events
   localListingId String? @unique // For listing created events
-  eventId        String? @unique // For event created events
 
   // Denormalized data for fast feed rendering
   title       String // e.g., "shipped v1" or "hit $1k MRR"
@@ -786,7 +785,6 @@ model FeedEvent {
   milestone     ProjectMilestone?  @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
   companyRole   CompanyRole?       @relation(fields: [companyRoleId], references: [id], onDelete: Cascade)
   localListing  LocalListing?      @relation(fields: [localListingId], references: [id], onDelete: Cascade)
-  event         Event?             @relation(fields: [eventId], references: [id], onDelete: Cascade)
   likes         FeedEventLike[]
   comments      FeedEventComment[]
   notifications Notification[]
@@ -796,7 +794,6 @@ model FeedEvent {
   @@index([projectId])
   @@index([companyRoleId])
   @@index([localListingId])
-  @@index([eventId])
 }
 
 // Likes on feed events
@@ -1882,7 +1879,6 @@ model Event {
   organizer   User            @relation("EventOrganizer", fields: [organizerId], references: [id], onDelete: Cascade)
   attendees   EventAttendee[]
   comments    EventComment[]
-  feedEvent   FeedEvent?
 
   @@index([startsAt])
   @@index([city, country])

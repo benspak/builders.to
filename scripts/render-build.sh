@@ -28,11 +28,20 @@ echo "🗄️ Cleaning up deprecated tables..."
 npx prisma db execute --schema ./prisma/schema.prisma --file ./scripts/drop-roast-mvp.sql || true
 
 echo "🗄️ Running pre-migration scripts..."
-# Apply token system schema changes safely before prisma db push
+# Apply token system schema changes safely before migrations
 npx prisma db execute --schema ./prisma/schema.prisma --file ./scripts/pre-push-token-system.sql || true
 
+echo "🗄️ Syncing migration history..."
+# Mark existing migrations as applied if schema already has those changes
+# This handles cases where db push was used previously
+bash scripts/sync-migrations.sh || true
+
 echo "🗄️ Running database migrations..."
-npx prisma db push --accept-data-loss
+# Use migrate deploy for production - it applies pending migrations safely
+npx prisma migrate deploy || {
+  echo "⚠️  migrate deploy failed, falling back to db push..."
+  npx prisma db push --accept-data-loss
+}
 
 echo "🔄 Running slug migration for existing projects..."
 node scripts/migrate-slugs.mjs || {

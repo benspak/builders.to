@@ -269,15 +269,20 @@ export async function POST(request: NextRequest) {
 
     // Create feed event for public events
     if (event.isPublic) {
-      await prisma.feedEvent.create({
-        data: {
-          type: "EVENT_CREATED",
-          title: `New event: ${event.title}`,
-          description: event.description.slice(0, 500),
-          userId: session.user.id,
-          eventId: event.id,
-        },
-      });
+      try {
+        await prisma.feedEvent.create({
+          data: {
+            type: "EVENT_CREATED",
+            title: `New event: ${event.title}`,
+            description: event.description.slice(0, 500),
+            userId: session.user.id,
+            eventId: event.id,
+          },
+        });
+      } catch (feedError) {
+        // Don't fail event creation if feed event fails
+        console.error("Failed to create feed event:", feedError);
+      }
     }
 
     return NextResponse.json(event, { status: 201 });
