@@ -40,7 +40,7 @@ echo "🗄️ Running database migrations..."
 # Use migrate deploy for production - it applies pending migrations safely
 npx prisma migrate deploy || {
   echo "⚠️  migrate deploy failed, falling back to db push..."
-  npx prisma db push --accept-data-loss
+  npx prisma db push
 }
 
 echo "🔄 Running slug migration for existing projects..."
