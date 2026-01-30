@@ -11,7 +11,7 @@ import {
   Users,
   User,
   ExternalLink,
-  Share2,
+  Pencil,
 } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -277,9 +277,15 @@ export default async function EventPage({ params }: EventPageProps) {
               )}
 
               {isOrganizer && (
-                <span className="text-sm text-orange-400 bg-orange-500/10 px-3 py-1.5 rounded-full">
-                  You&apos;re organizing this event
-                </span>
+                <div className="flex items-center gap-2">
+                  <Link
+                    href={`/events/${event.id}/edit`}
+                    className="flex items-center gap-2 text-sm text-orange-400 bg-orange-500/10 px-3 py-1.5 rounded-full hover:bg-orange-500/20 transition-colors"
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                    Edit Event
+                  </Link>
+                </div>
               )}
             </div>
 
