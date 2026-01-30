@@ -147,6 +147,8 @@ async function FeedContent() {
       const userJoinedEvents = events.filter(e => e.type === "USER_JOINED");
       // For listing created events, fetch local listing info
       const listingCreatedEvents = events.filter(e => e.type === "LISTING_CREATED");
+      // For event created events, fetch community event info
+      const eventCreatedEvents = events.filter(e => e.type === "EVENT_CREATED");
 
       // Fetch users for status updates
       let userMap = new Map<string, { id: string; name: string | null; displayName: string | null; firstName: string | null; lastName: string | null; image: string | null; slug: string | null; headline: string | null; companies: { id: string; name: string; slug: string | null; logo: string | null }[] }>();
@@ -330,6 +332,51 @@ async function FeedContent() {
         localListingMap = new Map(localListings.map(l => [l.id, l]));
       }
 
+      // Fetch community events for event created events
+      let communityEventMap = new Map<string, { id: string; title: string; description: string; startsAt: Date; endsAt: Date | null; timezone: string; isVirtual: boolean; venue: string | null; city: string | null; country: string | null; organizer: { id: string; name: string | null; displayName: string | null; firstName: string | null; lastName: string | null; image: string | null; slug: string | null; companies: { id: string; name: string; slug: string | null; logo: string | null }[] } }>();
+      if (eventCreatedEvents.length > 0) {
+        const eventIds = Array.from(new Set(eventCreatedEvents.map(e => e.eventId).filter(Boolean))) as string[];
+        const communityEvents = await prisma.event.findMany({
+          where: { id: { in: eventIds } },
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            startsAt: true,
+            endsAt: true,
+            timezone: true,
+            isVirtual: true,
+            venue: true,
+            city: true,
+            country: true,
+            organizer: {
+              select: {
+                id: true,
+                name: true,
+                displayName: true,
+                firstName: true,
+                lastName: true,
+                image: true,
+                slug: true,
+                // Include first company with logo for display next to username
+                companies: {
+                  where: { logo: { not: null } },
+                  take: 1,
+                  orderBy: { createdAt: "asc" },
+                  select: {
+                    id: true,
+                    name: true,
+                    slug: true,
+                    logo: true,
+                  },
+                },
+              },
+            },
+          },
+        });
+        communityEventMap = new Map(communityEvents.map(e => [e.id, e]));
+      }
+
       return events.map(event => ({
         ...event,
         user: event.type === "STATUS_UPDATE"
@@ -340,6 +387,7 @@ async function FeedContent() {
         project: (event.type === "PROJECT_STATUS_CHANGE" || event.type === "PROJECT_CREATED") && event.projectId ? projectMap.get(event.projectId) || null : null,
         companyRole: event.type === "JOB_POSTED" && event.companyRoleId ? companyRoleMap.get(event.companyRoleId) || null : null,
         localListing: event.type === "LISTING_CREATED" && event.localListingId ? localListingMap.get(event.localListingId) || null : null,
+        event: event.type === "EVENT_CREATED" && event.eventId ? communityEventMap.get(event.eventId) || null : null,
       }));
     }),
   ]);
