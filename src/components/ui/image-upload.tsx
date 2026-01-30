@@ -12,7 +12,7 @@ interface ImageUploadProps {
   placeholder?: string;
   aspectRatio?: "video" | "square" | "auto";
   disabled?: boolean;
-  uploadType?: "projects" | "companies" | "ads";
+  uploadType?: "projects" | "companies" | "ads" | "events";
 }
 
 export function ImageUpload({

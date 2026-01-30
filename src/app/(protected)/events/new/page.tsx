@@ -12,8 +12,8 @@ import {
   Globe,
   Clock,
   Users,
-  Image as ImageIcon,
 } from "lucide-react";
+import { ImageUpload } from "@/components/ui/image-upload";
 
 export default function NewEventPage() {
   const router = useRouter();
@@ -416,24 +416,21 @@ export default function NewEventPage() {
                 />
               </div>
 
-              <div>
-                <label
-                  htmlFor="imageUrl"
-                  className="flex items-center gap-2 text-sm text-zinc-400 mb-2"
-                >
-                  <ImageIcon className="h-4 w-4" />
-                  Cover Image URL
-                </label>
-                <input
-                  id="imageUrl"
-                  type="url"
-                  value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                  placeholder="https://..."
-                  disabled={isSubmitting}
-                  className="w-full rounded-xl border border-white/10 bg-zinc-800/50 px-4 py-3 text-white placeholder:text-zinc-500 focus:border-orange-500/50 focus:outline-none focus:ring-1 focus:ring-orange-500/50 disabled:opacity-50"
-                />
-              </div>
+            </div>
+
+            {/* Cover Image */}
+            <div>
+              <label className="block text-sm text-zinc-400 mb-2">
+                Cover Image
+              </label>
+              <ImageUpload
+                value={imageUrl}
+                onChange={setImageUrl}
+                uploadType="events"
+                aspectRatio="video"
+                disabled={isSubmitting}
+                placeholder="Upload a cover image for your event"
+              />
             </div>
 
             {/* Public/Private Toggle */}
