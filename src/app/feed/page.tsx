@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { Loader2, Sparkles } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
-import { CombinedFeed, TopBuilders, OpenJobs, RecentListings } from "@/components/feed";
+import { CombinedFeed, TopBuilders, OpenJobs, RecentListings, UpcomingEvents } from "@/components/feed";
 import { SiteViewsCounter } from "@/components/analytics/site-views-counter";
 import { SidebarAd } from "@/components/ads";
 
@@ -529,6 +529,56 @@ async function TopBuildersSection() {
   }
 }
 
+async function UpcomingEventsSection() {
+  try {
+    // Fetch top 3 upcoming public events
+    const events = await prisma.event.findMany({
+      where: {
+        isPublic: true,
+        startsAt: { gte: new Date() },
+      },
+      orderBy: { startsAt: "asc" },
+      take: 3,
+      select: {
+        id: true,
+        title: true,
+        startsAt: true,
+        isVirtual: true,
+        city: true,
+        country: true,
+        venue: true,
+        organizer: {
+          select: {
+            id: true,
+            name: true,
+            firstName: true,
+            lastName: true,
+            image: true,
+            slug: true,
+          },
+        },
+        _count: {
+          select: {
+            attendees: {
+              where: { status: "GOING" },
+            },
+          },
+        },
+      },
+    });
+
+    const eventsWithCount = events.map((event) => ({
+      ...event,
+      attendeeCount: event._count.attendees,
+    }));
+
+    return <UpcomingEvents events={eventsWithCount} />;
+  } catch (error) {
+    console.error("Error fetching upcoming events:", error);
+    return null;
+  }
+}
+
 async function OpenJobsSection() {
   // Fetch latest open roles from companies
   const openRoles = await prisma.companyRole.findMany({
@@ -663,6 +713,34 @@ export default function FeedPage() {
                 }
               >
                 <TopBuildersSection />
+              </Suspense>
+
+              {/* Upcoming Events Section */}
+              <Suspense
+                fallback={
+                  <div className="rounded-xl border border-zinc-800/50 bg-zinc-900/50 overflow-hidden animate-pulse">
+                    <div className="px-4 py-3 border-b border-zinc-800/50">
+                      <div className="flex items-center gap-2">
+                        <div className="h-8 w-8 bg-zinc-800 rounded-lg" />
+                        <div className="h-5 w-28 bg-zinc-800 rounded" />
+                      </div>
+                    </div>
+                    <div className="divide-y divide-zinc-800/30">
+                      {[1, 2, 3].map((i) => (
+                        <div key={i} className="flex items-start gap-3 px-4 py-3">
+                          <div className="h-10 w-10 bg-zinc-800 rounded-lg" />
+                          <div className="flex-1">
+                            <div className="h-4 w-32 bg-zinc-800 rounded mb-1" />
+                            <div className="h-3 w-16 bg-zinc-800 rounded mb-2" />
+                            <div className="h-3 w-24 bg-zinc-800 rounded" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                }
+              >
+                <UpcomingEventsSection />
               </Suspense>
             </div>
           </aside>

@@ -12,3 +12,4 @@ export { FeedEventComments } from "./feed-event-comments";
 export { EditorsPick } from "./editors-pick";
 export { UserInterviewCTA } from "./user-interview-cta";
 export { RecentListings } from "./recent-listings";
+export { UpcomingEvents } from "./upcoming-events";
