@@ -29,7 +29,7 @@ export function Footer() {
             </div>
           </div>
 
-          <div className="flex items-center gap-6 text-sm" style={{ color: "var(--foreground-subtle)" }}>
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm" style={{ color: "var(--foreground-subtle)" }}>
             <a
               href="https://x.com/i/communities/1943895831322439993"
               target="_blank"

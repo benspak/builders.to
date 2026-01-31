@@ -156,11 +156,21 @@ export function NotificationList({ onItemClick, showMarkAllRead = true }: Notifi
   };
 
   const getNotificationLink = (notification: Notification): string | null => {
-    if ((notification.type === "PROJECT_UPVOTED" || notification.type === "PROJECT_COMMENTED" || notification.type === "COMMENT_LIKED") && notification.project?.slug) {
+    if (notification.type === "PROJECT_UPVOTED" && notification.project?.slug) {
       return `/projects/${notification.project.slug}`;
     }
-    // Feed event comments link to feed with anchor to the specific event
+    // Project comments link to project with anchor to the specific comment
+    if ((notification.type === "PROJECT_COMMENTED" || notification.type === "COMMENT_LIKED") && notification.project?.slug) {
+      if (notification.feedEventComment?.id) {
+        return `/projects/${notification.project.slug}#comment-${notification.feedEventComment.id}`;
+      }
+      return `/projects/${notification.project.slug}`;
+    }
+    // Feed event comments link to feed with anchor to the specific comment
     if (notification.type === "FEED_EVENT_COMMENTED" && notification.feedEventComment?.feedEventId) {
+      if (notification.feedEventComment?.id) {
+        return `/feed#comment-${notification.feedEventComment.id}`;
+      }
       return `/feed#event-${notification.feedEventComment.feedEventId}`;
     }
     if (notification.feedEvent?.milestone?.project?.slug) {
@@ -169,16 +179,20 @@ export function NotificationList({ onItemClick, showMarkAllRead = true }: Notifi
     if (notification.type === "UPDATE_LIKED" && notification.update?.user?.slug && notification.update?.id) {
       return `/${notification.update.user.slug}/updates/${notification.update.id}`;
     }
+    // Update comments link to update with anchor to the specific comment
     if (notification.type === "UPDATE_COMMENTED" && notification.update?.user?.slug && notification.update?.id) {
+      if (notification.updateComment?.id) {
+        return `/${notification.update.user.slug}/updates/${notification.update.id}#comment-${notification.updateComment.id}`;
+      }
       return `/${notification.update.user.slug}/updates/${notification.update.id}`;
     }
     if (notification.update?.user?.slug) {
       return `/${notification.update.user.slug}`;
     }
     if (notification.type === "USER_MENTIONED") {
-      // If mentioned on a feed event comment, link to feed with event anchor
-      if (notification.feedEventComment?.feedEventId) {
-        return `/feed#event-${notification.feedEventComment.feedEventId}`;
+      // If mentioned on a feed event comment, link to feed with comment anchor
+      if (notification.feedEventComment?.id) {
+        return `/feed#comment-${notification.feedEventComment.id}`;
       }
       // If mentioned on an update comment, link to the update with comment anchor
       if (notification.updateComment?.id && notification.update?.user?.slug && notification.update?.id) {
