@@ -760,7 +760,7 @@ enum FeedEventType {
   USER_JOINED // A new user signed up
   LISTING_CREATED // A new local listing was created
   EVENT_CREATED // A new community event was created
-  COWORKING_SESSION_CREATED // A new coworking session was created
+  // COWORKING_SESSION_CREATED // Temporarily disabled until migration is applied to production
 }
 
 // Feed events - aggregated activity feed
@@ -778,7 +778,7 @@ model FeedEvent {
   companyRoleId       String? @unique // For job posted events
   localListingId      String? @unique // For listing created events
   eventId             String? @unique // For event created events
-  coworkingSessionId  String? @unique // For coworking session created events
+  // coworkingSessionId  String? @unique // Temporarily disabled until migration is applied to production
 
   // Denormalized data for fast feed rendering
   title       String // e.g., "shipped v1" or "hit $1k MRR"
@@ -789,7 +789,7 @@ model FeedEvent {
   companyRole       CompanyRole?       @relation(fields: [companyRoleId], references: [id], onDelete: Cascade)
   localListing      LocalListing?      @relation(fields: [localListingId], references: [id], onDelete: Cascade)
   event             Event?             @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  coworkingSession  CoworkingSession?  @relation(fields: [coworkingSessionId], references: [id], onDelete: Cascade)
+  // coworkingSession  CoworkingSession?  @relation(fields: [coworkingSessionId], references: [id], onDelete: Cascade) // Temporarily disabled
   likes             FeedEventLike[]
   comments          FeedEventComment[]
   notifications     Notification[]
@@ -800,7 +800,7 @@ model FeedEvent {
   @@index([companyRoleId])
   @@index([localListingId])
   @@index([eventId])
-  @@index([coworkingSessionId])
+  // @@index([coworkingSessionId]) // Temporarily disabled
 }
 
 // Likes on feed events
@@ -2030,7 +2030,7 @@ model CoworkingSession {
   hostId    String
   host      User             @relation("CoworkingHost", fields: [hostId], references: [id], onDelete: Cascade)
   buddies   CoworkingBuddy[]
-  feedEvent FeedEvent?
+  // feedEvent FeedEvent? // Temporarily disabled until migration is applied to production
 
   @@index([date, city])
   @@index([hostId])

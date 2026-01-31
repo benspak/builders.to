@@ -255,8 +255,9 @@ export function CombinedFeed({
   const [visibleCount, setVisibleCount] = useState(initialDisplayCount);
   const [isLoading, setIsLoading] = useState(false);
   // Separate different event types
+  // NOTE: COWORKING_SESSION_CREATED temporarily removed until migration is applied to production
   const milestoneEvents = feedEvents.filter(
-    (e) => e.type !== "STATUS_UPDATE" && e.type !== "PROJECT_STATUS_CHANGE" && e.type !== "PROJECT_CREATED" && e.type !== "JOB_POSTED" && e.type !== "USER_JOINED" && e.type !== "LISTING_CREATED" && e.type !== "EVENT_CREATED" && e.type !== "COWORKING_SESSION_CREATED"
+    (e) => e.type !== "STATUS_UPDATE" && e.type !== "PROJECT_STATUS_CHANGE" && e.type !== "PROJECT_CREATED" && e.type !== "JOB_POSTED" && e.type !== "USER_JOINED" && e.type !== "LISTING_CREATED" && e.type !== "EVENT_CREATED"
   );
   const statusEvents = feedEvents.filter((e) => e.type === "STATUS_UPDATE");
   const projectStatusChangeEvents = feedEvents.filter((e) => e.type === "PROJECT_STATUS_CHANGE");
