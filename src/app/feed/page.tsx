@@ -15,9 +15,10 @@ export const metadata = {
 export const dynamic = "force-dynamic";
 
 async function FeedContent() {
-  const session = await auth();
+  try {
+    const session = await auth();
 
-  // Fetch daily updates and feed events (milestones)
+    // Fetch daily updates and feed events (milestones)
   // Polls are now part of updates (as an attachment type)
   // Fetch all for SEO indexability - the CombinedFeed component handles "load more" UX
   const [updates, feedEvents] = await Promise.all([
@@ -150,7 +151,8 @@ async function FeedContent() {
       // For event created events, fetch community event info
       const eventCreatedEvents = events.filter(e => e.type === "EVENT_CREATED");
       // For coworking session created events, fetch coworking session info
-      const coworkingSessionCreatedEvents = events.filter(e => e.type === "COWORKING_SESSION_CREATED");
+      // Note: coworkingSessionId field may not exist if migration hasn't been run yet
+      const coworkingSessionCreatedEvents = events.filter(e => e.type === "COWORKING_SESSION_CREATED" && (e as { coworkingSessionId?: string }).coworkingSessionId);
 
       // Fetch users for status updates
       let userMap = new Map<string, { id: string; name: string | null; displayName: string | null; firstName: string | null; lastName: string | null; image: string | null; slug: string | null; headline: string | null; companies: { id: string; name: string; slug: string | null; logo: string | null }[] }>();
@@ -380,57 +382,65 @@ async function FeedContent() {
       }
 
       // Fetch coworking sessions for coworking session created events
+      // Note: This is wrapped in try/catch because the coworkingSessionId field may not exist if migration hasn't been run
       let coworkingSessionMap = new Map<string, { id: string; date: Date; startTime: string; endTime: string | null; venueName: string; venueType: "CAFE" | "COWORKING_SPACE" | "LIBRARY" | "OTHER"; address: string | null; city: string; state: string | null; country: string; maxBuddies: number; description: string | null; host: { id: string; name: string | null; displayName: string | null; firstName: string | null; lastName: string | null; image: string | null; slug: string | null; companies: { id: string; name: string; slug: string | null; logo: string | null }[] }; _count: { buddies: number } }>();
-      if (coworkingSessionCreatedEvents.length > 0) {
-        const sessionIds = Array.from(new Set(coworkingSessionCreatedEvents.map(e => e.coworkingSessionId).filter(Boolean))) as string[];
-        const coworkingSessions = await prisma.coworkingSession.findMany({
-          where: { id: { in: sessionIds } },
-          select: {
-            id: true,
-            date: true,
-            startTime: true,
-            endTime: true,
-            venueName: true,
-            venueType: true,
-            address: true,
-            city: true,
-            state: true,
-            country: true,
-            maxBuddies: true,
-            description: true,
-            host: {
+      try {
+        if (coworkingSessionCreatedEvents.length > 0) {
+          const sessionIds = Array.from(new Set(coworkingSessionCreatedEvents.map(e => (e as { coworkingSessionId?: string }).coworkingSessionId).filter(Boolean))) as string[];
+          if (sessionIds.length > 0) {
+            const coworkingSessions = await prisma.coworkingSession.findMany({
+              where: { id: { in: sessionIds } },
               select: {
                 id: true,
-                name: true,
-                displayName: true,
-                firstName: true,
-                lastName: true,
-                image: true,
-                slug: true,
-                // Include first company with logo for display next to username
-                companies: {
-                  where: { logo: { not: null } },
-                  take: 1,
-                  orderBy: { createdAt: "asc" },
+                date: true,
+                startTime: true,
+                endTime: true,
+                venueName: true,
+                venueType: true,
+                address: true,
+                city: true,
+                state: true,
+                country: true,
+                maxBuddies: true,
+                description: true,
+                host: {
                   select: {
                     id: true,
                     name: true,
+                    displayName: true,
+                    firstName: true,
+                    lastName: true,
+                    image: true,
                     slug: true,
-                    logo: true,
+                    // Include first company with logo for display next to username
+                    companies: {
+                      where: { logo: { not: null } },
+                      take: 1,
+                      orderBy: { createdAt: "asc" },
+                      select: {
+                        id: true,
+                        name: true,
+                        slug: true,
+                        logo: true,
+                      },
+                    },
+                  },
+                },
+                _count: {
+                  select: {
+                    buddies: {
+                      where: { status: "ACCEPTED" },
+                    },
                   },
                 },
               },
-            },
-            _count: {
-              select: {
-                buddies: {
-                  where: { status: "ACCEPTED" },
-                },
-              },
-            },
-          },
-        });
-        coworkingSessionMap = new Map(coworkingSessions.map(s => [s.id, s]));
+            });
+            coworkingSessionMap = new Map(coworkingSessions.map(s => [s.id, s]));
+          }
+        }
+      } catch (err) {
+        // Coworking session feature may not be migrated yet - continue without it
+        console.warn("Could not fetch coworking sessions for feed:", err);
       }
 
       return events.map(event => ({
@@ -444,7 +454,7 @@ async function FeedContent() {
         companyRole: event.type === "JOB_POSTED" && event.companyRoleId ? companyRoleMap.get(event.companyRoleId) || null : null,
         localListing: event.type === "LISTING_CREATED" && event.localListingId ? localListingMap.get(event.localListingId) || null : null,
         event: event.type === "EVENT_CREATED" && event.eventId ? communityEventMap.get(event.eventId) || null : null,
-        coworkingSession: event.type === "COWORKING_SESSION_CREATED" && event.coworkingSessionId ? coworkingSessionMap.get(event.coworkingSessionId) || null : null,
+        coworkingSession: event.type === "COWORKING_SESSION_CREATED" && (event as { coworkingSessionId?: string }).coworkingSessionId ? coworkingSessionMap.get((event as { coworkingSessionId?: string }).coworkingSessionId!) || null : null,
       }));
     }),
   ]);
@@ -492,14 +502,22 @@ async function FeedContent() {
       : false,
   }));
 
-  return (
-    <CombinedFeed
-      updates={updatesWithLikes}
-      feedEvents={feedEventsWithLikes}
-      currentUserId={session?.user?.id}
-      showAuthor={true}
-    />
-  );
+    return (
+      <CombinedFeed
+        updates={updatesWithLikes}
+        feedEvents={feedEventsWithLikes}
+        currentUserId={session?.user?.id}
+        showAuthor={true}
+      />
+    );
+  } catch (error) {
+    console.error("Error loading feed content:", error);
+    return (
+      <div className="text-center py-12">
+        <p className="text-zinc-500">Unable to load feed. Please try refreshing the page.</p>
+      </div>
+    );
+  }
 }
 
 async function TopBuildersSection() {
