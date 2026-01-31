@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, Construction } from "lucide-react";
+import { X, RefreshCw } from "lucide-react";
+import Link from "next/link";
 
-const BANNER_DISMISSED_KEY = "announcement_banner_dismissed_v1";
+const BANNER_DISMISSED_KEY = "announcement_banner_dismissed_v2";
 
 export function AnnouncementBanner() {
   const [isDismissed, setIsDismissed] = useState(true); // Start hidden to prevent flash
@@ -24,16 +25,23 @@ export function AnnouncementBanner() {
   }
 
   return (
-    <div className="relative bg-gradient-to-r from-orange-500 to-amber-500 text-white">
+    <div className="relative bg-gradient-to-r from-sky-500 to-blue-600 text-white">
       <div className="mx-auto max-w-7xl px-4 py-2.5 sm:px-6 lg:px-8">
         <div className="flex items-center justify-center gap-3 text-sm">
-          <Construction className="h-4 w-4 flex-shrink-0" />
+          <RefreshCw className="h-4 w-4 flex-shrink-0" />
           <p className="text-center font-medium">
             <span className="hidden sm:inline">
-              Sorry for the recent 502 errors! We&apos;re updating the app daily to bring you new features.
+              X/Twitter cross-posting updated! Please{" "}
+              <Link href="/settings/platforms" className="underline hover:no-underline font-semibold">
+                reconnect your X account
+              </Link>{" "}
+              to continue posting.
             </span>
             <span className="sm:hidden">
-              Sorry for 502 errors — we&apos;re updating daily!
+              <Link href="/settings/platforms" className="underline hover:no-underline font-semibold">
+                Reconnect X account
+              </Link>{" "}
+              to continue posting.
             </span>
           </p>
           <button

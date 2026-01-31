@@ -8,8 +8,11 @@ import {
 } from './platforms.service';
 import prisma from '@/lib/prisma';
 
-const TWITTER_API_BASE = 'https://api.twitter.com/2';
-const TWITTER_UPLOAD_API = 'https://upload.twitter.com/1.1';
+// X API v2 endpoints (using api.x.com as per current documentation)
+const TWITTER_API_BASE = 'https://api.x.com/2';
+const TWITTER_MEDIA_API = 'https://api.x.com/2/media';
+// OAuth token endpoint still uses api.twitter.com
+const TWITTER_OAUTH_BASE = 'https://api.twitter.com/2/oauth2';
 
 // Character limits (X Pro supports up to 25,000 chars, but we limit to 3000 for cross-posting)
 export const TWITTER_MAX_CHARS = 3000;
@@ -47,8 +50,30 @@ interface TwitterTweet {
   };
 }
 
+// X API v2 media upload response
 interface MediaUploadResponse {
-  media_id_string: string;
+  data: {
+    id: string;
+    media_key?: string;
+    expires_after_secs?: number;
+    processing_info?: {
+      check_after_secs?: number;
+      progress_percent?: number;
+      state: 'pending' | 'in_progress' | 'succeeded' | 'failed';
+      error?: {
+        code: number;
+        name: string;
+        message: string;
+      };
+    };
+    size?: number;
+  };
+  errors?: Array<{
+    title: string;
+    type: string;
+    detail: string;
+    status: number;
+  }>;
 }
 
 /**
@@ -81,7 +106,7 @@ export async function refreshTwitterToken(refreshToken: string): Promise<Platfor
   try {
     const { clientId, clientSecret } = getTwitterCredentials();
 
-    const response = await fetch('https://api.twitter.com/2/oauth2/token', {
+    const response = await fetch(`${TWITTER_OAUTH_BASE}/token`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -96,7 +121,7 @@ export async function refreshTwitterToken(refreshToken: string): Promise<Platfor
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Twitter token refresh failed:', errorText);
+      console.error('X token refresh failed:', response.status, errorText);
       return null;
     }
 
@@ -147,20 +172,33 @@ async function getValidTokens(userId: string): Promise<string | null> {
   const tokens = await getConnectionTokens(userId, SocialPlatform.TWITTER);
 
   if (!tokens) {
+    console.error('[X] No tokens found for user:', userId);
     return null;
   }
 
   // Check if token is expired or expiring within 5 minutes
-  if (tokens.expiresAt && tokens.expiresAt.getTime() - 5 * 60 * 1000 < Date.now()) {
+  const now = Date.now();
+  const expiresAt = tokens.expiresAt?.getTime() || 0;
+  const isExpiringSoon = expiresAt - 5 * 60 * 1000 < now;
+
+  if (tokens.expiresAt && isExpiringSoon) {
+    console.log('[X] Token expired or expiring soon, refreshing...', {
+      expiresAt: tokens.expiresAt,
+      now: new Date(now),
+    });
+
     if (!tokens.refreshToken) {
+      console.error('[X] No refresh token available');
       return null;
     }
 
     const newTokens = await refreshTwitterToken(tokens.refreshToken);
     if (!newTokens) {
+      console.error('[X] Token refresh failed');
       return null;
     }
 
+    console.log('[X] Token refreshed successfully, new expiry:', newTokens.expiresAt);
     await updateConnectionTokens(userId, SocialPlatform.TWITTER, newTokens);
     return newTokens.accessToken;
   }
@@ -169,9 +207,25 @@ async function getValidTokens(userId: string): Promise<string | null> {
 }
 
 /**
- * Upload media to Twitter
- * Twitter API v1.1 is still used for media uploads as v2 doesn't support it directly
- * Note: This requires OAuth 1.0a or OAuth 2.0 with appropriate scopes
+ * Map content type to X API v2 media_type enum
+ */
+function getMediaType(contentType: string): string {
+  const typeMap: Record<string, string> = {
+    'image/jpeg': 'image/jpeg',
+    'image/jpg': 'image/jpeg',
+    'image/png': 'image/png',
+    'image/gif': 'image/png', // GIFs are handled separately for animated content
+    'image/webp': 'image/webp',
+    'image/bmp': 'image/bmp',
+    'image/tiff': 'image/tiff',
+  };
+  return typeMap[contentType.toLowerCase()] || 'image/jpeg';
+}
+
+/**
+ * Upload media to X using API v2
+ * Uses the simple upload endpoint for images under 5MB
+ * Requires OAuth 2.0 with media.write scope
  */
 export async function uploadTwitterMedia(
   accessToken: string,
@@ -188,36 +242,120 @@ export async function uploadTwitterMedia(
     const mediaBuffer = await mediaResponse.arrayBuffer();
     const mediaBase64 = Buffer.from(mediaBuffer).toString('base64');
 
-    // Determine media type from URL or content-type
+    // Determine media type from content-type header
     const contentType = mediaResponse.headers.get('content-type') || 'image/jpeg';
+    const mediaType = getMediaType(contentType);
 
-    // Upload to Twitter using v1.1 media upload endpoint
-    // Note: Twitter API v2 doesn't have a media upload endpoint yet,
-    // so we use the v1.1 endpoint which works with OAuth 2.0 bearer tokens
-    const uploadResponse = await fetch(`${TWITTER_UPLOAD_API}/media/upload.json`, {
+    // Upload to X using v2 media upload endpoint
+    const uploadResponse = await fetch(`${TWITTER_MEDIA_API}/upload`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Type': 'application/json',
       },
-      body: new URLSearchParams({
-        media_data: mediaBase64,
-        media_category: contentType.startsWith('video/') ? 'tweet_video' : 'tweet_image',
+      body: JSON.stringify({
+        media: mediaBase64,
+        media_category: 'tweet_image',
+        media_type: mediaType,
       }),
     });
 
     if (!uploadResponse.ok) {
       const errorText = await uploadResponse.text();
-      console.error('Twitter media upload failed:', errorText);
+      console.error('X media upload failed:', errorText);
+      
+      // Try to parse error for more details
+      try {
+        const errorJson = JSON.parse(errorText);
+        if (errorJson.errors?.length > 0) {
+          console.error('X media upload error details:', errorJson.errors[0]);
+        }
+      } catch {
+        // Error text wasn't JSON, already logged above
+      }
       return null;
     }
 
     const uploadData: MediaUploadResponse = await uploadResponse.json();
-    return uploadData.media_id_string;
+    
+    // Check for errors in response
+    if (uploadData.errors && uploadData.errors.length > 0) {
+      console.error('X media upload returned errors:', uploadData.errors);
+      return null;
+    }
+
+    // Check if media needs processing (for larger files)
+    if (uploadData.data.processing_info) {
+      const processingResult = await waitForMediaProcessing(
+        accessToken,
+        uploadData.data.id
+      );
+      if (!processingResult) {
+        console.error('X media processing failed');
+        return null;
+      }
+    }
+
+    return uploadData.data.id;
   } catch (error) {
-    console.error('Twitter media upload error:', error);
+    console.error('X media upload error:', error);
     return null;
   }
+}
+
+/**
+ * Wait for media processing to complete (for larger files that need server-side processing)
+ */
+async function waitForMediaProcessing(
+  accessToken: string,
+  mediaId: string,
+  maxAttempts = 30
+): Promise<boolean> {
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    try {
+      const statusResponse = await fetch(
+        `${TWITTER_MEDIA_API}/upload?media_id=${mediaId}`,
+        {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      if (!statusResponse.ok) {
+        console.error('Failed to check media processing status');
+        return false;
+      }
+
+      const statusData: MediaUploadResponse = await statusResponse.json();
+      const processingInfo = statusData.data.processing_info;
+
+      if (!processingInfo) {
+        // No processing info means processing is complete
+        return true;
+      }
+
+      if (processingInfo.state === 'succeeded') {
+        return true;
+      }
+
+      if (processingInfo.state === 'failed') {
+        console.error('Media processing failed:', processingInfo.error);
+        return false;
+      }
+
+      // Wait before checking again
+      const waitSeconds = processingInfo.check_after_secs || 2;
+      await new Promise((resolve) => setTimeout(resolve, waitSeconds * 1000));
+    } catch (error) {
+      console.error('Error checking media processing status:', error);
+      return false;
+    }
+  }
+
+  console.error('Media processing timed out');
+  return false;
 }
 
 /**
@@ -285,21 +423,35 @@ export async function postTweet(
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      console.error('Twitter post error:', error);
+      const errorText = await response.text();
+      console.error('X post error:', response.status, errorText);
+      
+      let error;
+      try {
+        error = JSON.parse(errorText);
+      } catch {
+        throw new Error(`X API error (${response.status}): ${errorText}`);
+      }
 
-      // Provide more helpful error messages
+      // Provide more helpful error messages based on status code and error details
+      if (response.status === 403) {
+        // 403 can mean access tier issues or permission problems
+        if (error.detail?.includes('not authorized') || error.title === 'Forbidden') {
+          throw new Error('X API access denied. Your app may need upgraded API access or the user needs to reconnect their account.');
+        }
+        throw new Error('X API access forbidden. Please check your API access tier and app permissions.');
+      }
+      if (response.status === 429 || error.detail?.includes('rate limit')) {
+        throw new Error('X rate limit reached. Please try again later.');
+      }
+      if (response.status === 401 || error.title === 'Unauthorized') {
+        throw new Error('X authentication failed. Please reconnect your account.');
+      }
       if (error.detail?.includes('duplicate')) {
-        throw new Error('This tweet has already been posted (duplicate content)');
-      }
-      if (error.detail?.includes('rate limit')) {
-        throw new Error('Twitter rate limit reached. Please try again later.');
-      }
-      if (error.status === 401 || error.title === 'Unauthorized') {
-        throw new Error('Twitter authentication failed. Please reconnect your account.');
+        throw new Error('This post has already been published (duplicate content)');
       }
 
-      throw new Error(error.detail || error.title || 'Failed to post tweet');
+      throw new Error(error.detail || error.title || `Failed to post to X (${response.status})`);
     }
 
     const { data } = await response.json();
@@ -407,7 +559,7 @@ export async function connectTwitterAccount(
     const redirectUri = `${process.env.NEXTAUTH_URL}/api/platforms/callback/twitter`;
 
     // Exchange code for tokens
-    const tokenResponse = await fetch('https://api.twitter.com/2/oauth2/token', {
+    const tokenResponse = await fetch(`${TWITTER_OAUTH_BASE}/token`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -424,7 +576,7 @@ export async function connectTwitterAccount(
 
     if (!tokenResponse.ok) {
       const errorText = await tokenResponse.text();
-      console.error('Twitter token exchange failed:', errorText);
+      console.error('X token exchange failed:', tokenResponse.status, errorText);
       return false;
     }
 
@@ -466,6 +618,73 @@ export async function connectTwitterAccount(
 }
 
 /**
+ * Test X API connection and diagnose issues
+ * Returns diagnostic info about the connection status
+ */
+export async function diagnoseXConnection(userId: string): Promise<{
+  connected: boolean;
+  hasValidToken: boolean;
+  tokenExpiry: Date | null;
+  scopes: string[];
+  canFetchProfile: boolean;
+  profileData: TwitterUser | null;
+  error?: string;
+}> {
+  try {
+    const tokens = await getConnectionTokens(userId, SocialPlatform.TWITTER);
+    
+    if (!tokens) {
+      return {
+        connected: false,
+        hasValidToken: false,
+        tokenExpiry: null,
+        scopes: [],
+        canFetchProfile: false,
+        profileData: null,
+        error: 'No X connection found for this user',
+      };
+    }
+
+    const accessToken = await getValidTokens(userId);
+    
+    if (!accessToken) {
+      return {
+        connected: true,
+        hasValidToken: false,
+        tokenExpiry: tokens.expiresAt || null,
+        scopes: tokens.scopes || [],
+        canFetchProfile: false,
+        profileData: null,
+        error: 'Token expired and refresh failed',
+      };
+    }
+
+    // Try to fetch user profile to verify token works
+    const profileData = await getTwitterUser(accessToken);
+    
+    return {
+      connected: true,
+      hasValidToken: true,
+      tokenExpiry: tokens.expiresAt || null,
+      scopes: tokens.scopes || [],
+      canFetchProfile: !!profileData,
+      profileData,
+      error: profileData ? undefined : 'Token valid but cannot fetch profile',
+    };
+  } catch (error) {
+    return {
+      connected: false,
+      hasValidToken: false,
+      tokenExpiry: null,
+      scopes: [],
+      canFetchProfile: false,
+      profileData: null,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+}
+
+/**
  * Generate Twitter OAuth authorization URL
  */
 export function getTwitterAuthUrl(state: string, codeChallenge: string): string {
@@ -476,9 +695,9 @@ export function getTwitterAuthUrl(state: string, codeChallenge: string): string 
     response_type: 'code',
     client_id: clientId,
     redirect_uri: redirectUri,
-    // Scopes for reading/writing tweets and refreshing tokens
-    // Media uploads use v1.1 endpoint which works with these scopes
-    scope: 'tweet.read tweet.write users.read offline.access',
+    // Scopes for reading/writing tweets, media uploads, and refreshing tokens
+    // media.write is required for X API v2 media uploads
+    scope: 'tweet.read tweet.write users.read media.write offline.access',
     state,
     code_challenge: codeChallenge,
     code_challenge_method: 'S256',
