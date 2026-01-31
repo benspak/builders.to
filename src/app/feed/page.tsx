@@ -19,9 +19,9 @@ async function FeedContent() {
     const session = await auth();
 
     // Fetch daily updates and feed events (milestones)
-  // Polls are now part of updates (as an attachment type)
-  // Fetch all for SEO indexability - the CombinedFeed component handles "load more" UX
-  const [updates, feedEvents] = await Promise.all([
+    // Polls are now part of updates (as an attachment type)
+    // Fetch all for SEO indexability - the CombinedFeed component handles "load more" UX
+    const [updates, feedEvents] = await Promise.all([
     prisma.dailyUpdate.findMany({
       orderBy: { createdAt: "desc" },
       // Fetch more items for SEO - component will handle pagination UX
@@ -151,8 +151,8 @@ async function FeedContent() {
       // For event created events, fetch community event info
       const eventCreatedEvents = events.filter(e => e.type === "EVENT_CREATED");
       // For coworking session created events, fetch coworking session info
-      // Note: coworkingSessionId field may not exist if migration hasn't been run yet
-      const coworkingSessionCreatedEvents = events.filter(e => e.type === "COWORKING_SESSION_CREATED" && (e as { coworkingSessionId?: string }).coworkingSessionId);
+      // Note: Temporarily disabled until migration is confirmed - filter will be empty
+      const coworkingSessionCreatedEvents: typeof events = [];
 
       // Fetch users for status updates
       let userMap = new Map<string, { id: string; name: string | null; displayName: string | null; firstName: string | null; lastName: string | null; image: string | null; slug: string | null; headline: string | null; companies: { id: string; name: string; slug: string | null; logo: string | null }[] }>();
@@ -382,66 +382,8 @@ async function FeedContent() {
       }
 
       // Fetch coworking sessions for coworking session created events
-      // Note: This is wrapped in try/catch because the coworkingSessionId field may not exist if migration hasn't been run
-      let coworkingSessionMap = new Map<string, { id: string; date: Date; startTime: string; endTime: string | null; venueName: string; venueType: "CAFE" | "COWORKING_SPACE" | "LIBRARY" | "OTHER"; address: string | null; city: string; state: string | null; country: string; maxBuddies: number; description: string | null; host: { id: string; name: string | null; displayName: string | null; firstName: string | null; lastName: string | null; image: string | null; slug: string | null; companies: { id: string; name: string; slug: string | null; logo: string | null }[] }; _count: { buddies: number } }>();
-      try {
-        if (coworkingSessionCreatedEvents.length > 0) {
-          const sessionIds = Array.from(new Set(coworkingSessionCreatedEvents.map(e => (e as { coworkingSessionId?: string }).coworkingSessionId).filter(Boolean))) as string[];
-          if (sessionIds.length > 0) {
-            const coworkingSessions = await prisma.coworkingSession.findMany({
-              where: { id: { in: sessionIds } },
-              select: {
-                id: true,
-                date: true,
-                startTime: true,
-                endTime: true,
-                venueName: true,
-                venueType: true,
-                address: true,
-                city: true,
-                state: true,
-                country: true,
-                maxBuddies: true,
-                description: true,
-                host: {
-                  select: {
-                    id: true,
-                    name: true,
-                    displayName: true,
-                    firstName: true,
-                    lastName: true,
-                    image: true,
-                    slug: true,
-                    // Include first company with logo for display next to username
-                    companies: {
-                      where: { logo: { not: null } },
-                      take: 1,
-                      orderBy: { createdAt: "asc" },
-                      select: {
-                        id: true,
-                        name: true,
-                        slug: true,
-                        logo: true,
-                      },
-                    },
-                  },
-                },
-                _count: {
-                  select: {
-                    buddies: {
-                      where: { status: "ACCEPTED" },
-                    },
-                  },
-                },
-              },
-            });
-            coworkingSessionMap = new Map(coworkingSessions.map(s => [s.id, s]));
-          }
-        }
-      } catch (err) {
-        // Coworking session feature may not be migrated yet - continue without it
-        console.warn("Could not fetch coworking sessions for feed:", err);
-      }
+      // Note: Temporarily disabled until migration is confirmed
+      const coworkingSessionMap = new Map<string, { id: string; date: Date; startTime: string; endTime: string | null; venueName: string; venueType: "CAFE" | "COWORKING_SPACE" | "LIBRARY" | "OTHER"; address: string | null; city: string; state: string | null; country: string; maxBuddies: number; description: string | null; host: { id: string; name: string | null; displayName: string | null; firstName: string | null; lastName: string | null; image: string | null; slug: string | null; companies: { id: string; name: string; slug: string | null; logo: string | null }[] }; _count: { buddies: number } }>();
 
       return events.map(event => ({
         ...event,
@@ -454,53 +396,53 @@ async function FeedContent() {
         companyRole: event.type === "JOB_POSTED" && event.companyRoleId ? companyRoleMap.get(event.companyRoleId) || null : null,
         localListing: event.type === "LISTING_CREATED" && event.localListingId ? localListingMap.get(event.localListingId) || null : null,
         event: event.type === "EVENT_CREATED" && event.eventId ? communityEventMap.get(event.eventId) || null : null,
-        coworkingSession: event.type === "COWORKING_SESSION_CREATED" && (event as { coworkingSessionId?: string }).coworkingSessionId ? coworkingSessionMap.get((event as { coworkingSessionId?: string }).coworkingSessionId!) || null : null,
+        coworkingSession: null, // Temporarily disabled until migration is confirmed
       }));
-    }),
-  ]);
+      }),
+    ]);
 
-  // Get current user's pinned post IDs (to show pin state)
-  const currentUserPinnedIds = session?.user?.id
-    ? await prisma.pinnedPost.findMany({
-        where: { userId: session.user.id },
-        select: { updateId: true },
-      }).then(pins => new Set(pins.map(p => p.updateId)))
-    : new Set<string>();
+    // Get current user's pinned post IDs (to show pin state)
+    const currentUserPinnedIds = session?.user?.id
+      ? await prisma.pinnedPost.findMany({
+          where: { userId: session.user.id },
+          select: { updateId: true },
+        }).then(pins => new Set(pins.map(p => p.updateId)))
+      : new Set<string>();
 
-  // Get current user's poll votes (for updates that have polls)
-  const updatesWithPolls = updates.filter(u => u.pollQuestion && u.pollOptions.length > 0);
-  const pollVotes = session?.user?.id && updatesWithPolls.length > 0
-    ? await prisma.updatePollVote.findMany({
-        where: {
-          userId: session.user.id,
-          updateId: { in: updatesWithPolls.map(u => u.id) },
-        },
-        select: { updateId: true, optionId: true },
-      })
-    : [];
-  const pollVoteMap = new Map(pollVotes.map(v => [v.updateId, v.optionId]));
+    // Get current user's poll votes (for updates that have polls)
+    const updatesWithPolls = updates.filter(u => u.pollQuestion && u.pollOptions.length > 0);
+    const pollVotes = session?.user?.id && updatesWithPolls.length > 0
+      ? await prisma.updatePollVote.findMany({
+          where: {
+            userId: session.user.id,
+            updateId: { in: updatesWithPolls.map(u => u.id) },
+          },
+          select: { updateId: true, optionId: true },
+        })
+      : [];
+    const pollVoteMap = new Map(pollVotes.map(v => [v.updateId, v.optionId]));
 
-  // Transform updates to include like, comment, and poll vote info
-  const updatesWithLikes = updates.map(update => ({
-    ...update,
-    likesCount: update._count.likes,
-    commentsCount: update._count.comments,
-    isLiked: session?.user?.id
-      ? update.likes.some(like => like.userId === session.user.id)
-      : false,
-    isPinned: currentUserPinnedIds.has(update.id),
-    votedOptionId: pollVoteMap.get(update.id) || null,
-  }));
+    // Transform updates to include like, comment, and poll vote info
+    const updatesWithLikes = updates.map(update => ({
+      ...update,
+      likesCount: update._count.likes,
+      commentsCount: update._count.comments,
+      isLiked: session?.user?.id
+        ? update.likes.some(like => like.userId === session.user.id)
+        : false,
+      isPinned: currentUserPinnedIds.has(update.id),
+      votedOptionId: pollVoteMap.get(update.id) || null,
+    }));
 
-  // Transform feed events
-  const feedEventsWithLikes = feedEvents.map(event => ({
-    ...event,
-    likesCount: event._count.likes,
-    commentsCount: event._count.comments,
-    hasLiked: session?.user?.id
-      ? event.likes.some(like => like.userId === session.user.id)
-      : false,
-  }));
+    // Transform feed events
+    const feedEventsWithLikes = feedEvents.map(event => ({
+      ...event,
+      likesCount: event._count.likes,
+      commentsCount: event._count.comments,
+      hasLiked: session?.user?.id
+        ? event.likes.some(like => like.userId === session.user.id)
+        : false,
+    }));
 
     return (
       <CombinedFeed

@@ -266,7 +266,8 @@ export function CombinedFeed({
   // const userJoinedEvents = feedEvents.filter((e) => e.type === "USER_JOINED");
   const listingCreatedEvents = feedEvents.filter((e) => e.type === "LISTING_CREATED");
   const eventCreatedEvents = feedEvents.filter((e) => e.type === "EVENT_CREATED");
-  const coworkingSessionCreatedEvents = feedEvents.filter((e) => e.type === "COWORKING_SESSION_CREATED");
+  // Temporarily disabled until migration is confirmed
+  const coworkingSessionCreatedEvents: typeof feedEvents = [];
 
   // Combine and sort by date
   const feedItems: FeedItem[] = [
