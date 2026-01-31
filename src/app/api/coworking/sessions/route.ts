@@ -306,6 +306,23 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    // Create a feed event for the new coworking session
+    const sessionDateFormatted = sessionDate.toLocaleDateString("en-US", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+    });
+    
+    await prisma.feedEvent.create({
+      data: {
+        type: "COWORKING_SESSION_CREATED",
+        userId: session.user.id,
+        coworkingSessionId: coworkingSession.id,
+        title: `Coworking at ${venueName.trim()}`,
+        description: `${sessionDateFormatted} at ${startTime}${endTime ? ` - ${endTime}` : ""} · ${city.trim()}${state ? `, ${state.trim()}` : ""}, ${country.trim()}${description?.trim() ? ` · ${description.trim()}` : ""}`,
+      },
+    });
+
     return NextResponse.json(coworkingSession, { status: 201 });
   } catch (error) {
     console.error("Error creating coworking session:", error);

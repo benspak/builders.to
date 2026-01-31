@@ -168,7 +168,13 @@ export function SessionsList() {
       ) : (
         <div className="space-y-4">
           {sessions.map((session) => (
-            <SessionCard key={session.id} session={session} />
+            <SessionCard
+              key={session.id}
+              session={session}
+              onDelete={() => {
+                setSessions((prev) => prev.filter((s) => s.id !== session.id));
+              }}
+            />
           ))}
         </div>
       )}

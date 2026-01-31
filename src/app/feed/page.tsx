@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { Loader2, Sparkles } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
-import { CombinedFeed, TopBuilders, OpenJobs, RecentListings, UpcomingEvents } from "@/components/feed";
+import { CombinedFeed, TopBuilders, OpenJobs, RecentListings, UpcomingEvents, OpenCoworkingSessions } from "@/components/feed";
 import { SiteViewsCounter } from "@/components/analytics/site-views-counter";
 import { SidebarAd } from "@/components/ads";
 
@@ -149,6 +149,8 @@ async function FeedContent() {
       const listingCreatedEvents = events.filter(e => e.type === "LISTING_CREATED");
       // For event created events, fetch community event info
       const eventCreatedEvents = events.filter(e => e.type === "EVENT_CREATED");
+      // For coworking session created events, fetch coworking session info
+      const coworkingSessionCreatedEvents = events.filter(e => e.type === "COWORKING_SESSION_CREATED");
 
       // Fetch users for status updates
       let userMap = new Map<string, { id: string; name: string | null; displayName: string | null; firstName: string | null; lastName: string | null; image: string | null; slug: string | null; headline: string | null; companies: { id: string; name: string; slug: string | null; logo: string | null }[] }>();
@@ -377,6 +379,60 @@ async function FeedContent() {
         communityEventMap = new Map(communityEvents.map(e => [e.id, e]));
       }
 
+      // Fetch coworking sessions for coworking session created events
+      let coworkingSessionMap = new Map<string, { id: string; date: Date; startTime: string; endTime: string | null; venueName: string; venueType: "CAFE" | "COWORKING_SPACE" | "LIBRARY" | "OTHER"; address: string | null; city: string; state: string | null; country: string; maxBuddies: number; description: string | null; host: { id: string; name: string | null; displayName: string | null; firstName: string | null; lastName: string | null; image: string | null; slug: string | null; companies: { id: string; name: string; slug: string | null; logo: string | null }[] }; _count: { buddies: number } }>();
+      if (coworkingSessionCreatedEvents.length > 0) {
+        const sessionIds = Array.from(new Set(coworkingSessionCreatedEvents.map(e => e.coworkingSessionId).filter(Boolean))) as string[];
+        const coworkingSessions = await prisma.coworkingSession.findMany({
+          where: { id: { in: sessionIds } },
+          select: {
+            id: true,
+            date: true,
+            startTime: true,
+            endTime: true,
+            venueName: true,
+            venueType: true,
+            address: true,
+            city: true,
+            state: true,
+            country: true,
+            maxBuddies: true,
+            description: true,
+            host: {
+              select: {
+                id: true,
+                name: true,
+                displayName: true,
+                firstName: true,
+                lastName: true,
+                image: true,
+                slug: true,
+                // Include first company with logo for display next to username
+                companies: {
+                  where: { logo: { not: null } },
+                  take: 1,
+                  orderBy: { createdAt: "asc" },
+                  select: {
+                    id: true,
+                    name: true,
+                    slug: true,
+                    logo: true,
+                  },
+                },
+              },
+            },
+            _count: {
+              select: {
+                buddies: {
+                  where: { status: "ACCEPTED" },
+                },
+              },
+            },
+          },
+        });
+        coworkingSessionMap = new Map(coworkingSessions.map(s => [s.id, s]));
+      }
+
       return events.map(event => ({
         ...event,
         user: event.type === "STATUS_UPDATE"
@@ -388,6 +444,7 @@ async function FeedContent() {
         companyRole: event.type === "JOB_POSTED" && event.companyRoleId ? companyRoleMap.get(event.companyRoleId) || null : null,
         localListing: event.type === "LISTING_CREATED" && event.localListingId ? localListingMap.get(event.localListingId) || null : null,
         event: event.type === "EVENT_CREATED" && event.eventId ? communityEventMap.get(event.eventId) || null : null,
+        coworkingSession: event.type === "COWORKING_SESSION_CREATED" && event.coworkingSessionId ? coworkingSessionMap.get(event.coworkingSessionId) || null : null,
       }));
     }),
   ]);
@@ -653,6 +710,61 @@ async function RecentListingsSection() {
   }
 }
 
+async function OpenCoworkingSessionsSection() {
+  try {
+    // Fetch upcoming coworking sessions with available spots
+    const sessions = await prisma.coworkingSession.findMany({
+      where: {
+        date: { gte: new Date(new Date().toDateString()) },
+      },
+      orderBy: [{ date: "asc" }, { startTime: "asc" }],
+      take: 3,
+      select: {
+        id: true,
+        date: true,
+        startTime: true,
+        endTime: true,
+        venueName: true,
+        venueType: true,
+        city: true,
+        state: true,
+        country: true,
+        maxBuddies: true,
+        host: {
+          select: {
+            id: true,
+            name: true,
+            firstName: true,
+            lastName: true,
+            image: true,
+            slug: true,
+          },
+        },
+        _count: {
+          select: {
+            buddies: {
+              where: { status: "ACCEPTED" },
+            },
+          },
+        },
+      },
+    });
+
+    // Calculate spots remaining and filter out full sessions
+    const sessionsWithSpots = sessions
+      .map((session) => ({
+        ...session,
+        spotsRemaining: session.maxBuddies - session._count.buddies,
+      }))
+      .filter((session) => session.spotsRemaining > 0);
+
+    return <OpenCoworkingSessions sessions={sessionsWithSpots} />;
+  } catch (error) {
+    console.error("Error fetching coworking sessions:", error);
+    return null;
+  }
+}
+
 export default function FeedPage() {
   return (
     <div className="relative min-h-screen" style={{ background: "var(--background)" }}>
@@ -807,6 +919,34 @@ export default function FeedPage() {
                 }
               >
                 <SidebarAdSection />
+              </Suspense>
+
+              {/* Open Coworking Sessions Section */}
+              <Suspense
+                fallback={
+                  <div className="rounded-xl border border-zinc-800/50 bg-zinc-900/50 overflow-hidden animate-pulse">
+                    <div className="px-4 py-3 border-b border-zinc-800/50">
+                      <div className="flex items-center gap-2">
+                        <div className="h-8 w-8 bg-zinc-800 rounded-lg" />
+                        <div className="h-5 w-32 bg-zinc-800 rounded" />
+                      </div>
+                    </div>
+                    <div className="divide-y divide-zinc-800/30">
+                      {[1, 2, 3].map((i) => (
+                        <div key={i} className="flex items-start gap-3 px-4 py-3">
+                          <div className="h-10 w-10 bg-zinc-800 rounded-lg" />
+                          <div className="flex-1">
+                            <div className="h-4 w-32 bg-zinc-800 rounded mb-1" />
+                            <div className="h-3 w-16 bg-zinc-800 rounded mb-2" />
+                            <div className="h-3 w-24 bg-zinc-800 rounded" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                }
+              >
+                <OpenCoworkingSessionsSection />
               </Suspense>
 
               {/* Open Jobs Section */}

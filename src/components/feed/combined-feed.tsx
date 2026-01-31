@@ -10,6 +10,7 @@ import { JobPostedCard } from "./job-posted-card";
 import { UserJoinedCard } from "./user-joined-card";
 import { ListingCreatedCard } from "./listing-created-card";
 import { EventCreatedCard } from "./event-created-card";
+import { CoworkingSessionCreatedCard } from "./coworking-session-created-card";
 import { ChevronDown, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -187,6 +188,34 @@ interface FeedEvent {
       companies?: CompanyLogo[];
     };
   } | null;
+  // For coworking session created events
+  coworkingSession?: {
+    id: string;
+    date: Date | string;
+    startTime: string;
+    endTime: string | null;
+    venueName: string;
+    venueType: "CAFE" | "COWORKING_SPACE" | "LIBRARY" | "OTHER";
+    address: string | null;
+    city: string;
+    state: string | null;
+    country: string;
+    maxBuddies: number;
+    description: string | null;
+    host: {
+      id: string;
+      name?: string | null;
+      displayName?: string | null;
+      firstName?: string | null;
+      lastName?: string | null;
+      image?: string | null;
+      slug?: string | null;
+      companies?: CompanyLogo[];
+    };
+    _count?: {
+      buddies: number;
+    };
+  } | null;
 }
 
 type FeedItem =
@@ -198,7 +227,8 @@ type FeedItem =
   | { type: "jobPosted"; data: FeedEvent }
   | { type: "userJoined"; data: FeedEvent }
   | { type: "listingCreated"; data: FeedEvent }
-  | { type: "eventCreated"; data: FeedEvent };
+  | { type: "eventCreated"; data: FeedEvent }
+  | { type: "coworkingSessionCreated"; data: FeedEvent };
 
 interface CombinedFeedProps {
   updates: DailyUpdate[];
@@ -226,7 +256,7 @@ export function CombinedFeed({
   const [isLoading, setIsLoading] = useState(false);
   // Separate different event types
   const milestoneEvents = feedEvents.filter(
-    (e) => e.type !== "STATUS_UPDATE" && e.type !== "PROJECT_STATUS_CHANGE" && e.type !== "PROJECT_CREATED" && e.type !== "JOB_POSTED" && e.type !== "USER_JOINED" && e.type !== "LISTING_CREATED" && e.type !== "EVENT_CREATED"
+    (e) => e.type !== "STATUS_UPDATE" && e.type !== "PROJECT_STATUS_CHANGE" && e.type !== "PROJECT_CREATED" && e.type !== "JOB_POSTED" && e.type !== "USER_JOINED" && e.type !== "LISTING_CREATED" && e.type !== "EVENT_CREATED" && e.type !== "COWORKING_SESSION_CREATED"
   );
   const statusEvents = feedEvents.filter((e) => e.type === "STATUS_UPDATE");
   const projectStatusChangeEvents = feedEvents.filter((e) => e.type === "PROJECT_STATUS_CHANGE");
@@ -236,6 +266,7 @@ export function CombinedFeed({
   // const userJoinedEvents = feedEvents.filter((e) => e.type === "USER_JOINED");
   const listingCreatedEvents = feedEvents.filter((e) => e.type === "LISTING_CREATED");
   const eventCreatedEvents = feedEvents.filter((e) => e.type === "EVENT_CREATED");
+  const coworkingSessionCreatedEvents = feedEvents.filter((e) => e.type === "COWORKING_SESSION_CREATED");
 
   // Combine and sort by date
   const feedItems: FeedItem[] = [
@@ -249,6 +280,7 @@ export function CombinedFeed({
     // ...userJoinedEvents.map((e) => ({ type: "userJoined" as const, data: e })),
     ...listingCreatedEvents.map((e) => ({ type: "listingCreated" as const, data: e })),
     ...eventCreatedEvents.map((e) => ({ type: "eventCreated" as const, data: e })),
+    ...coworkingSessionCreatedEvents.map((e) => ({ type: "coworkingSessionCreated" as const, data: e })),
   ].sort((a, b) => {
     const dateA = new Date(a.data.createdAt).getTime();
     const dateB = new Date(b.data.createdAt).getTime();
@@ -373,6 +405,19 @@ export function CombinedFeed({
           event={{
             ...item.data,
             communityEvent: item.data.event,
+          }}
+          currentUserId={currentUserId}
+        />
+      );
+    }
+
+    if (item.type === "coworkingSessionCreated" && item.data.coworkingSession) {
+      return (
+        <CoworkingSessionCreatedCard
+          key={`coworking-session-${item.data.id}`}
+          event={{
+            ...item.data,
+            coworkingSession: item.data.coworkingSession,
           }}
           currentUserId={currentUserId}
         />

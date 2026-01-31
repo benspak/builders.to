@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import {
   Calendar,
   Clock,
@@ -13,6 +15,9 @@ import {
   BookOpen,
   Check,
   Loader2,
+  MoreHorizontal,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatDistance } from "@/lib/geo";
@@ -59,6 +64,7 @@ interface SessionCardProps {
       };
     }[];
   };
+  onDelete?: () => void;
 }
 
 const venueIcons = {
@@ -75,9 +81,37 @@ const venueLabels = {
   OTHER: "Other",
 };
 
-export function SessionCard({ session }: SessionCardProps) {
+export function SessionCard({ session, onDelete }: SessionCardProps) {
+  const router = useRouter();
   const sessionDate = new Date(session.date);
   const VenueIcon = venueIcons[session.venueType];
+  const [showMenu, setShowMenu] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`/api/coworking/sessions/${session.id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to delete session");
+      }
+
+      onDelete?.();
+      router.refresh();
+    } catch (error) {
+      console.error("Error deleting session:", error);
+      alert(error instanceof Error ? error.message : "Failed to delete session");
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
+      setShowMenu(false);
+    }
+  };
 
   const formatSessionDate = (date: Date) => {
     const today = new Date();
@@ -125,24 +159,93 @@ export function SessionCard({ session }: SessionCardProps) {
           </span>
         </div>
 
-        {/* Status badges */}
-        {session.isHost && (
-          <span className="text-xs text-orange-400 bg-orange-500/10 px-2 py-0.5 rounded-full">
-            Hosting
-          </span>
-        )}
-        {session.userBuddyStatus === "ACCEPTED" && (
-          <span className="flex items-center gap-1 text-xs text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">
-            <Check className="h-3 w-3" />
-            Joined
-          </span>
-        )}
-        {session.userBuddyStatus === "PENDING" && (
-          <span className="flex items-center gap-1 text-xs text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full">
-            <Loader2 className="h-3 w-3" />
-            Pending
-          </span>
-        )}
+        {/* Status badges and menu */}
+        <div className="flex items-center gap-2">
+          {session.isHost && (
+            <span className="text-xs text-orange-400 bg-orange-500/10 px-2 py-0.5 rounded-full">
+              Hosting
+            </span>
+          )}
+          {session.userBuddyStatus === "ACCEPTED" && (
+            <span className="flex items-center gap-1 text-xs text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">
+              <Check className="h-3 w-3" />
+              Joined
+            </span>
+          )}
+          {session.userBuddyStatus === "PENDING" && (
+            <span className="flex items-center gap-1 text-xs text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full">
+              <Loader2 className="h-3 w-3" />
+              Pending
+            </span>
+          )}
+
+          {/* Host actions menu */}
+          {session.isHost && (
+            <div className="relative">
+              <button
+                onClick={() => setShowMenu(!showMenu)}
+                className="p-1 rounded-lg text-zinc-400 hover:text-white hover:bg-white/5 transition-colors"
+              >
+                <MoreHorizontal className="h-4 w-4" />
+              </button>
+
+              {showMenu && (
+                <>
+                  {/* Backdrop to close menu */}
+                  <div
+                    className="fixed inset-0 z-10"
+                    onClick={() => {
+                      setShowMenu(false);
+                      setShowDeleteConfirm(false);
+                    }}
+                  />
+
+                  {/* Menu dropdown */}
+                  <div className="absolute right-0 top-full mt-1 z-20 w-36 rounded-xl border border-white/10 bg-zinc-900 shadow-xl overflow-hidden">
+                    {showDeleteConfirm ? (
+                      <div className="p-3 space-y-2">
+                        <p className="text-xs text-zinc-400">Delete this session?</p>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => setShowDeleteConfirm(false)}
+                            className="flex-1 px-2 py-1 text-xs text-zinc-400 hover:text-white transition-colors"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            onClick={handleDelete}
+                            disabled={isDeleting}
+                            className="flex-1 px-2 py-1 text-xs text-red-400 hover:text-red-300 transition-colors disabled:opacity-50"
+                          >
+                            {isDeleting ? "..." : "Delete"}
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <Link
+                          href={`/coworking/${session.id}/edit`}
+                          className="flex items-center gap-2 px-3 py-2 text-sm text-zinc-300 hover:bg-white/5 transition-colors"
+                          onClick={() => setShowMenu(false)}
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                          Edit
+                        </Link>
+                        <button
+                          onClick={() => setShowDeleteConfirm(true)}
+                          className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-400 hover:bg-white/5 transition-colors"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                          Delete
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Venue */}
