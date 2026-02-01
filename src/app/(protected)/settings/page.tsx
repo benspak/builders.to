@@ -45,6 +45,10 @@ export default async function SettingsPage() {
       image: true,
       // Status
       status: true,
+      // Tech stack & matching
+      techStack: true,
+      interests: true,
+      buildingCategory: true,
       statusUpdatedAt: true,
       // Intent flags
       openToWork: true,

@@ -24,6 +24,8 @@ import {
 import Image from "next/image";
 import { AvatarUpload } from "./avatar-upload";
 import { BackgroundUpload } from "./background-upload";
+import { TechStackEditor } from "@/components/matching/tech-stack-editor";
+import { BuildingCategory } from "@prisma/client";
 
 // Social icons as SVG
 const XIcon = () => (
@@ -93,6 +95,10 @@ interface ProfileFormProps {
     lookingForCofounder: boolean;
     availableForContract: boolean;
     openToMeeting: boolean;
+    // Tech stack & matching
+    techStack: string[];
+    interests: string[];
+    buildingCategory: BuildingCategory | null;
     // Email preferences
     emailPreferences?: {
       dailyDigest: boolean;
@@ -133,6 +139,10 @@ export function ProfileForm({ user }: ProfileFormProps) {
     lookingForCofounder: user.lookingForCofounder ?? false,
     availableForContract: user.availableForContract ?? false,
     openToMeeting: user.openToMeeting ?? false,
+    // Tech stack & matching
+    techStack: user.techStack ?? [],
+    interests: user.interests ?? [],
+    buildingCategory: user.buildingCategory ?? null,
     // Email preferences (default to true if not set)
     dailyDigest: user.emailPreferences?.dailyDigest ?? true,
   });
@@ -720,6 +730,26 @@ export function ProfileForm({ user }: ProfileFormProps) {
             )}
           </label>
         </div>
+      </div>
+
+      {/* Tech Stack & Interests Section */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-3 pb-4 border-b border-white/5">
+          <Code className="h-5 w-5 text-cyan-500" />
+          <div>
+            <h3 className="text-lg font-semibold text-white">Tech Stack & Interests</h3>
+            <p className="text-sm text-zinc-400">Help others find you based on what you build with</p>
+          </div>
+        </div>
+
+        <TechStackEditor
+          techStack={formData.techStack}
+          interests={formData.interests}
+          buildingCategory={formData.buildingCategory}
+          onTechStackChange={(techStack) => setFormData({ ...formData, techStack })}
+          onInterestsChange={(interests) => setFormData({ ...formData, interests })}
+          onCategoryChange={(buildingCategory) => setFormData({ ...formData, buildingCategory })}
+        />
       </div>
 
       {/* Email Preferences Section */}

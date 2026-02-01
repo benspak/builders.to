@@ -115,6 +115,10 @@ export async function GET(
         // Streak data
         currentStreak: true,
         longestStreak: true,
+        // Tech stack & matching
+        techStack: true,
+        interests: true,
+        buildingCategory: true,
         // Email and verification - only include for own profile (private data)
         ...(isOwnProfile && { email: true, emailVerified: true }),
       },
@@ -180,6 +184,10 @@ export async function PATCH(
       lookingForCofounder,
       availableForContract,
       openToMeeting,
+      // Tech stack & matching
+      techStack,
+      interests,
+      buildingCategory,
       // Email preferences
       dailyDigest,
     } = body;
@@ -347,6 +355,10 @@ export async function PATCH(
         ...(typeof lookingForCofounder === 'boolean' && { lookingForCofounder }),
         ...(typeof availableForContract === 'boolean' && { availableForContract }),
         ...(typeof openToMeeting === 'boolean' && { openToMeeting }),
+        // Tech stack & matching - only update if explicitly provided
+        ...(Array.isArray(techStack) && { techStack }),
+        ...(Array.isArray(interests) && { interests }),
+        ...(buildingCategory !== undefined && { buildingCategory: buildingCategory || null }),
       },
       select: {
         id: true,
@@ -380,6 +392,10 @@ export async function PATCH(
         statusUpdatedAt: true,
         currentStreak: true,
         longestStreak: true,
+        // Tech stack & matching
+        techStack: true,
+        interests: true,
+        buildingCategory: true,
       },
     });
 

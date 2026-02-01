@@ -20,15 +20,21 @@ import {
   Star,
   MessageCircle,
   ArrowLeft,
+  Award,
+  Target,
+  Lightbulb,
 } from "lucide-react";
 import { FollowButton, FollowStats, GiftSuccessToast, PeopleAlsoViewed, ProfileViewTracker } from "@/components/profile";
 import { ReportButton } from "@/components/ui/report-button";
 import { ProBadgeWithTooltip } from "@/components/ui/pro-badge";
+import { KarmaBadge } from "@/components/karma";
+import { ProfilePartnerButton } from "@/components/accountability";
 import { Suspense } from "react";
 import { formatRelativeTime, getStatusColor, getStatusLabel, getCategoryColor, getCategoryLabel, getMemberRoleLabel, getMemberRoleColor, getCompanyUrl, formatLocationSlug } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { UpdateForm, UpdateTimeline, PinnedPostsSection } from "@/components/updates";
 import { CompanyCard } from "@/components/companies/company-card";
+import { TechStackDisplay } from "@/components/companies/tech-stack-display";
 import { BuilderCard } from "@/components/profile/builder-card";
 import { LocalListingCard } from "@/components/local/local-listing-card";
 import { Megaphone, Plus } from "lucide-react";
@@ -278,6 +284,12 @@ export default async function SlugPage({ params }: PageProps) {
       // Streak tracking
       currentStreak: true,
       longestStreak: true,
+      // Karma & matching
+      karma: true,
+      karmaLevel: true,
+      techStack: true,
+      interests: true,
+      buildingCategory: true,
       // Pro subscription status
       proSubscription: {
         select: {
@@ -726,10 +738,13 @@ export default async function SlugPage({ params }: PageProps) {
               <div className="mt-4 sm:mt-0 sm:pb-2 flex-1">
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                   <div>
-                    <h1 className="text-2xl sm:text-3xl font-bold text-white flex items-center gap-2">
+                    <h1 className="text-2xl sm:text-3xl font-bold text-white flex items-center gap-2 flex-wrap">
                       {displayName}
                       {user.proSubscription?.status === "ACTIVE" && (
                         <ProBadgeWithTooltip size="lg" />
+                      )}
+                      {user.karma > 0 && (
+                        <KarmaBadge karma={user.karma} level={user.karmaLevel} size="md" />
                       )}
                     </h1>
                     {user.username && (
@@ -802,6 +817,14 @@ export default async function SlugPage({ params }: PageProps) {
                           isFollowing={isFollowing}
                           currentUserId={session?.user?.id}
                         />
+                        {session?.user?.id && (
+                          <ProfilePartnerButton
+                            partnerId={user.id}
+                            partnerName={displayName}
+                            partnerImage={user.image}
+                            partnerSlug={user.slug}
+                          />
+                        )}
                         {session?.user && (
                           <ReportButton
                             contentType="USER"
@@ -888,6 +911,22 @@ export default async function SlugPage({ params }: PageProps) {
                 <div className="pt-4 border-t border-white/5 space-y-3">
                   <h4 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Builder Stats</h4>
 
+                  {/* Karma/Reputation */}
+                  {user.karma > 0 && (
+                    <div className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-purple-500/10 to-transparent border border-purple-500/20">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-500/20">
+                        <Award className="h-4 w-4 text-purple-400" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium text-white flex items-center gap-2">
+                          {user.karma.toLocaleString()} karma
+                          <KarmaBadge karma={user.karma} level={user.karmaLevel} size="sm" />
+                        </div>
+                        <div className="text-xs text-zinc-500">Community reputation</div>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Shipped Projects */}
                   {launchedProjects > 0 && (
                     <div className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-orange-500/10 to-transparent border border-orange-500/20">
@@ -970,6 +1009,51 @@ export default async function SlugPage({ params }: PageProps) {
                 <p className="text-sm text-zinc-400 whitespace-pre-wrap leading-relaxed">
                   {user.bio}
                 </p>
+              </div>
+            )}
+
+            {/* Tech Stack & Interests */}
+            {(user.techStack.length > 0 || user.interests.length > 0 || user.buildingCategory) && (
+              <div className="rounded-2xl border border-white/10 bg-zinc-900/50 backdrop-blur-sm p-6 space-y-4">
+                <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+                  <Code className="h-4 w-4 text-cyan-500" />
+                  Building With
+                </h3>
+
+                {/* Building Category */}
+                {user.buildingCategory && (
+                  <div className="flex items-center gap-2">
+                    <Target className="h-4 w-4 text-zinc-500" />
+                    <span className="text-sm text-zinc-300 capitalize">
+                      {user.buildingCategory.replace(/_/g, " ").toLowerCase()}
+                    </span>
+                  </div>
+                )}
+
+                {/* Tech Stack */}
+                {user.techStack.length > 0 && (
+                  <TechStackDisplay techStack={user.techStack} variant="compact" />
+                )}
+
+                {/* Interests */}
+                {user.interests.length > 0 && (
+                  <div>
+                    <div className="flex items-center gap-2 text-sm text-zinc-400 mb-2">
+                      <Lightbulb className="h-4 w-4" />
+                      <span className="font-medium">Interests</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {user.interests.map((interest) => (
+                        <span
+                          key={interest}
+                          className="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium bg-amber-500/10 text-amber-300 border border-amber-500/20"
+                        >
+                          {interest}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
