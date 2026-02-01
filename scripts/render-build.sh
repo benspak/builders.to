@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Render.com build script
 # This script runs during the build phase on Render
+# Updated: 2026-02-01 - Added fix migration for growth features
 
 set -e
 
