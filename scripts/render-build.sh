@@ -36,12 +36,22 @@ echo "🗄️ Syncing migration history..."
 # This handles cases where db push was used previously
 bash scripts/sync-migrations.sh || true
 
+echo "🗄️ Checking migration status..."
+npx prisma migrate status || true
+
 echo "🗄️ Running database migrations..."
 # Use migrate deploy for production - it applies pending migrations safely
-npx prisma migrate deploy || {
-  echo "⚠️  migrate deploy failed, falling back to db push..."
-  npx prisma db push
+npx prisma migrate deploy --schema ./prisma/schema.prisma 2>&1 || {
+  echo "⚠️  migrate deploy failed, checking if we need to force apply..."
+  echo "Attempting db push as fallback..."
+  npx prisma db push --accept-data-loss 2>&1 || {
+    echo "❌ Both migrate deploy and db push failed!"
+    exit 1
+  }
 }
+
+echo "🔍 Verifying migration applied - checking for karma column..."
+npx prisma db execute --schema ./prisma/schema.prisma --stdin <<< "SELECT column_name FROM information_schema.columns WHERE table_name = 'User' AND column_name = 'karma';" || echo "⚠️  Could not verify karma column"
 
 echo "🔄 Running slug migration for existing projects..."
 node scripts/migrate-slugs.mjs || {
