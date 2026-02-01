@@ -119,6 +119,9 @@ export async function GET(
         techStack: true,
         interests: true,
         buildingCategory: true,
+        // Karma
+        karma: true,
+        karmaLevel: true,
         // Email and verification - only include for own profile (private data)
         ...(isOwnProfile && { email: true, emailVerified: true }),
       },
@@ -396,6 +399,9 @@ export async function PATCH(
         techStack: true,
         interests: true,
         buildingCategory: true,
+        // Karma
+        karma: true,
+        karmaLevel: true,
       },
     });
 
