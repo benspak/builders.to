@@ -316,7 +316,7 @@ export async function POST(request: NextRequest) {
         month: "short",
         day: "numeric",
       });
-      
+
       await prisma.feedEvent.create({
         data: {
           type: "COWORKING_SESSION_CREATED",

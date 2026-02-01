@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { notifyLike } from "@/lib/push-notifications";
 import { updateEngagementBonus } from "@/lib/services/rewards.service";
+import { awardKarmaForUpdateLike } from "@/lib/services/karma.service";
 
 // POST /api/updates/[id]/like - Toggle like on an update
 export async function POST(
@@ -125,6 +126,9 @@ export async function POST(
           contentPreview,
           updateUrl
         ).catch(console.error);
+
+        // Award karma to update owner for receiving a like
+        awardKarmaForUpdateLike(update.userId, updateId, session.user.id).catch(console.error);
       }
 
       // Update engagement bonus (runs async, doesn't block response)

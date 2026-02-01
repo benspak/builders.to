@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { rateLimit, RATE_LIMITS, rateLimitResponse } from "@/lib/rate-limit";
 import { extractMentions } from "@/lib/utils";
 import { notifyNewComment, sendUserPushNotification } from "@/lib/push-notifications";
+import { awardKarmaForComment } from "@/lib/services/karma.service";
 
 /**
  * Helper to find or create a FeedEvent for a project.
@@ -500,6 +501,9 @@ export async function POST(request: NextRequest) {
         projectUrl
       ).catch(console.error);
     }
+
+    // Award karma for posting a comment
+    awardKarmaForComment(session.user.id, comment.id).catch(console.error);
 
     // Extract and process @mentions
     const mentionedSlugs = extractMentions(content);

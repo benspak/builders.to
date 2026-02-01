@@ -5,6 +5,9 @@ import { auth } from "@/lib/auth";
 import { CombinedFeed, TopBuilders, OpenJobs, RecentListings, UpcomingEvents, OpenCoworkingSessions } from "@/components/feed";
 import { SiteViewsCounter } from "@/components/analytics/site-views-counter";
 import { SidebarAd } from "@/components/ads";
+import { KarmaLeaderboard } from "@/components/karma";
+import { BuildingSimilar } from "@/components/matching";
+import { AccountabilityWidget } from "@/components/accountability";
 
 export const metadata = {
   title: "Builders.to Feed – Launch Updates, Milestones & Jobs | Builders.to",
@@ -814,6 +817,9 @@ export default function FeedPage() {
               >
                 <UpcomingEventsSection />
               </Suspense>
+
+              {/* Karma Leaderboard - Growth Feature */}
+              <KarmaLeaderboard limit={5} />
             </div>
           </aside>
 
@@ -936,6 +942,12 @@ export default function FeedPage() {
               >
                 <OpenJobsSection />
               </Suspense>
+
+              {/* Building Similar - Growth Feature */}
+              <BuildingSimilar limit={5} />
+
+              {/* Accountability Partners - Growth Feature */}
+              <AccountabilityWidget />
             </div>
           </aside>
         </div>

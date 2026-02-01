@@ -95,6 +95,15 @@ model User {
   longestStreak    Int       @default(0) // Longest streak ever
   lastActivityDate DateTime? // Last date of activity for streak calculation
 
+  // Building Similar Matching - tech stack and interests for matching
+  techStack        String[] // Technologies (e.g., ["React", "Node.js", "PostgreSQL"])
+  buildingCategory BuildingCategory? // What type of thing they're building
+  interests        String[] // Topics of interest (e.g., ["AI", "SaaS", "Developer Tools"])
+
+  // Karma/Reputation System
+  karma      Int        @default(0) // Total karma points
+  karmaLevel KarmaLevel @default(NEWCOMER)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -183,9 +192,18 @@ model User {
   hostedSessions   CoworkingSession[] @relation("CoworkingHost")
   coworkingBuddies CoworkingBuddy[]
 
+  // Accountability Partners
+  partnershipRequestsSent     AccountabilityPartnership[] @relation("PartnershipRequester")
+  partnershipRequestsReceived AccountabilityPartnership[] @relation("PartnershipPartner")
+  accountabilityCheckIns      AccountabilityCheckIn[]
+
+  // Karma Events
+  karmaEvents KarmaEvent[]
+
   @@index([slug])
   @@index([stripeConnectId])
   @@index([locationSlug])
+  @@index([karma])
 }
 
 model Project {
@@ -315,6 +333,74 @@ enum ProjectStatus {
   LAUNCHED
   PAUSED
   ACQUIRED
+}
+
+// Building Similar Matching - what type of product/company the user is building
+enum BuildingCategory {
+  SAAS
+  MOBILE_APP
+  DEVELOPER_TOOLS
+  ECOMMERCE
+  AI_ML
+  FINTECH
+  HEALTHTECH
+  EDTECH
+  MARKETPLACE
+  AGENCY
+  CONTENT
+  HARDWARE
+  OTHER
+}
+
+// Karma/Reputation levels based on points
+enum KarmaLevel {
+  NEWCOMER // 0-99 karma
+  CONTRIBUTOR // 100-499 karma
+  BUILDER // 500-1999 karma
+  MENTOR // 2000-4999 karma
+  LEGEND // 5000+ karma
+}
+
+// Accountability Partnership status
+enum PartnershipStatus {
+  PENDING // Waiting for acceptance
+  ACTIVE // Partnership is active
+  PAUSED // Temporarily paused
+  ENDED // Partnership ended
+}
+
+// How often accountability partners check in
+enum CheckInFrequency {
+  DAILY
+  WEEKDAYS
+  WEEKLY
+}
+
+// Mood for accountability check-ins
+enum CheckInMood {
+  CRUSHING_IT
+  GOOD
+  OKAY
+  STRUGGLING
+}
+
+// Types of karma events (earning or losing points)
+enum KarmaEventType {
+  // Earning karma
+  UPDATE_POSTED // +5 for posting an update
+  UPDATE_LIKED // +2 when someone likes your update
+  COMMENT_POSTED // +3 for commenting
+  COMMENT_LIKED // +1 when someone likes your comment
+  HELPFUL_COMMENT // +10 for comments marked as helpful
+  PROJECT_LAUNCHED // +25 for launching a project
+  PROJECT_UPVOTED // +5 when someone upvotes your project
+  STREAK_MILESTONE // +10 for 7-day, +25 for 30-day, +50 for 100-day
+  PARTNERSHIP_FORMED // +15 for forming an accountability partnership
+  MENTORSHIP_GIVEN // +20 for helping others (future)
+
+  // Losing karma (moderation)
+  SPAM_REMOVED // -10 for spam content
+  VIOLATION // -25 for community guideline violation
 }
 
 // Predefined milestone types for project lifecycle tracking
@@ -773,11 +859,11 @@ model FeedEvent {
   userId String
 
   // Related entities (polymorphic references)
-  projectId           String?
-  milestoneId         String? @unique // For milestone events
-  companyRoleId       String? @unique // For job posted events
-  localListingId      String? @unique // For listing created events
-  eventId             String? @unique // For event created events
+  projectId      String?
+  milestoneId    String? @unique // For milestone events
+  companyRoleId  String? @unique // For job posted events
+  localListingId String? @unique // For listing created events
+  eventId        String? @unique // For event created events
   // coworkingSessionId  String? @unique // Temporarily disabled until migration is applied to production
 
   // Denormalized data for fast feed rendering
@@ -785,14 +871,15 @@ model FeedEvent {
   description String? @db.Text
 
   // Relations
-  milestone         ProjectMilestone?  @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
-  companyRole       CompanyRole?       @relation(fields: [companyRoleId], references: [id], onDelete: Cascade)
-  localListing      LocalListing?      @relation(fields: [localListingId], references: [id], onDelete: Cascade)
-  event             Event?             @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  milestone     ProjectMilestone?  @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
+  companyRole   CompanyRole?       @relation(fields: [companyRoleId], references: [id], onDelete: Cascade)
+  localListing  LocalListing?      @relation(fields: [localListingId], references: [id], onDelete: Cascade)
+  event         Event?             @relation(fields: [eventId], references: [id], onDelete: Cascade)
   // coworkingSession  CoworkingSession?  @relation(fields: [coworkingSessionId], references: [id], onDelete: Cascade) // Temporarily disabled
-  likes             FeedEventLike[]
-  comments          FeedEventComment[]
-  notifications     Notification[]
+  likes         FeedEventLike[]
+  comments      FeedEventComment[]
+  notifications Notification[]
+  // @@index([coworkingSessionId]) // Temporarily disabled
 
   @@index([createdAt])
   @@index([userId])
@@ -800,7 +887,6 @@ model FeedEvent {
   @@index([companyRoleId])
   @@index([localListingId])
   @@index([eventId])
-  // @@index([coworkingSessionId]) // Temporarily disabled
 }
 
 // Likes on feed events
@@ -897,6 +983,14 @@ enum NotificationType {
   COMMENT_LIKED // Someone liked your comment on a project
   FEED_EVENT_COMMENTED // Someone commented on your feed event (milestone, project, etc.)
   TOKEN_GIFTED // Someone gifted you tokens
+  // Accountability Partners notifications
+  ACCOUNTABILITY_REQUEST // Someone wants to be your accountability partner
+  ACCOUNTABILITY_ACCEPTED // Your accountability partner request was accepted
+  ACCOUNTABILITY_CHECK_IN // Your accountability partner checked in
+  ACCOUNTABILITY_REMINDER // Reminder to check in (if partner already did)
+  // Karma notifications
+  KARMA_MILESTONE // You reached a new karma level
+  COMMENT_MARKED_HELPFUL // Your comment was marked as helpful
 }
 
 // In-app notifications
@@ -1852,9 +1946,9 @@ enum EventRsvpStatus {
 }
 
 model Event {
-  id          String   @id @default(cuid())
+  id          String @id @default(cuid())
   title       String
-  description String   @db.Text
+  description String @db.Text
 
   // Date/time
   startsAt DateTime
@@ -2027,9 +2121,9 @@ model CoworkingSession {
   updatedAt DateTime @updatedAt
 
   // Relations
-  hostId    String
-  host      User             @relation("CoworkingHost", fields: [hostId], references: [id], onDelete: Cascade)
-  buddies   CoworkingBuddy[]
+  hostId  String
+  host    User             @relation("CoworkingHost", fields: [hostId], references: [id], onDelete: Cascade)
+  buddies CoworkingBuddy[]
   // feedEvent FeedEvent? // Temporarily disabled until migration is applied to production
 
   @@index([date, city])
@@ -2053,4 +2147,77 @@ model CoworkingBuddy {
   @@unique([userId, sessionId])
   @@index([sessionId])
   @@index([status])
+}
+
+// ============================================
+// Accountability Partners System
+// ============================================
+
+// Accountability partnerships - pairs of builders who hold each other accountable
+model AccountabilityPartnership {
+  id        String            @id @default(cuid())
+  status    PartnershipStatus @default(PENDING)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  // Partners (requester and recipient)
+  requesterId String
+  requester   User   @relation("PartnershipRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  partnerId   String
+  partner     User   @relation("PartnershipPartner", fields: [partnerId], references: [id], onDelete: Cascade)
+
+  // Partnership settings
+  checkInFrequency CheckInFrequency @default(DAILY)
+  goal             String?          @db.Text // What they're working toward
+  startDate        DateTime         @default(now())
+  endDate          DateTime? // Optional end date for time-boxed partnerships
+
+  // Tracking
+  checkIns AccountabilityCheckIn[]
+
+  @@unique([requesterId, partnerId])
+  @@index([requesterId])
+  @@index([partnerId])
+  @@index([status])
+}
+
+// Check-ins for accountability partnerships
+model AccountabilityCheckIn {
+  id            String                    @id @default(cuid())
+  createdAt     DateTime                  @default(now())
+  partnershipId String
+  partnership   AccountabilityPartnership @relation(fields: [partnershipId], references: [id], onDelete: Cascade)
+  userId        String // Who checked in
+  user          User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  note          String?                   @db.Text // Optional note about progress
+  mood          CheckInMood? // How they're feeling
+
+  @@index([partnershipId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+// ============================================
+// Karma/Reputation System
+// ============================================
+
+// Karma events - history of karma points earned or lost
+model KarmaEvent {
+  id        String         @id @default(cuid())
+  type      KarmaEventType
+  points    Int // Can be positive or negative
+  createdAt DateTime       @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Optional references to what earned/lost karma
+  updateId  String? // If from an update
+  commentId String? // If from a comment
+  projectId String? // If from a project
+  actorId   String? // Who triggered this (e.g., who liked)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([type])
 }

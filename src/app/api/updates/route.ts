@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { rateLimit, RATE_LIMITS, rateLimitResponse } from "@/lib/rate-limit";
 import { extractMentions } from "@/lib/utils";
 import { sendUserPushNotification } from "@/lib/push-notifications";
+import { awardKarmaForUpdate, awardKarmaForStreakMilestone } from "@/lib/services/karma.service";
+import { autoCheckInFromUpdate } from "@/lib/services/accountability.service";
 
 // GET /api/updates - Get updates for a user or global feed
 export async function GET(request: NextRequest) {
@@ -235,6 +237,18 @@ export async function POST(request: NextRequest) {
         },
       }),
     ]);
+
+    // Award karma for posting an update
+    awardKarmaForUpdate(session.user.id, update.id).catch(console.error);
+
+    // Award karma for streak milestones (if crossing 7, 30, or 100 days)
+    const previousStreak = user?.currentStreak || 0;
+    if (newStreak !== previousStreak) {
+      awardKarmaForStreakMilestone(session.user.id, newStreak, previousStreak).catch(console.error);
+    }
+
+    // Auto check-in for accountability partnerships
+    autoCheckInFromUpdate(session.user.id).catch(console.error);
 
     // Extract mentions and create notifications
     const mentionedSlugs = extractMentions(content);
