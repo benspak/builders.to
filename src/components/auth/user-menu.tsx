@@ -4,7 +4,7 @@ import { signOut, useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { LogOut, User, ChevronDown, Settings, Megaphone, Bell, Building2, MapPin, Sun, Moon, HelpCircle, Link2, MessageCircle } from "lucide-react";
+import { LogOut, User, ChevronDown, Settings, Megaphone, Bell, Building2, MapPin, Sun, Moon, HelpCircle, Link2, MessageCircle, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/components/ui/theme-provider";
 
@@ -233,6 +233,16 @@ export function UserMenu() {
             >
               <MapPin className="h-4 w-4" />
               My Listings
+            </Link>
+
+            <Link
+              href="/accountability"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-black/5 dark:hover:bg-white/5"
+              style={{ color: "var(--foreground-muted)" }}
+            >
+              <Users className="h-4 w-4" />
+              My Partners
             </Link>
 
             <Link

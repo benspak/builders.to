@@ -11,42 +11,15 @@ import {
   Flame,
   UserPlus,
   Loader2,
-  Navigation,
-  Filter,
-  Search,
   Handshake,
   Sparkles,
   Target,
   Share2,
-  Copy,
   Check,
 } from "lucide-react";
 import { BuildingCategory } from "@prisma/client";
 import { cn } from "@/lib/utils";
 import { PartnerRequestModal } from "@/components/accountability/partner-request-modal";
-
-interface NearbyUser {
-  id: string;
-  slug: string | null;
-  displayName: string | null;
-  firstName: string | null;
-  lastName: string | null;
-  name: string | null;
-  image: string | null;
-  headline: string | null;
-  city: string | null;
-  state: string | null;
-  country: string | null;
-  currentStreak: number;
-  distanceKm: number;
-  projectCount: number;
-  followerCount: number;
-  isFollowing: boolean;
-  openToWork: boolean;
-  lookingForCofounder: boolean;
-  availableForContract: boolean;
-  openToMeeting: boolean;
-}
 
 interface SimilarUser {
   id: string;
@@ -67,7 +40,7 @@ interface SimilarUser {
   matchReasons: string[];
 }
 
-type DiscoveryTab = "nearby" | "similar" | "accountability";
+type DiscoveryTab = "similar" | "accountability";
 
 interface DiscoverDashboardProps {
   userId: string;
@@ -81,91 +54,14 @@ function getDisplayName(user: { displayName?: string | null; firstName?: string 
   return user.name || "Builder";
 }
 
-function formatDistance(distanceKm: number): string {
-  if (distanceKm < 1) {
-    return `${Math.round(distanceKm * 1000)}m`;
-  }
-  if (distanceKm < 10) {
-    return `${distanceKm.toFixed(1)}km`;
-  }
-  return `${Math.round(distanceKm)}km`;
-}
-
 export function DiscoverDashboard({ userId }: DiscoverDashboardProps) {
-  const [activeTab, setActiveTab] = useState<DiscoveryTab>("nearby");
-  const [nearbyUsers, setNearbyUsers] = useState<NearbyUser[]>([]);
+  const [activeTab, setActiveTab] = useState<DiscoveryTab>("similar");
   const [similarUsers, setSimilarUsers] = useState<SimilarUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingFollow, setLoadingFollow] = useState<string | null>(null);
   const [followingIds, setFollowingIds] = useState<Set<string>>(new Set());
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
-  const [locationError, setLocationError] = useState<string | null>(null);
-  const [radius, setRadius] = useState(50);
-  const [partnerModalUser, setPartnerModalUser] = useState<SimilarUser | NearbyUser | null>(null);
+  const [partnerModalUser, setPartnerModalUser] = useState<SimilarUser | null>(null);
   const [inviteCopied, setInviteCopied] = useState(false);
-
-  // Filters for nearby
-  const [filters, setFilters] = useState({
-    openToWork: false,
-    lookingForCofounder: false,
-    openToMeeting: false,
-  });
-
-  // Get user's location
-  const requestLocation = useCallback(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setUserLocation({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-          });
-          setLocationError(null);
-        },
-        (error) => {
-          console.error("Geolocation error:", error);
-          setLocationError("Unable to get your location. Please enable location services.");
-        },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 }
-      );
-    } else {
-      setLocationError("Geolocation is not supported by your browser.");
-    }
-  }, []);
-
-  // Fetch nearby users
-  const fetchNearbyUsers = useCallback(async () => {
-    if (!userLocation) return;
-
-    setLoading(true);
-    try {
-      const params = new URLSearchParams({
-        latitude: userLocation.lat.toString(),
-        longitude: userLocation.lng.toString(),
-        radius: radius.toString(),
-        limit: "50",
-      });
-
-      if (filters.openToWork) params.append("openToWork", "true");
-      if (filters.lookingForCofounder) params.append("lookingForCofounder", "true");
-      if (filters.openToMeeting) params.append("openToMeeting", "true");
-
-      const response = await fetch(`/api/users/nearby?${params}`);
-      if (response.ok) {
-        const data = await response.json();
-        setNearbyUsers(data.users);
-        // Update following state
-        const followingSet = new Set<string>(
-          data.users.filter((u: NearbyUser) => u.isFollowing).map((u: NearbyUser) => u.id)
-        );
-        setFollowingIds(followingSet);
-      }
-    } catch (error) {
-      console.error("Error fetching nearby users:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [userLocation, radius, filters]);
 
   // Fetch similar users
   const fetchSimilarUsers = useCallback(async () => {
@@ -185,19 +81,8 @@ export function DiscoverDashboard({ userId }: DiscoverDashboardProps) {
 
   // Initial load
   useEffect(() => {
-    if (activeTab === "nearby") {
-      requestLocation();
-    } else if (activeTab === "similar" || activeTab === "accountability") {
-      fetchSimilarUsers();
-    }
-  }, [activeTab, requestLocation, fetchSimilarUsers]);
-
-  // Fetch nearby when location is available
-  useEffect(() => {
-    if (userLocation && activeTab === "nearby") {
-      fetchNearbyUsers();
-    }
-  }, [userLocation, activeTab, fetchNearbyUsers]);
+    fetchSimilarUsers();
+  }, [fetchSimilarUsers]);
 
   const handleFollow = async (targetUserId: string) => {
     setLoadingFollow(targetUserId);
@@ -238,13 +123,10 @@ export function DiscoverDashboard({ userId }: DiscoverDashboardProps) {
     }
   };
 
-  const renderUserCard = (user: NearbyUser | SimilarUser, type: "nearby" | "similar") => {
+  const renderUserCard = (user: SimilarUser) => {
     const displayName = getDisplayName(user);
     const profileUrl = user.slug ? `/${user.slug}` : null;
     const isFollowing = followingIds.has(user.id);
-    const isNearby = type === "nearby";
-    const nearbyUser = user as NearbyUser;
-    const similarUser = user as SimilarUser;
 
     return (
       <div
@@ -288,65 +170,34 @@ export function DiscoverDashboard({ userId }: DiscoverDashboardProps) {
                 </h3>
               </Link>
 
-              {/* Badges */}
-              {isNearby && (
-                <span className="flex items-center gap-1 px-2 py-0.5 text-xs rounded-full bg-blue-500/20 text-blue-400">
-                  <MapPin className="h-3 w-3" />
-                  {formatDistance(nearbyUser.distanceKm)}
-                </span>
-              )}
-
-              {!isNearby && (
-                <span className="px-2 py-0.5 text-xs rounded-full bg-cyan-500/20 text-cyan-400">
-                  {similarUser.similarityScore}% match
-                </span>
-              )}
+              <span className="px-2 py-0.5 text-xs rounded-full bg-cyan-500/20 text-cyan-400">
+                {user.similarityScore}% match
+              </span>
             </div>
 
             {user.headline && (
               <p className="text-sm text-zinc-400 mt-1 line-clamp-1">{user.headline}</p>
             )}
 
-            {/* Location for nearby */}
-            {isNearby && (nearbyUser.city || nearbyUser.country) && (
+            {/* Location */}
+            {(user.city || user.country) && (
               <p className="text-xs text-zinc-500 mt-1 flex items-center gap-1">
                 <MapPin className="h-3 w-3" />
-                {[nearbyUser.city, nearbyUser.country].filter(Boolean).join(", ")}
+                {[user.city, user.country].filter(Boolean).join(", ")}
               </p>
             )}
 
-            {/* Match reasons for similar */}
-            {!isNearby && similarUser.matchReasons.length > 0 && (
+            {/* Match reasons */}
+            {user.matchReasons.length > 0 && (
               <p className="text-xs text-zinc-500 mt-1">
-                {similarUser.matchReasons[0]}
+                {user.matchReasons[0]}
               </p>
             )}
 
-            {/* Intent flags for nearby */}
-            {isNearby && (
+            {/* Tech stack */}
+            {user.techStack.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-2">
-                {nearbyUser.openToMeeting && (
-                  <span className="px-2 py-0.5 text-[10px] rounded-full bg-green-500/20 text-green-400">
-                    Open to meeting
-                  </span>
-                )}
-                {nearbyUser.lookingForCofounder && (
-                  <span className="px-2 py-0.5 text-[10px] rounded-full bg-purple-500/20 text-purple-400">
-                    Looking for cofounder
-                  </span>
-                )}
-                {nearbyUser.openToWork && (
-                  <span className="px-2 py-0.5 text-[10px] rounded-full bg-amber-500/20 text-amber-400">
-                    Open to work
-                  </span>
-                )}
-              </div>
-            )}
-
-            {/* Tech stack for similar */}
-            {!isNearby && similarUser.techStack.length > 0 && (
-              <div className="flex flex-wrap gap-1 mt-2">
-                {similarUser.techStack.slice(0, 4).map((tech) => (
+                {user.techStack.slice(0, 4).map((tech) => (
                   <span
                     key={tech}
                     className="px-2 py-0.5 text-[10px] rounded-full bg-zinc-800 text-zinc-400"
@@ -354,9 +205,9 @@ export function DiscoverDashboard({ userId }: DiscoverDashboardProps) {
                     {tech}
                   </span>
                 ))}
-                {similarUser.techStack.length > 4 && (
+                {user.techStack.length > 4 && (
                   <span className="px-2 py-0.5 text-[10px] rounded-full bg-zinc-800 text-zinc-500">
-                    +{similarUser.techStack.length - 4}
+                    +{user.techStack.length - 4}
                   </span>
                 )}
               </div>
@@ -445,18 +296,6 @@ export function DiscoverDashboard({ userId }: DiscoverDashboardProps) {
         {/* Tabs */}
         <div className="flex items-center gap-2 mb-6 border-b border-white/10 pb-4">
           <button
-            onClick={() => setActiveTab("nearby")}
-            className={cn(
-              "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors",
-              activeTab === "nearby"
-                ? "bg-blue-500/20 text-blue-400"
-                : "text-zinc-500 hover:text-white hover:bg-zinc-800"
-            )}
-          >
-            <MapPin className="h-4 w-4" />
-            Nearby
-          </button>
-          <button
             onClick={() => setActiveTab("similar")}
             className={cn(
               "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors",
@@ -481,117 +320,6 @@ export function DiscoverDashboard({ userId }: DiscoverDashboardProps) {
             Find Partners
           </button>
         </div>
-
-        {/* Nearby Tab */}
-        {activeTab === "nearby" && (
-          <div>
-            {/* Location controls */}
-            {locationError ? (
-              <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-4 mb-6">
-                <p className="text-amber-400 text-sm mb-3">{locationError}</p>
-                <button
-                  onClick={requestLocation}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-amber-500 text-black font-medium hover:bg-amber-400 transition-colors"
-                >
-                  <Navigation className="h-4 w-4" />
-                  Enable Location
-                </button>
-              </div>
-            ) : !userLocation ? (
-              <div className="rounded-xl border border-white/10 bg-zinc-900/50 p-8 mb-6 text-center">
-                <Loader2 className="h-8 w-8 animate-spin text-cyan-500 mx-auto mb-4" />
-                <p className="text-zinc-400">Getting your location...</p>
-              </div>
-            ) : (
-              <>
-                {/* Filters */}
-                <div className="flex flex-wrap items-center gap-3 mb-6">
-                  <div className="flex items-center gap-2">
-                    <Filter className="h-4 w-4 text-zinc-500" />
-                    <span className="text-sm text-zinc-500">Filter:</span>
-                  </div>
-
-                  <select
-                    value={radius}
-                    onChange={(e) => setRadius(parseInt(e.target.value))}
-                    className="px-3 py-1.5 rounded-lg bg-zinc-800 border border-white/10 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                  >
-                    <option value={10}>10 km</option>
-                    <option value={25}>25 km</option>
-                    <option value={50}>50 km</option>
-                    <option value={100}>100 km</option>
-                    <option value={250}>250 km</option>
-                    <option value={500}>500 km</option>
-                  </select>
-
-                  <button
-                    onClick={() => setFilters((f) => ({ ...f, openToMeeting: !f.openToMeeting }))}
-                    className={cn(
-                      "px-3 py-1.5 rounded-lg text-sm transition-colors",
-                      filters.openToMeeting
-                        ? "bg-green-500/20 text-green-400"
-                        : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"
-                    )}
-                  >
-                    Open to Meeting
-                  </button>
-
-                  <button
-                    onClick={() => setFilters((f) => ({ ...f, lookingForCofounder: !f.lookingForCofounder }))}
-                    className={cn(
-                      "px-3 py-1.5 rounded-lg text-sm transition-colors",
-                      filters.lookingForCofounder
-                        ? "bg-purple-500/20 text-purple-400"
-                        : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"
-                    )}
-                  >
-                    Looking for Cofounder
-                  </button>
-
-                  <button
-                    onClick={() => setFilters((f) => ({ ...f, openToWork: !f.openToWork }))}
-                    className={cn(
-                      "px-3 py-1.5 rounded-lg text-sm transition-colors",
-                      filters.openToWork
-                        ? "bg-amber-500/20 text-amber-400"
-                        : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"
-                    )}
-                  >
-                    Open to Work
-                  </button>
-                </div>
-              </>
-            )}
-
-            {/* Results */}
-            {loading ? (
-              <div className="flex items-center justify-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-cyan-500" />
-              </div>
-            ) : nearbyUsers.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-zinc-800 mx-auto mb-4">
-                  <MapPin className="h-8 w-8 text-zinc-600" />
-                </div>
-                <h3 className="text-lg font-medium text-white mb-2">No builders nearby</h3>
-                <p className="text-zinc-500 mb-4">
-                  Try increasing the radius or adjusting your filters
-                </p>
-                <button
-                  onClick={copyInviteLink}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-cyan-500 text-white font-medium hover:bg-cyan-400 transition-colors"
-                >
-                  <Share2 className="h-4 w-4" />
-                  Invite builders to join
-                </button>
-              </div>
-            ) : (
-              <div className="grid md:grid-cols-2 gap-4">
-                {nearbyUsers.map((user) => renderUserCard(user, "nearby"))}
-              </div>
-            )}
-          </div>
-        )}
 
         {/* Similar Tab */}
         {activeTab === "similar" && (
@@ -618,7 +346,7 @@ export function DiscoverDashboard({ userId }: DiscoverDashboardProps) {
               </div>
             ) : (
               <div className="grid md:grid-cols-2 gap-4">
-                {similarUsers.map((user) => renderUserCard(user, "similar"))}
+                {similarUsers.map((user) => renderUserCard(user))}
               </div>
             )}
           </div>
@@ -674,7 +402,7 @@ export function DiscoverDashboard({ userId }: DiscoverDashboardProps) {
               </div>
             ) : (
               <div className="grid md:grid-cols-2 gap-4">
-                {similarUsers.map((user) => renderUserCard(user, "similar"))}
+                {similarUsers.map((user) => renderUserCard(user))}
               </div>
             )}
 
