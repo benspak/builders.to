@@ -8,6 +8,7 @@ import { SidebarAd } from "@/components/ads";
 import { KarmaLeaderboard } from "@/components/karma";
 import { BuildingSimilar } from "@/components/matching";
 import { AccountabilityWidget } from "@/components/accountability";
+import { NearbyBuilders } from "@/components/nearby";
 
 export const metadata = {
   title: "Builders.to Feed – Launch Updates, Milestones & Jobs | Builders.to",
@@ -942,6 +943,9 @@ export default function FeedPage() {
               >
                 <OpenJobsSection />
               </Suspense>
+
+              {/* Nearby Builders - Growth Feature */}
+              <NearbyBuilders limit={5} />
 
               {/* Building Similar - Growth Feature */}
               <BuildingSimilar limit={5} />

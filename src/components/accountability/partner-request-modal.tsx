@@ -2,17 +2,38 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { X, User, Loader2, Users, Calendar, Target } from "lucide-react";
+import { X, User, Loader2, Users, Calendar, Target, Share2, Copy, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+interface TargetUser {
+  id: string;
+  slug: string | null;
+  displayName: string | null;
+  firstName: string | null;
+  lastName: string | null;
+  name: string | null;
+  image: string | null;
+}
+
 interface PartnerRequestModalProps {
-  partnerId: string;
-  partnerName: string;
-  partnerImage: string | null;
-  partnerSlug: string | null;
+  // Support both old and new interfaces
+  partnerId?: string;
+  partnerName?: string;
+  partnerImage?: string | null;
+  partnerSlug?: string | null;
+  // New interface
+  targetUser?: TargetUser;
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => void;
+}
+
+function getDisplayName(user: TargetUser): string {
+  if (user.displayName) return user.displayName;
+  if (user.firstName && user.lastName) {
+    return `${user.firstName} ${user.lastName}`;
+  }
+  return user.name || "Builder";
 }
 
 const frequencyOptions = [
@@ -26,15 +47,34 @@ export function PartnerRequestModal({
   partnerName,
   partnerImage,
   partnerSlug,
+  targetUser,
   isOpen,
   onClose,
   onSuccess,
 }: PartnerRequestModalProps) {
+  // Resolve partner info from either interface
+  const resolvedPartnerId = targetUser?.id || partnerId || "";
+  const resolvedPartnerName = targetUser ? getDisplayName(targetUser) : partnerName || "Builder";
+  const resolvedPartnerImage = targetUser?.image ?? partnerImage ?? null;
+  const resolvedPartnerSlug = targetUser?.slug ?? partnerSlug ?? null;
+
   const [goal, setGoal] = useState("");
   const [frequency, setFrequency] = useState("DAILY");
   const [endDate, setEndDate] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [inviteCopied, setInviteCopied] = useState(false);
+
+  const copyInviteLink = async () => {
+    const inviteUrl = `${window.location.origin}/accountability?invite=true`;
+    try {
+      await navigator.clipboard.writeText(inviteUrl);
+      setInviteCopied(true);
+      setTimeout(() => setInviteCopied(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy:", err);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,7 +86,7 @@ export function PartnerRequestModal({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          partnerId,
+          partnerId: resolvedPartnerId,
           goal: goal.trim() || undefined,
           checkInFrequency: frequency,
           endDate: endDate || undefined,
@@ -108,10 +148,10 @@ export function PartnerRequestModal({
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {/* Partner info */}
           <div className="flex items-center gap-3 p-3 rounded-lg bg-zinc-800/50">
-            {partnerImage ? (
+            {resolvedPartnerImage ? (
               <Image
-                src={partnerImage}
-                alt={partnerName}
+                src={resolvedPartnerImage}
+                alt={resolvedPartnerName}
                 width={48}
                 height={48}
                 className="rounded-lg ring-1 ring-white/10"
@@ -122,9 +162,9 @@ export function PartnerRequestModal({
               </div>
             )}
             <div>
-              <p className="font-medium text-white">{partnerName}</p>
-              {partnerSlug && (
-                <p className="text-sm text-zinc-500">@{partnerSlug}</p>
+              <p className="font-medium text-white">{resolvedPartnerName}</p>
+              {resolvedPartnerSlug && (
+                <p className="text-sm text-zinc-500">@{resolvedPartnerSlug}</p>
               )}
             </div>
           </div>
@@ -216,6 +256,30 @@ export function PartnerRequestModal({
                 <>
                   <Users className="h-5 w-5" />
                   Send Request
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* Invite section */}
+          <div className="pt-4 border-t border-white/10">
+            <p className="text-xs text-zinc-500 text-center mb-3">
+              Know someone who should be on Builders?
+            </p>
+            <button
+              type="button"
+              onClick={copyInviteLink}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-zinc-800 text-zinc-300 hover:bg-zinc-700 transition-colors text-sm"
+            >
+              {inviteCopied ? (
+                <>
+                  <Check className="h-4 w-4 text-green-400" />
+                  <span className="text-green-400">Link copied!</span>
+                </>
+              ) : (
+                <>
+                  <Share2 className="h-4 w-4" />
+                  Invite a friend to be your partner
                 </>
               )}
             </button>
