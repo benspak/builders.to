@@ -23,7 +23,7 @@ echo "🔄 Regenerating Prisma client for production environment..."
 npx prisma generate
 
 echo "🔗 Testing database connection..."
-npx prisma db execute --stdin <<< "SELECT 1;" || echo "⚠️  Database connection test failed"
+npx prisma db execute --schema ./prisma/schema.prisma --stdin <<< "SELECT 1;" || echo "⚠️  Database connection test failed"
 
 echo "🚀 Starting Next.js application on port ${PORT:-3000}..."
 exec npm run start -- -p ${PORT:-3000}
