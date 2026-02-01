@@ -119,6 +119,10 @@ export async function GET(
         techStack: true,
         interests: true,
         buildingCategory: true,
+        // Tech stack & matching
+        techStack: true,
+        interests: true,
+        buildingCategory: true,
         // Karma
         karma: true,
         karmaLevel: true,
@@ -395,6 +399,10 @@ export async function PATCH(
         statusUpdatedAt: true,
         currentStreak: true,
         longestStreak: true,
+        // Tech stack & matching
+        techStack: true,
+        interests: true,
+        buildingCategory: true,
         // Tech stack & matching
         techStack: true,
         interests: true,
