@@ -2,11 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from "react-leaflet";
-import { Loader2, Users, MapPin } from "lucide-react";
+import { Loader2, Users, MapPin, ExternalLink } from "lucide-react";
+import Link from "next/link";
 import "leaflet/dist/leaflet.css";
 
 interface MapUser {
   id: string;
+  slug: string | null;
+  name: string | null;
   latitude: number;
   longitude: number;
   city: string | null;
@@ -138,10 +141,20 @@ export function BuildersMap() {
             >
               <Popup className="builder-popup">
                 <div className="text-center py-1">
-                  <div className="flex items-center justify-center gap-1 text-orange-600 mb-1">
-                    <MapPin className="h-3 w-3" />
-                    <span className="font-medium text-sm">Builder</span>
-                  </div>
+                  {user.slug ? (
+                    <Link 
+                      href={`/${user.slug}`}
+                      className="flex items-center justify-center gap-1 text-orange-600 hover:text-orange-500 transition-colors mb-1"
+                    >
+                      <span className="font-medium text-sm">{user.name || "Builder"}</span>
+                      <ExternalLink className="h-3 w-3" />
+                    </Link>
+                  ) : (
+                    <div className="flex items-center justify-center gap-1 text-orange-600 mb-1">
+                      <MapPin className="h-3 w-3" />
+                      <span className="font-medium text-sm">{user.name || "Builder"}</span>
+                    </div>
+                  )}
                   {(user.city || user.country) && (
                     <p className="text-xs text-zinc-600">
                       {[user.city, user.country].filter(Boolean).join(", ")}

@@ -6,6 +6,8 @@ export const dynamic = "force-dynamic";
 
 interface MapUser {
   id: string;
+  slug: string | null;
+  name: string | null;
   latitude: number;
   longitude: number;
   city: string | null;
@@ -37,6 +39,11 @@ export async function GET() {
       },
       select: {
         id: true,
+        slug: true,
+        name: true,
+        displayName: true,
+        firstName: true,
+        lastName: true,
         latitude: true,
         longitude: true,
         city: true,
@@ -76,8 +83,16 @@ export async function GET() {
         // Apply privacy offset (deterministic based on user ID)
         const offsetCoords = addDeterministicPrivacyOffset(lat, lon, user.id);
 
+        // Determine display name (prefer displayName, then full name, then first name, then name)
+        const displayName = user.displayName 
+          || (user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : null)
+          || user.firstName 
+          || user.name;
+
         mapUsers.push({
           id: user.id,
+          slug: user.slug,
+          name: displayName,
           latitude: offsetCoords.latitude,
           longitude: offsetCoords.longitude,
           city: user.city,
