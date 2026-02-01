@@ -29,13 +29,12 @@ echo "🗄️ Cleaning up deprecated tables..."
 npx prisma db execute --schema ./prisma/schema.prisma --file ./scripts/drop-roast-mvp.sql || true
 
 echo "🗄️ Running pre-migration scripts..."
-# Apply token system schema changes safely before migrations
-npx prisma db execute --schema ./prisma/schema.prisma --file ./scripts/pre-push-token-system.sql || true
-
-echo "🗄️ Syncing migration history..."
-# Mark existing migrations as applied if schema already has those changes
-# This handles cases where db push was used previously
-bash scripts/sync-migrations.sh || true
+# Apply token system schema changes safely before migrations (skip if file doesn't exist)
+if [ -f "./scripts/pre-push-token-system.sql" ]; then
+  npx prisma db execute --schema ./prisma/schema.prisma --file ./scripts/pre-push-token-system.sql || true
+else
+  echo "  Skipping pre-push-token-system.sql (file not found)"
+fi
 
 echo "🗄️ Checking migration status..."
 npx prisma migrate status || true
@@ -43,12 +42,20 @@ npx prisma migrate status || true
 echo "🗄️ Running database migrations..."
 # Use migrate deploy for production - it applies pending migrations safely
 npx prisma migrate deploy --schema ./prisma/schema.prisma 2>&1 || {
-  echo "⚠️  migrate deploy failed, checking if we need to force apply..."
-  echo "Attempting db push as fallback..."
-  npx prisma db push --accept-data-loss 2>&1 || {
-    echo "❌ Both migrate deploy and db push failed!"
-    exit 1
+  echo "⚠️  migrate deploy failed, trying db push..."
+  npx prisma db push --skip-generate 2>&1 || {
+    echo "⚠️  db push also had issues, trying with accept-data-loss..."
+    npx prisma db push --accept-data-loss 2>&1 || {
+      echo "❌ All migration attempts failed!"
+      exit 1
+    }
   }
+}
+
+echo "🗄️ Applying growth features migration (safe - idempotent)..."
+# This script is safe to run multiple times - it uses IF NOT EXISTS patterns
+npx prisma db execute --schema ./prisma/schema.prisma --file ./scripts/apply-growth-features.sql 2>&1 || {
+  echo "⚠️  Growth features SQL had issues, but continuing..."
 }
 
 echo "🔍 Verifying migration applied - checking for karma column..."
