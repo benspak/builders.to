@@ -4,7 +4,7 @@ import { Megaphone, Plus, Loader2 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { PLATFORM_AD_SLOTS, getCurrentAdPriceCents, formatAdPrice } from "@/lib/stripe";
-import { AdCard } from "@/components/ads";
+import { AdsList } from "./ads-list";
 
 export const metadata = {
   title: "My Ads - Builders.to",
@@ -13,7 +13,7 @@ export const metadata = {
 
 export const dynamic = "force-dynamic";
 
-async function AdsList() {
+async function AdsListServer() {
   const session = await auth();
 
   if (!session?.user?.id) {
@@ -78,21 +78,15 @@ async function AdsList() {
     );
   }
 
-  return (
-    <div className="space-y-4">
-      {ads.map((ad) => (
-        <AdCard
-          key={ad.id}
-          ad={{
-            ...ad,
-            startDate: ad.startDate?.toISOString() || null,
-            endDate: ad.endDate?.toISOString() || null,
-            createdAt: ad.createdAt.toISOString(),
-          }}
-        />
-      ))}
-    </div>
-  );
+  // Pass serialized ads to the client component
+  const serializedAds = ads.map((ad) => ({
+    ...ad,
+    startDate: ad.startDate?.toISOString() || null,
+    endDate: ad.endDate?.toISOString() || null,
+    createdAt: ad.createdAt.toISOString(),
+  }));
+
+  return <AdsList initialAds={serializedAds} />;
 }
 
 export default function AdsPage() {
@@ -154,7 +148,7 @@ export default function AdsPage() {
             </div>
           }
         >
-          <AdsList />
+          <AdsListServer />
         </Suspense>
       </div>
     </div>
