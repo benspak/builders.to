@@ -14,3 +14,4 @@ export { EditorsPick } from "./editors-pick";
 export { UserInterviewCTA } from "./user-interview-cta";
 export { RecentListings } from "./recent-listings";
 export { UpcomingEvents } from "./upcoming-events";
+export { TopBuilders } from "./top-builders";
