@@ -188,10 +188,6 @@ model User {
   conversationParticipants ConversationParticipant[]
   sentMessages             Message[]
 
-  // Coworking Buddy Matching
-  hostedSessions   CoworkingSession[] @relation("CoworkingHost")
-  coworkingBuddies CoworkingBuddy[]
-
   // Accountability Partners
   partnershipRequestsSent     AccountabilityPartnership[] @relation("PartnershipRequester")
   partnershipRequestsReceived AccountabilityPartnership[] @relation("PartnershipPartner")
@@ -846,7 +842,6 @@ enum FeedEventType {
   USER_JOINED // A new user signed up
   LISTING_CREATED // A new local listing was created
   EVENT_CREATED // A new community event was created
-  // COWORKING_SESSION_CREATED // Temporarily disabled until migration is applied to production
 }
 
 // Feed events - aggregated activity feed
@@ -864,7 +859,6 @@ model FeedEvent {
   companyRoleId  String? @unique // For job posted events
   localListingId String? @unique // For listing created events
   eventId        String? @unique // For event created events
-  // coworkingSessionId  String? @unique // Temporarily disabled until migration is applied to production
 
   // Denormalized data for fast feed rendering
   title       String // e.g., "shipped v1" or "hit $1k MRR"
@@ -875,11 +869,9 @@ model FeedEvent {
   companyRole   CompanyRole?       @relation(fields: [companyRoleId], references: [id], onDelete: Cascade)
   localListing  LocalListing?      @relation(fields: [localListingId], references: [id], onDelete: Cascade)
   event         Event?             @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  // coworkingSession  CoworkingSession?  @relation(fields: [coworkingSessionId], references: [id], onDelete: Cascade) // Temporarily disabled
   likes         FeedEventLike[]
   comments      FeedEventComment[]
   notifications Notification[]
-  // @@index([coworkingSessionId]) // Temporarily disabled
 
   @@index([createdAt])
   @@index([userId])
@@ -2076,77 +2068,6 @@ model Message {
 
   @@index([conversationId, createdAt])
   @@index([senderId])
-}
-
-// ============================================
-// Coworking Buddy Matching System
-// ============================================
-
-enum VenueType {
-  CAFE
-  COWORKING_SPACE
-  LIBRARY
-  OTHER
-}
-
-enum BuddyStatus {
-  PENDING
-  ACCEPTED
-  DECLINED
-}
-
-model CoworkingSession {
-  id String @id @default(cuid())
-
-  // When
-  date      DateTime @db.Date
-  startTime String // "09:00" format
-  endTime   String? // "17:00" or null for flexible
-
-  // Where
-  venueName String
-  venueType VenueType
-  address   String?
-  city      String
-  state     String?
-  country   String
-  latitude  Float?
-  longitude Float?
-
-  // Details
-  maxBuddies  Int     @default(1)
-  description String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  hostId  String
-  host    User             @relation("CoworkingHost", fields: [hostId], references: [id], onDelete: Cascade)
-  buddies CoworkingBuddy[]
-  // feedEvent FeedEvent? // Temporarily disabled until migration is applied to production
-
-  @@index([date, city])
-  @@index([hostId])
-  @@index([city, country])
-}
-
-model CoworkingBuddy {
-  id        String      @id @default(cuid())
-  status    BuddyStatus @default(PENDING)
-  message   String? // Optional message when requesting to join
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-
-  userId    String
-  sessionId String
-
-  user    User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  session CoworkingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, sessionId])
-  @@index([sessionId])
-  @@index([status])
 }
 
 // ============================================

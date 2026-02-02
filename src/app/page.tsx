@@ -19,7 +19,6 @@ import {
   Map,
   Share2,
   CalendarDays,
-  Coffee,
 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
@@ -124,15 +123,6 @@ export default async function HomePage() {
       color: "violet",
       stats: "Community",
     },
-    {
-      icon: Coffee,
-      title: "Coworking Sessions",
-      description:
-        "Find coworking buddies nearby. Host sessions at cafes or coworking spaces and work alongside fellow builders.",
-      href: "/coworking",
-      color: "amber",
-      stats: "Local",
-    },
   ];
 
   const builderFeatures = [
@@ -164,7 +154,7 @@ export default async function HomePage() {
     {
       icon: MapPin,
       title: "Nearby Discovery",
-      description: "Find builders, events, and coworking sessions within your radius.",
+      description: "Find builders and events within your radius.",
     },
   ];
 

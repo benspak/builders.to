@@ -53,9 +53,8 @@ export default function TermsOfServicePage() {
                 <li>Using AI-powered content generation and analysis tools</li>
                 <li>Cross-posting content to connected social media platforms (Twitter/X, LinkedIn)</li>
                 <li>Hosting and attending events and meetups</li>
-                <li>Creating and joining coworking sessions</li>
                 <li>Sending and receiving direct messages with other builders</li>
-                <li>Discovering nearby builders, events, and coworking sessions</li>
+                <li>Discovering nearby builders and events</li>
               </ul>
             </section>
 
@@ -261,41 +260,7 @@ export default function TermsOfServicePage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">9. Coworking Sessions</h2>
-
-              <h3 className="text-xl font-medium text-white mt-6 mb-3">9.1 Session Hosts</h3>
-              <p className="leading-relaxed mb-4">
-                If you host coworking sessions, you agree to:
-              </p>
-              <ul className="list-disc pl-6 space-y-2">
-                <li>Provide accurate venue and timing information</li>
-                <li>Respond to join requests in a reasonable timeframe</li>
-                <li>Ensure the venue permits groups and has adequate space</li>
-                <li>Cancel or update sessions if plans change</li>
-                <li>Respect venue rules and other patrons</li>
-              </ul>
-
-              <h3 className="text-xl font-medium text-white mt-6 mb-3">9.2 Session Participants</h3>
-              <p className="leading-relaxed mb-4">
-                If you join coworking sessions, you agree to:
-              </p>
-              <ul className="list-disc pl-6 space-y-2">
-                <li>Arrive on time and notify hosts if plans change</li>
-                <li>Be respectful of hosts, other participants, and venue staff</li>
-                <li>Cover your own expenses (food, drinks, venue fees)</li>
-                <li>Maintain a professional and productive environment</li>
-              </ul>
-
-              <h3 className="text-xl font-medium text-white mt-6 mb-3">9.3 Platform Role</h3>
-              <p className="leading-relaxed">
-                Builders.to facilitates coworking session discovery and coordination but is not
-                responsible for the venue, safety, or interactions between participants. All
-                liability rests with hosts and participants.
-              </p>
-            </section>
-
-            <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">10. Direct Messaging</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">9. Direct Messaging</h2>
 
               <h3 className="text-xl font-medium text-white mt-6 mb-3">10.1 Acceptable Use</h3>
               <p className="leading-relaxed mb-4">
@@ -426,7 +391,7 @@ export default function TermsOfServicePage() {
                 WE DO NOT GUARANTEE THE ACCURACY OF TOKEN BALANCES, PRO REWARDS CALCULATIONS,
                 AI-GENERATED CONTENT, OR ANY METRICS DISPLAYED ON THE PLATFORM. AI FEATURES ARE PROVIDED
                 WITHOUT WARRANTIES REGARDING ACCURACY, APPROPRIATENESS, OR FITNESS FOR ANY PURPOSE.
-                WE DO NOT GUARANTEE THE SAFETY, QUALITY, OR OUTCOMES OF EVENTS, COWORKING SESSIONS,
+                WE DO NOT GUARANTEE THE SAFETY, QUALITY, OR OUTCOMES OF EVENTS
                 OR INTERACTIONS RESULTING FROM DIRECT MESSAGING OR NEARBY DISCOVERY FEATURES.
               </p>
             </section>
@@ -440,7 +405,7 @@ export default function TermsOfServicePage() {
                 DATA, USE, GOODWILL, OR OTHER INTANGIBLE LOSSES, RESULTING FROM YOUR USE OF THE
                 SERVICE, INCLUDING BUT NOT LIMITED TO LOSSES RELATED TO THE TOKEN SYSTEM, PRO
                 REWARDS, SERVICE MARKETPLACE TRANSACTIONS, AI-GENERATED CONTENT, OR CROSS-POSTED
-                CONTENT ON THIRD-PARTY PLATFORMS, EVENTS, COWORKING SESSIONS, OR INTERACTIONS
+                CONTENT ON THIRD-PARTY PLATFORMS, EVENTS, OR INTERACTIONS
                 FACILITATED THROUGH DIRECT MESSAGING OR NEARBY DISCOVERY FEATURES.
               </p>
             </section>
@@ -470,7 +435,7 @@ export default function TermsOfServicePage() {
                 <li>Active service orders may be cancelled</li>
                 <li>Active listings and advertisements may be removed</li>
                 <li>Connected platform authorizations will be revoked</li>
-                <li>Hosted events and coworking sessions may be cancelled</li>
+                <li>Hosted events may be cancelled</li>
                 <li>Direct message history may be deleted</li>
               </ul>
               <p className="mt-4">

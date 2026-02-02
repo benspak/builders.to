@@ -50,7 +50,6 @@ export default function PrivacyPolicyPage() {
                 <li><strong className="text-white">Job Postings:</strong> Information about roles and positions you post for your company.</li>
                 <li><strong className="text-white">AI Preferences:</strong> Your interests, tone preferences, and posting style preferences when using AI content features.</li>
                 <li><strong className="text-white">Events:</strong> Event details you create including title, description, date, time, location, and whether events are physical, virtual, or hybrid.</li>
-                <li><strong className="text-white">Coworking Sessions:</strong> Session details including venue name, address, date, time, and maximum participants.</li>
                 <li><strong className="text-white">Direct Messages:</strong> Private messages you send to other users, including text content, images, and GIFs.</li>
               </ul>
 
@@ -60,7 +59,7 @@ export default function PrivacyPolicyPage() {
                 <li><strong className="text-white">Device Information:</strong> Browser type, operating system, and device identifiers.</li>
                 <li><strong className="text-white">Log Data:</strong> IP address, access times, referring URLs, and request data.</li>
                 <li><strong className="text-white">Analytics:</strong> View counts, click tracking, and engagement metrics for projects, listings, and advertisements.</li>
-                <li><strong className="text-white">Browser Geolocation:</strong> When you use nearby features (events, coworking, users), we may request your browser location with your permission to find content within your radius.</li>
+                <li><strong className="text-white">Browser Geolocation:</strong> When you use nearby features (events, users), we may request your browser location with your permission to find content within your radius.</li>
               </ul>
 
               <h3 className="text-xl font-medium text-white mt-6 mb-3">2.3 Information from Third Parties</h3>
@@ -98,8 +97,8 @@ export default function PrivacyPolicyPage() {
                 <li>Protect against fraud, abuse, and policy violations</li>
                 <li>Comply with legal obligations</li>
                 <li>Generate anonymized analytics and statistics</li>
-                <li>Facilitate event RSVPs and coworking session coordination</li>
-                <li>Find nearby users, events, and coworking sessions based on your location</li>
+                <li>Facilitate event RSVPs</li>
+                <li>Find nearby users and events based on your location</li>
                 <li>Enable private messaging between community members</li>
               </ul>
             </section>
@@ -147,7 +146,7 @@ export default function PrivacyPolicyPage() {
               <h2 className="text-2xl font-semibold text-white mb-4">7. Information Sharing</h2>
               <p className="mb-4">We may share your information in the following circumstances:</p>
               <ul className="list-disc pl-6 space-y-2">
-                <li><strong className="text-white">Public Content:</strong> Your profile, projects, companies, updates, comments, service listings, local listings, job postings, events, and coworking sessions are publicly visible to other users and visitors.</li>
+                <li><strong className="text-white">Public Content:</strong> Your profile, projects, companies, updates, comments, service listings, local listings, job postings, and events are publicly visible to other users and visitors.</li>
                 <li><strong className="text-white">Leaderboards:</strong> Token earnings and streak data may appear on public leaderboards.</li>
                 <li><strong className="text-white">Service Providers:</strong> We share information with third-party vendors who assist in operating our services:
                   <ul className="list-disc pl-6 mt-2 space-y-1">
@@ -190,7 +189,7 @@ export default function PrivacyPolicyPage() {
               <p className="mb-4">You have the following rights regarding your information:</p>
               <ul className="list-disc pl-6 space-y-2">
                 <li><strong className="text-white">Access and Update:</strong> You can access and update your profile information through your account settings.</li>
-                <li><strong className="text-white">Delete Content:</strong> You can delete your projects, companies, updates, comments, listings, events, coworking sessions, and direct messages.</li>
+                <li><strong className="text-white">Delete Content:</strong> You can delete your projects, companies, updates, comments, listings, events, and direct messages.</li>
                 <li><strong className="text-white">Account Deletion:</strong> To delete your account entirely, please contact us through our community channels.</li>
                 <li><strong className="text-white">Email Preferences:</strong> You can opt out of daily and weekly digest emails in your settings.</li>
                 <li><strong className="text-white">Push Notifications:</strong> You can disable push notifications through your browser settings or account preferences.</li>
@@ -236,15 +235,14 @@ export default function PrivacyPolicyPage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">12. Events and Coworking Sessions</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">12. Events</h2>
               <p className="leading-relaxed mb-4">
-                When you create or participate in events and coworking sessions:
+                When you create or participate in events:
               </p>
               <ul className="list-disc pl-6 space-y-2">
                 <li><strong className="text-white">Event Information:</strong> Event details including title, description, date, location, and attendee list are publicly visible.</li>
                 <li><strong className="text-white">RSVP Data:</strong> Your RSVP status (Going, Interested, Not Going) is visible to other users viewing the event.</li>
-                <li><strong className="text-white">Coworking Sessions:</strong> Session details and participant lists are publicly visible to facilitate meetups.</li>
-                <li><strong className="text-white">Location Data:</strong> Physical event and coworking session locations are displayed to help users find nearby gatherings. The same ~10 mile privacy offset applies.</li>
+                <li><strong className="text-white">Location Data:</strong> Physical event locations are displayed to help users find nearby gatherings. The same ~10 mile privacy offset applies.</li>
               </ul>
             </section>
 

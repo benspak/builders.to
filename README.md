@@ -61,14 +61,6 @@ A members-only launchpad and community platform for indie hackers and builders. 
 - **Nearby Events** — Discover events within your radius using geolocation
 - **Event Comments** — Threaded discussions on event pages
 
-### ☕ Coworking Sessions
-
-- **Find Coworking Buddies** — Match with nearby builders for focused work sessions
-- **Host Sessions** — Create coworking sessions at cafes, libraries, or coworking spaces
-- **Request to Join** — Request to join sessions, hosts approve participants
-- **Venue Types** — Support for cafes, coworking spaces, libraries, and custom venues
-- **Session Capacity** — Set maximum buddies per session
-
 ### 💬 Direct Messaging
 
 - **Private Conversations** — Send direct messages to other builders
@@ -390,7 +382,6 @@ The database includes 50+ models covering:
 - **Marketplace**: ServiceListing, ServicePortfolio, ServiceOrder
 - **Local**: LocalListing, LocalListingImage, LocalListingComment, LocalListingFlag, LocalListingRating
 - **Events**: Event, EventAttendee, EventComment
-- **Coworking**: CoworkingSession, CoworkingBuddy
 - **Messaging**: Conversation, ConversationParticipant, Message
 - **Tokens**: TokenTransaction
 - **Notifications**: Notification, EmailPreferences, PushSubscription

@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import { useState } from "react";
 import { UserMenu } from "@/components/auth/user-menu";
 import { SearchCommand } from "@/components/ui/search-command";
-import { Plus, Rocket, ChevronDown, Sparkles, Menu, X, MapPin, Megaphone, Building2, Rss, FolderKanban, Globe, Pen, Send, CalendarDays, Coffee, Compass } from "lucide-react";
+import { Plus, Rocket, ChevronDown, Sparkles, Menu, X, MapPin, Megaphone, Building2, Rss, FolderKanban, Globe, Pen, Send, CalendarDays, Compass } from "lucide-react";
 import { BuildersLogo } from "@/components/ui/builders-logo";
 import { cn } from "@/lib/utils";
 
@@ -106,15 +106,6 @@ export function Navbar() {
                     Events
                   </Link>
                   <Link
-                    href="/coworking"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-white/5"
-                    style={{ color: "var(--foreground-muted)" }}
-                  >
-                    <Coffee className="h-3.5 w-3.5 text-amber-400" />
-                    Coworking
-                  </Link>
-                  <Link
                     href="/discover"
                     onClick={() => setMobileMenuOpen(false)}
                     className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-white/5"
@@ -209,15 +200,6 @@ export function Navbar() {
                   >
                     <CalendarDays className="h-3.5 w-3.5 text-violet-400" />
                     Events
-                  </Link>
-                  <Link
-                    href="/coworking"
-                    onClick={() => setLocalOpen(false)}
-                    className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-white/5"
-                    style={{ color: "var(--foreground-muted)" }}
-                  >
-                    <Coffee className="h-3.5 w-3.5 text-amber-400" />
-                    Coworking
                   </Link>
                   <Link
                     href="/map"
@@ -323,15 +305,6 @@ export function Navbar() {
                         <CalendarDays className="h-4 w-4 text-violet-400" />
                         <span>Host Event</span>
                       </Link>
-                      <Link
-                        href="/coworking/new"
-                        onClick={() => setMobileShareOpen(false)}
-                        className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-white/5"
-                        style={{ color: "var(--foreground-muted)" }}
-                      >
-                        <Coffee className="h-4 w-4 text-amber-400" />
-                        <span>Host Coworking</span>
-                      </Link>
                     </div>
                   </>
                 )}
@@ -428,19 +401,6 @@ export function Navbar() {
                         </div>
                       </Link>
 
-                      <Link
-                        href="/coworking/new"
-                        onClick={() => setShareOpen(false)}
-                        className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-zinc-300 transition-colors hover:bg-white/5 hover:text-white"
-                      >
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/10">
-                          <Coffee className="h-4 w-4 text-amber-400" />
-                        </div>
-                        <div>
-                          <div className="font-medium">Host Coworking</div>
-                          <div className="text-xs text-zinc-500">Find coworking buddies nearby</div>
-                        </div>
-                      </Link>
                     </div>
                   </>
                 )}
