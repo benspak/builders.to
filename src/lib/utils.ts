@@ -124,19 +124,19 @@ export function formatRelativeTime(date: Date | string): string {
 export function getStatusColor(status: string): string {
   switch (status) {
     case "IDEA":
-      return "bg-violet-500/20 text-violet-300 border-violet-500/30";
+      return "bg-violet-500/20 text-violet-100 border-violet-500/30";
     case "BUILDING":
-      return "bg-amber-500/20 text-amber-300 border-amber-500/30";
+      return "bg-amber-500/20 text-amber-100 border-amber-500/30";
     case "BETA":
-      return "bg-cyan-500/20 text-cyan-300 border-cyan-500/30";
+      return "bg-cyan-500/20 text-cyan-100 border-cyan-500/30";
     case "LAUNCHED":
-      return "bg-emerald-500/20 text-emerald-300 border-emerald-500/30";
+      return "bg-emerald-500/20 text-emerald-100 border-emerald-500/30";
     case "PAUSED":
-      return "bg-zinc-500/20 text-zinc-300 border-zinc-500/30";
+      return "bg-zinc-500/20 text-zinc-100 border-zinc-500/30";
     case "ACQUIRED":
-      return "bg-fuchsia-500/20 text-fuchsia-300 border-fuchsia-500/30";
+      return "bg-fuchsia-500/20 text-fuchsia-100 border-fuchsia-500/30";
     default:
-      return "bg-zinc-500/20 text-zinc-300 border-zinc-500/30";
+      return "bg-zinc-500/20 text-zinc-100 border-zinc-500/30";
   }
 }
 
@@ -376,12 +376,12 @@ export function validateImageUrl(url: string | null | undefined): string | null 
  */
 export function getAbsoluteImageUrl(url: string | null | undefined): string | null {
   if (!url) return null;
-  
+
   // Already an absolute URL
   if (url.startsWith("http://") || url.startsWith("https://")) {
     return url;
   }
-  
+
   // Relative URL - prepend base URL
   const baseUrl = process.env.NEXTAUTH_URL || "https://builders.to";
   return `${baseUrl}${url.startsWith("/") ? "" : "/"}${url}`;
