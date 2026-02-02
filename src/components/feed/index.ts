@@ -7,7 +7,6 @@ export { UserJoinedCard } from "./user-joined-card";
 export { ListingCreatedCard } from "./listing-created-card";
 export { CoworkingSessionCreatedCard } from "./coworking-session-created-card";
 export { CombinedFeed } from "./combined-feed";
-export { TopBuilders } from "./top-builders";
 export { OpenJobs } from "./open-jobs";
 export { OpenCoworkingSessions } from "./open-coworking-sessions";
 export { FeedEventComments } from "./feed-event-comments";

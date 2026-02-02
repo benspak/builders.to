@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { Loader2, Sparkles } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
-import { CombinedFeed, TopBuilders, OpenJobs, RecentListings, UpcomingEvents, OpenCoworkingSessions } from "@/components/feed";
+import { CombinedFeed, OpenJobs, RecentListings, UpcomingEvents, OpenCoworkingSessions } from "@/components/feed";
 import { SiteViewsCounter } from "@/components/analytics/site-views-counter";
 import { SidebarAd } from "@/components/ads";
 import { KarmaLeaderboard } from "@/components/karma";
@@ -465,90 +465,6 @@ async function FeedContent() {
   }
 }
 
-async function TopBuildersSection() {
-  try {
-    // Fetch top builders with ranking based on:
-    // 1. LAUNCHED projects (owned) - highest weight
-    // 2. LAUNCHED projects (co-built) - medium weight
-    // 3. Streaks - rewards consistent daily engagement
-    const buildersWithStats = await prisma.user.findMany({
-      where: {
-        OR: [
-          { projects: { some: {} } },      // Has at least one owned project
-          { coBuilderOn: { some: {} } },   // Or is a co-builder on at least one project
-        ],
-      },
-      select: {
-        id: true,
-        name: true,
-        displayName: true,
-        firstName: true,
-        lastName: true,
-        image: true,
-        slug: true,
-        headline: true,
-        currentStreak: true,
-        longestStreak: true,
-        projects: {
-          where: { status: "LAUNCHED" },
-          select: { id: true },
-        },
-        coBuilderOn: {
-          where: { project: { status: "LAUNCHED" } },
-          select: { id: true },
-        },
-        _count: {
-          select: {
-            projects: true,
-            coBuilderOn: true,
-          },
-        },
-      },
-    });
-
-    // Calculate ranking score and sort
-    // Score formula: (launched projects * 10) + (co-launched * 5) + (current streak * 2) + longest streak
-    const topBuilders = buildersWithStats
-      .map(builder => {
-        const launchedProjects = builder.projects.length;
-        const coLaunchedProjects = builder.coBuilderOn.length;
-        const currentStreak = builder.currentStreak ?? 0;
-        const longestStreak = builder.longestStreak ?? 0;
-        const rankingScore =
-          (launchedProjects * 10) +
-          (coLaunchedProjects * 5) +
-          (currentStreak * 2) +
-          longestStreak;
-
-        return {
-          id: builder.id,
-          name: builder.name,
-          displayName: builder.displayName,
-          firstName: builder.firstName,
-          lastName: builder.lastName,
-          image: builder.image,
-          slug: builder.slug,
-          headline: builder.headline,
-          currentStreak,
-          longestStreak,
-          launchedProjects,
-          coLaunchedProjects,
-          totalProjects: builder._count.projects + builder._count.coBuilderOn,
-          rankingScore,
-          _count: builder._count,
-        };
-      })
-      .filter(builder => builder.rankingScore > 0)
-      .sort((a, b) => b.rankingScore - a.rankingScore)
-      .slice(0, 5);
-
-    return <TopBuilders builders={topBuilders} />;
-  } catch (error) {
-    console.error("Error fetching top builders:", error);
-    return null;
-  }
-}
-
 async function UpcomingEventsSection() {
   try {
     // Fetch top 3 upcoming public events
@@ -759,36 +675,31 @@ export default function FeedPage() {
 
         {/* Three Column Layout */}
         <div className="flex flex-col xl:flex-row gap-8">
-          {/* Left Sidebar - Sticky and scrollable on desktop */}
+          {/* Left Sidebar */}
           <aside className="xl:w-72 shrink-0 order-1">
-            <div className="xl:sticky xl:top-24 xl:max-h-[calc(100vh-8rem)] xl:overflow-y-auto space-y-6 xl:pb-4">
-              {/* Top Builders Section */}
+            <div className="xl:sticky xl:top-24 space-y-6">
+              {/* Sidebar Ad Section */}
               <Suspense
                 fallback={
                   <div className="rounded-xl border border-zinc-800/50 bg-zinc-900/50 overflow-hidden animate-pulse">
-                    <div className="px-4 py-3 border-b border-zinc-800/50">
-                      <div className="flex items-center gap-2">
-                        <div className="h-8 w-8 bg-zinc-800 rounded-lg" />
-                        <div className="h-5 w-24 bg-zinc-800 rounded" />
-                      </div>
+                    <div className="flex items-center gap-2 px-4 py-3 border-b border-zinc-800/50">
+                      <div className="h-4 w-4 bg-zinc-800 rounded" />
+                      <div className="h-3 w-16 bg-zinc-800 rounded" />
                     </div>
-                    <div className="divide-y divide-zinc-800/30">
-                      {[1, 2, 3, 4, 5].map((i) => (
-                        <div key={i} className="flex items-center gap-3 px-4 py-3">
-                          <div className="h-6 w-6 bg-zinc-800 rounded-md" />
-                          <div className="h-8 w-8 bg-zinc-800 rounded-full" />
-                          <div className="flex-1">
-                            <div className="h-4 w-24 bg-zinc-800 rounded mb-1" />
-                            <div className="h-3 w-16 bg-zinc-800 rounded" />
-                          </div>
-                        </div>
-                      ))}
+                    <div className="p-5">
+                      <div className="w-full h-32 bg-zinc-800 rounded-lg mb-4" />
+                      <div className="h-5 w-3/4 bg-zinc-800 rounded mb-2" />
+                      <div className="h-4 w-full bg-zinc-800 rounded mb-4" />
+                      <div className="h-9 w-full bg-zinc-800 rounded-lg" />
                     </div>
                   </div>
                 }
               >
-                <TopBuildersSection />
+                <SidebarAdSection />
               </Suspense>
+
+              {/* Karma Leaderboard - Top Builders */}
+              <KarmaLeaderboard limit={5} />
 
               {/* Upcoming Events Section */}
               <Suspense
@@ -817,9 +728,6 @@ export default function FeedPage() {
               >
                 <UpcomingEventsSection />
               </Suspense>
-
-              {/* Karma Leaderboard - Growth Feature */}
-              <KarmaLeaderboard limit={5} />
             </div>
           </aside>
 
@@ -836,9 +744,9 @@ export default function FeedPage() {
             </Suspense>
           </main>
 
-          {/* Right Sidebar - Open Jobs */}
+          {/* Right Sidebar */}
           <aside className="xl:w-72 shrink-0 order-2 xl:order-3">
-            <div className="xl:sticky xl:top-24 xl:max-h-[calc(100vh-8rem)] xl:overflow-y-auto space-y-6 xl:pb-4">
+            <div className="xl:sticky xl:top-24 space-y-6">
               {/* Recent Local Listings Section */}
               <Suspense
                 fallback={
@@ -865,26 +773,6 @@ export default function FeedPage() {
                 }
               >
                 <RecentListingsSection />
-              </Suspense>
-
-              {/* Sidebar Ad Section */}
-              <Suspense
-                fallback={
-                  <div className="rounded-xl border border-zinc-800/50 bg-zinc-900/50 overflow-hidden animate-pulse">
-                    <div className="flex items-center gap-2 px-4 py-3 border-b border-zinc-800/50">
-                      <div className="h-4 w-4 bg-zinc-800 rounded" />
-                      <div className="h-3 w-16 bg-zinc-800 rounded" />
-                    </div>
-                    <div className="p-5">
-                      <div className="w-full h-32 bg-zinc-800 rounded-lg mb-4" />
-                      <div className="h-5 w-3/4 bg-zinc-800 rounded mb-2" />
-                      <div className="h-4 w-full bg-zinc-800 rounded mb-4" />
-                      <div className="h-9 w-full bg-zinc-800 rounded-lg" />
-                    </div>
-                  </div>
-                }
-              >
-                <SidebarAdSection />
               </Suspense>
 
               {/* Open Coworking Sessions Section */}
