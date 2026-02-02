@@ -301,6 +301,65 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* North Star Mission */}
+      <section className="relative py-16 sm:py-20">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+          <div className="relative rounded-3xl border border-orange-500/30 bg-gradient-to-br from-orange-500/10 via-amber-500/5 to-transparent p-8 sm:p-12 overflow-hidden">
+            {/* Background glow */}
+            <div className="absolute -top-20 -right-20 h-40 w-40 rounded-full bg-orange-500/20 blur-3xl" />
+            <div className="absolute -bottom-20 -left-20 h-40 w-40 rounded-full bg-amber-500/20 blur-3xl" />
+            
+            <div className="relative text-center">
+              {/* Badge */}
+              <div className="inline-flex items-center gap-2 rounded-full bg-orange-500/20 border border-orange-500/30 px-4 py-1.5 text-sm font-medium text-orange-400 mb-6">
+                <Target className="h-4 w-4" />
+                <span>Our North Star</span>
+              </div>
+              
+              {/* Main Goal */}
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4">
+                Connect{" "}
+                <span className="gradient-text">1 Million Builders</span>
+              </h2>
+              <p className="text-xl sm:text-2xl text-zinc-300 font-medium mb-8">
+                by the year 2050
+              </p>
+              
+              {/* Progress Bar */}
+              <div className="max-w-md mx-auto mb-6">
+                <div className="flex items-center justify-between text-sm mb-2">
+                  <span className="text-zinc-400">Progress</span>
+                  <span className="text-orange-400 font-semibold">
+                    {((stats.userCount / 1000000) * 100).toFixed(3)}%
+                  </span>
+                </div>
+                <div className="h-3 rounded-full bg-zinc-800 overflow-hidden">
+                  <div 
+                    className="h-full rounded-full bg-gradient-to-r from-orange-500 to-amber-500 transition-all duration-1000"
+                    style={{ width: `${Math.max((stats.userCount / 1000000) * 100, 0.1)}%` }}
+                  />
+                </div>
+              </div>
+              
+              {/* Current Count */}
+              <div className="flex items-center justify-center gap-3">
+                <Users className="h-6 w-6 text-orange-400" />
+                <span className="text-2xl sm:text-3xl font-bold text-white">
+                  {stats.userCount.toLocaleString()}
+                </span>
+                <span className="text-lg text-zinc-400">/ 1,000,000 builders</span>
+              </div>
+              
+              {/* Call to Action */}
+              <p className="text-zinc-400 mt-6 max-w-lg mx-auto">
+                Every builder who joins brings us closer to our mission. 
+                Be part of the movement.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Trusted By Section */}
       <section className="relative py-12 border-y border-zinc-800/50">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
