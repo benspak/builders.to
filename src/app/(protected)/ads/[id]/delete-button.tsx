@@ -4,16 +4,25 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2, Loader2 } from "lucide-react";
 
+type AdStatus = "DRAFT" | "PENDING_PAYMENT" | "ACTIVE" | "EXPIRED" | "CANCELLED";
+
 interface DeleteAdButtonProps {
   adId: string;
+  status?: AdStatus;
+  daysRemaining?: number | null;
 }
 
-export function DeleteAdButton({ adId }: DeleteAdButtonProps) {
+export function DeleteAdButton({ adId, status, daysRemaining }: DeleteAdButtonProps) {
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = async () => {
-    if (!window.confirm("Are you sure you want to delete this ad?")) return;
+    const isActiveAd = status === "ACTIVE" && daysRemaining !== null && daysRemaining !== undefined && daysRemaining > 0;
+    const confirmMessage = isActiveAd
+      ? `This will remove your ad content. Your ad slot is still valid for ${daysRemaining} more days - you can create a new ad to use it. Continue?`
+      : "Are you sure you want to delete this ad?";
+
+    if (!window.confirm(confirmMessage)) return;
 
     setIsDeleting(true);
     try {

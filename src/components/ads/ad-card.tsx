@@ -41,32 +41,35 @@ interface AdCardProps {
   onDelete?: (id: string) => void;
 }
 
-const statusConfig: Record<AdStatus, { label: string; color: string; icon: React.ElementType }> = {
-  DRAFT: {
-    label: "Draft",
-    color: "bg-zinc-500/10 text-zinc-400 border-zinc-500/30",
-    icon: Edit2
-  },
-  PENDING_PAYMENT: {
-    label: "Pending Payment",
-    color: "bg-amber-500/10 text-amber-400 border-amber-500/30",
-    icon: Clock
-  },
-  ACTIVE: {
-    label: "Active",
-    color: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
-    icon: CheckCircle
-  },
-  EXPIRED: {
-    label: "Expired",
-    color: "bg-zinc-500/10 text-zinc-500 border-zinc-500/30",
-    icon: Clock
-  },
-  CANCELLED: {
-    label: "Cancelled",
-    color: "bg-red-500/10 text-red-400 border-red-500/30",
-    icon: XCircle
-  },
+const getStatusConfig = (status: AdStatus, isAdRemoved: boolean): { label: string; color: string; icon: React.ElementType } => {
+  const baseConfig: Record<AdStatus, { label: string; color: string; icon: React.ElementType }> = {
+    DRAFT: {
+      label: "Draft",
+      color: "bg-zinc-500/10 text-zinc-400 border-zinc-500/30",
+      icon: Edit2
+    },
+    PENDING_PAYMENT: {
+      label: "Pending Payment",
+      color: "bg-amber-500/10 text-amber-400 border-amber-500/30",
+      icon: Clock
+    },
+    ACTIVE: {
+      label: isAdRemoved ? "Slot Active" : "Active",
+      color: isAdRemoved ? "bg-amber-500/10 text-amber-400 border-amber-500/30" : "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
+      icon: isAdRemoved ? AlertCircle : CheckCircle
+    },
+    EXPIRED: {
+      label: "Expired",
+      color: "bg-zinc-500/10 text-zinc-500 border-zinc-500/30",
+      icon: Clock
+    },
+    CANCELLED: {
+      label: "Cancelled",
+      color: "bg-red-500/10 text-red-400 border-red-500/30",
+      icon: XCircle
+    },
+  };
+  return baseConfig[status];
 };
 
 export function AdCard({ ad, onDelete }: AdCardProps) {
@@ -74,7 +77,8 @@ export function AdCard({ ad, onDelete }: AdCardProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
 
-  const status = statusConfig[ad.status];
+  const isAdRemoved = ad.title === "[Ad Removed]";
+  const status = getStatusConfig(ad.status, isAdRemoved);
   const StatusIcon = status.icon;
 
   const getDaysRemaining = () => {
@@ -87,7 +91,12 @@ export function AdCard({ ad, onDelete }: AdCardProps) {
   };
 
   const handleDelete = async () => {
-    if (!window.confirm("Are you sure you want to delete this ad?")) return;
+    const isActiveAd = ad.status === "ACTIVE" && daysRemaining !== null && daysRemaining > 0;
+    const confirmMessage = isActiveAd
+      ? "This will remove your ad content. Your ad slot is still valid for " + daysRemaining + " more days - you can create a new ad to use it. Continue?"
+      : "Are you sure you want to delete this ad?";
+
+    if (!window.confirm(confirmMessage)) return;
 
     setIsDeleting(true);
     try {
@@ -125,10 +134,18 @@ export function AdCard({ ad, onDelete }: AdCardProps) {
     }
   };
 
-  const canEdit = ad.status === "DRAFT" || ad.status === "PENDING_PAYMENT";
-  const canDelete = ad.status !== "ACTIVE";
-  const canPay = ad.status === "DRAFT" || ad.status === "PENDING_PAYMENT";
   const daysRemaining = getDaysRemaining();
+  const isWithinPaidPeriod = daysRemaining !== null && daysRemaining > 0;
+
+  // Can edit if: draft/pending OR (active/expired but still within paid period)
+  const canEdit = ad.status === "DRAFT" ||
+    ad.status === "PENDING_PAYMENT" ||
+    ((ad.status === "ACTIVE" || ad.status === "EXPIRED") && isWithinPaidPeriod);
+
+  // Can delete any ad now (active ads will have content cleared, others will be deleted)
+  const canDelete = true;
+
+  const canPay = ad.status === "DRAFT" || ad.status === "PENDING_PAYMENT";
 
   return (
     <div className="rounded-xl border border-zinc-800/50 bg-zinc-900/50 overflow-hidden hover:border-zinc-700/50 transition-all">
@@ -171,7 +188,7 @@ export function AdCard({ ad, onDelete }: AdCardProps) {
 
               {/* Title */}
               <h3 className="text-sm font-semibold text-white truncate">
-                {ad.title}
+                {isAdRemoved ? "No ad content - click Edit to add" : ad.title}
               </h3>
 
               {/* Stats */}
@@ -265,6 +282,17 @@ export function AdCard({ ad, onDelete }: AdCardProps) {
                 </>
               )}
             </button>
+          )}
+
+          {/* CTA for removed ads to add new content */}
+          {isAdRemoved && isWithinPaidPeriod && (
+            <Link
+              href={`/ads/${ad.id}/edit`}
+              className="mt-3 inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 transition-all"
+            >
+              <Edit2 className="h-4 w-4" />
+              Add Ad Content ({daysRemaining} days left)
+            </Link>
           )}
         </div>
       </div>

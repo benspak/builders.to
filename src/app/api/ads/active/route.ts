@@ -19,6 +19,10 @@ export async function GET(request: Request) {
         status: "ACTIVE",
         startDate: { lte: now },
         endDate: { gt: now },
+        // Exclude cleared/removed ads (content deleted but slot still valid)
+        NOT: {
+          title: "[Ad Removed]",
+        },
       },
       select: {
         id: true,

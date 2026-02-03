@@ -84,10 +84,20 @@ export async function PUT(request: Request, { params }: RouteParams) {
       );
     }
 
-    // Don't allow editing active or expired ads (only draft/pending)
-    if (existingAd.status === "ACTIVE" || existingAd.status === "EXPIRED") {
+    // Allow editing if:
+    // 1. Ad is DRAFT or PENDING_PAYMENT (not yet paid)
+    // 2. Ad is ACTIVE and still within the paid period (endDate hasn't passed)
+    // 3. Ad is EXPIRED but still within the original paid period (endDate hasn't passed)
+    const now = new Date();
+    const isWithinPaidPeriod = existingAd.endDate && existingAd.endDate > now;
+    const canEdit =
+      existingAd.status === "DRAFT" ||
+      existingAd.status === "PENDING_PAYMENT" ||
+      ((existingAd.status === "ACTIVE" || existingAd.status === "EXPIRED") && isWithinPaidPeriod);
+
+    if (!canEdit) {
       return NextResponse.json(
-        { error: "Cannot edit an ad that is currently running or has expired" },
+        { error: "Cannot edit an ad whose paid period has expired. Please purchase a new ad slot." },
         { status: 400 }
       );
     }
@@ -172,19 +182,54 @@ export async function DELETE(request: Request, { params }: RouteParams) {
       );
     }
 
-    // Don't allow deleting active ads (non-refundable once running)
-    if (existingAd.status === "ACTIVE") {
-      return NextResponse.json(
-        { error: "Cannot delete an ad that is currently running. Contact support for assistance." },
-        { status: 400 }
-      );
+    const now = new Date();
+    const isWithinPaidPeriod = existingAd.endDate && existingAd.endDate > now;
+
+    // For unpaid ads (DRAFT, PENDING_PAYMENT), delete entirely
+    if (existingAd.status === "DRAFT" || existingAd.status === "PENDING_PAYMENT") {
+      await prisma.advertisement.delete({
+        where: { id },
+      });
+      return NextResponse.json({ success: true });
     }
 
-    await prisma.advertisement.delete({
-      where: { id },
-    });
+    // For ACTIVE ads within paid period, clear the content but keep the slot
+    // This allows users to create a new ad on the same purchased slot
+    if (existingAd.status === "ACTIVE" && isWithinPaidPeriod) {
+      await prisma.advertisement.update({
+        where: { id },
+        data: {
+          title: "[Ad Removed]",
+          description: null,
+          imageUrl: null,
+          linkUrl: "https://builders.to",
+          ctaText: "Learn More",
+          // Keep status as ACTIVE so slot remains reserved until endDate
+        },
+      });
+      return NextResponse.json({ success: true, cleared: true });
+    }
 
-    return NextResponse.json({ success: true });
+    // For EXPIRED ads or ads past their paid period, delete entirely
+    if (existingAd.status === "EXPIRED" || !isWithinPaidPeriod) {
+      await prisma.advertisement.delete({
+        where: { id },
+      });
+      return NextResponse.json({ success: true });
+    }
+
+    // CANCELLED ads can be deleted
+    if (existingAd.status === "CANCELLED") {
+      await prisma.advertisement.delete({
+        where: { id },
+      });
+      return NextResponse.json({ success: true });
+    }
+
+    return NextResponse.json(
+      { error: "Cannot delete this ad" },
+      { status: 400 }
+    );
   } catch (error) {
     console.error("Error deleting ad:", error);
     return NextResponse.json(

@@ -36,8 +36,16 @@ export default async function EditAdPage({ params }: PageProps) {
     notFound();
   }
 
-  // Can only edit draft or pending payment ads
-  if (ad.status === "ACTIVE" || ad.status === "EXPIRED") {
+  // Check if within paid period for active/expired ads
+  const now = new Date();
+  const isWithinPaidPeriod = ad.endDate && ad.endDate > now;
+
+  // Can edit if: draft/pending OR (active/expired but still within paid period)
+  const canEdit = ad.status === "DRAFT" ||
+    ad.status === "PENDING_PAYMENT" ||
+    ((ad.status === "ACTIVE" || ad.status === "EXPIRED") && isWithinPaidPeriod);
+
+  if (!canEdit) {
     redirect(`/ads/${id}`);
   }
 

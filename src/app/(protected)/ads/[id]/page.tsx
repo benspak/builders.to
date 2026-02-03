@@ -29,37 +29,42 @@ interface PageProps {
   params: Promise<{ id: string }>;
 }
 
-const statusConfig = {
-  DRAFT: {
-    label: "Draft",
-    color: "bg-zinc-500/10 text-zinc-400 border-zinc-500/30",
-    icon: Edit2,
-    description: "This ad is a draft. Complete payment to activate it."
-  },
-  PENDING_PAYMENT: {
-    label: "Pending Payment",
-    color: "bg-amber-500/10 text-amber-400 border-amber-500/30",
-    icon: Clock,
-    description: "Payment is being processed. Your ad will be active soon."
-  },
-  ACTIVE: {
-    label: "Active",
-    color: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
-    icon: CheckCircle,
-    description: "Your ad is currently running on the Builder Feed."
-  },
-  EXPIRED: {
-    label: "Expired",
-    color: "bg-zinc-500/10 text-zinc-500 border-zinc-500/30",
-    icon: Clock,
-    description: "This ad has expired. Create a new ad to continue advertising."
-  },
-  CANCELLED: {
-    label: "Cancelled",
-    color: "bg-red-500/10 text-red-400 border-red-500/30",
-    icon: XCircle,
-    description: "This ad was cancelled."
-  },
+const getStatusConfig = (status: string, daysRemaining: number | null, isAdRemoved: boolean) => {
+  const baseConfig = {
+    DRAFT: {
+      label: "Draft",
+      color: "bg-zinc-500/10 text-zinc-400 border-zinc-500/30",
+      icon: Edit2,
+      description: "This ad is a draft. Complete payment to activate it."
+    },
+    PENDING_PAYMENT: {
+      label: "Pending Payment",
+      color: "bg-amber-500/10 text-amber-400 border-amber-500/30",
+      icon: Clock,
+      description: "Payment is being processed. Your ad will be active soon."
+    },
+    ACTIVE: {
+      label: isAdRemoved ? "Slot Active" : "Active",
+      color: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
+      icon: CheckCircle,
+      description: isAdRemoved
+        ? `Your ad content was removed, but your slot is still active for ${daysRemaining} more days. Edit to add new content!`
+        : "Your ad is currently running on the Builder Feed."
+    },
+    EXPIRED: {
+      label: "Expired",
+      color: "bg-zinc-500/10 text-zinc-500 border-zinc-500/30",
+      icon: Clock,
+      description: "This ad has expired. Create a new ad to continue advertising."
+    },
+    CANCELLED: {
+      label: "Cancelled",
+      color: "bg-red-500/10 text-red-400 border-red-500/30",
+      icon: XCircle,
+      description: "This ad was cancelled."
+    },
+  };
+  return baseConfig[status as keyof typeof baseConfig] || baseConfig.DRAFT;
 };
 
 export default async function AdDetailPage({ params }: PageProps) {
@@ -113,12 +118,6 @@ export default async function AdDetailPage({ params }: PageProps) {
   const availableSlots = Math.max(0, PLATFORM_AD_SLOTS - activeAdsCount);
   const isSoldOut = availableSlots === 0;
 
-  const status = statusConfig[ad.status];
-  const StatusIcon = status.icon;
-  const canEdit = ad.status === "DRAFT" || ad.status === "PENDING_PAYMENT";
-  const canPay = ad.status === "DRAFT" || ad.status === "PENDING_PAYMENT";
-  const canDelete = ad.status !== "ACTIVE";
-
   const getDaysRemaining = () => {
     if (!ad.endDate) return null;
     const now = new Date();
@@ -128,6 +127,21 @@ export default async function AdDetailPage({ params }: PageProps) {
   };
 
   const daysRemaining = getDaysRemaining();
+  const isWithinPaidPeriod = daysRemaining !== null && daysRemaining > 0;
+  const isAdRemoved = ad.title === "[Ad Removed]";
+
+  const status = getStatusConfig(ad.status, daysRemaining, isAdRemoved);
+  const StatusIcon = status.icon;
+
+  // Can edit if: draft/pending OR (active/expired but still within paid period)
+  const canEdit = ad.status === "DRAFT" ||
+    ad.status === "PENDING_PAYMENT" ||
+    ((ad.status === "ACTIVE" || ad.status === "EXPIRED") && isWithinPaidPeriod);
+
+  const canPay = ad.status === "DRAFT" || ad.status === "PENDING_PAYMENT";
+
+  // Can delete any ad (active ads will have content cleared, others fully deleted)
+  const canDelete = true;
 
   return (
     <div className="relative min-h-screen bg-zinc-950">
@@ -194,7 +208,7 @@ export default async function AdDetailPage({ params }: PageProps) {
               </Link>
             )}
             {canDelete && (
-              <DeleteAdButton adId={ad.id} />
+              <DeleteAdButton adId={ad.id} status={ad.status} daysRemaining={daysRemaining} />
             )}
           </div>
         </div>
