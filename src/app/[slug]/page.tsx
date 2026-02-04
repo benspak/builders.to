@@ -24,7 +24,7 @@ import {
   Target,
   Lightbulb,
 } from "lucide-react";
-import { FollowButton, FollowStats, GiftSuccessToast, PeopleAlsoViewed, ProfileViewTracker } from "@/components/profile";
+import { DMButton, FollowButton, FollowStats, GiftSuccessToast, PeopleAlsoViewed, ProfileViewTracker } from "@/components/profile";
 import { ReportButton } from "@/components/ui/report-button";
 import { ProBadgeWithTooltip } from "@/components/ui/pro-badge";
 import { KarmaBadge } from "@/components/karma";
@@ -815,6 +815,10 @@ export default async function SlugPage({ params }: PageProps) {
                         <FollowButton
                           userId={user.id}
                           isFollowing={isFollowing}
+                          currentUserId={session?.user?.id}
+                        />
+                        <DMButton
+                          userId={user.id}
                           currentUserId={session?.user?.id}
                         />
                         {session?.user?.id && (
