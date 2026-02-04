@@ -70,6 +70,8 @@ export default async function SettingsPage() {
 
   // Calculate profile completeness
   const completeness = calculateProfileCompleteness({
+    username: user.username,
+    image: user.image,
     displayName: user.displayName,
     city: user.city,
     country: user.country,

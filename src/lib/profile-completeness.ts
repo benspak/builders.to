@@ -21,13 +21,32 @@ export interface ProfileCompletenessResult {
 
 // Define profile fields with weights
 // Note: featuredVideo, intentFlag, and multipleSocials are NOT required for completeness
+// Note: username and image are REQUIRED for core features like sharing projects
 export const PROFILE_FIELDS: ProfileField[] = [
-  // Essential fields (higher weight) - 60 points total
+  // Required fields (highest weight) - must be filled to use core features
+  {
+    key: "username",
+    label: "Username",
+    description: "Set your unique username",
+    weight: 15,
+    category: "essential",
+    icon: "AtSign",
+  },
+  {
+    key: "image",
+    label: "Profile Photo",
+    description: "Upload a profile photo",
+    weight: 15,
+    category: "essential",
+    icon: "Camera",
+  },
+
+  // Essential fields (higher weight)
   {
     key: "headline",
     label: "Headline",
     description: "Add a tagline about yourself",
-    weight: 20,
+    weight: 15,
     category: "essential",
     icon: "FileText",
   },
@@ -35,7 +54,7 @@ export const PROFILE_FIELDS: ProfileField[] = [
     key: "bio",
     label: "Bio",
     description: "Tell the community about yourself",
-    weight: 20,
+    weight: 15,
     category: "essential",
     icon: "AlignLeft",
   },
@@ -43,7 +62,7 @@ export const PROFILE_FIELDS: ProfileField[] = [
     key: "location",
     label: "Location",
     description: "Add your city and country",
-    weight: 20,
+    weight: 15,
     category: "essential",
     icon: "MapPin",
   },
@@ -51,17 +70,17 @@ export const PROFILE_FIELDS: ProfileField[] = [
     key: "socialLink",
     label: "Social Link",
     description: "Connect at least one social profile",
-    weight: 20,
+    weight: 15,
     category: "essential",
     icon: "Link",
   },
 
-  // Important fields (medium weight) - 20 points total
+  // Important fields (medium weight)
   {
     key: "displayName",
     label: "Display Name",
     description: "Set a custom display name",
-    weight: 10,
+    weight: 5,
     category: "important",
     icon: "User",
   },
@@ -69,7 +88,7 @@ export const PROFILE_FIELDS: ProfileField[] = [
     key: "websiteUrl",
     label: "Website",
     description: "Link your personal website or portfolio",
-    weight: 5,
+    weight: 3,
     category: "important",
     icon: "Globe",
   },
@@ -77,13 +96,15 @@ export const PROFILE_FIELDS: ProfileField[] = [
     key: "status",
     label: "Status",
     description: "Share what you're currently working on",
-    weight: 5,
+    weight: 2,
     category: "important",
     icon: "MessageCircle",
   },
 ];
 
 export interface UserProfileData {
+  username?: string | null;
+  image?: string | null;
   displayName?: string | null;
   city?: string | null;
   country?: string | null;
@@ -162,6 +183,12 @@ export function calculateProfileCompleteness(user: UserProfileData): ProfileComp
 
 function checkFieldComplete(fieldKey: string, user: UserProfileData): boolean {
   switch (fieldKey) {
+    case "username":
+      return Boolean(user.username?.trim());
+
+    case "image":
+      return Boolean(user.image?.trim());
+
     case "headline":
       return Boolean(user.headline?.trim());
 
