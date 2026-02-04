@@ -19,6 +19,8 @@ import {
   Trophy,
   Target,
   Zap,
+  AtSign,
+  Camera,
 } from "lucide-react";
 import {
   ProfileCompletenessResult,
@@ -40,6 +42,8 @@ const iconMap: Record<string, React.ElementType> = {
   Play,
   Briefcase,
   Users,
+  AtSign,
+  Camera,
 };
 
 interface ProfileCompletenessProps {

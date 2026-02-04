@@ -610,6 +610,26 @@ export async function connectTwitterAccount(
     // Save connection
     await upsertConnection(userId, SocialPlatform.TWITTER, tokens, profile);
 
+    // Sync username to User record if not already set
+    // This ensures users who connect Twitter after signup get their username populated
+    const existingUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { username: true, twitterUrl: true },
+    });
+
+    if (!existingUser?.username && user.username) {
+      await prisma.user.update({
+        where: { id: userId },
+        data: {
+          username: user.username,
+          // Also set twitterUrl if not already set
+          ...(!existingUser?.twitterUrl && {
+            twitterUrl: `https://x.com/${user.username}`,
+          }),
+        },
+      });
+    }
+
     return true;
   } catch (error) {
     console.error('Twitter connect error:', error);

@@ -114,6 +114,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
 
   const [formData, setFormData] = useState({
     email: user.email || "",
+    username: user.username || "",
     slug: user.slug || "",
     displayName: user.displayName || "",
     city: user.city || "",
@@ -255,6 +256,34 @@ export function ProfileForm({ user }: ProfileFormProps) {
           currentBackground={formData.profileBackgroundImage || null}
           onBackgroundChange={(url) => setFormData({ ...formData, profileBackgroundImage: url || "" })}
         />
+      </div>
+
+      {/* Username */}
+      <div className="p-4 rounded-xl bg-gradient-to-r from-orange-500/5 to-amber-500/5 border border-orange-500/20">
+        <label htmlFor="username" className="flex items-center gap-2 text-sm font-medium text-zinc-300 mb-2">
+          <AtSign className="h-4 w-4 text-orange-500" />
+          Username
+          <span className="text-xs text-orange-400 font-normal">(Required)</span>
+        </label>
+        <div className="relative">
+          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500">@</span>
+          <input
+            id="username"
+            type="text"
+            maxLength={15}
+            placeholder="your_username"
+            value={formData.username}
+            onChange={(e) => {
+              // Only allow alphanumeric and underscores
+              const value = e.target.value.replace(/[^a-zA-Z0-9_]/g, '');
+              setFormData({ ...formData, username: value });
+            }}
+            className="input pl-9"
+          />
+        </div>
+        <p className="mt-2 text-xs text-zinc-500">
+          {formData.username.length}/15 characters - Your unique username on Builders.to. Only letters, numbers, and underscores allowed.
+        </p>
       </div>
 
       {/* Display Name */}

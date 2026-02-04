@@ -166,6 +166,7 @@ export async function PATCH(
     const {
       // Note: email updates now go through the verification flow (/api/email/verify/send)
       // Direct email updates via this endpoint are no longer supported
+      username: customUsername,
       slug: customSlug,
       displayName,
       city,
@@ -206,6 +207,48 @@ export async function PATCH(
     });
 
     let slug = currentUser?.slug;
+    let username = currentUser?.username;
+
+    // Handle custom username if provided
+    if (customUsername !== undefined) {
+      const trimmedUsername = customUsername?.trim();
+
+      if (trimmedUsername) {
+        // Validate username format: alphanumeric and underscores only (like Twitter/X handles)
+        // Must be 1-15 characters (Twitter's limit)
+        const usernameRegex = /^[a-zA-Z0-9_]{1,15}$/;
+        if (!usernameRegex.test(trimmedUsername)) {
+          return NextResponse.json(
+            { error: "Username can only contain letters, numbers, and underscores, and must be 1-15 characters" },
+            { status: 400 }
+          );
+        }
+
+        // Check for uniqueness (case-insensitive, only if different from current)
+        if (trimmedUsername.toLowerCase() !== currentUser?.username?.toLowerCase()) {
+          const existingUser = await prisma.user.findFirst({
+            where: {
+              username: {
+                equals: trimmedUsername,
+                mode: 'insensitive',
+              },
+            },
+          });
+
+          if (existingUser && existingUser.id !== id) {
+            return NextResponse.json(
+              { error: "This username is already taken" },
+              { status: 400 }
+            );
+          }
+        }
+
+        username = trimmedUsername;
+      } else {
+        // Allow clearing username by passing empty string
+        username = null;
+      }
+    }
 
     // Handle custom slug if provided
     if (customSlug !== undefined) {
@@ -332,6 +375,8 @@ export async function PATCH(
       where: { id },
       data: {
         slug,
+        // Update username if it was changed
+        ...(customUsername !== undefined && { username }),
         // Note: email updates now go through verification flow
         // Update image if provided (allow null to clear)
         ...(image !== undefined && { image: image?.trim() || null }),
