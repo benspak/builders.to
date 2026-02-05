@@ -208,18 +208,25 @@ async function getValidTokens(userId: string): Promise<string | null> {
 
 /**
  * Map content type to X API v2 media_type enum
+ * Supported types per X API v2: image/jpeg, image/png, image/webp, image/bmp, image/tiff, image/pjpeg
+ * Note: GIFs are NOT supported by the simple upload endpoint - they require chunked upload
  */
-function getMediaType(contentType: string): string {
+function getMediaType(contentType: string): string | null {
   const typeMap: Record<string, string> = {
     'image/jpeg': 'image/jpeg',
     'image/jpg': 'image/jpeg',
     'image/png': 'image/png',
-    'image/gif': 'image/png', // GIFs are handled separately for animated content
     'image/webp': 'image/webp',
     'image/bmp': 'image/bmp',
     'image/tiff': 'image/tiff',
+    'image/pjpeg': 'image/pjpeg',
   };
-  return typeMap[contentType.toLowerCase()] || 'image/jpeg';
+  const mapped = typeMap[contentType.toLowerCase()];
+  if (!mapped) {
+    console.warn(`[X Media] Unsupported media type for simple upload: ${contentType}`);
+    return null;
+  }
+  return mapped;
 }
 
 /**
@@ -245,6 +252,12 @@ export async function uploadTwitterMedia(
     // Determine media type from content-type header
     const contentType = mediaResponse.headers.get('content-type') || 'image/jpeg';
     const mediaType = getMediaType(contentType);
+
+    if (!mediaType) {
+      console.error(`[X Media] Skipping unsupported media type: ${contentType} (URL: ${mediaUrl})`);
+      console.error('[X Media] GIFs and videos require chunked upload which is not yet implemented');
+      return null;
+    }
 
     // Upload to X using v2 media upload endpoint
     const uploadResponse = await fetch(`${TWITTER_MEDIA_API}/upload`, {
@@ -314,7 +327,7 @@ async function waitForMediaProcessing(
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     try {
       const statusResponse = await fetch(
-        `${TWITTER_MEDIA_API}/upload?media_id=${mediaId}`,
+        `${TWITTER_MEDIA_API}/upload?command=STATUS&media_id=${mediaId}`,
         {
           method: 'GET',
           headers: {
@@ -379,7 +392,7 @@ export async function postTweet(
   const accessToken = await getValidTokens(userId);
 
   if (!accessToken) {
-    throw new Error('Twitter not connected or token expired. Please reconnect your Twitter account.');
+    throw new Error('X (Twitter) not connected or authentication expired. Please reconnect your X account in Settings > Platforms.');
   }
 
   try {
@@ -413,6 +426,8 @@ export async function postTweet(
       }
     }
 
+    console.log('[X] Posting tweet for user:', userId, 'content length:', text.length);
+
     const response = await fetch(`${TWITTER_API_BASE}/tweets`, {
       method: 'POST',
       headers: {
@@ -424,7 +439,7 @@ export async function postTweet(
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('X post error:', response.status, errorText);
+      console.error('[X] Post error:', response.status, errorText);
 
       let error;
       try {
@@ -436,28 +451,33 @@ export async function postTweet(
       // Provide more helpful error messages based on status code and error details
       if (response.status === 403) {
         // 403 can mean access tier issues or permission problems
-        if (error.detail?.includes('not authorized') || error.title === 'Forbidden') {
-          throw new Error('X API access denied. Your app may need upgraded API access or the user needs to reconnect their account.');
+        const detail = error.detail || error.title || '';
+        if (detail.includes('not authorized') || error.title === 'Forbidden') {
+          throw new Error('X API access denied. Your app may need upgraded API access (Basic tier or higher required for posting). Please check your X Developer Portal settings.');
         }
-        throw new Error('X API access forbidden. Please check your API access tier and app permissions.');
+        if (detail.includes('client-not-enrolled')) {
+          throw new Error('Your X API app is not enrolled for tweet creation. Please upgrade to Basic tier ($100/month) or higher at developer.x.com.');
+        }
+        throw new Error(`X API access forbidden (403). This usually means your X Developer app needs Basic tier or higher to post tweets. Error: ${detail}`);
       }
       if (response.status === 429 || error.detail?.includes('rate limit')) {
-        throw new Error('X rate limit reached. Please try again later.');
+        throw new Error('X rate limit reached. Please wait a few minutes and try again.');
       }
       if (response.status === 401 || error.title === 'Unauthorized') {
-        throw new Error('X authentication failed. Please reconnect your account.');
+        throw new Error('X authentication failed. Your connection may have expired - please reconnect your X account in Settings > Platforms.');
       }
       if (error.detail?.includes('duplicate')) {
-        throw new Error('This post has already been published (duplicate content)');
+        throw new Error('This content was already posted to X (duplicate content detected). Try modifying your post.');
       }
 
       throw new Error(error.detail || error.title || `Failed to post to X (${response.status})`);
     }
 
-    const { data } = await response.json();
-    return data;
+    const responseData = await response.json();
+    console.log('[X] Tweet posted successfully:', responseData.data?.id);
+    return responseData.data;
   } catch (error) {
-    console.error('Twitter post error:', error);
+    console.error('[X] Post error for user:', userId, error instanceof Error ? error.message : error);
     throw error;
   }
 }

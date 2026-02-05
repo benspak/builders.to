@@ -96,9 +96,21 @@ export function PostComposer({
           headers: { "Content-Type": "application/json" },
         });
 
-        if (!publishResponse.ok) {
-          const data = await publishResponse.json();
-          throw new Error(data.error || "Failed to publish post");
+        const publishData = await publishResponse.json();
+
+        if (publishResponse.status === 422) {
+          // All platforms failed - show the specific error
+          throw new Error(publishData.error || "Failed to publish to all platforms");
+        }
+
+        if (publishResponse.status === 207) {
+          // Partial success - some platforms failed
+          console.warn("Partial publish failure:", publishData.warnings);
+          setError(publishData.message || "Post published but some platforms failed");
+          // Wait briefly so the user sees the warning, then redirect
+          await new Promise((resolve) => setTimeout(resolve, 3000));
+        } else if (!publishResponse.ok) {
+          throw new Error(publishData.error || "Failed to publish post");
         }
       }
 

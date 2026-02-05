@@ -307,22 +307,54 @@ export async function publishPost(
   );
 
   const allFailed = results.every(
-    (r) => r.status === 'rejected' || r.value === null
+    (r) => r.status === 'rejected' || (r.status === 'fulfilled' && r.value === null)
   );
 
+  // Collect per-platform errors for caller visibility
+  const platformErrors: Record<string, string> = {};
+  for (let i = 0; i < post.platforms.length; i++) {
+    const platform = post.platforms[i];
+    const result = results[i];
+    if (result.status === 'rejected') {
+      platformErrors[platform] = result.reason?.message || 'Unknown error';
+    } else if (result.status === 'fulfilled' && result.value === null) {
+      platformErrors[platform] = 'Platform returned no result';
+    }
+  }
+
   // Update post status
+  const finalStatus = allFailed ? CrossPostStatus.FAILED : CrossPostStatus.PUBLISHED;
   await prisma.crossPost.update({
     where: { id: postId },
     data: {
-      status: allFailed ? CrossPostStatus.FAILED : CrossPostStatus.PUBLISHED,
+      status: finalStatus,
       publishedAt: anySuccess ? new Date() : undefined,
     },
   });
 
-  return prisma.crossPost.findUnique({
+  const updatedPost = await prisma.crossPost.findUnique({
     where: { id: postId },
     include: { platformPosts: true, media: true },
-  }) as Promise<PostWithPlatformPosts>;
+  }) as PostWithPlatformPosts;
+
+  // If all platforms failed, throw an error so the API can return a proper error response
+  if (allFailed) {
+    const errorMessages = Object.entries(platformErrors)
+      .map(([platform, error]) => `${platform}: ${error}`)
+      .join('; ');
+    const error = new Error(`Cross-posting failed: ${errorMessages}`);
+    // Attach the post and platform errors for the API to include in the response
+    (error as Error & { post: PostWithPlatformPosts; platformErrors: Record<string, string> }).post = updatedPost;
+    (error as Error & { post: PostWithPlatformPosts; platformErrors: Record<string, string> }).platformErrors = platformErrors;
+    throw error;
+  }
+
+  // If some platforms failed but others succeeded, attach warnings to the returned post
+  if (Object.keys(platformErrors).length > 0) {
+    (updatedPost as PostWithPlatformPosts & { platformErrors?: Record<string, string> }).platformErrors = platformErrors;
+  }
+
+  return updatedPost;
 }
 
 /**
