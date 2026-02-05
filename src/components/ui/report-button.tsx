@@ -133,7 +133,7 @@ export function ReportButton({
           <button
             onClick={() => setIsOpen(true)}
             className={cn(
-              "p-2 rounded-lg text-zinc-500 hover:text-red-400 hover:bg-red-500/10 transition-colors",
+              "p-2 rounded-lg text-zinc-400 hover:text-red-400 hover:bg-red-500/20 transition-colors backdrop-blur-sm",
               className
             )}
             title="Report"

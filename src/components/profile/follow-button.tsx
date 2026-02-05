@@ -66,10 +66,10 @@ export function FollowButton({
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         className={cn(
-          "inline-flex items-center font-medium rounded-xl transition-all",
+          "inline-flex items-center font-medium rounded-xl transition-all backdrop-blur-sm",
           isHovered
-            ? "bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20"
-            : "bg-zinc-800/50 border border-zinc-700/50 text-zinc-300",
+            ? "bg-red-500/20 border border-red-500/50 text-red-300 hover:bg-red-500/30"
+            : "bg-zinc-800/80 border border-zinc-600 text-zinc-100",
           sizeClasses[size],
           className
         )}
@@ -89,8 +89,8 @@ export function FollowButton({
       onClick={handleClick}
       disabled={isLoading}
       className={cn(
-        "inline-flex items-center font-medium rounded-xl transition-all",
-        "bg-orange-500/10 border border-orange-500/30 text-orange-400 hover:bg-orange-500/20",
+        "inline-flex items-center font-medium rounded-xl transition-all backdrop-blur-sm",
+        "bg-orange-500/20 border border-orange-500/50 text-orange-300 hover:bg-orange-500/30",
         sizeClasses[size],
         className
       )}

@@ -263,7 +263,7 @@ export async function uploadTwitterMedia(
     if (!uploadResponse.ok) {
       const errorText = await uploadResponse.text();
       console.error('X media upload failed:', errorText);
-      
+
       // Try to parse error for more details
       try {
         const errorJson = JSON.parse(errorText);
@@ -277,7 +277,7 @@ export async function uploadTwitterMedia(
     }
 
     const uploadData: MediaUploadResponse = await uploadResponse.json();
-    
+
     // Check for errors in response
     if (uploadData.errors && uploadData.errors.length > 0) {
       console.error('X media upload returned errors:', uploadData.errors);
@@ -425,7 +425,7 @@ export async function postTweet(
     if (!response.ok) {
       const errorText = await response.text();
       console.error('X post error:', response.status, errorText);
-      
+
       let error;
       try {
         error = JSON.parse(errorText);
@@ -652,7 +652,7 @@ export async function diagnoseXConnection(userId: string): Promise<{
 }> {
   try {
     const tokens = await getConnectionTokens(userId, SocialPlatform.TWITTER);
-    
+
     if (!tokens) {
       return {
         connected: false,
@@ -666,7 +666,7 @@ export async function diagnoseXConnection(userId: string): Promise<{
     }
 
     const accessToken = await getValidTokens(userId);
-    
+
     if (!accessToken) {
       return {
         connected: true,
@@ -681,7 +681,7 @@ export async function diagnoseXConnection(userId: string): Promise<{
 
     // Try to fetch user profile to verify token works
     const profileData = await getTwitterUser(accessToken);
-    
+
     return {
       connected: true,
       hasValidToken: true,

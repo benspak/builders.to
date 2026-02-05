@@ -805,7 +805,7 @@ export default async function SlugPage({ params }: PageProps) {
                     {isOwnProfile ? (
                       <Link
                         href="/settings"
-                        className="inline-flex items-center gap-2 rounded-xl bg-zinc-800/50 border border-zinc-700/50 px-4 py-2 text-sm font-medium text-zinc-300 hover:bg-zinc-800 hover:text-white transition-all"
+                        className="inline-flex items-center gap-2 rounded-xl bg-zinc-800/80 backdrop-blur-sm border border-zinc-600 px-4 py-2 text-sm font-medium text-zinc-100 hover:bg-zinc-700 hover:text-white transition-all"
                       >
                         <Settings className="h-4 w-4" />
                         Edit Profile

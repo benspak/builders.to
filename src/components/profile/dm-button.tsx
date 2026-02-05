@@ -58,8 +58,8 @@ export function DMButton({
       onClick={handleClick}
       disabled={isLoading}
       className={cn(
-        "inline-flex items-center font-medium rounded-xl transition-all",
-        "bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20",
+        "inline-flex items-center font-medium rounded-xl transition-all backdrop-blur-sm",
+        "bg-cyan-500/20 border border-cyan-500/50 text-cyan-300 hover:bg-cyan-500/30",
         sizeClasses[size],
         className
       )}

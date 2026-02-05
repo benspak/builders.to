@@ -32,7 +32,7 @@ export function ProfilePartnerButton({
       <button
         disabled
         className={cn(
-          "inline-flex items-center gap-2 rounded-xl bg-green-500/10 border border-green-500/30 px-4 py-2 text-sm font-medium text-green-400 cursor-default",
+          "inline-flex items-center gap-2 rounded-xl bg-green-500/20 border border-green-500/50 px-4 py-2 text-sm font-medium text-green-300 cursor-default backdrop-blur-sm",
           className
         )}
       >
@@ -47,7 +47,7 @@ export function ProfilePartnerButton({
       <button
         onClick={() => setIsModalOpen(true)}
         className={cn(
-          "inline-flex items-center gap-2 rounded-xl bg-green-500/10 border border-green-500/30 px-4 py-2 text-sm font-medium text-green-400 hover:bg-green-500/20 hover:border-green-500/50 transition-all",
+          "inline-flex items-center gap-2 rounded-xl bg-green-500/20 border border-green-500/50 px-4 py-2 text-sm font-medium text-green-300 hover:bg-green-500/30 hover:border-green-500/60 transition-all backdrop-blur-sm",
           className
         )}
       >
