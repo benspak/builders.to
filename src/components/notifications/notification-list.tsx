@@ -14,7 +14,8 @@ import {
   Loader2,
   ArrowUp,
   MessageCircle,
-  Gift
+  Gift,
+  UserPlus
 } from "lucide-react";
 import { cn, formatRelativeTime } from "@/lib/utils";
 
@@ -150,6 +151,8 @@ export function NotificationList({ onItemClick, showMarkAllRead = true }: Notifi
         return <MessageCircle className="h-4 w-4 text-sky-400" />;
       case "TOKEN_GIFTED":
         return <Gift className="h-4 w-4 text-emerald-400" />;
+      case "USER_FOLLOWED":
+        return <UserPlus className="h-4 w-4 text-violet-400" />;
       default:
         return <Bell className="h-4 w-4 text-zinc-400" />;
     }
@@ -188,6 +191,9 @@ export function NotificationList({ onItemClick, showMarkAllRead = true }: Notifi
     }
     if (notification.update?.user?.slug) {
       return `/${notification.update.user.slug}`;
+    }
+    if (notification.type === "USER_FOLLOWED" && notification.actorSlug) {
+      return `/${notification.actorSlug}`;
     }
     if (notification.type === "USER_MENTIONED") {
       // If mentioned on a feed event comment, link to feed with comment anchor

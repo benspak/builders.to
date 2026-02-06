@@ -983,6 +983,8 @@ enum NotificationType {
   // Karma notifications
   KARMA_MILESTONE // You reached a new karma level
   COMMENT_MARKED_HELPFUL // Your comment was marked as helpful
+  // Social notifications
+  USER_FOLLOWED // Someone followed you
 }
 
 // In-app notifications

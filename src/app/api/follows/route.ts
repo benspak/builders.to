@@ -93,6 +93,7 @@ export async function POST(request: NextRequest) {
           firstName: true,
           lastName: true,
           slug: true,
+          image: true,
         },
       });
 
@@ -104,6 +105,19 @@ export async function POST(request: NextRequest) {
 
       // Send push notification to the followed user
       notifyNewFollower(userId, followerName, followerUrl).catch(console.error);
+
+      // Create in-app notification for the followed user
+      await prisma.notification.create({
+        data: {
+          type: "USER_FOLLOWED",
+          title: "New Follower",
+          message: `${followerName} started following you`,
+          userId: userId,
+          actorId: session.user.id,
+          actorName: followerName,
+          actorImage: follower?.image || null,
+        },
+      });
 
       return NextResponse.json({
         following: true,
