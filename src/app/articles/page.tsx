@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { BookOpen, FileText, Clock, User, Crown, ArrowRight, Zap, Award, TrendingUp, Eye, Rocket, Lightbulb, Users, DollarSign } from "lucide-react";
+import { BookOpen, FileText, Clock, User, Crown, ArrowRight, Zap, Award, TrendingUp, Eye, Rocket, Lightbulb, Users, DollarSign, Megaphone, Wallet } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Articles - Builders.to",
@@ -52,6 +52,24 @@ const categories = [
         icon: Users,
         iconColor: "text-cyan-400",
         iconBg: "bg-cyan-500/10",
+      },
+      {
+        slug: "advertise-on-builders",
+        title: "Advertise on Builders",
+        description: "Learn how to create and manage sidebar ads on Builders.to. Reach thousands of builders, entrepreneurs, and founders.",
+        readTime: "5 min read",
+        icon: Megaphone,
+        iconColor: "text-pink-400",
+        iconBg: "bg-pink-500/10",
+      },
+      {
+        slug: "earn-from-posting",
+        title: "Earn From Posting",
+        description: "Discover how Pro members can earn real money for posting quality content. Understand the reward structure and payout system.",
+        readTime: "5 min read",
+        icon: Wallet,
+        iconColor: "text-emerald-400",
+        iconBg: "bg-emerald-500/10",
       },
     ],
   },

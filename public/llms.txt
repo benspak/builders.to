@@ -24,6 +24,7 @@ Builders.to is a community platform where indie hackers, solopreneurs, and devel
 - **Builder Operating System Flags**: Signal if you're open to work, looking for a co-founder, or available for contract work
 - **Streaks**: Track consecutive days of posting updates
 - **Follows**: Follow builders you're interested in
+- **Karma & Levels**: Earn karma points through contributions; level up from Seedling to Legend
 
 ### Companies
 - **Company Pages**: Create and manage company profiles with logo, about, tech stack, and tools
@@ -44,9 +45,38 @@ Builders.to is a community platform where indie hackers, solopreneurs, and devel
 - **Location-Based**: Browse builders and services in your area
 - **Ratings & Comments**: Rate listing authors and leave feedback
 
+### Events & Meetups
+- **Create Events**: Host physical, virtual, or hybrid events for the builder community
+- **RSVP System**: Attendees can mark Going, Interested, or Not Going
+- **Event Discovery**: Browse upcoming events; find events near you via geolocation
+- **Event Comments**: Discuss events with threaded comments
+
+### Builder Map
+- **Interactive World Map**: See where builders are located globally
+- **Location Markers**: Visual pins for builders with approximate locations (privacy-offset)
+- **Location-Based Discovery**: Find builders near your area
+
+### Leaderboard
+- **Top Builders**: Community leaderboard ranked by karma points and contributions
+- **Karma Levels**: Seedling, Sprout, Builder, Veteran, Master, Legend
+- **Engagement Tracking**: Points earned through updates, comments, projects, and community activity
+
+### Accountability Partners
+- **Partner Matching**: Find accountability partners building similar things
+- **Goal Tracking**: Stay on track with your building goals through partner check-ins
+
+### Direct Messaging
+- **Private Messages**: Send text, images, and GIFs to other builders
+- **Conversations**: Threaded conversation history with read receipts
+- **Real-Time**: Instant message delivery and notifications
+
 ### Streamers Section
 - **Live Streamers**: Discover builders who stream their work on Twitch
 - **Featured Videos**: Showcase YouTube or Twitch videos on your profile
+
+### Discover
+- **Nearby Builders**: Find builders near you using browser geolocation
+- **Similar Interests**: Connect with builders working on similar things
 
 ### Token System
 - **Builder Tokens**: In-app currency earned through engagement
@@ -81,13 +111,30 @@ Builders.to is a community platform where indie hackers, solopreneurs, and devel
 - `/companies/[slug]` - Individual company pages
 - `/services` - Marketplace for builder services
 - `/services/[id]` - Individual service listing pages
+- `/events` - Browse upcoming events and meetups
+- `/events/[id]` - Individual event pages with RSVP
 - `/local` - Find builders and listings by location
 - `/local/[locationSlug]` - Location-specific listings
 - `/listing/[slug]` - Individual local listing pages
 - `/streamers` - Builders who live-stream their work
+- `/leaderboard` - Top builders ranked by karma and contributions
+- `/map` - Interactive world map of builder locations
 - `/[slug]` - Public builder profiles
 - `/[slug]/updates` - Builder's update history
 - `/[slug]/[companySlug]` - Company pages under builder profiles
+- `/articles` - Guides, tutorials, and resources for builders
+- `/how-to` - Step-by-step how-to guides
+- `/how-to/complete-your-profile` - Guide to setting up your profile
+- `/how-to/become-a-pro-member` - Pro membership benefits and setup
+- `/how-to/idea-to-first-customer` - Roadmap from idea to paying customer
+- `/how-to/find-technical-cofounder` - Finding the right technical co-founder
+- `/how-to/advertise-on-builders` - How to run ads on Builders.to
+- `/how-to/earn-from-posting` - How Pro members earn from quality content
+- `/growth-hacks` - Growth tactics for indie hackers
+- `/growth-hacks/builder-badge-method` - Build authority with the Builder-Badge Method
+- `/growth-hacks/build-in-public` - Complete guide to building in public
+- `/growth-hacks/micro-saas-ideas` - 50 micro-SaaS ideas to build and launch
+- `/growth-hacks/indie-hacker-revenue-streams` - Revenue streams beyond SaaS
 - `/privacy` - Privacy policy
 - `/terms` - Terms of service
 

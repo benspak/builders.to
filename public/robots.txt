@@ -12,10 +12,19 @@ Allow: /companies
 Allow: /companies/*
 Allow: /services
 Allow: /services/*
+Allow: /events
+Allow: /events/*
 Allow: /local
 Allow: /local/*
 Allow: /listing/*
 Allow: /streamers
+Allow: /leaderboard
+Allow: /map
+Allow: /articles
+Allow: /how-to
+Allow: /how-to/*
+Allow: /growth-hacks
+Allow: /growth-hacks/*
 Allow: /privacy
 Allow: /terms
 
@@ -39,6 +48,11 @@ Disallow: /updates
 
 # Protect advertising management
 Disallow: /ads/
+
+# Protect discovery and accountability (authenticated features)
+Disallow: /discover
+Disallow: /accountability
+Disallow: /messages
 
 # Protect service provider pages
 Disallow: /services/new

@@ -36,6 +36,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     },
     {
+      url: `${BASE_URL}/events`,
+      lastModified: new Date(),
+      changeFrequency: "daily",
+      priority: 0.8,
+    },
+    {
       url: `${BASE_URL}/local`,
       lastModified: new Date(),
       changeFrequency: "daily",
@@ -48,14 +54,104 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.6,
     },
     {
+      url: `${BASE_URL}/leaderboard`,
+      lastModified: new Date(),
+      changeFrequency: "daily",
+      priority: 0.6,
+    },
+    {
+      url: `${BASE_URL}/map`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.6,
+    },
+    {
+      url: `${BASE_URL}/articles`,
+      lastModified: new Date("2026-02-08"),
+      changeFrequency: "weekly",
+      priority: 0.5,
+    },
+    {
+      url: `${BASE_URL}/how-to`,
+      lastModified: new Date("2026-02-08"),
+      changeFrequency: "weekly",
+      priority: 0.5,
+    },
+    {
+      url: `${BASE_URL}/how-to/complete-your-profile`,
+      lastModified: new Date("2026-02-08"),
+      changeFrequency: "monthly",
+      priority: 0.5,
+    },
+    {
+      url: `${BASE_URL}/how-to/become-a-pro-member`,
+      lastModified: new Date("2026-02-08"),
+      changeFrequency: "monthly",
+      priority: 0.5,
+    },
+    {
+      url: `${BASE_URL}/how-to/idea-to-first-customer`,
+      lastModified: new Date("2026-02-08"),
+      changeFrequency: "monthly",
+      priority: 0.5,
+    },
+    {
+      url: `${BASE_URL}/how-to/find-technical-cofounder`,
+      lastModified: new Date("2026-02-08"),
+      changeFrequency: "monthly",
+      priority: 0.5,
+    },
+    {
+      url: `${BASE_URL}/how-to/advertise-on-builders`,
+      lastModified: new Date("2026-02-08"),
+      changeFrequency: "monthly",
+      priority: 0.5,
+    },
+    {
+      url: `${BASE_URL}/how-to/earn-from-posting`,
+      lastModified: new Date("2026-02-08"),
+      changeFrequency: "monthly",
+      priority: 0.5,
+    },
+    {
+      url: `${BASE_URL}/growth-hacks`,
+      lastModified: new Date("2026-02-08"),
+      changeFrequency: "weekly",
+      priority: 0.5,
+    },
+    {
+      url: `${BASE_URL}/growth-hacks/builder-badge-method`,
+      lastModified: new Date("2026-02-08"),
+      changeFrequency: "monthly",
+      priority: 0.5,
+    },
+    {
+      url: `${BASE_URL}/growth-hacks/build-in-public`,
+      lastModified: new Date("2026-02-08"),
+      changeFrequency: "monthly",
+      priority: 0.5,
+    },
+    {
+      url: `${BASE_URL}/growth-hacks/micro-saas-ideas`,
+      lastModified: new Date("2026-02-08"),
+      changeFrequency: "monthly",
+      priority: 0.5,
+    },
+    {
+      url: `${BASE_URL}/growth-hacks/indie-hacker-revenue-streams`,
+      lastModified: new Date("2026-02-08"),
+      changeFrequency: "monthly",
+      priority: 0.5,
+    },
+    {
       url: `${BASE_URL}/privacy`,
-      lastModified: new Date("2026-01-14"),
+      lastModified: new Date("2026-02-08"),
       changeFrequency: "monthly",
       priority: 0.3,
     },
     {
       url: `${BASE_URL}/terms`,
-      lastModified: new Date("2026-01-14"),
+      lastModified: new Date("2026-02-08"),
       changeFrequency: "monthly",
       priority: 0.3,
     },
@@ -68,9 +164,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let users: Array<{ slug: string | null; updatedAt: Date }> = [];
   let localListings: Array<{ slug: string | null; updatedAt: Date }> = [];
   let locations: Array<{ locationSlug: string | null }> = [];
+  let events: Array<{ id: string; updatedAt: Date }> = [];
 
   try {
-    [projects, companies, users, localListings, locations] = await Promise.all([
+    [projects, companies, users, localListings, locations, events] = await Promise.all([
       // Projects with slugs
       prisma.project.findMany({
         where: { slug: { not: null } },
@@ -106,6 +203,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         },
         select: { locationSlug: true },
         distinct: ["locationSlug"],
+      }),
+      // Public events
+      prisma.event.findMany({
+        where: { isPublic: true },
+        select: { id: true, updatedAt: true },
+        orderBy: { updatedAt: "desc" },
       }),
     ]);
   } catch (err) {
@@ -174,6 +277,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.6,
     }));
 
+  // Generate event pages
+  const eventPages: MetadataRoute.Sitemap = events.map((event) => ({
+    url: `${BASE_URL}/events/${event.id}`,
+    lastModified: event.updatedAt,
+    changeFrequency: "weekly" as const,
+    priority: 0.6,
+  }));
+
   return [
     ...staticPages,
     ...projectPages,
@@ -182,5 +293,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...userUpdatesPages,
     ...localListingPages,
     ...locationPages,
+    ...eventPages,
   ];
 }

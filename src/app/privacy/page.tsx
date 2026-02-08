@@ -20,7 +20,7 @@ export default function PrivacyPolicyPage() {
         </div>
 
         <h1 className="text-4xl font-bold text-white mb-2">Privacy Policy</h1>
-        <p className="text-zinc-500 mb-12">Last updated: January 29, 2026</p>
+        <p className="text-zinc-500 mb-12">Last updated: February 8, 2026</p>
 
         <div className="prose prose-invert prose-zinc max-w-none">
           <div className="space-y-8 text-zinc-300">
@@ -247,7 +247,43 @@ export default function PrivacyPolicyPage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">13. Cookies and Tracking</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">13. Leaderboard and Karma System</h2>
+              <p className="leading-relaxed mb-4">
+                We operate a public leaderboard and karma system to recognize community contributions:
+              </p>
+              <ul className="list-disc pl-6 space-y-2">
+                <li><strong className="text-white">Karma Points:</strong> We track karma points earned through your contributions (updates, comments, projects, engagement). This data is used to calculate your karma level.</li>
+                <li><strong className="text-white">Karma Levels:</strong> Your karma level (Seedling, Sprout, Builder, Veteran, Master, Legend) is publicly visible on your profile and the leaderboard.</li>
+                <li><strong className="text-white">Public Rankings:</strong> The leaderboard displays top builders ranked by karma. Your username, profile image, and karma score may appear publicly.</li>
+              </ul>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-semibold text-white mb-4">14. Builder Map</h2>
+              <p className="leading-relaxed mb-4">
+                We display an interactive map showing the approximate locations of builders:
+              </p>
+              <ul className="list-disc pl-6 space-y-2">
+                <li><strong className="text-white">Map Display:</strong> If you provide a location, your approximate position is shown on the public builder map. The same ~10 mile privacy offset applies to protect your exact location.</li>
+                <li><strong className="text-white">Opt-In:</strong> Your location only appears on the map if you have added location information to your profile. You can remove your location at any time to be removed from the map.</li>
+                <li><strong className="text-white">Nearby Discovery:</strong> Your approximate location may be used to help other builders discover you through the &quot;Discover&quot; feature when they search for nearby builders.</li>
+              </ul>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-semibold text-white mb-4">15. Accountability Partners</h2>
+              <p className="leading-relaxed mb-4">
+                We offer an accountability partners feature to help builders stay on track:
+              </p>
+              <ul className="list-disc pl-6 space-y-2">
+                <li><strong className="text-white">Partner Matching:</strong> We may use your interests, goals, and activity data to suggest accountability partners.</li>
+                <li><strong className="text-white">Goal Data:</strong> Goals and check-in data you share with your accountability partner are stored to maintain the partnership.</li>
+                <li><strong className="text-white">Privacy:</strong> Accountability partner relationships and shared goal data are private between the paired participants.</li>
+              </ul>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-semibold text-white mb-4">16. Cookies and Tracking</h2>
               <p className="leading-relaxed">
                 We use essential cookies to maintain your session and authentication state. These cookies
                 are necessary for the proper functioning of our service. We may also use analytics tools
@@ -257,7 +293,7 @@ export default function PrivacyPolicyPage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">14. Push Notifications</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">17. Push Notifications</h2>
               <p className="leading-relaxed">
                 Our platform supports web push notifications through the Progressive Web App (PWA) functionality.
                 Push notifications are entirely opt-in and require your explicit permission. You can manage or
@@ -267,7 +303,7 @@ export default function PrivacyPolicyPage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">15. Children&apos;s Privacy</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">18. Children&apos;s Privacy</h2>
               <p className="leading-relaxed">
                 Our services are not intended for children under 13 years of age. We do not knowingly
                 collect personal information from children under 13. If you believe we have collected
@@ -276,7 +312,7 @@ export default function PrivacyPolicyPage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">16. International Data Transfers</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">19. International Data Transfers</h2>
               <p className="leading-relaxed">
                 Your information may be transferred to and processed in countries other than your country
                 of residence. These countries may have data protection laws that are different from your
@@ -285,7 +321,7 @@ export default function PrivacyPolicyPage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">17. Data Retention</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">20. Data Retention</h2>
               <p className="leading-relaxed">
                 We retain your information for as long as your account is active or as needed to provide
                 services. We may retain certain information for legitimate business purposes, legal compliance,
@@ -297,7 +333,7 @@ export default function PrivacyPolicyPage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">18. Changes to This Policy</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">21. Changes to This Policy</h2>
               <p className="leading-relaxed">
                 We may update this Privacy Policy from time to time. We will notify you of any changes
                 by posting the new Privacy Policy on this page and updating the &quot;Last updated&quot; date.
@@ -307,7 +343,7 @@ export default function PrivacyPolicyPage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">19. Contact Us</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">22. Contact Us</h2>
               <p className="leading-relaxed">
                 If you have any questions about this Privacy Policy or our privacy practices, please
                 contact us through our community channels:
