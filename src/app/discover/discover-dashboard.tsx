@@ -163,14 +163,14 @@ export function DiscoverDashboard({ userId }: DiscoverDashboardProps) {
 
           {/* Info */}
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <Link href={profileUrl || "#"}>
-                <h3 className="text-base font-semibold text-white group-hover:text-cyan-400 transition-colors">
+            <div className="flex items-center gap-2">
+              <Link href={profileUrl || "#"} className="min-w-0 flex-1">
+                <h3 className="text-base font-semibold text-white truncate group-hover:text-cyan-400 transition-colors">
                   {displayName}
                 </h3>
               </Link>
 
-              <span className="px-2 py-0.5 text-xs rounded-full bg-cyan-500/20 text-cyan-400">
+              <span className="shrink-0 px-2 py-0.5 text-xs rounded-full bg-cyan-500/20 text-cyan-400 whitespace-nowrap">
                 {user.similarityScore}% match
               </span>
             </div>

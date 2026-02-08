@@ -183,17 +183,11 @@ export function BuildingSimilar({ limit = 5, className }: BuildingSimilarProps) 
 
               {/* Info */}
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <Link href={profileUrl || "#"}>
-                    <h4 className="text-sm font-medium text-white truncate group-hover:text-cyan-400 transition-colors">
-                      {displayName}
-                    </h4>
-                  </Link>
-                  {/* Similarity badge */}
-                  <span className="shrink-0 px-1.5 py-0.5 text-[10px] font-medium rounded-full bg-cyan-500/20 text-cyan-400">
-                    {user.similarityScore}% match
-                  </span>
-                </div>
+                <Link href={profileUrl || "#"} className="block min-w-0">
+                  <h4 className="text-sm font-medium text-white truncate group-hover:text-cyan-400 transition-colors">
+                    {displayName}
+                  </h4>
+                </Link>
 
                 {/* Match reasons */}
                 {user.matchReasons.length > 0 && (
@@ -211,24 +205,29 @@ export function BuildingSimilar({ limit = 5, className }: BuildingSimilarProps) 
                 )}
               </div>
 
-              {/* Follow button */}
-              <button
-                onClick={() => handleFollow(user.id)}
-                disabled={loadingFollow === user.id}
-                className={cn(
-                  "shrink-0 p-1.5 rounded-lg transition-colors",
-                  isFollowing
-                    ? "bg-cyan-500/20 text-cyan-400"
-                    : "bg-zinc-800 text-zinc-400 hover:bg-cyan-500/20 hover:text-cyan-400"
-                )}
-                title={isFollowing ? "Following" : "Follow"}
-              >
-                {loadingFollow === user.id ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <UserPlus className={cn("h-4 w-4", isFollowing && "fill-current")} />
-                )}
-              </button>
+              {/* Right side: match badge + follow button */}
+              <div className="flex items-center gap-1.5 shrink-0">
+                <span className="px-1.5 py-0.5 text-[10px] font-medium rounded-full bg-cyan-500/20 text-cyan-400 whitespace-nowrap">
+                  {user.similarityScore}% match
+                </span>
+                <button
+                  onClick={() => handleFollow(user.id)}
+                  disabled={loadingFollow === user.id}
+                  className={cn(
+                    "shrink-0 p-1.5 rounded-lg transition-colors",
+                    isFollowing
+                      ? "bg-cyan-500/20 text-cyan-400"
+                      : "bg-zinc-800 text-zinc-400 hover:bg-cyan-500/20 hover:text-cyan-400"
+                  )}
+                  title={isFollowing ? "Following" : "Follow"}
+                >
+                  {loadingFollow === user.id ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <UserPlus className={cn("h-4 w-4", isFollowing && "fill-current")} />
+                  )}
+                </button>
+              </div>
             </div>
           );
         })}
