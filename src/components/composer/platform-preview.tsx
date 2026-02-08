@@ -4,61 +4,6 @@ import { SocialPlatform } from "@prisma/client";
 import { PLATFORMS } from "./platform-selector";
 import { cn } from "@/lib/utils";
 
-interface PlatformPreviewProps {
-  platform: SocialPlatform;
-  content: string;
-  username?: string;
-}
-
-export function PlatformPreview({ platform, content, username }: PlatformPreviewProps) {
-  const config = PLATFORMS[platform];
-  const isOverLimit = content.length > config.maxLength;
-  const truncatedContent = isOverLimit 
-    ? content.slice(0, config.maxLength) + "..."
-    : content;
-
-  return (
-    <div className="border rounded-lg p-4 bg-card">
-      <div className="flex items-center gap-2 mb-3">
-        <span
-          className={cn(
-            "w-6 h-6 rounded flex items-center justify-center text-xs font-bold",
-            config.color
-          )}
-        >
-          {config.icon}
-        </span>
-        <span className="font-medium text-sm">{config.name}</span>
-        {username && (
-          <span className="text-xs text-muted-foreground">@{username}</span>
-        )}
-        <span className={cn(
-          "ml-auto text-xs",
-          isOverLimit ? "text-destructive font-medium" : "text-muted-foreground"
-        )}>
-          {content.length}/{config.maxLength}
-        </span>
-      </div>
-      
-      <div className={cn(
-        "text-sm whitespace-pre-wrap",
-        platform === "TWITTER" && "text-[15px]",
-        platform === "LINKEDIN" && "text-[14px] leading-relaxed",
-      )}>
-        {truncatedContent || (
-          <span className="text-muted-foreground italic">Your post will appear here...</span>
-        )}
-      </div>
-
-      {isOverLimit && (
-        <p className="text-xs text-destructive mt-2">
-          Content exceeds {config.name} character limit by {content.length - config.maxLength} characters
-        </p>
-      )}
-    </div>
-  );
-}
-
 interface PlatformPreviewsProps {
   platforms: SocialPlatform[];
   content: string;
@@ -73,21 +18,63 @@ export function PlatformPreviews({ platforms, content, connectedPlatforms }: Pla
     return null;
   }
 
+  // Use the most restrictive character limit across all selected platforms
+  const maxLength = Math.min(...platforms.map((p) => PLATFORMS[p].maxLength));
+  const isOverLimit = content.length > maxLength;
+  const truncatedContent = isOverLimit
+    ? content.slice(0, maxLength) + "..."
+    : content;
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <h3 className="text-sm font-medium text-muted-foreground">Preview</h3>
-      <div className="grid gap-4 md:grid-cols-2">
-        {platforms.map((platform) => {
-          const connection = connectedPlatforms.find((c) => c.platform === platform);
-          return (
-            <PlatformPreview
-              key={platform}
-              platform={platform}
-              content={content}
-              username={connection?.username || undefined}
-            />
-          );
-        })}
+      <div className="border border-white/10 rounded-xl p-4 bg-zinc-800/30">
+        {/* Platform badges */}
+        <div className="flex items-center gap-2 mb-3 flex-wrap">
+          <span className="text-xs text-zinc-500 mr-1">Posting to</span>
+          {platforms.map((platform) => {
+            const config = PLATFORMS[platform];
+            const connection = connectedPlatforms.find((c) => c.platform === platform);
+            return (
+              <span
+                key={platform}
+                className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs bg-white/5 border border-white/10"
+              >
+                <span
+                  className={cn(
+                    "w-4 h-4 rounded flex items-center justify-center text-[10px] font-bold",
+                    config.color
+                  )}
+                >
+                  {config.icon}
+                </span>
+                <span className="font-medium text-zinc-300">{config.name}</span>
+                {connection?.username && (
+                  <span className="text-zinc-500">@{connection.username}</span>
+                )}
+              </span>
+            );
+          })}
+          <span className={cn(
+            "ml-auto text-xs",
+            isOverLimit ? "text-red-400 font-medium" : "text-zinc-500"
+          )}>
+            {content.length}/{maxLength}
+          </span>
+        </div>
+
+        {/* Unified content preview */}
+        <div className="text-sm text-zinc-200 whitespace-pre-wrap leading-relaxed">
+          {truncatedContent || (
+            <span className="text-zinc-500 italic">Your post will appear here...</span>
+          )}
+        </div>
+
+        {isOverLimit && (
+          <p className="text-xs text-red-400 mt-3">
+            Content exceeds the character limit by {content.length - maxLength} characters
+          </p>
+        )}
       </div>
     </div>
   );

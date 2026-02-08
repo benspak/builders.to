@@ -92,7 +92,7 @@ export default async function HomePage() {
       title: "Cross-Post Everywhere",
       description:
         "Write once, publish to X, LinkedIn, and Builders.to simultaneously. AI-powered composer with up to 3,000 characters.",
-      href: "/compose",
+      href: "/updates/new",
       color: "violet",
       stats: "Multi-platform",
     },

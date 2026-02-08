@@ -33,7 +33,7 @@ import { Suspense } from "react";
 import { formatRelativeTime, getStatusColor, getStatusLabel, getCategoryColor, getCategoryLabel, getMemberRoleLabel, getMemberRoleColor, getCompanyUrl, formatLocationSlug } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { UpdateTimeline, PinnedPostsSection } from "@/components/updates";
-import { ComposerWithAI } from "@/app/compose/composer-with-ai";
+import { ComposerWithAI } from "@/components/composer/composer-with-ai";
 import { CompanyCard } from "@/components/companies/company-card";
 import { TechStackDisplay } from "@/components/companies/tech-stack-display";
 import { BuilderCard } from "@/components/profile/builder-card";

@@ -1,7 +1,7 @@
 "use client";
 
 import { SocialPlatform } from "@prisma/client";
-import { ComposerWithAI } from "@/app/compose/composer-with-ai";
+import { ComposerWithAI } from "@/components/composer/composer-with-ai";
 
 interface PostComposerProps {
   initialContent?: string;

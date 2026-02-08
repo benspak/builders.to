@@ -1,6 +1,6 @@
 "use client";
 
-import { ComposerWithAI } from "@/app/compose/composer-with-ai";
+import { ComposerWithAI } from "@/components/composer/composer-with-ai";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
