@@ -1,6 +1,6 @@
 "use client";
 
-import { UpdateForm } from "@/components/updates/update-form";
+import { ComposerWithAI } from "@/app/compose/composer-with-ai";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -26,9 +26,11 @@ export default function NewUpdatePage() {
           </p>
         </div>
 
-        <UpdateForm onSuccess={() => router.push("/feed")} />
+        <ComposerWithAI
+          compact
+          onSuccess={() => router.push("/feed")}
+        />
       </div>
     </div>
   );
 }
-

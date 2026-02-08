@@ -49,9 +49,11 @@ export default async function ComposePage() {
       <div className="mt-8 p-4 bg-muted rounded-lg max-w-xl">
         <h3 className="font-medium mb-2">Tips</h3>
         <ul className="text-sm text-muted-foreground space-y-2">
-          <li>• Cross-posting supports up to 3000 characters on all platforms</li>
-          <li>• LinkedIn favors professional, value-driven content</li>
-          <li>• Hashtags and mentions can boost your reach</li>
+          <li>• Cross-posting supports up to 3000 characters on external platforms</li>
+          <li>• Use <strong>@mentions</strong> to tag other builders</li>
+          <li>• Add images, GIFs, or polls to your Builders.to updates</li>
+          <li>• <strong>Markdown</strong> is supported: **bold**, *italic*, `code`, and more</li>
+          <li>• Press <kbd>⌘</kbd>+<kbd>Enter</kbd> to post quickly</li>
         </ul>
       </div>
     </div>

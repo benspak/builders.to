@@ -32,7 +32,8 @@ import { ProfilePartnerButton } from "@/components/accountability";
 import { Suspense } from "react";
 import { formatRelativeTime, getStatusColor, getStatusLabel, getCategoryColor, getCategoryLabel, getMemberRoleLabel, getMemberRoleColor, getCompanyUrl, formatLocationSlug } from "@/lib/utils";
 import { cn } from "@/lib/utils";
-import { UpdateForm, UpdateTimeline, PinnedPostsSection } from "@/components/updates";
+import { UpdateTimeline, PinnedPostsSection } from "@/components/updates";
+import { ComposerWithAI } from "@/app/compose/composer-with-ai";
 import { CompanyCard } from "@/components/companies/company-card";
 import { TechStackDisplay } from "@/components/companies/tech-stack-display";
 import { BuilderCard } from "@/components/profile/builder-card";
@@ -1357,7 +1358,7 @@ export default async function SlugPage({ params }: PageProps) {
               {isOwnProfile && (
                 <div className="mb-6 rounded-2xl border border-white/10 bg-zinc-900/50 backdrop-blur-sm p-4">
                   <h3 className="text-sm font-medium text-zinc-400 mb-3">Share what you&apos;re working on</h3>
-                  <UpdateForm />
+                  <ComposerWithAI compact />
                 </div>
               )}
 
