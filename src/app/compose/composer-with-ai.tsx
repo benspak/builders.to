@@ -7,7 +7,6 @@ import { Send, Loader2, AlertCircle } from "lucide-react";
 import { PlatformSelector, getCharacterLimit } from "@/components/composer/platform-selector";
 import { SchedulePicker } from "@/components/composer/schedule-picker";
 import { PlatformPreviews } from "@/components/composer/platform-preview";
-import { AIAssistant } from "@/components/composer/ai-assistant";
 import { cn } from "@/lib/utils";
 
 interface ConnectedPlatform {
@@ -124,8 +123,7 @@ export function ComposerWithAI() {
   }
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[1fr,300px]">
-      {/* Main Composer */}
+    <div>
       <div className="bg-card border rounded-xl p-6 space-y-6">
         {/* Platform Selector */}
         <div>
@@ -245,15 +243,6 @@ export function ComposerWithAI() {
             </>
           )}
         </div>
-      </div>
-
-      {/* Sidebar with AI */}
-      <div className="space-y-6">
-        <AIAssistant
-          content={content}
-          onContentChange={setContent}
-          platform={platforms[0]}
-        />
       </div>
     </div>
   );

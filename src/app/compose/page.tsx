@@ -51,7 +51,7 @@ export default async function ComposePage() {
         <ul className="text-sm text-muted-foreground space-y-2">
           <li>• Cross-posting supports up to 3000 characters on all platforms</li>
           <li>• LinkedIn favors professional, value-driven content</li>
-          <li>• Use the AI assistant to improve engagement</li>
+          <li>• Hashtags and mentions can boost your reach</li>
         </ul>
       </div>
     </div>
