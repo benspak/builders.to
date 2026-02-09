@@ -34,23 +34,39 @@ export async function POST(request: NextRequest) {
 
     const resend = new Resend(apiKey);
 
-    // Add contact to the segment by email
-    const { data, error } = await resend.contacts.segments.add({
+    // Step 1: Create the contact (upserts if already exists) and add to segment
+    const { data: createData, error: createError } = await resend.contacts.create({
       email,
-      segmentId: SEGMENT_ID,
+      unsubscribed: false,
+      segments: [{ id: SEGMENT_ID }],
     });
 
-    if (error) {
-      console.error("Resend add contact to segment error:", error);
-      return NextResponse.json(
-        { error: "Failed to subscribe. Please try again." },
-        { status: 500 }
-      );
+    if (createError) {
+      // If contact already exists, try adding to the segment directly
+      console.warn("Resend create contact warning:", createError);
+
+      const { data: segmentData, error: segmentError } = await resend.contacts.segments.add({
+        email,
+        segmentId: SEGMENT_ID,
+      });
+
+      if (segmentError) {
+        console.error("Resend add contact to segment error:", segmentError);
+        return NextResponse.json(
+          { error: "Failed to subscribe. Please try again." },
+          { status: 500 }
+        );
+      }
+
+      return NextResponse.json({
+        success: true,
+        id: segmentData?.id,
+      });
     }
 
     return NextResponse.json({
       success: true,
-      id: data?.id,
+      id: createData?.id,
     });
   } catch (error) {
     console.error("Newsletter subscribe error:", error);
