@@ -23,6 +23,7 @@ import {
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { BuildersLogo } from "@/components/ui/builders-logo";
+import { EmailOptIn } from "@/components/feed";
 
 export const metadata = {
   title: "Builders.to — Launch pad & social network for builders, entrepreneurs, and founders",
@@ -596,6 +597,13 @@ export default async function HomePage() {
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Email Opt-In Section */}
+      <section className="relative py-16">
+        <div className="mx-auto max-w-md px-4 sm:px-6 lg:px-8">
+          <EmailOptIn />
         </div>
       </section>
 

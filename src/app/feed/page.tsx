@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { Loader2, Sparkles } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
-import { CombinedFeed, OpenJobs, RecentListings, UpcomingEvents } from "@/components/feed";
+import { CombinedFeed, OpenJobs, RecentListings, UpcomingEvents, EmailOptIn } from "@/components/feed";
 import { SiteViewsCounter } from "@/components/analytics/site-views-counter";
 import { SidebarAd } from "@/components/ads";
 import { KarmaLeaderboard } from "@/components/karma";
@@ -684,6 +684,9 @@ export default function FeedPage() {
           {/* Right Sidebar */}
           <aside className="xl:w-72 shrink-0 order-2 xl:order-3">
             <div className="xl:sticky xl:top-24 space-y-6">
+              {/* Email Opt-In */}
+              <EmailOptIn />
+
               {/* Recent Local Listings Section */}
               <Suspense
                 fallback={
