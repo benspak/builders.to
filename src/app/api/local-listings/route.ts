@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { LocalListingCategory, LocalListingStatus } from "@prisma/client";
 import { generateSlug, generateUniqueSlug, generateLocationSlug } from "@/lib/utils";
 import { rateLimit, RATE_LIMITS, rateLimitResponse } from "@/lib/rate-limit";
-import { MIN_LAUNCHED_PROJECTS_FOR_LISTING } from "@/lib/stripe";
+
 
 // Duration in days for different categories
 const LISTING_DURATION = {
@@ -180,7 +180,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get user's location and launched project count
+    // Get user's location
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
       select: {
@@ -189,23 +189,13 @@ export async function POST(request: NextRequest) {
         locationSlug: true,
         zipCode: true,
         email: true,
-        _count: {
-          select: {
-            projects: { where: { status: "LAUNCHED" } },
-          },
-        },
       },
     });
 
-    // Check if user has at least 1 launched project
-    if (!user || user._count.projects < MIN_LAUNCHED_PROJECTS_FOR_LISTING) {
+    if (!user) {
       return NextResponse.json(
-        { 
-          error: `You need at least ${MIN_LAUNCHED_PROJECTS_FOR_LISTING} launched project to post on Local`,
-          launchedProjects: user?._count.projects || 0,
-          required: MIN_LAUNCHED_PROJECTS_FOR_LISTING,
-        },
-        { status: 403 }
+        { error: "User not found" },
+        { status: 404 }
       );
     }
 

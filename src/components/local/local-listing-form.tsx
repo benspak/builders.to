@@ -16,19 +16,18 @@ interface LocalListingFormProps {
     zipCode: string | null;
   };
   userHasStripeConnect?: boolean;
-  userHasLaunchedProject?: boolean;
   mode?: "create" | "edit";
 }
 
-const categories: { value: LocalListingCategory; label: string; description: string; requiresPayment?: boolean; requiresLaunchedProject?: boolean }[] = [
-  { value: "SERVICES", label: "Services", description: "Offer your services to other builders — free to post!", requiresLaunchedProject: true },
+const categories: { value: LocalListingCategory; label: string; description: string; requiresPayment?: boolean }[] = [
+  { value: "SERVICES", label: "Services", description: "Offer your services to other builders — free to post!" },
   { value: "COMMUNITY", label: "Community", description: "General community posts and announcements" },
   { value: "DISCUSSION", label: "Discussion", description: "Start a conversation or ask questions" },
   { value: "COWORKING_HOUSING", label: "Co-working / Housing", description: "Spaces, rooms, and housing" },
   { value: "FOR_SALE", label: "For Sale", description: "Items and products for sale", requiresPayment: true },
 ];
 
-export function LocalListingForm({ initialData, userLocation, userHasStripeConnect = false, userHasLaunchedProject = false, mode = "create" }: LocalListingFormProps) {
+export function LocalListingForm({ initialData, userLocation, userHasStripeConnect = false, mode = "create" }: LocalListingFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -126,25 +125,20 @@ export function LocalListingForm({ initialData, userLocation, userHasStripeConne
           Category *
         </label>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {categories.map((cat) => {
-            const isDisabled = cat.requiresLaunchedProject && !userHasLaunchedProject;
-            return (
+          {categories.map((cat) => (
               <button
                 key={cat.value}
                 type="button"
-                disabled={isDisabled}
-                onClick={() => !isDisabled && setFormData(prev => ({ ...prev, category: cat.value }))}
+                onClick={() => setFormData(prev => ({ ...prev, category: cat.value }))}
                 className={cn(
                   "relative flex flex-col items-start rounded-xl border p-4 text-left transition-all",
-                  isDisabled
-                    ? "border-zinc-700/30 bg-zinc-800/20 opacity-60 cursor-not-allowed"
-                    : formData.category === cat.value
-                      ? "border-orange-500/50 bg-orange-500/10"
-                      : "border-zinc-700/50 bg-zinc-800/30 hover:bg-zinc-800/50 hover:border-zinc-600"
+                  formData.category === cat.value
+                    ? "border-orange-500/50 bg-orange-500/10"
+                    : "border-zinc-700/50 bg-zinc-800/30 hover:bg-zinc-800/50 hover:border-zinc-600"
                 )}
               >
                 <div className="flex items-center gap-2">
-                  <span className={cn("font-medium", isDisabled ? "text-zinc-500" : "text-white")}>{cat.label}</span>
+                  <span className="font-medium text-white">{cat.label}</span>
                   {cat.value === "SERVICES" && (
                     <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                       Free
@@ -152,14 +146,8 @@ export function LocalListingForm({ initialData, userLocation, userHasStripeConne
                   )}
                 </div>
                 <span className="text-xs text-zinc-500 mt-1">{cat.description}</span>
-                {isDisabled && (
-                  <span className="text-xs text-amber-400 mt-2">
-                    Requires at least 1 launched project
-                  </span>
-                )}
               </button>
-            );
-          })}
+          ))}
         </div>
       </div>
 
@@ -345,8 +333,7 @@ export function LocalListingForm({ initialData, userLocation, userHasStripeConne
             !formData.category ||
             !formData.title ||
             !formData.description ||
-            (isForSale && (!formData.priceInCents || formData.priceInCents < 100 || !userHasStripeConnect)) ||
-            (isServices && !userHasLaunchedProject)
+            (isForSale && (!formData.priceInCents || formData.priceInCents < 100 || !userHasStripeConnect))
           }
           className={cn(
             "inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-zinc-900 rounded-lg transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed",

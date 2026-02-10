@@ -45,12 +45,12 @@ A members-only launchpad and community platform for indie hackers and builders. 
 ### 📍 Builders Local
 
 - **Local Builder Network** — Find services, jobs, and meet builders in your area
-- **Services** — Advertise your services for free (requires 1 launched project)
+- **Services** — Advertise your services for free
 - **Categories** — Services, Community, Discussion, Coworking/Housing, For Sale
 - **No Platform Fees** — Sellers keep 100% of their earnings via Stripe Connect
 - **Location Discovery** — Find builders in your city
 - **Map View** — Interactive map showing builders and services near you
-- **Credibility-First** — Only builders with launched projects can post
+- **Open Posting** — Any builder can post on Local
 - **Privacy-First Location** — Coordinates offset ~10 miles for privacy
 
 ### 📅 Events & Meetups

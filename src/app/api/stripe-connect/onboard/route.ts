@@ -6,7 +6,7 @@ import {
   createAccountLinkForExisting,
   isAccountOnboarded,
 } from "@/lib/stripe-connect";
-import { MIN_LAUNCHED_PROJECTS_FOR_LISTING } from "@/lib/stripe";
+
 
 /**
  * POST /api/stripe-connect/onboard
@@ -23,7 +23,7 @@ export async function POST() {
       );
     }
 
-    // Get the user with their projects count
+    // Get the user
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
       select: {
@@ -31,30 +31,11 @@ export async function POST() {
         email: true,
         stripeConnectId: true,
         stripeConnectOnboarded: true,
-        _count: {
-          select: {
-            projects: {
-              where: { status: "LAUNCHED" },
-            },
-          },
-        },
       },
     });
 
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
-    // Verify minimum launched projects requirement
-    if (user._count.projects < MIN_LAUNCHED_PROJECTS_FOR_LISTING) {
-      return NextResponse.json(
-        {
-          error: `You need at least ${MIN_LAUNCHED_PROJECTS_FOR_LISTING} launched projects to sell services`,
-          launchedProjects: user._count.projects,
-          required: MIN_LAUNCHED_PROJECTS_FOR_LISTING,
-        },
-        { status: 403 }
-      );
     }
 
     if (!user.email) {
@@ -161,13 +142,6 @@ export async function GET() {
       select: {
         stripeConnectId: true,
         stripeConnectOnboarded: true,
-        _count: {
-          select: {
-            projects: {
-              where: { status: "LAUNCHED" },
-            },
-          },
-        },
       },
     });
 
@@ -175,16 +149,11 @@ export async function GET() {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Check eligibility
-    const isEligible = user._count.projects >= MIN_LAUNCHED_PROJECTS_FOR_LISTING;
-
     if (!user.stripeConnectId) {
       return NextResponse.json({
         hasAccount: false,
         isOnboarded: false,
-        isEligible,
-        launchedProjects: user._count.projects,
-        required: MIN_LAUNCHED_PROJECTS_FOR_LISTING,
+        isEligible: true,
       });
     }
 
@@ -202,9 +171,7 @@ export async function GET() {
     return NextResponse.json({
       hasAccount: true,
       isOnboarded: onboarded,
-      isEligible,
-      launchedProjects: user._count.projects,
-      required: MIN_LAUNCHED_PROJECTS_FOR_LISTING,
+      isEligible: true,
     });
   } catch (error) {
     console.error("Error checking onboarding status:", error);

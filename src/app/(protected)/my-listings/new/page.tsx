@@ -1,10 +1,9 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { MapPin, ArrowLeft, Rocket, AlertTriangle } from "lucide-react";
+import { MapPin, ArrowLeft } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { LocalListingForm } from "@/components/local/local-listing-form";
-import { MIN_LAUNCHED_PROJECTS_FOR_LISTING } from "@/lib/stripe";
 
 export const metadata = {
   title: "Create Local Listing - Builders.to",
@@ -18,7 +17,7 @@ export default async function NewListingPage() {
     redirect("/signin");
   }
 
-  // Get user's location, Stripe Connect status, and launched project count
+  // Get user's location and Stripe Connect status
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
     select: {
@@ -28,17 +27,10 @@ export default async function NewListingPage() {
       zipCode: true,
       stripeConnectId: true,
       stripeConnectOnboarded: true,
-      _count: {
-        select: {
-          projects: { where: { status: "LAUNCHED" } },
-        },
-      },
     },
   });
 
   const userHasStripeConnect = !!(user?.stripeConnectId && user?.stripeConnectOnboarded);
-  const userHasLaunchedProject = (user?._count.projects || 0) >= MIN_LAUNCHED_PROJECTS_FOR_LISTING;
-  const launchedProjectCount = user?._count.projects || 0;
 
   return (
     <div className="relative min-h-screen bg-zinc-950">
@@ -72,42 +64,6 @@ export default async function NewListingPage() {
           </div>
         </div>
 
-        {/* Launched Project Requirement */}
-        {!userHasLaunchedProject && (
-          <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-4 mb-8">
-            <div className="flex items-start gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-500/20 shrink-0">
-                <AlertTriangle className="h-4 w-4 text-red-400" />
-              </div>
-              <div>
-                <h3 className="text-sm font-medium text-red-400 mb-1">
-                  Launched Project Required
-                </h3>
-                <p className="text-xs text-zinc-400">
-                  You need at least {MIN_LAUNCHED_PROJECTS_FOR_LISTING} launched project to post on Local.
-                  You currently have {launchedProjectCount} launched project{launchedProjectCount !== 1 ? "s" : ""}.
-                </p>
-                <div className="mt-3 flex gap-2">
-                  <Link
-                    href="/projects/new"
-                    className="inline-flex items-center gap-1.5 text-xs font-medium text-red-400 hover:text-red-300"
-                  >
-                    <Rocket className="h-3 w-3" />
-                    Create a project
-                  </Link>
-                  <span className="text-zinc-600">or</span>
-                  <Link
-                    href="/my-projects"
-                    className="text-xs font-medium text-zinc-400 hover:text-white"
-                  >
-                    Mark an existing project as Launched
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Location Warning */}
         {!user?.city && (
           <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 mb-8">
@@ -140,7 +96,6 @@ export default async function NewListingPage() {
               zipCode: user.zipCode,
             } : undefined}
             userHasStripeConnect={userHasStripeConnect}
-            userHasLaunchedProject={userHasLaunchedProject}
           />
         </div>
       </div>

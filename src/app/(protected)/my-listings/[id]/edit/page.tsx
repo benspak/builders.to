@@ -4,7 +4,6 @@ import { MapPin, ArrowLeft } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { LocalListingForm } from "@/components/local/local-listing-form";
-import { MIN_LAUNCHED_PROJECTS_FOR_LISTING } from "@/lib/stripe";
 
 export const metadata = {
   title: "Edit Listing - Builders.to",
@@ -43,7 +42,7 @@ export default async function EditListingPage({ params }: PageProps) {
     redirect("/my-listings");
   }
 
-  // Get user's location, Stripe Connect status, and launched project count
+  // Get user's location and Stripe Connect status
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
     select: {
@@ -53,16 +52,10 @@ export default async function EditListingPage({ params }: PageProps) {
       zipCode: true,
       stripeConnectId: true,
       stripeConnectOnboarded: true,
-      _count: {
-        select: {
-          projects: { where: { status: "LAUNCHED" } },
-        },
-      },
     },
   });
 
   const userHasStripeConnect = !!(user?.stripeConnectId && user?.stripeConnectOnboarded);
-  const userHasLaunchedProject = (user?._count.projects || 0) >= MIN_LAUNCHED_PROJECTS_FOR_LISTING;
 
   return (
     <div className="relative min-h-screen bg-zinc-950">
@@ -130,7 +123,6 @@ export default async function EditListingPage({ params }: PageProps) {
               zipCode: user.zipCode,
             } : undefined}
             userHasStripeConnect={userHasStripeConnect}
-            userHasLaunchedProject={userHasLaunchedProject}
           />
         </div>
       </div>
