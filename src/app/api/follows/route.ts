@@ -73,13 +73,32 @@ export async function POST(request: NextRequest) {
         followersCount,
       });
     } else {
-      // Follow
-      await prisma.follow.create({
-        data: {
-          followerId: session.user.id,
-          followingId: userId,
-        },
-      });
+      // Follow - use try/catch to handle race condition (double-click)
+      try {
+        await prisma.follow.create({
+          data: {
+            followerId: session.user.id,
+            followingId: userId,
+          },
+        });
+      } catch (createError: unknown) {
+        // If unique constraint violation (race condition), treat as already following
+        if (
+          createError &&
+          typeof createError === "object" &&
+          "code" in createError &&
+          (createError as { code: string }).code === "P2002"
+        ) {
+          const followersCount = await prisma.follow.count({
+            where: { followingId: userId },
+          });
+          return NextResponse.json({
+            following: true,
+            followersCount,
+          });
+        }
+        throw createError;
+      }
 
       const followersCount = await prisma.follow.count({
         where: { followingId: userId },

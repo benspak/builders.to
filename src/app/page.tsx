@@ -19,6 +19,10 @@ import {
   Map,
   Share2,
   CalendarDays,
+  Crown,
+  BadgeCheck,
+  Brain,
+  Calendar,
 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
@@ -51,30 +55,30 @@ async function getStats() {
 export default async function HomePage() {
   const [session, stats] = await Promise.all([auth(), getStats()]);
 
-  const features = [
+  const freeFeatures = [
     {
       icon: Rocket,
-      title: "Project Showcase",
+      title: "Browse & Discover Projects",
       description:
-        "Share your work at any stage — from idea to launched. Track progress with status updates: Idea, Building, Beta, Launched, Paused, or Acquired.",
+        "Explore projects at every stage — from idea to launched. Upvote, comment, and follow the builders behind them.",
       href: "/projects",
       color: "orange",
       stats: `${stats.projectCount.toLocaleString()} projects`,
     },
     {
       icon: Sparkles,
-      title: "Daily Updates Feed",
+      title: "Browse the Feed",
       description:
-        "Post what you're building today. Share wins, challenges, and progress with text, images, GIFs, and videos. Build your streak.",
+        "Read daily updates from builders. Like, comment, and engage with the community. Follow builders to stay in the loop.",
       href: "/feed",
       color: "amber",
       stats: `${stats.updateCount.toLocaleString()} updates`,
     },
     {
       icon: Building2,
-      title: "Companies & Startups",
+      title: "Explore Companies",
       description:
-        "Create your company profile with traction badges, tech stack, and team members. Post jobs and company updates.",
+        "Browse company profiles with traction badges, tech stack, and team members. Discover job openings.",
       href: "/companies",
       color: "blue",
       stats: `${stats.companyCount.toLocaleString()} companies`,
@@ -89,19 +93,10 @@ export default async function HomePage() {
       stats: `${stats.localListingCount.toLocaleString()} listings`,
     },
     {
-      icon: Share2,
-      title: "Cross-Post Everywhere",
-      description:
-        "Write once, publish to X, LinkedIn, and Builders.to simultaneously. AI-powered composer with up to 3,000 characters.",
-      href: "/updates/new",
-      color: "violet",
-      stats: "Multi-platform",
-    },
-    {
       icon: Briefcase,
       title: "Opportunity Hub",
       description:
-        "Post and find opportunities: full-time, part-time, contract, freelance, cofounder, advisor, and intern roles.",
+        "Browse and find opportunities: full-time, part-time, contract, freelance, cofounder, advisor, and intern roles.",
       href: "/companies",
       color: "emerald",
       stats: "Job board",
@@ -124,9 +119,77 @@ export default async function HomePage() {
       color: "violet",
       stats: "Community",
     },
+    {
+      icon: MessageSquare,
+      title: "Direct Messages",
+      description:
+        "Connect privately with builders through direct messaging with rich media and image support.",
+      href: "/feed",
+      color: "emerald",
+      stats: "Unlimited",
+    },
   ];
 
-  const builderFeatures = [
+  const proFeatures = [
+    {
+      icon: Rocket,
+      title: "Create & Share Projects",
+      description:
+        "Share your work at any stage — from idea to launched. Track progress with status updates and milestones. Import from GitHub.",
+      color: "amber",
+    },
+    {
+      icon: Sparkles,
+      title: "Post Updates to the Feed",
+      description:
+        "Post daily updates about what you're building. Share wins, challenges, and progress with text, images, GIFs, and videos.",
+      color: "amber",
+    },
+    {
+      icon: Building2,
+      title: "Add & Manage Companies",
+      description:
+        "Create company profiles to showcase your team and products. Post jobs, link projects, and build your company presence.",
+      color: "amber",
+    },
+    {
+      icon: Share2,
+      title: "Cross-Post Everywhere",
+      description:
+        "Write once, publish to X, LinkedIn, and Builders.to simultaneously. AI-powered composer with up to 3,000 characters.",
+      color: "amber",
+    },
+    {
+      icon: BadgeCheck,
+      title: "Verified Pro Badge",
+      description:
+        "Display a distinctive Pro badge on your profile that signals your commitment. Appears next to your name across the platform.",
+      color: "amber",
+    },
+    {
+      icon: Brain,
+      title: "AI-Powered Features",
+      description:
+        "Access AI content suggestions, post variations, and agentic workflows to create engaging content faster.",
+      color: "amber",
+    },
+    {
+      icon: Calendar,
+      title: "Open to Meeting Status",
+      description:
+        "Display an \"Open to Meeting\" badge and link your calendar so others can book time with you for collaboration.",
+      color: "amber",
+    },
+    {
+      icon: Trophy,
+      title: "Pro Rewards",
+      description:
+        "Earn real money for quality content through the rewards program. Connect Stripe to receive payouts.",
+      color: "amber",
+    },
+  ];
+
+  const freeBuilderFeatures = [
     {
       icon: Trophy,
       title: "Top Builders Ranking",
@@ -148,14 +211,14 @@ export default async function HomePage() {
       description: "Real-time notifications, push alerts, daily and weekly digests of activity.",
     },
     {
-      icon: MessageSquare,
-      title: "Direct Messages",
-      description: "Connect privately with builders through direct messaging with rich media support.",
-    },
-    {
       icon: MapPin,
       title: "Nearby Discovery",
       description: "Find builders and events within your radius.",
+    },
+    {
+      icon: Globe,
+      title: "Public Profile & SEO",
+      description: "Get a beautiful builders.to/username profile page indexed by search engines.",
     },
   ];
 
@@ -392,22 +455,26 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Main Features Grid */}
+      {/* Free Features Section */}
       <section className="relative py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-4 py-2 text-sm text-emerald-400 mb-6">
+              <CheckCircle2 className="h-4 w-4" />
+              <span>Free Forever</span>
+            </div>
             <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-              Everything you need to{" "}
-              <span className="gradient-text">build and launch</span>
+              Packed with features,{" "}
+              <span className="text-emerald-400">completely free</span>
             </h2>
             <p className="text-lg text-zinc-400 max-w-2xl mx-auto">
-              A complete ecosystem for entrepreneurs, makers, and founders to share, connect,
-              hire, and grow.
+              Browse, engage, connect, and discover — no credit card required. Everything you need
+              to participate in the builder community.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((feature) => {
+            {freeFeatures.map((feature) => {
               const colors = colorClasses[feature.color];
               const Icon = feature.icon;
               return (
@@ -427,7 +494,7 @@ export default async function HomePage() {
                         <h3 className="text-lg font-semibold text-white group-hover:text-orange-400 transition-colors">
                           {feature.title}
                         </h3>
-                        <span className={`text-xs font-medium ${colors.text} ${colors.bg} px-2 py-0.5 rounded-full`}>
+                        <span className="text-xs font-medium text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full whitespace-nowrap">
                           {feature.stats}
                         </span>
                       </div>
@@ -437,7 +504,7 @@ export default async function HomePage() {
                     </div>
                   </div>
                   <ArrowRight
-                    className={`absolute bottom-6 right-6 h-5 w-5 text-zinc-600 group-hover:${colors.text} group-hover:translate-x-1 transition-all`}
+                    className="absolute bottom-6 right-6 h-5 w-5 text-zinc-600 group-hover:text-orange-400 group-hover:translate-x-1 transition-all"
                   />
                 </Link>
               );
@@ -446,42 +513,138 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Builder Operating System Section */}
+      {/* Builder Operating System Section - Free */}
       <section className="relative py-20 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-orange-500/5 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-emerald-500/5 to-transparent" />
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 rounded-full bg-amber-500/10 border border-amber-500/20 px-4 py-2 text-sm text-amber-400 mb-6">
+            <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-4 py-2 text-sm text-emerald-400 mb-6">
               <Trophy className="h-4 w-4" />
-              <span>Builder Operating System</span>
+              <span>Also Free</span>
             </div>
             <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
               Your builder profile,{" "}
-              <span className="gradient-text">supercharged</span>
+              <span className="text-emerald-400">supercharged</span>
             </h2>
             <p className="text-lg text-zinc-400 max-w-2xl mx-auto">
-              Signal your availability, track your streaks, get endorsed, and climb the leaderboard.
+              Signal your availability, track your streaks, get endorsed, and climb the leaderboard — all included for free.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
-            {builderFeatures.map((feature) => {
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {freeBuilderFeatures.map((feature) => {
               const Icon = feature.icon;
               return (
                 <div
                   key={feature.title}
-                  className="rounded-xl border border-zinc-800/50 bg-zinc-900/30 p-6 hover:border-zinc-700 transition-colors"
+                  className="rounded-xl border border-zinc-800/50 bg-zinc-900/30 p-6 hover:border-emerald-500/30 transition-colors"
                 >
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-500/10 border border-orange-500/20">
-                      <Icon className="h-5 w-5 text-orange-400" />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                      <Icon className="h-5 w-5 text-emerald-400" />
                     </div>
                     <h3 className="font-semibold text-white">{feature.title}</h3>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded">
+                      Free
+                    </span>
                   </div>
                   <p className="text-sm text-zinc-400">{feature.description}</p>
                 </div>
               );
             })}
+          </div>
+        </div>
+      </section>
+
+      {/* Pro Features Section */}
+      <section className="relative py-20 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-amber-500/5 to-transparent" />
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 rounded-full bg-amber-500/10 border border-amber-500/20 px-4 py-2 text-sm text-amber-400 mb-6">
+              <Crown className="h-4 w-4" />
+              <span>Builders Pro</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
+              Unlock your full potential with{" "}
+              <span className="gradient-text">Pro</span>
+            </h2>
+            <p className="text-lg text-zinc-400 max-w-2xl mx-auto">
+              Create projects, post updates, build your company profile, and access AI-powered tools.
+              Everything you need to build in public.
+            </p>
+
+            {/* Pro Pricing Inline */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8">
+              <div className="flex items-center gap-3 rounded-xl border border-zinc-700 bg-zinc-800/50 px-5 py-3">
+                <span className="text-2xl font-bold text-white">$3.99</span>
+                <span className="text-zinc-400 text-sm">/month</span>
+              </div>
+              <span className="text-zinc-500 text-sm">or</span>
+              <div className="relative flex items-center gap-3 rounded-xl border border-amber-500/50 bg-gradient-to-r from-amber-500/10 to-orange-500/10 px-5 py-3">
+                <span className="absolute -top-2.5 right-3 px-2 py-0.5 rounded-full bg-amber-500 text-zinc-900 text-[10px] font-bold">
+                  Save 17%
+                </span>
+                <span className="text-2xl font-bold text-white">$39.99</span>
+                <span className="text-zinc-400 text-sm">/year</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {proFeatures.map((feature) => {
+              const Icon = feature.icon;
+              return (
+                <div
+                  key={feature.title}
+                  className="group rounded-2xl border border-amber-500/20 bg-gradient-to-b from-amber-500/5 to-transparent p-6 hover:border-amber-500/40 transition-all hover:bg-amber-500/5"
+                >
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-500/20 border border-amber-500/30">
+                      <Icon className="h-5 w-5 text-amber-400" />
+                    </div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded">
+                      Pro
+                    </span>
+                  </div>
+                  <h3 className="font-semibold text-white mb-2 group-hover:text-amber-400 transition-colors">
+                    {feature.title}
+                  </h3>
+                  <p className="text-sm text-zinc-400 leading-relaxed">
+                    {feature.description}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Pro CTA */}
+          <div className="mt-12 text-center">
+            {session ? (
+              <Link
+                href="/settings"
+                className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 px-8 py-3.5 text-base font-semibold text-zinc-900 transition-all hover:from-amber-400 hover:to-orange-400 shadow-lg shadow-amber-500/25"
+              >
+                <Crown className="h-5 w-5" />
+                Upgrade to Pro
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            ) : (
+              <Link
+                href="/signin"
+                className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 px-8 py-3.5 text-base font-semibold text-zinc-900 transition-all hover:from-amber-400 hover:to-orange-400 shadow-lg shadow-amber-500/25"
+              >
+                <Crown className="h-5 w-5" />
+                Join & Go Pro
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            )}
+            <p className="mt-3 text-sm text-zinc-500">
+              Secure payment via Stripe. Cancel anytime.{" "}
+              <Link href="/how-to/become-a-pro-member" className="text-amber-400 hover:underline">
+                Learn more
+              </Link>
+            </p>
           </div>
         </div>
       </section>
