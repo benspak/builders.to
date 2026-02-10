@@ -21,6 +21,8 @@ interface ProUpgradePromptProps {
   variant?: "banner" | "full-page";
   isAuthenticated: boolean;
   className?: string;
+  /** For the "updates" feature: whether the free user has already posted today */
+  hasPostedToday?: boolean;
 }
 
 const featureConfig: Record<
@@ -46,9 +48,9 @@ const featureConfig: Record<
   },
   updates: {
     icon: MessageSquare,
-    title: "Post Updates",
-    description: "Share daily updates about what you're building.",
-    benefit: "Post updates to the builder feed",
+    title: "Post More Updates",
+    description: "Free members get 1 post per day. Upgrade to Pro for up to 20 posts per day!",
+    benefit: "Post up to 20 updates per day",
   },
 };
 
@@ -57,6 +59,7 @@ export function ProUpgradePrompt({
   variant = "banner",
   isAuthenticated,
   className,
+  hasPostedToday,
 }: ProUpgradePromptProps) {
   const [subscribing, setSubscribing] = useState(false);
   const config = featureConfig[feature];
@@ -88,6 +91,16 @@ export function ProUpgradePrompt({
 
   // Banner variant - compact inline display
   if (variant === "banner") {
+    // For updates feature: show different messaging based on daily usage
+    const bannerTitle = feature === "updates"
+      ? hasPostedToday
+        ? "Want to post more today?"
+        : "You can post 1 update per day"
+      : "Pro membership required";
+    const bannerSubtitle = feature === "updates"
+      ? "Upgrade to Pro for up to 20 posts per day"
+      : config.benefit;
+
     return (
       <div
         className={cn(
@@ -102,9 +115,9 @@ export function ProUpgradePrompt({
             </div>
             <div>
               <p className="text-sm font-semibold text-white">
-                Pro membership required
+                {bannerTitle}
               </p>
-              <p className="text-xs text-zinc-400">{config.benefit}</p>
+              <p className="text-xs text-zinc-400">{bannerSubtitle}</p>
             </div>
           </div>
 
@@ -210,7 +223,7 @@ export function ProUpgradePrompt({
             </li>
             <li className="flex items-center gap-3 text-zinc-300">
               <MessageSquare className="h-5 w-5 text-amber-400 flex-shrink-0" />
-              <span>Post updates to the builder feed</span>
+              <span>Post up to 20 updates per day (free: 1/day)</span>
             </li>
           </ul>
         </div>

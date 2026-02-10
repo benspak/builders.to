@@ -25,6 +25,19 @@ async function ProUpgradeBanner() {
   
   const isPro = await isProMember(session.user.id);
   if (isPro) return null;
+
+  // Count today's posts for the free user
+  const startOfDay = new Date();
+  startOfDay.setHours(0, 0, 0, 0);
+
+  const todayPostCount = await prisma.dailyUpdate.count({
+    where: {
+      userId: session.user.id,
+      createdAt: { gte: startOfDay },
+    },
+  });
+
+  const hasPostedToday = todayPostCount >= 1;
   
   return (
     <div className="mb-6">
@@ -32,6 +45,7 @@ async function ProUpgradeBanner() {
         feature="updates"
         variant="banner"
         isAuthenticated={true}
+        hasPostedToday={hasPostedToday}
       />
     </div>
   );

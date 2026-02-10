@@ -76,8 +76,8 @@ export async function GET(request: NextRequest) {
 // POST /api/updates - Create a new daily update
 export async function POST(request: NextRequest) {
   try {
-    // Rate limit check - use comment rate limit as a reasonable default
-    const { success, reset } = rateLimit(request, RATE_LIMITS.comment);
+    // Rate limit check - abuse prevention (daily post limits enforced separately below)
+    const { success, reset } = rateLimit(request, RATE_LIMITS.createUpdate);
     if (!success) {
       return rateLimitResponse(reset);
     }
@@ -91,12 +91,34 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if user is a Pro member
+    // Check membership tier and enforce daily post limits
     const isPro = await isProMember(session.user.id);
-    if (!isPro) {
+    const dailyPostLimit = isPro ? 20 : 1;
+
+    // Count how many updates the user has posted today
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const todayPostCount = await prisma.dailyUpdate.count({
+      where: {
+        userId: session.user.id,
+        createdAt: { gte: startOfDay },
+      },
+    });
+
+    if (todayPostCount >= dailyPostLimit) {
+      const limitLabel = isPro ? "20 posts" : "1 post";
       return NextResponse.json(
-        { error: "Pro membership required to post updates", code: "PRO_REQUIRED" },
-        { status: 403 }
+        {
+          error: isPro
+            ? `You've reached your daily limit of ${limitLabel}. Come back tomorrow!`
+            : `Free members can post ${limitLabel} per day. Upgrade to Pro for up to 20 posts per day!`,
+          code: "DAILY_LIMIT_REACHED",
+          dailyLimit: dailyPostLimit,
+          postsToday: todayPostCount,
+          isPro,
+        },
+        { status: 429 }
       );
     }
 
