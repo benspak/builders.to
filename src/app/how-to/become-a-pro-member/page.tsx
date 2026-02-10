@@ -11,6 +11,9 @@ import {
   RefreshCw,
   Calendar,
   Brain,
+  Rocket,
+  Building2,
+  MessageSquare,
 } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -121,6 +124,57 @@ export default function BecomeAProMemberPage() {
                         Display a distinctive Pro badge on your profile that signals your commitment to the
                         builder community. This badge appears next to your name throughout the platform,
                         helping you stand out and build trust with other members.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Create Projects */}
+                <div className="rounded-xl border border-amber-500/30 bg-gradient-to-r from-amber-500/10 to-orange-500/10 p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/20">
+                      <Rocket className="h-6 w-6 text-amber-400" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-white">Create and Share Projects</h3>
+                      <p className="text-zinc-400 mt-2">
+                        Share what you&apos;re building with the community. Create unlimited project pages to showcase
+                        your work, track milestones, and get feedback from other builders. Import projects
+                        directly from GitHub or create them manually.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Post Updates */}
+                <div className="rounded-xl border border-amber-500/30 bg-gradient-to-r from-amber-500/10 to-orange-500/10 p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/20">
+                      <MessageSquare className="h-6 w-6 text-amber-400" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-white">Post Updates to the Feed</h3>
+                      <p className="text-zinc-400 mt-2">
+                        Share daily updates about what you&apos;re working on. Keep the community in the loop,
+                        celebrate wins, and build in public. Your updates appear in the builder feed where
+                        others can engage, comment, and support your journey.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Add Companies */}
+                <div className="rounded-xl border border-amber-500/30 bg-gradient-to-r from-amber-500/10 to-orange-500/10 p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/20">
+                      <Building2 className="h-6 w-6 text-amber-400" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-white">Add and Manage Companies</h3>
+                      <p className="text-zinc-400 mt-2">
+                        Create company profiles to showcase your team, products, and culture. Link your
+                        projects to your company, post job openings, and let others discover the amazing
+                        work your team is doing.
                       </p>
                     </div>
                   </div>

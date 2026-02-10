@@ -5,8 +5,10 @@ import { ProjectFilters } from "@/components/projects/project-filters";
 import { ProjectGrid } from "@/components/projects/project-grid";
 import { SiteViewsCounter } from "@/components/analytics/site-views-counter";
 import { BannerAd } from "@/components/ads";
+import { ProUpgradePrompt } from "@/components/pro";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { isProMember } from "@/lib/stripe-subscription";
 
 interface ProjectsPageProps {
   searchParams: Promise<{
@@ -22,6 +24,9 @@ export default async function ProjectsPage({ searchParams }: ProjectsPageProps) 
     auth(),
     prisma.project.count(),
   ]);
+
+  // Check if user is a Pro member
+  const isPro = session?.user?.id ? await isProMember(session.user.id) : false;
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -46,7 +51,7 @@ export default async function ProjectsPage({ searchParams }: ProjectsPageProps) 
             Discover what builders, founders, and entrepreneurs are building and launching
           </p>
         </div>
-        {session ? (
+        {session && isPro ? (
           <div className="flex gap-3">
             <Link
               href="/projects/import"
@@ -60,13 +65,24 @@ export default async function ProjectsPage({ searchParams }: ProjectsPageProps) 
               Share Project
             </Link>
           </div>
-        ) : (
+        ) : !session ? (
           <Link href="/signin?callbackUrl=/projects/new" className="btn-primary">
             <Plus className="h-4 w-4" />
             Sign in to Share
           </Link>
-        )}
+        ) : null}
       </div>
+
+      {/* Pro Upgrade Banner for logged-in non-Pro users */}
+      {session && !isPro && (
+        <div className="mb-8">
+          <ProUpgradePrompt
+            feature="projects"
+            variant="banner"
+            isAuthenticated={true}
+          />
+        </div>
+      )}
 
       {/* Site Views Counter */}
       <div className="mb-8">

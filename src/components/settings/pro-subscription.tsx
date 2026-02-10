@@ -8,6 +8,9 @@ import {
   ExternalLink,
   RefreshCw,
   BadgeCheck,
+  Rocket,
+  Building2,
+  MessageSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ProBadge } from "@/components/ui/pro-badge";
@@ -240,6 +243,18 @@ export function ProSubscription() {
                   <li className="flex items-center gap-3 text-zinc-300">
                     <BadgeCheck className="h-4 w-4 text-amber-400 flex-shrink-0" />
                     <span className="text-sm">Verified Pro badge on your profile</span>
+                  </li>
+                  <li className="flex items-center gap-3 text-zinc-300">
+                    <Rocket className="h-4 w-4 text-amber-400 flex-shrink-0" />
+                    <span className="text-sm">Create and share projects</span>
+                  </li>
+                  <li className="flex items-center gap-3 text-zinc-300">
+                    <MessageSquare className="h-4 w-4 text-amber-400 flex-shrink-0" />
+                    <span className="text-sm">Post updates to the builder feed</span>
+                  </li>
+                  <li className="flex items-center gap-3 text-zinc-300">
+                    <Building2 className="h-4 w-4 text-amber-400 flex-shrink-0" />
+                    <span className="text-sm">Add and manage company profiles</span>
                   </li>
                 </ul>
               </div>

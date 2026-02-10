@@ -2,9 +2,11 @@ import { Suspense } from "react";
 import { Loader2, Sparkles } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { isProMember } from "@/lib/stripe-subscription";
 import { CombinedFeed, OpenJobs, RecentListings, UpcomingEvents, EmailOptIn } from "@/components/feed";
 import { SiteViewsCounter } from "@/components/analytics/site-views-counter";
 import { SidebarAd } from "@/components/ads";
+import { ProUpgradePrompt } from "@/components/pro";
 import { KarmaLeaderboard } from "@/components/karma";
 import { BuildingSimilar } from "@/components/matching";
 import { AccountabilityWidget } from "@/components/accountability";
@@ -16,6 +18,24 @@ export const metadata = {
 
 // Force dynamic rendering since this page requires database access
 export const dynamic = "force-dynamic";
+
+async function ProUpgradeBanner() {
+  const session = await auth();
+  if (!session?.user?.id) return null;
+  
+  const isPro = await isProMember(session.user.id);
+  if (isPro) return null;
+  
+  return (
+    <div className="mb-6">
+      <ProUpgradePrompt
+        feature="updates"
+        variant="banner"
+        isAuthenticated={true}
+      />
+    </div>
+  );
+}
 
 async function FeedContent() {
   try {
@@ -670,6 +690,11 @@ export default function FeedPage() {
 
           {/* Main Feed */}
           <main className="flex-1 min-w-0 max-w-2xl order-3 xl:order-2">
+            {/* Pro Upgrade Banner for logged-in non-Pro users */}
+            <Suspense fallback={null}>
+              <ProUpgradeBanner />
+            </Suspense>
+            
             <Suspense
               fallback={
                 <div className="flex items-center justify-center py-20">

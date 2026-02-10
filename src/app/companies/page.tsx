@@ -3,7 +3,9 @@ import Link from "next/link";
 import { Plus, Loader2, Building2 } from "lucide-react";
 import { CompanyFilters } from "@/components/companies/company-filters";
 import { CompanyGrid } from "@/components/companies/company-grid";
+import { ProUpgradePrompt } from "@/components/pro";
 import { auth } from "@/lib/auth";
+import { isProMember } from "@/lib/stripe-subscription";
 
 interface CompaniesPageProps {
   searchParams: Promise<{
@@ -19,6 +21,9 @@ export default async function CompaniesPage({ searchParams }: CompaniesPageProps
   const params = await searchParams;
   const session = await auth();
 
+  // Check if user is a Pro member
+  const isPro = session?.user?.id ? await isProMember(session.user.id) : false;
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       {/* Header */}
@@ -32,18 +37,29 @@ export default async function CompaniesPage({ searchParams }: CompaniesPageProps
             Discover companies building amazing products
           </p>
         </div>
-        {session ? (
+        {session && isPro ? (
           <Link href="/companies/new" className="btn-primary">
             <Plus className="h-4 w-4" />
             Add Company
           </Link>
-        ) : (
+        ) : !session ? (
           <Link href="/signin?callbackUrl=/companies/new" className="btn-primary">
             <Plus className="h-4 w-4" />
             Sign in to Add
           </Link>
-        )}
+        ) : null}
       </div>
+
+      {/* Pro Upgrade Banner for logged-in non-Pro users */}
+      {session && !isPro && (
+        <div className="mb-8">
+          <ProUpgradePrompt
+            feature="companies"
+            variant="banner"
+            isAuthenticated={true}
+          />
+        </div>
+      )}
 
       {/* Filters */}
       <div className="mb-8">

@@ -1,8 +1,10 @@
 import { ProjectForm } from "@/components/projects/project-form";
+import { ProUpgradePrompt } from "@/components/pro";
 import { ArrowLeft, Github, UserCircle } from "lucide-react";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { isProMember } from "@/lib/stripe-subscription";
 
 interface NewProjectPageProps {
   searchParams: Promise<{
@@ -16,6 +18,30 @@ interface NewProjectPageProps {
 
 export default async function NewProjectPage({ searchParams }: NewProjectPageProps) {
   const session = await auth();
+  
+  // Check if user is a Pro member
+  const isPro = session?.user?.id ? await isProMember(session.user.id) : false;
+  
+  // If not Pro, show upgrade prompt
+  if (!isPro) {
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6 lg:px-8">
+        <Link
+          href="/projects"
+          className="inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors mb-8"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to projects
+        </Link>
+
+        <ProUpgradePrompt
+          feature="projects"
+          variant="full-page"
+          isAuthenticated={!!session}
+        />
+      </div>
+    );
+  }
   
   // Check if user has completed their profile (username and image required)
   const user = session?.user?.id 

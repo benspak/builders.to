@@ -6,6 +6,7 @@ import { extractMentions } from "@/lib/utils";
 import { sendUserPushNotification } from "@/lib/push-notifications";
 import { awardKarmaForUpdate, awardKarmaForStreakMilestone } from "@/lib/services/karma.service";
 import { autoCheckInFromUpdate } from "@/lib/services/accountability.service";
+import { isProMember } from "@/lib/stripe-subscription";
 
 // GET /api/updates - Get updates for a user or global feed
 export async function GET(request: NextRequest) {
@@ -87,6 +88,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
+      );
+    }
+
+    // Check if user is a Pro member
+    const isPro = await isProMember(session.user.id);
+    if (!isPro) {
+      return NextResponse.json(
+        { error: "Pro membership required to post updates", code: "PRO_REQUIRED" },
+        { status: 403 }
       );
     }
 

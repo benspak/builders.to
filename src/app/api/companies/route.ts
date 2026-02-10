@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { CompanyCategory, CompanySize } from "@prisma/client";
 import { generateSlug, generateUniqueSlug, validateImageUrl, generateLocationSlug } from "@/lib/utils";
 import { rateLimit, RATE_LIMITS, rateLimitResponse } from "@/lib/rate-limit";
+import { isProMember } from "@/lib/stripe-subscription";
 
 // GET /api/companies - List all companies
 export async function GET(request: NextRequest) {
@@ -117,6 +118,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
+      );
+    }
+
+    // Check if user is a Pro member
+    const isPro = await isProMember(session.user.id);
+    if (!isPro) {
+      return NextResponse.json(
+        { error: "Pro membership required to create companies", code: "PRO_REQUIRED" },
+        { status: 403 }
       );
     }
 
