@@ -136,13 +136,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if user is a Pro member
+    // Check project limit: free users can create up to 3 projects
     const isPro = await isProMember(session.user.id);
     if (!isPro) {
-      return NextResponse.json(
-        { error: "Pro membership required to create projects", code: "PRO_REQUIRED" },
-        { status: 403 }
-      );
+      const projectCount = await prisma.project.count({
+        where: { userId: session.user.id },
+      });
+      if (projectCount >= 3) {
+        return NextResponse.json(
+          { error: "Free accounts can list up to 3 projects. Upgrade to Pro to create unlimited projects.", code: "PRO_REQUIRED" },
+          { status: 403 }
+        );
+      }
     }
 
     // Check if user has completed their profile (username and image required to share)

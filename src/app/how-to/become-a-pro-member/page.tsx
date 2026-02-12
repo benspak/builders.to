@@ -138,7 +138,8 @@ export default function BecomeAProMemberPage() {
                     <div>
                       <h3 className="text-lg font-semibold text-white">Create and Share Projects</h3>
                       <p className="text-zinc-400 mt-2">
-                        Share what you&apos;re building with the community. Create unlimited project pages to showcase
+                        Share what you&apos;re building with the community. Free accounts can list up to 3 projects.
+                        Pro members can create unlimited project pages to showcase
                         your work, track milestones, and get feedback from other builders. Import projects
                         directly from GitHub or create them manually.
                       </p>

@@ -246,7 +246,7 @@ export function ProSubscription() {
                   </li>
                   <li className="flex items-center gap-3 text-zinc-300">
                     <Rocket className="h-4 w-4 text-amber-400 flex-shrink-0" />
-                    <span className="text-sm">Create and share projects</span>
+                    <span className="text-sm">Create unlimited projects (free: 3)</span>
                   </li>
                   <li className="flex items-center gap-3 text-zinc-300">
                     <MessageSquare className="h-4 w-4 text-amber-400 flex-shrink-0" />

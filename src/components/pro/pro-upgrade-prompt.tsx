@@ -23,6 +23,8 @@ interface ProUpgradePromptProps {
   className?: string;
   /** For the "updates" feature: whether the free user has already posted today */
   hasPostedToday?: boolean;
+  /** For the "projects" feature: how many projects the user currently has */
+  projectCount?: number;
 }
 
 const featureConfig: Record<
@@ -36,8 +38,8 @@ const featureConfig: Record<
 > = {
   projects: {
     icon: Rocket,
-    title: "Share Your Projects",
-    description: "Create and share your projects with the builder community.",
+    title: "Share Unlimited Projects",
+    description: "Free accounts can list up to 3 projects. Upgrade to Pro for unlimited projects.",
     benefit: "Create and share unlimited projects",
   },
   companies: {
@@ -60,6 +62,7 @@ export function ProUpgradePrompt({
   isAuthenticated,
   className,
   hasPostedToday,
+  projectCount,
 }: ProUpgradePromptProps) {
   const [subscribing, setSubscribing] = useState(false);
   const config = featureConfig[feature];
@@ -91,15 +94,19 @@ export function ProUpgradePrompt({
 
   // Banner variant - compact inline display
   if (variant === "banner") {
-    // For updates feature: show different messaging based on daily usage
-    const bannerTitle = feature === "updates"
-      ? hasPostedToday
+    // Show contextual messaging based on feature
+    let bannerTitle = "Pro membership required";
+    let bannerSubtitle = config.benefit;
+
+    if (feature === "updates") {
+      bannerTitle = hasPostedToday
         ? "Want to post more today?"
-        : "You can post 1 update per day"
-      : "Pro membership required";
-    const bannerSubtitle = feature === "updates"
-      ? "Upgrade to Pro for up to 20 posts per day"
-      : config.benefit;
+        : "You can post 1 update per day";
+      bannerSubtitle = "Upgrade to Pro for up to 20 posts per day";
+    } else if (feature === "projects" && projectCount !== undefined) {
+      bannerTitle = `You've reached the free limit (${projectCount}/3 projects)`;
+      bannerSubtitle = "Upgrade to Pro to list unlimited projects";
+    }
 
     return (
       <div
@@ -199,7 +206,11 @@ export function ProUpgradePrompt({
           </div>
           <div>
             <p className="font-semibold text-white">{config.title}</p>
-            <p className="text-sm text-zinc-400">{config.benefit}</p>
+            <p className="text-sm text-zinc-400">
+              {feature === "projects" && projectCount !== undefined
+                ? `You've used ${projectCount} of 3 free project slots. Upgrade to list unlimited projects.`
+                : config.benefit}
+            </p>
           </div>
         </div>
 
@@ -215,7 +226,7 @@ export function ProUpgradePrompt({
             </li>
             <li className="flex items-center gap-3 text-zinc-300">
               <Rocket className="h-5 w-5 text-amber-400 flex-shrink-0" />
-              <span>Create and share unlimited projects</span>
+              <span>Create unlimited projects (free: 3)</span>
             </li>
             <li className="flex items-center gap-3 text-zinc-300">
               <Building2 className="h-5 w-5 text-amber-400 flex-shrink-0" />
