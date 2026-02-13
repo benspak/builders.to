@@ -129,7 +129,7 @@ export function AccountabilityDashboard({ userId }: AccountabilityDashboardProps
   );
 
   return (
-    <div className="min-h-screen bg-zinc-950">
+    <div>
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">

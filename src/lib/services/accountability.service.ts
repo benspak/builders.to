@@ -533,6 +533,77 @@ export async function autoCheckInFromUpdate(userId: string): Promise<void> {
 }
 
 // ============================================
+// Public Check-in Feed
+// ============================================
+
+/**
+ * Get recent check-ins across all partnerships (public feed)
+ */
+export async function getRecentPublicCheckIns(
+  options: {
+    limit?: number;
+    offset?: number;
+  } = {}
+): Promise<{
+  checkIns: {
+    id: string;
+    userId: string;
+    note: string | null;
+    mood: CheckInMood | null;
+    createdAt: Date;
+    user: {
+      id: string;
+      slug: string | null;
+      displayName: string | null;
+      firstName: string | null;
+      lastName: string | null;
+      name: string | null;
+      image: string | null;
+      currentStreak: number;
+    };
+  }[];
+  total: number;
+}> {
+  const { limit = 30, offset = 0 } = options;
+
+  const [checkIns, total] = await Promise.all([
+    prisma.accountabilityCheckIn.findMany({
+      where: {
+        partnership: {
+          status: "ACTIVE",
+        },
+      },
+      orderBy: { createdAt: "desc" },
+      take: limit,
+      skip: offset,
+      include: {
+        user: {
+          select: {
+            id: true,
+            slug: true,
+            displayName: true,
+            firstName: true,
+            lastName: true,
+            name: true,
+            image: true,
+            currentStreak: true,
+          },
+        },
+      },
+    }),
+    prisma.accountabilityCheckIn.count({
+      where: {
+        partnership: {
+          status: "ACTIVE",
+        },
+      },
+    }),
+  ]);
+
+  return { checkIns, total };
+}
+
+// ============================================
 // Statistics
 // ============================================
 
