@@ -12,7 +12,6 @@ import {
   Loader2,
   Handshake,
   Sparkles,
-  Target,
   Share2,
   Check,
 } from "lucide-react";
@@ -39,6 +38,24 @@ interface SimilarUser {
   matchReasons: string[];
 }
 
+interface CofounderUser {
+  id: string;
+  slug: string | null;
+  displayName: string | null;
+  firstName: string | null;
+  lastName: string | null;
+  name: string | null;
+  image: string | null;
+  headline: string | null;
+  city: string | null;
+  country: string | null;
+  techStack: string[];
+  buildingCategory: BuildingCategory | null;
+  interests: string[];
+  karma: number;
+  currentStreak: number;
+}
+
 type DiscoveryTab = "similar" | "accountability";
 
 interface DiscoverDashboardProps {
@@ -56,9 +73,12 @@ function getDisplayName(user: { displayName?: string | null; firstName?: string 
 export function DiscoverDashboard({ userId }: DiscoverDashboardProps) {
   const [activeTab, setActiveTab] = useState<DiscoveryTab>("similar");
   const [similarUsers, setSimilarUsers] = useState<SimilarUser[]>([]);
+  const [cofounderUsers, setCofounderUsers] = useState<CofounderUser[]>([]);
   const [loading, setLoading] = useState(true);
-  const [partnerModalUser, setPartnerModalUser] = useState<SimilarUser | null>(null);
+  const [cofounderLoading, setCofounderLoading] = useState(false);
+  const [partnerModalUser, setPartnerModalUser] = useState<SimilarUser | CofounderUser | null>(null);
   const [inviteCopied, setInviteCopied] = useState(false);
+  const [cofounderFetched, setCofounderFetched] = useState(false);
 
   // Fetch similar users
   const fetchSimilarUsers = useCallback(async () => {
@@ -76,10 +96,35 @@ export function DiscoverDashboard({ userId }: DiscoverDashboardProps) {
     }
   }, []);
 
+  // Fetch cofounder-seeking users
+  const fetchCofounderUsers = useCallback(async () => {
+    if (cofounderFetched) return;
+    setCofounderLoading(true);
+    try {
+      const response = await fetch("/api/users/cofounders?limit=20");
+      if (response.ok) {
+        const data = await response.json();
+        setCofounderUsers(data.users);
+        setCofounderFetched(true);
+      }
+    } catch (error) {
+      console.error("Error fetching cofounder users:", error);
+    } finally {
+      setCofounderLoading(false);
+    }
+  }, [cofounderFetched]);
+
   // Initial load
   useEffect(() => {
     fetchSimilarUsers();
   }, [fetchSimilarUsers]);
+
+  // Fetch cofounder users when tab is selected
+  useEffect(() => {
+    if (activeTab === "accountability") {
+      fetchCofounderUsers();
+    }
+  }, [activeTab, fetchCofounderUsers]);
 
 
   const copyInviteLink = async () => {
@@ -91,6 +136,159 @@ export function DiscoverDashboard({ userId }: DiscoverDashboardProps) {
     } catch (error) {
       console.error("Failed to copy:", error);
     }
+  };
+
+  const formatCategory = (category: BuildingCategory): string => {
+    const labels: Record<BuildingCategory, string> = {
+      SAAS: "SaaS",
+      MOBILE_APP: "Mobile Apps",
+      DEVELOPER_TOOLS: "Developer Tools",
+      ECOMMERCE: "E-commerce",
+      AI_ML: "AI/ML",
+      FINTECH: "Fintech",
+      HEALTHTECH: "Healthtech",
+      EDTECH: "Edtech",
+      MARKETPLACE: "Marketplaces",
+      AGENCY: "Agency",
+      CONTENT: "Content",
+      HARDWARE: "Hardware",
+      OTHER: "Other",
+    };
+    return labels[category] || category;
+  };
+
+  const renderCofounderCard = (user: CofounderUser) => {
+    const displayName = getDisplayName(user);
+    const profileUrl = user.slug ? `/${user.slug}` : null;
+    return (
+      <div
+        key={user.id}
+        className="group relative rounded-2xl border border-violet-500/20 bg-zinc-900/50 backdrop-blur-sm p-5 hover:border-violet-500/40 transition-all"
+      >
+        <div className="flex items-start gap-4">
+          {/* Avatar */}
+          <Link href={profileUrl || "#"} className="shrink-0">
+            <div className="relative">
+              {user.image ? (
+                <Image
+                  src={user.image}
+                  alt={displayName}
+                  width={56}
+                  height={56}
+                  className="rounded-xl ring-1 ring-white/10 group-hover:ring-violet-500/30 transition-all object-cover"
+                />
+              ) : (
+                <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-purple-500">
+                  <User className="h-7 w-7 text-white" />
+                </div>
+              )}
+
+              {/* Streak badge */}
+              {user.currentStreak > 0 && (
+                <div className="absolute -bottom-1 -right-1 flex items-center gap-0.5 rounded-full bg-orange-500 px-1.5 py-0.5 text-[10px] font-bold text-white ring-2 ring-zinc-900">
+                  <Flame className="h-2.5 w-2.5" />
+                  {user.currentStreak}
+                </div>
+              )}
+            </div>
+          </Link>
+
+          {/* Info */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <Link href={profileUrl || "#"} className="min-w-0 flex-1">
+                <h3 className="text-base font-semibold text-white truncate group-hover:text-violet-400 transition-colors">
+                  {displayName}
+                </h3>
+              </Link>
+
+              <span className="shrink-0 inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full bg-violet-500/20 text-violet-400 whitespace-nowrap">
+                <Users className="h-3 w-3" />
+                Co-founder
+              </span>
+            </div>
+
+            {user.headline && (
+              <p className="text-sm text-zinc-400 mt-1 line-clamp-1">{user.headline}</p>
+            )}
+
+            {/* Location */}
+            {(user.city || user.country) && (
+              <p className="text-xs text-zinc-500 mt-1 flex items-center gap-1">
+                <MapPin className="h-3 w-3" />
+                {[user.city, user.country].filter(Boolean).join(", ")}
+              </p>
+            )}
+
+            {/* Building category */}
+            {user.buildingCategory && (
+              <p className="text-xs text-zinc-500 mt-1">
+                Building {formatCategory(user.buildingCategory)}
+              </p>
+            )}
+
+            {/* Tech stack */}
+            {user.techStack.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-2">
+                {user.techStack.slice(0, 4).map((tech) => (
+                  <span
+                    key={tech}
+                    className="px-2 py-0.5 text-[10px] rounded-full bg-zinc-800 text-zinc-400"
+                  >
+                    {tech}
+                  </span>
+                ))}
+                {user.techStack.length > 4 && (
+                  <span className="px-2 py-0.5 text-[10px] rounded-full bg-zinc-800 text-zinc-500">
+                    +{user.techStack.length - 4}
+                  </span>
+                )}
+              </div>
+            )}
+
+            {/* Interests */}
+            {user.interests.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-1.5">
+                {user.interests.slice(0, 3).map((interest) => (
+                  <span
+                    key={interest}
+                    className="px-2 py-0.5 text-[10px] rounded-full bg-violet-500/10 text-violet-400/80"
+                  >
+                    {interest}
+                  </span>
+                ))}
+                {user.interests.length > 3 && (
+                  <span className="px-2 py-0.5 text-[10px] rounded-full bg-violet-500/10 text-violet-400/60">
+                    +{user.interests.length - 3}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center gap-2 mt-4 pt-4 border-t border-white/5">
+          <button
+            onClick={() => setPartnerModalUser(user)}
+            className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium bg-violet-500/20 text-violet-400 hover:bg-violet-500/30 transition-colors"
+            title="Request partnership"
+          >
+            <Handshake className="h-4 w-4" />
+            Connect
+          </button>
+
+          {profileUrl && (
+            <Link
+              href={profileUrl}
+              className="flex items-center justify-center px-3 py-2 rounded-lg text-sm font-medium bg-zinc-800 text-zinc-300 hover:bg-zinc-700 transition-colors"
+            >
+              View Profile
+            </Link>
+          )}
+        </div>
+      </div>
+    );
   };
 
   const renderUserCard = (user: SimilarUser) => {
@@ -260,11 +458,11 @@ export function DiscoverDashboard({ userId }: DiscoverDashboardProps) {
             className={cn(
               "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors",
               activeTab === "accountability"
-                ? "bg-green-500/20 text-green-400"
+                ? "bg-violet-500/20 text-violet-400"
                 : "text-zinc-500 hover:text-white hover:bg-zinc-800"
             )}
           >
-            <Target className="h-4 w-4" />
+            <Users className="h-4 w-4" />
             Find Partners
           </button>
         </div>
@@ -300,57 +498,58 @@ export function DiscoverDashboard({ userId }: DiscoverDashboardProps) {
           </div>
         )}
 
-        {/* Accountability Tab */}
+        {/* Find Partners Tab - Users looking for a cofounder */}
         {activeTab === "accountability" && (
           <div>
             {/* Info banner */}
-            <div className="rounded-xl border border-green-500/20 bg-green-500/10 p-4 mb-6">
+            <div className="rounded-xl border border-violet-500/20 bg-violet-500/10 p-4 mb-6">
               <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-500/20 shrink-0">
-                  <Handshake className="h-5 w-5 text-green-400" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-violet-500/20 shrink-0">
+                  <Users className="h-5 w-5 text-violet-400" />
                 </div>
                 <div>
-                  <h3 className="text-white font-medium mb-1">Find Accountability Partners</h3>
+                  <h3 className="text-white font-medium mb-1">Find a Co-founder</h3>
                   <p className="text-sm text-zinc-400">
-                    Connect with builders working on similar things and hold each other accountable.
-                    Partners with matching goals see 3x better completion rates!
+                    These builders have indicated they&apos;re looking for a co-founder.
+                    Connect with someone who complements your skills and shares your vision.
                   </p>
                 </div>
               </div>
             </div>
 
-            {loading ? (
+            {cofounderLoading ? (
               <div className="flex items-center justify-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-green-500" />
+                <Loader2 className="h-8 w-8 animate-spin text-violet-500" />
               </div>
-            ) : similarUsers.length === 0 ? (
+            ) : cofounderUsers.length === 0 ? (
               <div className="text-center py-12">
                 <div className="flex h-16 w-16 items-center justify-center rounded-full bg-zinc-800 mx-auto mb-4">
-                  <Target className="h-8 w-8 text-zinc-600" />
+                  <Users className="h-8 w-8 text-zinc-600" />
                 </div>
-                <h3 className="text-lg font-medium text-white mb-2">No potential partners found</h3>
+                <h3 className="text-lg font-medium text-white mb-2">No co-founder seekers yet</h3>
                 <p className="text-zinc-500 mb-4">
-                  Complete your profile to find builders with similar goals
+                  No builders have indicated they&apos;re looking for a co-founder yet.
+                  Check back soon or invite builders to join!
                 </p>
                 <div className="flex items-center justify-center gap-3">
                   <Link
                     href="/settings"
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-green-500 text-white font-medium hover:bg-green-400 transition-colors"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-violet-500 text-white font-medium hover:bg-violet-400 transition-colors"
                   >
-                    Complete Profile
+                    Update Your Profile
                   </Link>
                   <button
                     onClick={copyInviteLink}
                     className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-zinc-800 text-white font-medium hover:bg-zinc-700 transition-colors"
                   >
                     <Share2 className="h-4 w-4" />
-                    Invite a Friend
+                    Invite a Builder
                   </button>
                 </div>
               </div>
             ) : (
               <div className="grid md:grid-cols-2 gap-4">
-                {similarUsers.map((user) => renderUserCard(user))}
+                {cofounderUsers.map((user) => renderCofounderCard(user))}
               </div>
             )}
 
