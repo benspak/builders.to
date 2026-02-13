@@ -8,7 +8,6 @@ import {
   MapPin,
   Trophy,
   Bell,
-  Briefcase,
   ArrowRight,
   CheckCircle2,
   Zap,
@@ -21,11 +20,9 @@ import {
   CalendarDays,
   Crown,
   BadgeCheck,
-  Brain,
   Calendar,
   Handshake,
   Search,
-  Star,
 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
@@ -94,15 +91,6 @@ export default async function HomePage() {
       href: "/local",
       color: "cyan",
       stats: `${stats.localListingCount.toLocaleString()} listings`,
-    },
-    {
-      icon: Briefcase,
-      title: "Opportunity Hub",
-      description:
-        "Browse and find opportunities: full-time, part-time, contract, freelance, cofounder, advisor, and intern roles.",
-      href: "/companies",
-      color: "emerald",
-      stats: "Job board",
     },
     {
       icon: Map,
@@ -177,7 +165,7 @@ export default async function HomePage() {
       icon: Share2,
       title: "Cross-Post Everywhere",
       description:
-        "Write once, publish to X, LinkedIn, and Builders.to simultaneously. AI-powered composer with up to 3,000 characters.",
+        "Write once, publish to X, LinkedIn, and Builders.to simultaneously. Smart composer with up to 3,000 characters.",
       color: "amber",
     },
     {
@@ -185,13 +173,6 @@ export default async function HomePage() {
       title: "Verified Pro Badge",
       description:
         "Display a distinctive Pro badge on your profile that signals your commitment. Appears next to your name across the platform.",
-      color: "amber",
-    },
-    {
-      icon: Brain,
-      title: "AI-Powered Features",
-      description:
-        "Access AI content suggestions, post variations, and agentic workflows to create engaging content faster.",
       color: "amber",
     },
     {
@@ -230,11 +211,6 @@ export default async function HomePage() {
       icon: Bell,
       title: "Notifications & Digest",
       description: "Real-time notifications, push alerts, daily and weekly digests of activity.",
-    },
-    {
-      icon: MapPin,
-      title: "Nearby Discovery",
-      description: "Find builders and events within your radius.",
     },
     {
       icon: Globe,
@@ -591,7 +567,7 @@ export default async function HomePage() {
               <span className="gradient-text">Pro</span>
             </h2>
             <p className="text-lg text-zinc-400 max-w-2xl mx-auto">
-              Create projects, post updates, build your company profile, and access AI-powered tools.
+              Create projects, post updates, cross-post everywhere, and build your company profile.
               Everything you need to build in public.
             </p>
 
