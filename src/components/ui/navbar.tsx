@@ -246,7 +246,7 @@ export function Navbar() {
                   className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 px-3 py-1.5 text-sm font-semibold text-white transition-all hover:from-orange-600 hover:to-orange-700 hover:scale-[1.02] active:scale-[0.98] shadow-md shadow-orange-500/25"
                 >
                   <Plus className="h-3.5 w-3.5" />
-                  <span>Share</span>
+                  <span>Post</span>
                   <ChevronDown className={cn(
                     "h-3.5 w-3.5 transition-transform",
                     shareOpen && "rotate-180"

@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
 import { getRecentPublicCheckIns } from "@/lib/services/accountability.service";
 
 // GET /api/accountability/recent-checkins - Public endpoint for recent check-ins
 export async function GET(request: NextRequest) {
   try {
+    const session = await auth();
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get("limit") || "30", 10);
     const offset = parseInt(searchParams.get("offset") || "0", 10);
@@ -11,6 +13,7 @@ export async function GET(request: NextRequest) {
     const { checkIns, total } = await getRecentPublicCheckIns({
       limit: Math.min(limit, 50),
       offset,
+      currentUserId: session?.user?.id,
     });
 
     return NextResponse.json({
@@ -18,6 +21,7 @@ export async function GET(request: NextRequest) {
       total,
       limit,
       offset,
+      currentUserId: session?.user?.id || null,
     });
   } catch (error) {
     console.error("Error fetching recent check-ins:", error);

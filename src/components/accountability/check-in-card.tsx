@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { CheckCircle, Loader2, Smile, Meh, Frown, Zap } from "lucide-react";
+import { useState, useRef } from "react";
+import Image from "next/image";
+import { CheckCircle, Loader2, Smile, Meh, Frown, Zap, ImageIcon, X } from "lucide-react";
 import { CheckInMood } from "@prisma/client";
 import { cn } from "@/lib/utils";
 
@@ -30,12 +31,58 @@ export function CheckInCard({
   const [isExpanded, setIsExpanded] = useState(false);
   const [selectedMood, setSelectedMood] = useState<CheckInMood | null>(null);
   const [note, setNote] = useState("");
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const canSubmit = note.trim().length > 0 && !isSubmitting && !isUploading;
+
+  const handleImageUpload = async (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      setError("Please upload an image file (JPEG, PNG, GIF, WebP)");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Image must be 5MB or less");
+      return;
+    }
+
+    setIsUploading(true);
+    setError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("type", "updates");
+
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Upload failed");
+      }
+
+      const data = await response.json();
+      setImageUrl(data.url);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to upload image");
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
 
   const handleSubmit = async () => {
-    if (hasCheckedInToday || success) return;
+    if (hasCheckedInToday || success || !canSubmit) return;
 
     setIsSubmitting(true);
     setError(null);
@@ -46,8 +93,9 @@ export function CheckInCard({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           partnershipId,
-          note: note.trim() || undefined,
+          note: note.trim(),
           mood: selectedMood || undefined,
+          imageUrl: imageUrl || undefined,
         }),
       });
 
@@ -106,7 +154,7 @@ export function CheckInCard({
           <div>
             <p className="text-sm font-medium text-white">Ready to check in?</p>
             <p className="text-xs text-zinc-500">
-              Let {partnerName} know you're on track
+              Let {partnerName} know you&apos;re on track
             </p>
           </div>
         </div>
@@ -147,15 +195,78 @@ export function CheckInCard({
         </div>
       </div>
 
-      {/* Note */}
-      <div className="mb-4">
+      {/* Message (required) */}
+      <div className="mb-3">
+        <label className="block text-sm font-medium text-white mb-1.5">
+          What did you work on? <span className="text-red-400">*</span>
+        </label>
         <textarea
           value={note}
           onChange={(e) => setNote(e.target.value)}
-          placeholder="Add a note (optional)"
-          rows={2}
-          maxLength={280}
+          placeholder="Share your progress, what you accomplished, or what you're working on..."
+          rows={3}
+          maxLength={10000}
           className="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 text-white text-sm placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-green-500/50 resize-none"
+        />
+        <div className="flex items-center justify-between mt-1">
+          <p className="text-xs text-zinc-600">
+            This update will appear in the social feed
+          </p>
+          <span className="text-xs text-zinc-600">
+            {note.length}/10000
+          </span>
+        </div>
+      </div>
+
+      {/* Image attachment */}
+      <div className="mb-4">
+        {imageUrl ? (
+          <div className="relative rounded-lg overflow-hidden bg-zinc-900 border border-zinc-700">
+            <div className="relative aspect-video max-h-48">
+              <Image
+                src={imageUrl}
+                alt="Attached image"
+                fill
+                className="object-cover"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => setImageUrl(null)}
+              className="absolute top-2 right-2 p-1.5 rounded-full bg-black/60 text-white hover:bg-red-500 transition-colors"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploading}
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors text-sm"
+          >
+            {isUploading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Uploading...
+              </>
+            ) : (
+              <>
+                <ImageIcon className="h-4 w-4" />
+                Add image
+              </>
+            )}
+          </button>
+        )}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/gif,image/webp"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) handleImageUpload(file);
+          }}
         />
       </div>
 
@@ -178,8 +289,9 @@ export function CheckInCard({
         <button
           type="button"
           onClick={handleSubmit}
-          disabled={isSubmitting}
+          disabled={!canSubmit}
           className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-green-600 text-white hover:bg-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
+          title={!note.trim() ? "A message is required" : undefined}
         >
           {isSubmitting ? (
             <Loader2 className="h-4 w-4 animate-spin" />

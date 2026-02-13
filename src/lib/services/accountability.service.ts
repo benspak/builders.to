@@ -27,8 +27,10 @@ export interface PartnershipInput {
 export interface CheckInInput {
   partnershipId: string;
   userId: string;
-  note?: string;
+  note: string; // Required message for accountability updates
   mood?: CheckInMood;
+  imageUrl?: string; // Optional image attachment
+  dailyUpdateId?: string; // Link to the social feed DailyUpdate
 }
 
 export interface PartnershipWithDetails {
@@ -386,7 +388,7 @@ export async function getPartnership(
 export async function createCheckIn(
   input: CheckInInput
 ): Promise<{ success: boolean; checkInId?: string; error?: string }> {
-  const { partnershipId, userId, note, mood } = input;
+  const { partnershipId, userId, note, mood, dailyUpdateId } = input;
 
   // Get the partnership
   const partnership = await prisma.accountabilityPartnership.findUnique({
@@ -430,6 +432,7 @@ export async function createCheckIn(
       userId,
       note: note || null,
       mood: mood || null,
+      dailyUpdateId: dailyUpdateId || null,
     },
   });
 
@@ -543,6 +546,7 @@ export async function getRecentPublicCheckIns(
   options: {
     limit?: number;
     offset?: number;
+    currentUserId?: string;
   } = {}
 ): Promise<{
   checkIns: {
@@ -551,6 +555,7 @@ export async function getRecentPublicCheckIns(
     note: string | null;
     mood: CheckInMood | null;
     createdAt: Date;
+    dailyUpdateId: string | null;
     user: {
       id: string;
       slug: string | null;
@@ -561,6 +566,33 @@ export async function getRecentPublicCheckIns(
       image: string | null;
       currentStreak: number;
     };
+    dailyUpdate: {
+      id: string;
+      content: string;
+      imageUrl: string | null;
+      gifUrl: string | null;
+      createdAt: Date;
+      user: {
+        id: string;
+        name: string | null;
+        firstName: string | null;
+        lastName: string | null;
+        image: string | null;
+        slug: string | null;
+        headline: string | null;
+        companies: {
+          id: string;
+          name: string;
+          slug: string | null;
+          logo: string | null;
+        }[];
+      };
+      _count: {
+        likes: number;
+        comments: number;
+      };
+      likes: { userId: string }[];
+    } | null;
   }[];
   total: number;
 }> {
@@ -587,6 +619,46 @@ export async function getRecentPublicCheckIns(
             name: true,
             image: true,
             currentStreak: true,
+          },
+        },
+        dailyUpdate: {
+          select: {
+            id: true,
+            content: true,
+            imageUrl: true,
+            gifUrl: true,
+            createdAt: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+                firstName: true,
+                lastName: true,
+                image: true,
+                slug: true,
+                headline: true,
+                companies: {
+                  where: { logo: { not: null } },
+                  take: 1,
+                  orderBy: { createdAt: "asc" },
+                  select: {
+                    id: true,
+                    name: true,
+                    slug: true,
+                    logo: true,
+                  },
+                },
+              },
+            },
+            likes: {
+              select: { userId: true },
+            },
+            _count: {
+              select: {
+                likes: true,
+                comments: true,
+              },
+            },
           },
         },
       },

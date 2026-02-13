@@ -699,6 +699,9 @@ model DailyUpdate {
   pollVotes     UpdatePollVote[] // Votes on the poll
   rewards       PostReward[] // Rewards earned from this update
 
+  // Reverse relation for accountability check-ins
+  accountabilityCheckIn AccountabilityCheckIn?
+
   @@index([userId])
   @@index([createdAt])
 }
@@ -2113,6 +2116,10 @@ model AccountabilityCheckIn {
   user          User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
   note          String?                   @db.Text // Optional note about progress
   mood          CheckInMood? // How they're feeling
+
+  // Link to social feed DailyUpdate (for likes, comments, images)
+  dailyUpdateId String?      @unique
+  dailyUpdate   DailyUpdate? @relation(fields: [dailyUpdateId], references: [id], onDelete: SetNull)
 
   @@index([partnershipId])
   @@index([userId])
