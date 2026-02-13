@@ -81,7 +81,7 @@ export async function PATCH(
     const { status, checkInFrequency, goal, endDate } = body;
 
     // Validate status if provided
-    if (status && !["ACTIVE", "PAUSED", "ENDED"].includes(status)) {
+    if (status && !["ACTIVE", "ENDED"].includes(status)) {
       return NextResponse.json(
         { error: "Invalid status" },
         { status: 400 }

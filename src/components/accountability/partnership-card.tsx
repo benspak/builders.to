@@ -12,8 +12,6 @@ import {
   CheckCircle,
   XCircle,
   MoreHorizontal,
-  Pause,
-  Play,
   Trash2,
 } from "lucide-react";
 import { PartnershipStatus, CheckInFrequency, CheckInMood } from "@prisma/client";
@@ -59,8 +57,6 @@ interface PartnershipCardProps {
   currentUserId: string;
   onAccept?: () => void;
   onDecline?: () => void;
-  onPause?: () => void;
-  onResume?: () => void;
   onEnd?: () => void;
   className?: string;
 }
@@ -104,8 +100,6 @@ export function PartnershipCard({
   currentUserId,
   onAccept,
   onDecline,
-  onPause,
-  onResume,
   onEnd,
   className,
 }: PartnershipCardProps) {
@@ -201,7 +195,6 @@ export function PartnershipCard({
     <div
       className={cn(
         "p-5 rounded-2xl bg-zinc-900 border border-white/10",
-        partnership.status === "PAUSED" && "opacity-75",
         className
       )}
     >
@@ -242,11 +235,6 @@ export function PartnershipCard({
                   Active
                 </span>
               )}
-              {partnership.status === "PAUSED" && (
-                <span className="px-2 py-0.5 rounded-full bg-zinc-500/20 text-zinc-400 text-xs font-medium">
-                  Paused
-                </span>
-              )}
               {partnership.status === "PENDING" && isRequester && (
                 <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 text-xs font-medium">
                   Pending
@@ -265,30 +253,6 @@ export function PartnershipCard({
 
               {showMenu && (
                 <div className="absolute right-0 mt-1 w-40 rounded-lg bg-zinc-800 border border-zinc-700 shadow-lg overflow-hidden z-10">
-                  {partnership.status === "ACTIVE" && (
-                    <button
-                      onClick={() => {
-                        onPause?.();
-                        setShowMenu(false);
-                      }}
-                      className="w-full flex items-center gap-2 px-4 py-2 text-sm text-left hover:bg-zinc-700 transition-colors"
-                    >
-                      <Pause className="h-4 w-4 text-zinc-400" />
-                      <span className="text-white">Pause</span>
-                    </button>
-                  )}
-                  {partnership.status === "PAUSED" && (
-                    <button
-                      onClick={() => {
-                        onResume?.();
-                        setShowMenu(false);
-                      }}
-                      className="w-full flex items-center gap-2 px-4 py-2 text-sm text-left hover:bg-zinc-700 transition-colors"
-                    >
-                      <Play className="h-4 w-4 text-zinc-400" />
-                      <span className="text-white">Resume</span>
-                    </button>
-                  )}
                   <button
                     onClick={() => {
                       onEnd?.();

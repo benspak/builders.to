@@ -100,38 +100,6 @@ export function AccountabilityDashboard({ userId }: AccountabilityDashboardProps
     }
   };
 
-  const handlePause = async (partnershipId: string) => {
-    try {
-      const response = await fetch(`/api/accountability/${partnershipId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "PAUSED" }),
-      });
-
-      if (response.ok) {
-        fetchPartnerships();
-      }
-    } catch (error) {
-      console.error("Error pausing partnership:", error);
-    }
-  };
-
-  const handleResume = async (partnershipId: string) => {
-    try {
-      const response = await fetch(`/api/accountability/${partnershipId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "ACTIVE" }),
-      });
-
-      if (response.ok) {
-        fetchPartnerships();
-      }
-    } catch (error) {
-      console.error("Error resuming partnership:", error);
-    }
-  };
-
   const handleEnd = async (partnershipId: string) => {
     if (!confirm("Are you sure you want to end this partnership?")) return;
 
@@ -154,7 +122,7 @@ export function AccountabilityDashboard({ userId }: AccountabilityDashboardProps
     (p) => p.status === "PENDING" && p.partner.id === userId
   );
   const activePartnerships = partnerships.filter(
-    (p) => p.status === "ACTIVE" || p.status === "PAUSED"
+    (p) => p.status === "ACTIVE"
   );
   const sentRequests = partnerships.filter(
     (p) => p.status === "PENDING" && p.requester.id === userId
@@ -258,8 +226,6 @@ export function AccountabilityDashboard({ userId }: AccountabilityDashboardProps
                       key={partnership.id}
                       partnership={partnership}
                       currentUserId={userId}
-                      onPause={() => handlePause(partnership.id)}
-                      onResume={() => handleResume(partnership.id)}
                       onEnd={() => handleEnd(partnership.id)}
                     />
                   )

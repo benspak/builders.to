@@ -15,7 +15,8 @@ import {
   ArrowUp,
   MessageCircle,
   Gift,
-  UserPlus
+  UserPlus,
+  Handshake
 } from "lucide-react";
 import { cn, formatRelativeTime } from "@/lib/utils";
 
@@ -153,12 +154,26 @@ export function NotificationList({ onItemClick, showMarkAllRead = true }: Notifi
         return <Gift className="h-4 w-4 text-emerald-400" />;
       case "USER_FOLLOWED":
         return <UserPlus className="h-4 w-4 text-violet-400" />;
+      case "ACCOUNTABILITY_REQUEST":
+      case "ACCOUNTABILITY_ACCEPTED":
+      case "ACCOUNTABILITY_CHECK_IN":
+      case "ACCOUNTABILITY_REMINDER":
+        return <Handshake className="h-4 w-4 text-teal-400" />;
       default:
         return <Bell className="h-4 w-4 text-zinc-400" />;
     }
   };
 
   const getNotificationLink = (notification: Notification): string | null => {
+    // Accountability notifications always link to the accountability page
+    if (
+      notification.type === "ACCOUNTABILITY_REQUEST" ||
+      notification.type === "ACCOUNTABILITY_ACCEPTED" ||
+      notification.type === "ACCOUNTABILITY_CHECK_IN" ||
+      notification.type === "ACCOUNTABILITY_REMINDER"
+    ) {
+      return "/accountability";
+    }
     if (notification.type === "PROJECT_UPVOTED" && notification.project?.slug) {
       return `/projects/${notification.project.slug}`;
     }

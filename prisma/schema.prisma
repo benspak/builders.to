@@ -361,7 +361,6 @@ enum KarmaLevel {
 enum PartnershipStatus {
   PENDING // Waiting for acceptance
   ACTIVE // Partnership is active
-  PAUSED // Temporarily paused
   ENDED // Partnership ended
 }
 
