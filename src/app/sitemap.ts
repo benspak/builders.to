@@ -66,6 +66,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.6,
     },
     {
+      url: `${BASE_URL}/discover`,
+      lastModified: new Date(),
+      changeFrequency: "daily",
+      priority: 0.7,
+    },
+    {
+      url: `${BASE_URL}/accountability`,
+      lastModified: new Date(),
+      changeFrequency: "daily",
+      priority: 0.7,
+    },
+    {
       url: `${BASE_URL}/articles`,
       lastModified: new Date("2026-02-08"),
       changeFrequency: "weekly",
@@ -145,13 +157,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
     {
       url: `${BASE_URL}/privacy`,
-      lastModified: new Date("2026-02-08"),
+      lastModified: new Date("2026-02-12"),
       changeFrequency: "monthly",
       priority: 0.3,
     },
     {
       url: `${BASE_URL}/terms`,
-      lastModified: new Date("2026-02-08"),
+      lastModified: new Date("2026-02-12"),
       changeFrequency: "monthly",
       priority: 0.3,
     },

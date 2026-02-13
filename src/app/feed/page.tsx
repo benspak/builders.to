@@ -8,7 +8,6 @@ import { SiteViewsCounter } from "@/components/analytics/site-views-counter";
 import { SidebarAd } from "@/components/ads";
 import { ProUpgradePrompt } from "@/components/pro";
 import { KarmaLeaderboard } from "@/components/karma";
-import { BuildingSimilar } from "@/components/matching";
 import { AccountabilityWidget } from "@/components/accountability";
 
 export const metadata = {
@@ -781,9 +780,6 @@ export default function FeedPage() {
               >
                 <OpenJobsSection />
               </Suspense>
-
-              {/* Building Similar - Growth Feature */}
-              <BuildingSimilar limit={5} />
 
               {/* Accountability Partners - Growth Feature */}
               <AccountabilityWidget />

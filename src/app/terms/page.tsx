@@ -20,7 +20,7 @@ export default function TermsOfServicePage() {
         </div>
 
         <h1 className="text-4xl font-bold text-white mb-2">Terms of Service</h1>
-        <p className="text-zinc-500 mb-12">Last updated: February 8, 2026</p>
+        <p className="text-zinc-500 mb-12">Last updated: February 12, 2026</p>
 
         <div className="prose prose-invert prose-zinc max-w-none">
           <div className="space-y-8 text-zinc-300">
@@ -57,7 +57,8 @@ export default function TermsOfServicePage() {
                 <li>Discovering nearby builders and events</li>
                 <li>Viewing the builder leaderboard and earning karma through contributions</li>
                 <li>Exploring the interactive builder map to find builders globally</li>
-                <li>Finding and partnering with accountability partners</li>
+                <li>Finding and partnering with accountability partners with check-ins and mood tracking</li>
+                <li>Discovering similar builders based on tech stack, building category, and shared interests</li>
               </ul>
             </section>
 
@@ -302,7 +303,22 @@ export default function TermsOfServicePage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">12. Direct Messaging</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">12. Discover and Similar Builder Matching</h2>
+              <p className="leading-relaxed mb-4">
+                Builders.to provides discovery features to help you find builders with similar profiles:
+              </p>
+              <ul className="list-disc pl-6 space-y-2">
+                <li><strong className="text-white">Building Categories:</strong> You may select a building category (e.g., SaaS, Mobile App, AI/ML, Developer Tools, eCommerce, Fintech, Healthtech, Edtech, Marketplace, Agency, Content, Hardware) to be matched with builders working on similar types of projects.</li>
+                <li><strong className="text-white">Tech Stack Matching:</strong> Technologies listed on your profile may be used to find builders with overlapping tech stacks.</li>
+                <li><strong className="text-white">Interest Matching:</strong> Your declared interests are used to suggest builders with shared goals.</li>
+                <li><strong className="text-white">Nearby Builders:</strong> With your permission, browser geolocation may be used to discover builders within your area.</li>
+                <li><strong className="text-white">No Guarantee:</strong> We do not guarantee the accuracy of matching, the availability of similar builders, or outcomes resulting from discovery features.</li>
+                <li><strong className="text-white">Data Control:</strong> You can update or remove your building category, tech stack, and interests at any time through your profile settings.</li>
+              </ul>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-semibold text-white mb-4">13. Direct Messaging</h2>
 
               <h3 className="text-xl font-medium text-white mt-6 mb-3">12.1 Acceptable Use</h3>
               <p className="leading-relaxed mb-4">
@@ -325,7 +341,7 @@ export default function TermsOfServicePage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">13. Advertising</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">14. Advertising</h2>
               <p className="leading-relaxed mb-4">
                 Users may purchase advertisements to be displayed on the platform. Advertisers agree:
               </p>
@@ -339,7 +355,7 @@ export default function TermsOfServicePage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">14. Pro Subscriptions</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">15. Pro Subscriptions</h2>
               <p className="mb-4">Pro subscription plans provide enhanced features:</p>
               <ul className="list-disc pl-6 space-y-2">
                 <li><strong className="text-white">Plan Options:</strong> Monthly ($3.99/month) or Yearly ($39.99/year) billing</li>
@@ -353,7 +369,7 @@ export default function TermsOfServicePage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">15. Acceptable Use</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">16. Acceptable Use</h2>
               <p className="mb-4">You agree not to:</p>
               <ul className="list-disc pl-6 space-y-2">
                 <li>Use the Service for any illegal purpose</li>
@@ -374,7 +390,7 @@ export default function TermsOfServicePage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">16. Payments and Refunds</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">17. Payments and Refunds</h2>
               <p className="leading-relaxed mb-4">
                 All payments are processed through Stripe. By making payments, you agree to Stripe&apos;s
                 terms of service. Regarding refunds:
@@ -390,7 +406,7 @@ export default function TermsOfServicePage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">17. Intellectual Property</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">18. Intellectual Property</h2>
 
               <h3 className="text-xl font-medium text-white mt-6 mb-3">17.1 Our Property</h3>
               <p className="leading-relaxed">
@@ -407,7 +423,7 @@ export default function TermsOfServicePage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">18. Third-Party Services</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">19. Third-Party Services</h2>
               <p className="leading-relaxed mb-4">
                 The Service integrates with and links to third-party services:
               </p>
@@ -424,7 +440,7 @@ export default function TermsOfServicePage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">19. Disclaimer of Warranties</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">20. Disclaimer of Warranties</h2>
               <p className="leading-relaxed uppercase text-sm">
                 THE SERVICE IS PROVIDED &quot;AS IS&quot; AND &quot;AS AVAILABLE&quot; WITHOUT WARRANTIES OF ANY
                 KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO IMPLIED WARRANTIES
@@ -434,12 +450,13 @@ export default function TermsOfServicePage() {
                 AI-GENERATED CONTENT, OR ANY METRICS DISPLAYED ON THE PLATFORM. AI FEATURES ARE PROVIDED
                 WITHOUT WARRANTIES REGARDING ACCURACY, APPROPRIATENESS, OR FITNESS FOR ANY PURPOSE.
                 WE DO NOT GUARANTEE THE SAFETY, QUALITY, OR OUTCOMES OF EVENTS
-                OR INTERACTIONS RESULTING FROM DIRECT MESSAGING OR NEARBY DISCOVERY FEATURES.
+                OR INTERACTIONS RESULTING FROM DIRECT MESSAGING, NEARBY DISCOVERY,
+                SIMILAR BUILDER MATCHING, OR ACCOUNTABILITY PARTNER FEATURES.
               </p>
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">20. Limitation of Liability</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">21. Limitation of Liability</h2>
               <p className="leading-relaxed uppercase text-sm">
                 TO THE MAXIMUM EXTENT PERMITTED BY LAW, BUILDERS.TO SHALL NOT BE LIABLE FOR ANY
                 INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR ANY LOSS
@@ -448,12 +465,13 @@ export default function TermsOfServicePage() {
                 SERVICE, INCLUDING BUT NOT LIMITED TO LOSSES RELATED TO THE TOKEN SYSTEM, PRO
                 REWARDS, SERVICE MARKETPLACE TRANSACTIONS, AI-GENERATED CONTENT, OR CROSS-POSTED
                 CONTENT ON THIRD-PARTY PLATFORMS, EVENTS, OR INTERACTIONS
-                FACILITATED THROUGH DIRECT MESSAGING OR NEARBY DISCOVERY FEATURES.
+                FACILITATED THROUGH DIRECT MESSAGING, NEARBY DISCOVERY,
+                SIMILAR BUILDER MATCHING, OR ACCOUNTABILITY PARTNER FEATURES.
               </p>
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">21. Indemnification</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">22. Indemnification</h2>
               <p className="leading-relaxed">
                 You agree to indemnify, defend, and hold harmless Builders.to and its officers,
                 directors, employees, and agents from any claims, damages, losses, liabilities,
@@ -464,7 +482,7 @@ export default function TermsOfServicePage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">22. Termination</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">23. Termination</h2>
               <p className="leading-relaxed mb-4">
                 We may suspend or terminate your access to the Service at any time, with or
                 without cause, and with or without notice. Upon termination:
@@ -479,6 +497,7 @@ export default function TermsOfServicePage() {
                 <li>Connected platform authorizations will be revoked</li>
                 <li>Hosted events may be cancelled</li>
                 <li>Direct message history may be deleted</li>
+                <li>Accountability partnerships and check-in history may be removed</li>
               </ul>
               <p className="mt-4">
                 All provisions of these Terms that by their nature should survive termination
@@ -487,7 +506,7 @@ export default function TermsOfServicePage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">23. Modifications to Terms</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">24. Modifications to Terms</h2>
               <p className="leading-relaxed">
                 We reserve the right to modify these Terms at any time. We will notify users of
                 material changes by updating the &quot;Last updated&quot; date. Your continued use of the
@@ -496,7 +515,7 @@ export default function TermsOfServicePage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">24. Governing Law</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">25. Governing Law</h2>
               <p className="leading-relaxed">
                 These Terms shall be governed by and construed in accordance with the laws of
                 the jurisdiction in which Builders.to operates, without regard to conflict of
@@ -505,7 +524,7 @@ export default function TermsOfServicePage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">25. Dispute Resolution</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">26. Dispute Resolution</h2>
               <p className="leading-relaxed">
                 Any disputes arising from these Terms or your use of the Service shall first
                 be attempted to be resolved through good-faith negotiation. If negotiation fails,
@@ -515,7 +534,7 @@ export default function TermsOfServicePage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">26. Severability</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">27. Severability</h2>
               <p className="leading-relaxed">
                 If any provision of these Terms is found to be unenforceable or invalid, that
                 provision shall be limited or eliminated to the minimum extent necessary, and
@@ -524,7 +543,7 @@ export default function TermsOfServicePage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">27. Entire Agreement</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">28. Entire Agreement</h2>
               <p className="leading-relaxed">
                 These Terms, together with our Privacy Policy, constitute the entire agreement
                 between you and Builders.to regarding your use of the Service and supersede any
@@ -533,7 +552,7 @@ export default function TermsOfServicePage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">28. Contact Us</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">29. Contact Us</h2>
               <p className="leading-relaxed">
                 If you have any questions about these Terms, please contact us through our
                 community channels:

@@ -20,7 +20,7 @@ export default function PrivacyPolicyPage() {
         </div>
 
         <h1 className="text-4xl font-bold text-white mb-2">Privacy Policy</h1>
-        <p className="text-zinc-500 mb-12">Last updated: February 8, 2026</p>
+        <p className="text-zinc-500 mb-12">Last updated: February 12, 2026</p>
 
         <div className="prose prose-invert prose-zinc max-w-none">
           <div className="space-y-8 text-zinc-300">
@@ -51,6 +51,8 @@ export default function PrivacyPolicyPage() {
                 <li><strong className="text-white">AI Preferences:</strong> Your interests, tone preferences, and posting style preferences when using AI content features.</li>
                 <li><strong className="text-white">Events:</strong> Event details you create including title, description, date, time, location, and whether events are physical, virtual, or hybrid.</li>
                 <li><strong className="text-white">Direct Messages:</strong> Private messages you send to other users, including text content, images, and GIFs.</li>
+                <li><strong className="text-white">Accountability Check-Ins:</strong> When you use the accountability partners feature, we collect check-in data including mood (e.g., Crushing It, Good, Okay, Struggling), notes, and check-in frequency preferences.</li>
+                <li><strong className="text-white">Builder Matching Data:</strong> Your building category (e.g., SaaS, Mobile App, AI/ML, Developer Tools), tech stack, and interests used for discovering similar builders and accountability partner matching.</li>
               </ul>
 
               <h3 className="text-xl font-medium text-white mt-6 mb-3">2.2 Information Collected Automatically</h3>
@@ -100,6 +102,8 @@ export default function PrivacyPolicyPage() {
                 <li>Facilitate event RSVPs</li>
                 <li>Find nearby users and events based on your location</li>
                 <li>Enable private messaging between community members</li>
+                <li>Match you with similar builders based on tech stack, building category, and interests</li>
+                <li>Facilitate accountability partnerships and track check-in activity</li>
               </ul>
             </section>
 
@@ -283,7 +287,20 @@ export default function PrivacyPolicyPage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">16. Cookies and Tracking</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">16. Discover and Similar Builder Matching</h2>
+              <p className="leading-relaxed mb-4">
+                We provide discovery features to help builders find others with similar interests:
+              </p>
+              <ul className="list-disc pl-6 space-y-2">
+                <li><strong className="text-white">Building Category:</strong> Your selected building category (e.g., SaaS, Mobile App, AI/ML, eCommerce, Developer Tools, Fintech, Healthtech, Edtech, Marketplace, Agency, Content, Hardware) is used to match you with builders working on similar types of projects.</li>
+                <li><strong className="text-white">Tech Stack Matching:</strong> The technologies you list on your profile are used to find builders with overlapping tech stacks.</li>
+                <li><strong className="text-white">Interest Matching:</strong> Your declared interests help us suggest builders with shared goals and focus areas.</li>
+                <li><strong className="text-white">Visibility:</strong> Your building category, tech stack, and interests may be visible to other builders browsing the Discover page. You can update or remove this information at any time through your profile settings.</li>
+              </ul>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-semibold text-white mb-4">17. Cookies and Tracking</h2>
               <p className="leading-relaxed">
                 We use essential cookies to maintain your session and authentication state. These cookies
                 are necessary for the proper functioning of our service. We may also use analytics tools
@@ -293,7 +310,7 @@ export default function PrivacyPolicyPage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">17. Push Notifications</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">18. Push Notifications</h2>
               <p className="leading-relaxed">
                 Our platform supports web push notifications through the Progressive Web App (PWA) functionality.
                 Push notifications are entirely opt-in and require your explicit permission. You can manage or
@@ -303,7 +320,7 @@ export default function PrivacyPolicyPage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">18. Children&apos;s Privacy</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">19. Children&apos;s Privacy</h2>
               <p className="leading-relaxed">
                 Our services are not intended for children under 13 years of age. We do not knowingly
                 collect personal information from children under 13. If you believe we have collected
@@ -312,7 +329,7 @@ export default function PrivacyPolicyPage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">19. International Data Transfers</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">20. International Data Transfers</h2>
               <p className="leading-relaxed">
                 Your information may be transferred to and processed in countries other than your country
                 of residence. These countries may have data protection laws that are different from your
@@ -321,7 +338,7 @@ export default function PrivacyPolicyPage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">20. Data Retention</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">21. Data Retention</h2>
               <p className="leading-relaxed">
                 We retain your information for as long as your account is active or as needed to provide
                 services. We may retain certain information for legitimate business purposes, legal compliance,
@@ -333,7 +350,7 @@ export default function PrivacyPolicyPage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">21. Changes to This Policy</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">22. Changes to This Policy</h2>
               <p className="leading-relaxed">
                 We may update this Privacy Policy from time to time. We will notify you of any changes
                 by posting the new Privacy Policy on this page and updating the &quot;Last updated&quot; date.
@@ -343,7 +360,7 @@ export default function PrivacyPolicyPage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">22. Contact Us</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">23. Contact Us</h2>
               <p className="leading-relaxed">
                 If you have any questions about this Privacy Policy or our privacy practices, please
                 contact us through our community channels:

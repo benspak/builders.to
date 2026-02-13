@@ -23,6 +23,9 @@ import {
   BadgeCheck,
   Brain,
   Calendar,
+  Handshake,
+  Search,
+  Star,
 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
@@ -128,6 +131,24 @@ export default async function HomePage() {
       color: "emerald",
       stats: "Unlimited",
     },
+    {
+      icon: Handshake,
+      title: "Accountability Partners",
+      description:
+        "Find an accountability partner and stay on track with regular check-ins, mood tracking, and shared building goals.",
+      href: "/accountability",
+      color: "violet",
+      stats: "Partner up",
+    },
+    {
+      icon: Search,
+      title: "Discover Similar Builders",
+      description:
+        "Find builders working on similar projects, matching tech stacks, or shared interests. Connect with nearby builders.",
+      href: "/discover",
+      color: "orange",
+      stats: "Smart match",
+    },
   ];
 
   const proFeatures = [
@@ -192,8 +213,8 @@ export default async function HomePage() {
   const freeBuilderFeatures = [
     {
       icon: Trophy,
-      title: "Top Builders Ranking",
-      description: "Climb the leaderboard based on launched projects, engagement, and contribution.",
+      title: "Karma & Leaderboard",
+      description: "Earn karma points through contributions. Level up from Newcomer to Legend and climb the public leaderboard.",
     },
     {
       icon: Target,
@@ -718,10 +739,10 @@ export default async function HomePage() {
                   {[
                     "Share your work at any stage — no need to wait until launch",
                     "Get feedback from entrepreneurs who understand the journey",
-                    "Hire verified builders with proven track records",
-                    "Find cofounders, advisors, and collaborators",
+                    "Find accountability partners to keep you on track",
+                    "Discover builders with similar tech stacks and interests",
+                    "Earn karma and level up through community contributions",
                     "Track milestones and celebrate wins publicly",
-                    "Build your reputation through contributions and engagement",
                   ].map((item, i) => (
                     <li key={i} className="flex items-start gap-3">
                       <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" />

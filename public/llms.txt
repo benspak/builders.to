@@ -24,7 +24,7 @@ Builders.to is a community platform where indie hackers, solopreneurs, and devel
 - **Builder Operating System Flags**: Signal if you're open to work, looking for a co-founder, or available for contract work
 - **Streaks**: Track consecutive days of posting updates
 - **Follows**: Follow builders you're interested in
-- **Karma & Levels**: Earn karma points through contributions; level up from Seedling to Legend
+- **Karma & Levels**: Earn karma points through contributions; level up from Newcomer to Legend
 
 ### Companies
 - **Company Pages**: Create and manage company profiles with logo, about, tech stack, and tools
@@ -58,12 +58,16 @@ Builders.to is a community platform where indie hackers, solopreneurs, and devel
 
 ### Leaderboard
 - **Top Builders**: Community leaderboard ranked by karma points and contributions
-- **Karma Levels**: Seedling, Sprout, Builder, Veteran, Master, Legend
-- **Engagement Tracking**: Points earned through updates, comments, projects, and community activity
+- **Karma Levels**: Newcomer, Contributor, Builder, Mentor, Legend
+- **Karma Events**: Points earned for posting updates (+5), receiving likes (+2), commenting (+3), helpful comments (+10), launching projects (+25), project upvotes (+5), streak milestones, forming partnerships, and mentorship
+- **Karma History**: Full history of karma point changes and events
 
 ### Accountability Partners
-- **Partner Matching**: Find accountability partners building similar things
-- **Goal Tracking**: Stay on track with your building goals through partner check-ins
+- **Partner Matching**: Find accountability partners building similar things based on interests and goals
+- **Check-In System**: Regular check-ins with mood tracking (Crushing It, Good, Okay, Struggling)
+- **Check-In Frequency**: Choose between daily, weekdays-only, or weekly check-ins
+- **Partnership Status**: Partnerships can be Pending, Active, Paused, or Ended
+- **Goal Tracking**: Stay on track with your building goals through partner accountability
 
 ### Direct Messaging
 - **Private Messages**: Send text, images, and GIFs to other builders
@@ -77,6 +81,9 @@ Builders.to is a community platform where indie hackers, solopreneurs, and devel
 ### Discover
 - **Nearby Builders**: Find builders near you using browser geolocation
 - **Similar Interests**: Connect with builders working on similar things
+- **Tech Stack Matching**: Find builders with overlapping technologies
+- **Building Category Matching**: Match by category (SaaS, Mobile App, AI/ML, Developer Tools, eCommerce, Fintech, Healthtech, Edtech, Marketplace, Agency, Content, Hardware)
+- **Accountability Partner Discovery**: Find partners through the Discover dashboard
 
 ### Token System
 - **Builder Tokens**: In-app currency earned through engagement
@@ -119,6 +126,8 @@ Builders.to is a community platform where indie hackers, solopreneurs, and devel
 - `/streamers` - Builders who live-stream their work
 - `/leaderboard` - Top builders ranked by karma and contributions
 - `/map` - Interactive world map of builder locations
+- `/discover` - Discover similar builders, nearby builders, and accountability partners
+- `/accountability` - Accountability partners dashboard with check-ins
 - `/[slug]` - Public builder profiles
 - `/[slug]/updates` - Builder's update history
 - `/[slug]/[companySlug]` - Company pages under builder profiles
