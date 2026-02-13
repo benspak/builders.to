@@ -103,6 +103,37 @@ export async function createPartnershipRequest(
     return { success: false, error: "Partnership already exists" };
   }
 
+  // Check for a previously ended partnership between these users.
+  // The @@unique([requesterId, partnerId]) constraint prevents creating a
+  // duplicate record, so we reuse the ended one by updating it to PENDING.
+  const endedPartnership = await prisma.accountabilityPartnership.findFirst({
+    where: {
+      OR: [
+        { requesterId, partnerId },
+        { requesterId: partnerId, partnerId: requesterId },
+      ],
+      status: "ENDED",
+    },
+  });
+
+  if (endedPartnership) {
+    // Reuse the ended partnership record with fresh settings
+    const partnership = await prisma.accountabilityPartnership.update({
+      where: { id: endedPartnership.id },
+      data: {
+        requesterId,
+        partnerId,
+        goal: goal || null,
+        checkInFrequency: checkInFrequency || "DAILY",
+        endDate: endDate || null,
+        status: "PENDING",
+        startDate: new Date(),
+      },
+    });
+
+    return { success: true, partnershipId: partnership.id };
+  }
+
   // Create the partnership request
   const partnership = await prisma.accountabilityPartnership.create({
     data: {
