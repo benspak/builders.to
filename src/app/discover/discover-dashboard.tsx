@@ -9,7 +9,6 @@ import {
   Compass,
   User,
   Flame,
-  UserPlus,
   Loader2,
   Handshake,
   Sparkles,
@@ -58,8 +57,6 @@ export function DiscoverDashboard({ userId }: DiscoverDashboardProps) {
   const [activeTab, setActiveTab] = useState<DiscoveryTab>("similar");
   const [similarUsers, setSimilarUsers] = useState<SimilarUser[]>([]);
   const [loading, setLoading] = useState(true);
-  const [loadingFollow, setLoadingFollow] = useState<string | null>(null);
-  const [followingIds, setFollowingIds] = useState<Set<string>>(new Set());
   const [partnerModalUser, setPartnerModalUser] = useState<SimilarUser | null>(null);
   const [inviteCopied, setInviteCopied] = useState(false);
 
@@ -84,33 +81,6 @@ export function DiscoverDashboard({ userId }: DiscoverDashboardProps) {
     fetchSimilarUsers();
   }, [fetchSimilarUsers]);
 
-  const handleFollow = async (targetUserId: string) => {
-    setLoadingFollow(targetUserId);
-    try {
-      const response = await fetch("/api/follows", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: targetUserId }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setFollowingIds((prev) => {
-          const next = new Set(prev);
-          if (data.isFollowing) {
-            next.add(targetUserId);
-          } else {
-            next.delete(targetUserId);
-          }
-          return next;
-        });
-      }
-    } catch (error) {
-      console.error("Error following user:", error);
-    } finally {
-      setLoadingFollow(null);
-    }
-  };
 
   const copyInviteLink = async () => {
     const inviteUrl = `${window.location.origin}/sign-in?ref=discover`;
@@ -126,8 +96,6 @@ export function DiscoverDashboard({ userId }: DiscoverDashboardProps) {
   const renderUserCard = (user: SimilarUser) => {
     const displayName = getDisplayName(user);
     const profileUrl = user.slug ? `/${user.slug}` : null;
-    const isFollowing = followingIds.has(user.id);
-
     return (
       <div
         key={user.id}
@@ -217,26 +185,6 @@ export function DiscoverDashboard({ userId }: DiscoverDashboardProps) {
 
         {/* Actions */}
         <div className="flex items-center gap-2 mt-4 pt-4 border-t border-white/5">
-          <button
-            onClick={() => handleFollow(user.id)}
-            disabled={loadingFollow === user.id}
-            className={cn(
-              "flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-              isFollowing
-                ? "bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30"
-                : "bg-zinc-800 text-zinc-300 hover:bg-zinc-700"
-            )}
-          >
-            {loadingFollow === user.id ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <>
-                <UserPlus className={cn("h-4 w-4", isFollowing && "fill-current")} />
-                {isFollowing ? "Following" : "Follow"}
-              </>
-            )}
-          </button>
-
           <button
             onClick={() => setPartnerModalUser(user)}
             className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium bg-green-500/20 text-green-400 hover:bg-green-500/30 transition-colors"
