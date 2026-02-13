@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export type SearchResultType = "user" | "project" | "listing" | "update";
+export type SearchResultType = "user" | "project" | "update";
 
 export interface UnifiedSearchResult {
   id: string;
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const query = searchParams.get("q")?.trim() || "";
-    const types = searchParams.get("types")?.split(",") || ["user", "project", "listing", "update"];
+    const types = searchParams.get("types")?.split(",") || ["user", "project", "update"];
     const limit = Math.min(parseInt(searchParams.get("limit") || "5"), 20);
 
     if (!query || query.length < 2) {
@@ -146,71 +146,6 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Search Local Listings
-    if (types.includes("listing")) {
-      searchPromises.push(
-        prisma.localListing.findMany({
-          where: {
-            status: "ACTIVE",
-            OR: [
-              { expiresAt: null },
-              { expiresAt: { gt: new Date() } },
-            ],
-            AND: {
-              OR: [
-                { title: { contains: query, mode: "insensitive" } },
-                { description: { contains: query, mode: "insensitive" } },
-                { city: { contains: query, mode: "insensitive" } },
-              ],
-            },
-          },
-          select: {
-            id: true,
-            slug: true,
-            title: true,
-            description: true,
-            category: true,
-            city: true,
-            state: true,
-            user: {
-              select: {
-                name: true,
-                displayName: true,
-                image: true,
-                slug: true,
-              },
-            },
-            images: {
-              take: 1,
-              orderBy: { order: "asc" },
-              select: { url: true },
-            },
-          },
-          take: limit,
-          orderBy: { createdAt: "desc" },
-        }).then((listings) => {
-          listings.forEach((listing) => {
-            results.push({
-              id: listing.id,
-              type: "listing",
-              title: listing.title,
-              subtitle: `${listing.city}, ${listing.state}`,
-              imageUrl: listing.images[0]?.url || null,
-              url: `/listing/${listing.slug}`,
-              meta: {
-                category: listing.category,
-                author: {
-                  name: listing.user.displayName || listing.user.name,
-                  image: listing.user.image,
-                  slug: listing.user.slug,
-                },
-              },
-            });
-          });
-        })
-      );
-    }
-
     // Search Updates (Daily Updates)
     if (types.includes("update")) {
       searchPromises.push(
@@ -274,8 +209,6 @@ export async function GET(request: NextRequest) {
     const groupedResults: Record<SearchResultType, UnifiedSearchResult[]> = {
       user: [],
       project: [],
-      listing: [],
-      service: [],
       update: [],
     };
 
@@ -290,8 +223,6 @@ export async function GET(request: NextRequest) {
       counts: {
         user: groupedResults.user.length,
         project: groupedResults.project.length,
-        listing: groupedResults.listing.length,
-        service: groupedResults.service.length,
         update: groupedResults.update.length,
         total: results.length,
       },

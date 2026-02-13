@@ -38,8 +38,8 @@ export interface ThreadedComment {
 
 interface ThreadedCommentListProps {
   /** The endpoint type for fetching and posting comments */
-  endpointType: "project" | "update" | "feed-event" | "local-listing";
-  /** The ID of the parent entity (projectId, updateId, feedEventId, or listingId) */
+  endpointType: "project" | "update" | "feed-event";
+  /** The ID of the parent entity (projectId, updateId, or feedEventId) */
   entityId: string;
   /** Initial comment count (for display optimization) */
   initialCommentCount?: number;
@@ -76,8 +76,6 @@ export function ThreadedCommentList({
         return `/api/updates/${entityId}/comments`;
       case "feed-event":
         return `/api/feed-events/${entityId}/comments`;
-      case "local-listing":
-        return `/api/local-listings/${entityId}/comments`;
       default:
         return `/api/comments?projectId=${entityId}`;
     }
@@ -91,8 +89,6 @@ export function ThreadedCommentList({
         return `/api/updates/${entityId}/comments`;
       case "feed-event":
         return `/api/feed-events/${entityId}/comments`;
-      case "local-listing":
-        return `/api/local-listings/${entityId}/comments`;
       default:
         return "/api/comments";
     }

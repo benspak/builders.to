@@ -47,9 +47,6 @@ export async function GET(request: NextRequest) {
       case "service":
         previewData = await getServicePreview(parsed.id!);
         break;
-      case "listing":
-        previewData = await getListingPreview(parsed.slug!);
-        break;
       case "local":
         if (parsed.slug) {
           previewData = await getLocalCompanyPreview(parsed.location!, parsed.slug);
@@ -367,66 +364,9 @@ async function getServicePreview(id: string): Promise<LinkPreviewData | null> {
   };
 }
 
-async function getListingPreview(slug: string): Promise<LinkPreviewData | null> {
-  const listing = await prisma.localListing.findUnique({
-    where: { slug },
-    select: {
-      title: true,
-      description: true,
-      images: true,
-      category: true,
-      city: true,
-      state: true,
-      user: {
-        select: {
-          name: true,
-          displayName: true,
-          firstName: true,
-          lastName: true,
-          image: true,
-          slug: true,
-        },
-      },
-    },
-  });
-
-  if (!listing) return null;
-
-  const displayName = listing.user.displayName
-    || (listing.user.firstName && listing.user.lastName
-      ? `${listing.user.firstName} ${listing.user.lastName}`
-      : null)
-    || listing.user.name
-    || "Builder";
-
-  // Get first image if available
-  const firstImage = Array.isArray(listing.images) && listing.images.length > 0
-    ? listing.images[0] as string
-    : null;
-
-  const location = [listing.city, listing.state].filter(Boolean).join(", ");
-
-  return {
-    url: "",
-    type: "listing",
-    title: listing.title,
-    description: listing.description.slice(0, 200),
-    image: getAbsoluteImageUrl(firstImage) ?? getAbsoluteImageUrl(listing.user.image) ?? undefined,
-    author: {
-      name: displayName,
-      image: getAbsoluteImageUrl(listing.user.image) ?? undefined,
-      slug: listing.user.slug || undefined,
-    },
-    meta: {
-      location,
-      category: listing.category,
-    },
-  };
-}
-
 async function getLocationPreview(locationSlug: string): Promise<LinkPreviewData | null> {
-  // Get location info from companies, users, or listings
-  const [company, user, listing] = await Promise.all([
+  // Get location info from companies or users
+  const [company, user] = await Promise.all([
     prisma.company.findFirst({
       where: { locationSlug },
       select: { location: true },
@@ -435,10 +375,6 @@ async function getLocationPreview(locationSlug: string): Promise<LinkPreviewData
       where: { locationSlug },
       select: { city: true, state: true, country: true },
     }),
-    prisma.localListing.findFirst({
-      where: { locationSlug },
-      select: { city: true, state: true },
-    }),
   ]);
 
   let locationName = "";
@@ -446,8 +382,6 @@ async function getLocationPreview(locationSlug: string): Promise<LinkPreviewData
     locationName = company.location;
   } else if (user) {
     locationName = [user.city, user.state, user.country].filter(Boolean).join(", ");
-  } else if (listing) {
-    locationName = [listing.city, listing.state].filter(Boolean).join(", ");
   }
 
   if (!locationName) return null;
@@ -456,7 +390,7 @@ async function getLocationPreview(locationSlug: string): Promise<LinkPreviewData
     url: "",
     type: "local",
     title: locationName,
-    description: `Discover builders, companies, and listings in ${locationName}`,
+    description: `Discover builders and companies in ${locationName}`,
     meta: {
       location: locationName,
     },

@@ -9,14 +9,14 @@ import {
   Rocket,
   ArrowRight,
   User,
-  MapPin,
+
   Briefcase,
   FileText
 } from "lucide-react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 
-type SearchResultType = "user" | "project" | "listing" | "service" | "update";
+type SearchResultType = "user" | "project" | "service" | "update";
 
 interface SearchResult {
   id: string;
@@ -42,7 +42,6 @@ interface SearchResponse {
   counts: {
     user: number;
     project: number;
-    listing: number;
     service: number;
     update: number;
     total: number;
@@ -56,12 +55,11 @@ interface SearchCommandProps {
 const TYPE_CONFIG: Record<SearchResultType, { label: string; icon: typeof User; color: string }> = {
   user: { label: "Builders", icon: User, color: "text-blue-400" },
   project: { label: "Projects", icon: Rocket, color: "text-orange-400" },
-  listing: { label: "Listings", icon: MapPin, color: "text-green-400" },
   service: { label: "Services", icon: Briefcase, color: "text-purple-400" },
   update: { label: "Updates", icon: FileText, color: "text-yellow-400" },
 };
 
-const TYPE_ORDER: SearchResultType[] = ["user", "project", "listing", "service", "update"];
+const TYPE_ORDER: SearchResultType[] = ["user", "project", "service", "update"];
 
 export function SearchCommand({ inline = false }: SearchCommandProps) {
   const [open, setOpen] = useState(false);
@@ -280,7 +278,7 @@ export function SearchCommand({ inline = false }: SearchCommandProps) {
                 <input
                   ref={inputRef}
                   type="text"
-                  placeholder="Search builders, projects, listings, services..."
+                  placeholder="Search builders, projects, services..."
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   onKeyDown={handleKeyDown}
@@ -405,7 +403,7 @@ export function SearchCommand({ inline = false }: SearchCommandProps) {
                       No results found for &ldquo;{query}&rdquo;
                     </p>
                     <p className="text-sm mt-1" style={{ color: "var(--foreground-subtle)" }}>
-                      Try searching for builders, projects, listings, or services
+                      Try searching for builders, projects, or services
                     </p>
                   </div>
                 ) : !query || query.length < 2 ? (

@@ -50,8 +50,7 @@ export type LinkPreviewType =
   | "update"        // /{slug}/updates/{id}
   | "project"       // /projects/{slug}
   | "company"       // /companies/{slug}
-  | "listing"       // /listing/{slug}
-  | "local"         // /local/{location} or /{location}/{company}
+  | "local"         // /{location}/{company}
   | "producthunt"   // External: Product Hunt
   | "reddit"        // External: Reddit
   | "x"             // External: X/Twitter
@@ -153,26 +152,6 @@ export function parseBuildersToUrl(url: string): ParsedBuildersToUrl | null {
         type: "company",
         path,
         slug: segments[1],
-      };
-    }
-
-    // /listing/{slug}
-    if (segments[0] === "listing" && segments.length >= 2) {
-      return {
-        url,
-        type: "listing",
-        path,
-        slug: segments[1],
-      };
-    }
-
-    // /local/{location}
-    if (segments[0] === "local" && segments.length >= 2) {
-      return {
-        url,
-        type: "local",
-        path,
-        location: segments[1],
       };
     }
 

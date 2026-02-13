@@ -37,8 +37,8 @@ import { ComposerWithAI } from "@/components/composer/composer-with-ai";
 import { CompanyCard } from "@/components/companies/company-card";
 import { TechStackDisplay } from "@/components/companies/tech-stack-display";
 import { BuilderCard } from "@/components/profile/builder-card";
-import { LocalListingCard } from "@/components/local/local-listing-card";
-import { Megaphone, Plus } from "lucide-react";
+
+
 
 // Force dynamic rendering since this page fetches from database
 export const dynamic = "force-dynamic";
@@ -74,7 +74,7 @@ interface PageProps {
 
 // Helper to check if slug is a location
 async function getLocationData(locationSlug: string) {
-  const [companies, builders, listings] = await Promise.all([
+  const [companies, builders] = await Promise.all([
     prisma.company.findMany({
       where: { locationSlug },
       orderBy: { createdAt: "desc" },
@@ -123,42 +123,9 @@ async function getLocationData(locationSlug: string) {
         },
       },
     }),
-    prisma.localListing.findMany({
-      where: {
-        locationSlug,
-        status: "ACTIVE",
-        OR: [
-          { expiresAt: null },
-          { expiresAt: { gt: new Date() } },
-        ],
-      },
-      orderBy: { createdAt: "desc" },
-      take: 10,
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            displayName: true,
-            image: true,
-            slug: true,
-          },
-        },
-        images: {
-          orderBy: { order: "asc" },
-          take: 1,
-        },
-        _count: {
-          select: {
-            comments: true,
-            flags: true,
-          },
-        },
-      },
-    }),
   ]);
 
-  if (companies.length === 0 && builders.length === 0 && listings.length === 0) {
+  if (companies.length === 0 && builders.length === 0) {
     return null;
   }
 
@@ -169,13 +136,11 @@ async function getLocationData(locationSlug: string) {
   } else if (builders.length > 0 && builders[0].city) {
     const locationSuffix = builders[0].country || builders[0].state;
     locationName = locationSuffix ? `${builders[0].city}, ${locationSuffix}` : builders[0].city;
-  } else if (listings.length > 0) {
-    locationName = `${listings[0].city}, ${listings[0].state}`;
   } else {
     locationName = formatLocationSlug(locationSlug);
   }
 
-  return { companies, builders, listings, locationName, locationSlug };
+  return { companies, builders, locationName, locationSlug };
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -200,8 +165,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
   }
 
-  // Check if it's a location - check companies, users, AND listings
-  const [company, locationUser, listing] = await Promise.all([
+  // Check if it's a location - check companies and users
+  const [company, locationUser] = await Promise.all([
     prisma.company.findFirst({
       where: { locationSlug: slug },
       select: { location: true },
@@ -210,35 +175,22 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       where: { locationSlug: slug },
       select: { city: true, state: true, country: true },
     }),
-    prisma.localListing.findFirst({
-      where: {
-        locationSlug: slug,
-        status: "ACTIVE",
-        OR: [
-          { expiresAt: null },
-          { expiresAt: { gt: new Date() } },
-        ],
-      },
-      select: { city: true, state: true },
-    }),
   ]);
 
-  if (company || locationUser || listing) {
+  if (company || locationUser) {
     let locationName: string;
     if (company?.location) {
       locationName = company.location;
     } else if (locationUser?.city) {
       const locationSuffix = locationUser.country || locationUser.state;
       locationName = locationSuffix ? `${locationUser.city}, ${locationSuffix}` : locationUser.city;
-    } else if (listing?.city && listing?.state) {
-      locationName = `${listing.city}, ${listing.state}`;
     } else {
       locationName = formatLocationSlug(slug);
     }
 
     return {
-      title: `Builders & Companies in ${locationName} - Builders Local | Builders.to`,
-      description: `Discover talented builders, companies, and local listings in ${locationName}. Connect with local talent and explore the tech ecosystem.`,
+      title: `Builders & Companies in ${locationName} | Builders.to`,
+      description: `Discover talented builders and companies in ${locationName}. Connect with local talent and explore the tech ecosystem.`,
     };
   }
 
@@ -498,15 +450,6 @@ export default async function SlugPage({ params }: PageProps) {
         </div>
 
         <div className="relative mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-          {/* Breadcrumb */}
-          <Link
-            href="/local"
-            className="inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors mb-8"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to all locations
-          </Link>
-
           {/* Header */}
           <div className="mb-8">
             <div className="flex items-center gap-3 mb-2">
@@ -526,12 +469,6 @@ export default async function SlugPage({ params }: PageProps) {
                     <span className="flex items-center gap-1.5">
                       <Building2 className="h-4 w-4" />
                       {locationData.companies.length} {locationData.companies.length === 1 ? "company" : "companies"}
-                    </span>
-                  )}
-                  {locationData.listings.length > 0 && (
-                    <span className="flex items-center gap-1.5">
-                      <Megaphone className="h-4 w-4" />
-                      {locationData.listings.length} {locationData.listings.length === 1 ? "listing" : "listings"}
                     </span>
                   )}
                 </div>
@@ -577,51 +514,17 @@ export default async function SlugPage({ params }: PageProps) {
             </section>
           )}
 
-          {/* Local Listings Section */}
-          {locationData.listings.length > 0 && (
-            <section className="mb-12">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-2">
-                  <Megaphone className="h-5 w-5 text-amber-400" />
-                  <h2 className="text-xl font-semibold text-white">Local Listings</h2>
-                  <span className="text-sm text-zinc-500">({locationData.listings.length})</span>
-                </div>
-                <Link
-                  href="/my-listings/new"
-                  className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-900 rounded-lg bg-gradient-to-r from-orange-400 to-amber-500 hover:from-orange-500 hover:to-amber-600 transition-all"
-                >
-                  <Plus className="h-4 w-4" />
-                  Post a Listing
-                </Link>
-              </div>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {locationData.listings.map((listing) => (
-                  <LocalListingCard
-                    key={listing.id}
-                    listing={{
-                      ...listing,
-                      activatedAt: listing.activatedAt?.toISOString() || null,
-                      expiresAt: listing.expiresAt?.toISOString() || null,
-                      createdAt: listing.createdAt.toISOString(),
-                      updatedAt: listing.updatedAt.toISOString(),
-                    }}
-                  />
-                ))}
-              </div>
-            </section>
-          )}
-
           {/* Browse More */}
           <div className="mt-12 text-center">
             <p className="text-zinc-500 mb-4">
               Looking for builders or companies in other locations?
             </p>
             <Link
-              href="/local"
+              href="/map"
               className="inline-flex items-center gap-2 rounded-xl bg-emerald-500/20 border border-emerald-500/30 px-6 py-3 text-sm font-semibold text-emerald-400 hover:bg-emerald-500/30 transition-colors"
             >
               <MapPin className="h-4 w-4" />
-              Browse All Locations
+              Browse the Map
             </Link>
           </div>
         </div>

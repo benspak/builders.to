@@ -10,7 +10,7 @@ interface ViewStats {
   ctr?: number;
 }
 
-type EntityType = "project" | "update" | "listing";
+type EntityType = "project" | "update";
 
 interface ViewStatsDisplayProps {
   entityType: EntityType;
@@ -23,7 +23,6 @@ interface ViewStatsDisplayProps {
 const apiPaths: Record<EntityType, string> = {
   project: "/api/projects",
   update: "/api/updates",
-  listing: "/api/local-listings",
 };
 
 function formatNumber(num: number): string {

@@ -5,7 +5,6 @@ import {
   Users,
   Building2,
   Sparkles,
-  MapPin,
   Trophy,
   Bell,
   ArrowRight,
@@ -39,16 +38,15 @@ export const dynamic = "force-dynamic";
 
 async function getStats() {
   try {
-    const [projectCount, userCount, companyCount, updateCount, localListingCount] = await Promise.all([
+    const [projectCount, userCount, companyCount, updateCount] = await Promise.all([
       prisma.project.count(),
       prisma.user.count(),
       prisma.company.count(),
       prisma.dailyUpdate.count(),
-      prisma.localListing.count({ where: { status: "ACTIVE" } }),
     ]);
-    return { projectCount, userCount, companyCount, updateCount, localListingCount };
+    return { projectCount, userCount, companyCount, updateCount };
   } catch {
-    return { projectCount: 0, userCount: 0, companyCount: 0, updateCount: 0, localListingCount: 0 };
+    return { projectCount: 0, userCount: 0, companyCount: 0, updateCount: 0 };
   }
 }
 
@@ -82,15 +80,6 @@ export default async function HomePage() {
       href: "/companies",
       color: "blue",
       stats: `${stats.companyCount.toLocaleString()} companies`,
-    },
-    {
-      icon: MapPin,
-      title: "Builders Local",
-      description:
-        "Advertise your services for free, find jobs, housing, and opportunities in your city. Local classifieds for the builder community.",
-      href: "/local",
-      color: "cyan",
-      stats: `${stats.localListingCount.toLocaleString()} listings`,
     },
     {
       icon: Map,

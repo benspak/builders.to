@@ -42,12 +42,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     },
     {
-      url: `${BASE_URL}/local`,
-      lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 0.7,
-    },
-    {
       url: `${BASE_URL}/streamers`,
       lastModified: new Date(),
       changeFrequency: "daily",
@@ -174,12 +168,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let projects: Array<{ slug: string | null; updatedAt: Date }> = [];
   let companies: Array<{ slug: string | null; updatedAt: Date }> = [];
   let users: Array<{ slug: string | null; updatedAt: Date }> = [];
-  let localListings: Array<{ slug: string | null; updatedAt: Date }> = [];
-  let locations: Array<{ locationSlug: string | null }> = [];
   let events: Array<{ id: string; updatedAt: Date }> = [];
 
   try {
-    [projects, companies, users, localListings, locations, events] = await Promise.all([
+    [projects, companies, users, events] = await Promise.all([
       // Projects with slugs
       prisma.project.findMany({
         where: { slug: { not: null } },
@@ -197,24 +189,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         where: { slug: { not: null } },
         select: { slug: true, updatedAt: true },
         orderBy: { updatedAt: "desc" },
-      }),
-      // Active local listings (must have slug)
-      prisma.localListing.findMany({
-        where: {
-          status: "ACTIVE",
-          slug: { not: null },
-        },
-        select: { slug: true, updatedAt: true },
-        orderBy: { updatedAt: "desc" },
-      }),
-      // Unique location slugs from local listings
-      prisma.localListing.findMany({
-        where: {
-          status: "ACTIVE",
-          locationSlug: { not: null },
-        },
-        select: { locationSlug: true },
-        distinct: ["locationSlug"],
       }),
       // Public events
       prisma.event.findMany({
@@ -269,26 +243,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.5,
     }));
 
-  // Generate local listing pages
-  const localListingPages: MetadataRoute.Sitemap = localListings
-    .filter((l) => l.slug)
-    .map((listing) => ({
-      url: `${BASE_URL}/listing/${listing.slug}`,
-      lastModified: listing.updatedAt,
-      changeFrequency: "weekly" as const,
-      priority: 0.5,
-    }));
-
-  // Generate location pages
-  const locationPages: MetadataRoute.Sitemap = locations
-    .filter((l) => l.locationSlug)
-    .map((location) => ({
-      url: `${BASE_URL}/local/${location.locationSlug}`,
-      lastModified: new Date(),
-      changeFrequency: "daily" as const,
-      priority: 0.6,
-    }));
-
   // Generate event pages
   const eventPages: MetadataRoute.Sitemap = events.map((event) => ({
     url: `${BASE_URL}/events/${event.id}`,
@@ -303,8 +257,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...companyPages,
     ...userPages,
     ...userUpdatesPages,
-    ...localListingPages,
-    ...locationPages,
     ...eventPages,
   ];
 }

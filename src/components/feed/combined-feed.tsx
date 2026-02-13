@@ -8,7 +8,6 @@ import { ProjectStatusChangeCard } from "./project-status-change-card";
 import { ProjectCreatedCard } from "./project-created-card";
 import { JobPostedCard } from "./job-posted-card";
 import { UserJoinedCard } from "./user-joined-card";
-import { ListingCreatedCard } from "./listing-created-card";
 import { EventCreatedCard } from "./event-created-card";
 import { ChevronDown, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -143,27 +142,6 @@ interface FeedEvent {
       logo?: string | null;
     };
   } | null;
-  // For listing created events
-  localListing?: {
-    id: string;
-    slug: string;
-    title: string;
-    description: string;
-    category: string;
-    city: string;
-    state: string;
-    locationSlug: string;
-    priceInCents?: number | null;
-    user: {
-      id: string;
-      name?: string | null;
-      firstName?: string | null;
-      lastName?: string | null;
-      image?: string | null;
-      slug?: string | null;
-      companies?: CompanyLogo[];
-    };
-  } | null;
   // For event created events
   event?: {
     id: string;
@@ -197,7 +175,6 @@ type FeedItem =
   | { type: "projectCreated"; data: FeedEvent }
   | { type: "jobPosted"; data: FeedEvent }
   | { type: "userJoined"; data: FeedEvent }
-  | { type: "listingCreated"; data: FeedEvent }
   | { type: "eventCreated"; data: FeedEvent };
 
 interface CombinedFeedProps {
@@ -226,7 +203,7 @@ export function CombinedFeed({
   const [isLoading, setIsLoading] = useState(false);
   // Separate different event types
   const milestoneEvents = feedEvents.filter(
-    (e) => e.type !== "STATUS_UPDATE" && e.type !== "PROJECT_STATUS_CHANGE" && e.type !== "PROJECT_CREATED" && e.type !== "JOB_POSTED" && e.type !== "USER_JOINED" && e.type !== "LISTING_CREATED" && e.type !== "EVENT_CREATED"
+    (e) => e.type !== "STATUS_UPDATE" && e.type !== "PROJECT_STATUS_CHANGE" && e.type !== "PROJECT_CREATED" && e.type !== "JOB_POSTED" && e.type !== "USER_JOINED" && e.type !== "EVENT_CREATED"
   );
   const statusEvents = feedEvents.filter((e) => e.type === "STATUS_UPDATE");
   const projectStatusChangeEvents = feedEvents.filter((e) => e.type === "PROJECT_STATUS_CHANGE");
@@ -234,7 +211,6 @@ export function CombinedFeed({
   const jobPostedEvents = feedEvents.filter((e) => e.type === "JOB_POSTED");
   // NOTE: Disabled USER_JOINED events - too many sign-ups were cluttering the feed
   // const userJoinedEvents = feedEvents.filter((e) => e.type === "USER_JOINED");
-  const listingCreatedEvents = feedEvents.filter((e) => e.type === "LISTING_CREATED");
   const eventCreatedEvents = feedEvents.filter((e) => e.type === "EVENT_CREATED");
 
   // Combine and sort by date
@@ -247,7 +223,6 @@ export function CombinedFeed({
     ...jobPostedEvents.map((e) => ({ type: "jobPosted" as const, data: e })),
     // NOTE: Disabled USER_JOINED events - too many sign-ups were cluttering the feed
     // ...userJoinedEvents.map((e) => ({ type: "userJoined" as const, data: e })),
-    ...listingCreatedEvents.map((e) => ({ type: "listingCreated" as const, data: e })),
     ...eventCreatedEvents.map((e) => ({ type: "eventCreated" as const, data: e })),
   ].sort((a, b) => {
     const dateA = new Date(a.data.createdAt).getTime();
@@ -347,19 +322,6 @@ export function CombinedFeed({
           event={{
             ...item.data,
             user: item.data.user,
-          }}
-          currentUserId={currentUserId}
-        />
-      );
-    }
-
-    if (item.type === "listingCreated" && item.data.localListing) {
-      return (
-        <ListingCreatedCard
-          key={`listing-created-${item.data.id}`}
-          event={{
-            ...item.data,
-            localListing: item.data.localListing,
           }}
           currentUserId={currentUserId}
         />

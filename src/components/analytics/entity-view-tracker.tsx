@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 
-type EntityType = "project" | "update" | "listing";
+type EntityType = "project" | "update";
 
 interface EntityViewTrackerProps {
   entityType: EntityType;
@@ -23,7 +23,6 @@ function getVisitorId(): string {
 const apiPaths: Record<EntityType, string> = {
   project: "/api/projects",
   update: "/api/updates",
-  listing: "/api/local-listings",
 };
 
 export function EntityViewTracker({ entityType, entityId }: EntityViewTrackerProps) {

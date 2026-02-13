@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import { useState } from "react";
 import { UserMenu } from "@/components/auth/user-menu";
 import { SearchCommand } from "@/components/ui/search-command";
-import { Plus, Rocket, ChevronDown, Sparkles, Menu, X, MapPin, Megaphone, Building2, Rss, FolderKanban, Globe, CalendarDays, Compass } from "lucide-react";
+import { Plus, Rocket, ChevronDown, Sparkles, Menu, X, Building2, Rss, FolderKanban, Globe, CalendarDays, Compass } from "lucide-react";
 import { BuildersLogo } from "@/components/ui/builders-logo";
 import { cn } from "@/lib/utils";
 
@@ -14,7 +14,6 @@ export function Navbar() {
   const [shareOpen, setShareOpen] = useState(false);
   const [mobileShareOpen, setMobileShareOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [localOpen, setLocalOpen] = useState(false);
 
   return (
     <header
@@ -68,15 +67,6 @@ export function Navbar() {
                   >
                     <FolderKanban className="h-3.5 w-3.5 text-sky-400" />
                     Projects
-                  </Link>
-                  <Link
-                    href="/local"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-white/5"
-                    style={{ color: "var(--foreground-muted)" }}
-                  >
-                    <MapPin className="h-3.5 w-3.5 text-emerald-400" />
-                    Local
                   </Link>
                   <Link
                     href="/companies"
@@ -155,65 +145,22 @@ export function Navbar() {
             Projects
           </Link>
 
-          {/* Local Dropdown - consolidates location-based features */}
-          <div className="relative hidden lg:block">
-            <button
-              onClick={() => setLocalOpen(!localOpen)}
-              className="flex items-center gap-1.5 text-sm font-medium transition-colors"
-              style={{ color: "var(--foreground-muted)" }}
-            >
-              <MapPin className="h-3.5 w-3.5 text-emerald-400" />
-              Local
-              <ChevronDown className={cn(
-                "h-3 w-3 transition-transform",
-                localOpen && "rotate-180"
-              )} />
-            </button>
-
-            {localOpen && (
-              <>
-                <div
-                  className="fixed inset-0 z-10"
-                  onClick={() => setLocalOpen(false)}
-                />
-                <div
-                  className="absolute left-0 top-full z-20 mt-2 w-48 rounded-xl border p-2 shadow-2xl"
-                  style={{
-                    background: "var(--background-secondary)",
-                    borderColor: "var(--card-border)"
-                  }}
-                >
-                  <Link
-                    href="/local"
-                    onClick={() => setLocalOpen(false)}
-                    className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-white/5"
-                    style={{ color: "var(--foreground-muted)" }}
-                  >
-                    <MapPin className="h-3.5 w-3.5 text-emerald-400" />
-                    Listings
-                  </Link>
-                  <Link
-                    href="/events"
-                    onClick={() => setLocalOpen(false)}
-                    className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-white/5"
-                    style={{ color: "var(--foreground-muted)" }}
-                  >
-                    <CalendarDays className="h-3.5 w-3.5 text-violet-400" />
-                    Events
-                  </Link>
-                  <Link
-                    href="/map"
-                    onClick={() => setLocalOpen(false)}
-                    className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-white/5"
-                    style={{ color: "var(--foreground-muted)" }}
-                  >
-                    <Globe className="h-3.5 w-3.5 text-cyan-400" />
-                    Map
-                  </Link>
-                </div>
-              </>
-            )}
-          </div>
+          <Link
+            href="/events"
+            className="hidden lg:flex items-center gap-1.5 text-sm font-medium transition-colors"
+            style={{ color: "var(--foreground-muted)" }}
+          >
+            <CalendarDays className="h-3.5 w-3.5 text-violet-400" />
+            Events
+          </Link>
+          <Link
+            href="/map"
+            className="hidden lg:flex items-center gap-1.5 text-sm font-medium transition-colors"
+            style={{ color: "var(--foreground-muted)" }}
+          >
+            <Globe className="h-3.5 w-3.5 text-cyan-400" />
+            Map
+          </Link>
 
           <Link
             href="/companies"
@@ -279,15 +226,6 @@ export function Navbar() {
                         <span>Post Update</span>
                       </Link>
                       <Link
-                        href="/my-listings/new"
-                        onClick={() => setMobileShareOpen(false)}
-                        className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-white/5"
-                        style={{ color: "var(--foreground-muted)" }}
-                      >
-                        <Megaphone className="h-4 w-4 text-emerald-400" />
-                        <span>Post Listing</span>
-                      </Link>
-                      <Link
                         href="/events/new"
                         onClick={() => setMobileShareOpen(false)}
                         className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-white/5"
@@ -347,20 +285,6 @@ export function Navbar() {
                         <div>
                           <div className="font-medium">Post Update</div>
                           <div className="text-xs text-zinc-500">Share what you're working on</div>
-                        </div>
-                      </Link>
-
-                      <Link
-                        href="/my-listings/new"
-                        onClick={() => setShareOpen(false)}
-                        className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-zinc-300 transition-colors hover:bg-white/5 hover:text-white"
-                      >
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/10">
-                          <Megaphone className="h-4 w-4 text-emerald-400" />
-                        </div>
-                        <div>
-                          <div className="font-medium">Post Listing</div>
-                          <div className="text-xs text-zinc-500">Promote your business locally</div>
                         </div>
                       </Link>
 

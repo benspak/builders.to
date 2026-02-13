@@ -9,7 +9,6 @@ export type ReportContentType =
   | "USER"
   | "PROJECT"
   | "SERVICE_LISTING"
-  | "LOCAL_LISTING"
   | "DAILY_UPDATE"
   | "COMMENT";
 

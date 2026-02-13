@@ -3,7 +3,7 @@ import { Loader2, Sparkles } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { isProMember } from "@/lib/stripe-subscription";
-import { CombinedFeed, OpenJobs, RecentListings, UpcomingEvents, EmailOptIn } from "@/components/feed";
+import { CombinedFeed, OpenJobs, UpcomingEvents, EmailOptIn } from "@/components/feed";
 import { SiteViewsCounter } from "@/components/analytics/site-views-counter";
 import { SidebarAd } from "@/components/ads";
 import { ProUpgradePrompt } from "@/components/pro";
@@ -182,8 +182,6 @@ async function FeedContent() {
         const jobPostedEvents = events.filter(e => e.type === "JOB_POSTED");
         // For user joined events, fetch user info with location
         const userJoinedEvents = events.filter(e => e.type === "USER_JOINED");
-        // For listing created events, fetch local listing info
-        const listingCreatedEvents = events.filter(e => e.type === "LISTING_CREATED");
         // For event created events, fetch community event info
         const eventCreatedEvents = events.filter(e => e.type === "EVENT_CREATED");
 
@@ -325,50 +323,6 @@ async function FeedContent() {
           companyRoleMap = new Map(companyRoles.map(r => [r.id, r]));
         }
 
-        // Fetch local listings for listing created events
-        let localListingMap = new Map<string, { id: string; slug: string; title: string; description: string; category: string; city: string; state: string; locationSlug: string; priceInCents: number | null; user: { id: string; name: string | null; displayName: string | null; firstName: string | null; lastName: string | null; image: string | null; slug: string | null; companies: { id: string; name: string; slug: string | null; logo: string | null }[] } }>();
-        if (listingCreatedEvents.length > 0) {
-          const localListingIds = Array.from(new Set(listingCreatedEvents.map(e => e.localListingId).filter(Boolean))) as string[];
-          const localListings = await prisma.localListing.findMany({
-            where: { id: { in: localListingIds } },
-            select: {
-              id: true,
-              slug: true,
-              title: true,
-              description: true,
-              category: true,
-              city: true,
-              state: true,
-              locationSlug: true,
-              priceInCents: true,
-              user: {
-                select: {
-                  id: true,
-                  name: true,
-                  displayName: true,
-                  firstName: true,
-                  lastName: true,
-                  image: true,
-                  slug: true,
-                  // Include first company with logo for display next to username
-                  companies: {
-                    where: { logo: { not: null } },
-                    take: 1,
-                    orderBy: { createdAt: "asc" },
-                    select: {
-                      id: true,
-                      name: true,
-                      slug: true,
-                      logo: true,
-                    },
-                  },
-                },
-              },
-            },
-          });
-          localListingMap = new Map(localListings.map(l => [l.id, l]));
-        }
-
         // Fetch community events for event created events
         let communityEventMap = new Map<string, { id: string; title: string; description: string; startsAt: Date; endsAt: Date | null; timezone: string; isVirtual: boolean; venue: string | null; city: string | null; country: string | null; organizer: { id: string; name: string | null; displayName: string | null; firstName: string | null; lastName: string | null; image: string | null; slug: string | null; companies: { id: string; name: string; slug: string | null; logo: string | null }[] } }>();
         if (eventCreatedEvents.length > 0) {
@@ -423,7 +377,6 @@ async function FeedContent() {
               : null,
           project: (event.type === "PROJECT_STATUS_CHANGE" || event.type === "PROJECT_CREATED") && event.projectId ? projectMap.get(event.projectId) || null : null,
           companyRole: event.type === "JOB_POSTED" && event.companyRoleId ? companyRoleMap.get(event.companyRoleId) || null : null,
-          localListing: event.type === "LISTING_CREATED" && event.localListingId ? localListingMap.get(event.localListingId) || null : null,
           event: event.type === "EVENT_CREATED" && event.eventId ? communityEventMap.get(event.eventId) || null : null,
         }));
       }),
@@ -578,42 +531,6 @@ async function SidebarAdSection() {
   return <SidebarAd isAuthenticated={isAuthenticated} />;
 }
 
-async function RecentListingsSection() {
-  try {
-    const listings = await prisma.localListing.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 3,
-      select: {
-        id: true,
-        slug: true,
-        title: true,
-        description: true,
-        category: true,
-        city: true,
-        state: true,
-        locationSlug: true,
-        priceInCents: true,
-        user: {
-          select: {
-            id: true,
-            name: true,
-            displayName: true,
-            firstName: true,
-            lastName: true,
-            image: true,
-            slug: true,
-          },
-        },
-      },
-    });
-
-    return <RecentListings listings={listings} />;
-  } catch (error) {
-    console.error("Error fetching recent listings:", error);
-    return null;
-  }
-}
-
 export default function FeedPage() {
   return (
     <div className="relative min-h-screen" style={{ background: "var(--background)" }}>
@@ -724,34 +641,6 @@ export default function FeedPage() {
             <div className="xl:sticky xl:top-24 space-y-6">
               {/* Email Opt-In */}
               <EmailOptIn />
-
-              {/* Recent Local Listings Section */}
-              <Suspense
-                fallback={
-                  <div className="rounded-xl border border-zinc-800/50 bg-zinc-900/50 overflow-hidden animate-pulse">
-                    <div className="px-4 py-3 border-b border-zinc-800/50">
-                      <div className="flex items-center gap-2">
-                        <div className="h-8 w-8 bg-zinc-800 rounded-lg" />
-                        <div className="h-5 w-24 bg-zinc-800 rounded" />
-                      </div>
-                    </div>
-                    <div className="divide-y divide-zinc-800/30">
-                      {[1, 2, 3].map((i) => (
-                        <div key={i} className="flex items-start gap-3 px-4 py-3">
-                          <div className="h-10 w-10 bg-zinc-800 rounded-lg" />
-                          <div className="flex-1">
-                            <div className="h-4 w-32 bg-zinc-800 rounded mb-1" />
-                            <div className="h-3 w-20 bg-zinc-800 rounded mb-2" />
-                            <div className="h-3 w-24 bg-zinc-800 rounded" />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                }
-              >
-                <RecentListingsSection />
-              </Suspense>
 
               {/* Open Jobs Section */}
               <Suspense

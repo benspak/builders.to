@@ -12,7 +12,6 @@ const CONTENT_TYPE_CONFIG = {
   USER: { table: "user", idField: "id" },
   PROJECT: { table: "project", idField: "id" },
   SERVICE_LISTING: { table: "serviceListing", idField: "id" },
-  LOCAL_LISTING: { table: "localListing", idField: "id" },
   DAILY_UPDATE: { table: "dailyUpdate", idField: "id" },
   COMMENT: { table: "feedEventComment", idField: "id" },
 } as const;
@@ -105,7 +104,7 @@ export async function POST(request: NextRequest) {
           id: true,
           ...(config.table !== "user" ? { userId: true } : {}),
           ...(config.table === "user" ? { name: true } : {}),
-          ...(config.table === "project" || config.table === "serviceListing" || config.table === "localListing" ? { title: true } : {}),
+          ...(config.table === "project" || config.table === "serviceListing" ? { title: true } : {}),
           ...(config.table === "dailyUpdate" || config.table === "feedEventComment" ? { content: true } : {}),
         },
       });
@@ -289,9 +288,6 @@ function generateReportEmailHtml(data: {
       break;
     case "SERVICE_LISTING":
       contentUrl = `${baseUrl}/local?category=services`;
-      break;
-    case "LOCAL_LISTING":
-      contentUrl = `${baseUrl}/listing/${contentId}`;
       break;
     case "DAILY_UPDATE":
       contentUrl = `${baseUrl}/feed`;
