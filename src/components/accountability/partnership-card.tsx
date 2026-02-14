@@ -17,7 +17,6 @@ import {
 import { PartnershipStatus, CheckInFrequency, CheckInMood } from "@prisma/client";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow, format } from "date-fns";
-import { CheckInCard } from "./check-in-card";
 
 interface Partner {
   id: string;
@@ -297,8 +296,8 @@ export function PartnershipCard({
       {/* Check-in status */}
       {partnership.status === "ACTIVE" && (
         <div className="mt-4 pt-4 border-t border-white/10">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-sm text-zinc-500">Today's check-ins</span>
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-zinc-500">Today&apos;s check-ins</span>
             <div className="flex items-center gap-2">
               {/* Partner status */}
               <div
@@ -348,13 +347,6 @@ export function PartnershipCard({
               </div>
             </div>
           </div>
-
-          {/* Check-in card */}
-          <CheckInCard
-            partnershipId={partnership.id}
-            partnerName={partnerName}
-            hasCheckedInToday={userCheckedIn}
-          />
         </div>
       )}
 

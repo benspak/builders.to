@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { createCheckIn, getPartnership } from "@/lib/services/accountability.service";
+import { createCheckIn } from "@/lib/services/accountability.service";
 import { sendUserPushNotification } from "@/lib/push-notifications";
 import { CheckInMood } from "@prisma/client";
 import { awardKarmaForUpdate } from "@/lib/services/karma.service";
 
-// POST /api/accountability/check-in - Record a check-in
+// POST /api/accountability/check-in - Record a single daily check-in for ALL active partnerships
 export async function POST(request: NextRequest) {
   try {
     const session = await auth();
@@ -19,14 +19,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { partnershipId, note, mood, imageUrl } = body;
-
-    if (!partnershipId) {
-      return NextResponse.json(
-        { error: "Partnership ID is required" },
-        { status: 400 }
-      );
-    }
+    const { note, mood, imageUrl } = body;
 
     // Require a message for accountability check-ins
     if (!note || note.trim().length === 0) {
@@ -51,33 +44,50 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get partnership to get partner name for the update
-    const partnership = await getPartnership(partnershipId);
-    if (!partnership) {
+    // Get ALL active partnerships for this user
+    const activePartnerships = await prisma.accountabilityPartnership.findMany({
+      where: {
+        OR: [
+          { requesterId: session.user.id },
+          { partnerId: session.user.id },
+        ],
+        status: "ACTIVE",
+      },
+      include: {
+        requester: {
+          select: { id: true, displayName: true, firstName: true, lastName: true, name: true },
+        },
+        partner: {
+          select: { id: true, displayName: true, firstName: true, lastName: true, name: true },
+        },
+      },
+    });
+
+    if (activePartnerships.length === 0) {
       return NextResponse.json(
-        { error: "Partnership not found" },
-        { status: 404 }
+        { error: "No active partnerships found" },
+        { status: 400 }
       );
     }
 
-    // Determine the partner
-    const partnerUser = partnership.requester.id === session.user.id
-      ? partnership.partner
-      : partnership.requester;
-    const partnerDisplayName = partnerUser.displayName
-      || (partnerUser.firstName && partnerUser.lastName
-        ? `${partnerUser.firstName} ${partnerUser.lastName}`
-        : null)
-      || partnerUser.name
-      || "my partner";
+    // Check if user has already checked in today for ANY partnership
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-    // Create a DailyUpdate so the check-in appears in the social feed
-    // with full likes, comments, and image support
-    const moodLabel = mood === "CRUSHING_IT" ? "Crushing it"
-      : mood === "GOOD" ? "Good"
-      : mood === "OKAY" ? "Okay"
-      : mood === "STRUGGLING" ? "Struggling"
-      : null;
+    const existingCheckIn = await prisma.accountabilityCheckIn.findFirst({
+      where: {
+        userId: session.user.id,
+        partnershipId: { in: activePartnerships.map((p) => p.id) },
+        createdAt: { gte: today },
+      },
+    });
+
+    if (existingCheckIn) {
+      return NextResponse.json(
+        { error: "Already checked in today" },
+        { status: 400 }
+      );
+    }
 
     const updateContent = note.trim();
 
@@ -86,9 +96,6 @@ export async function POST(request: NextRequest) {
       where: { id: session.user.id },
       select: { currentStreak: true, longestStreak: true, lastActivityDate: true },
     });
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
 
     let newStreak = 1;
     let longestStreak = user?.longestStreak || 0;
@@ -109,7 +116,7 @@ export async function POST(request: NextRequest) {
       longestStreak = newStreak;
     }
 
-    // Create the DailyUpdate and update streak in a transaction
+    // Create ONE DailyUpdate and update streak in a transaction
     const [dailyUpdate] = await prisma.$transaction([
       prisma.dailyUpdate.create({
         data: {
@@ -131,31 +138,33 @@ export async function POST(request: NextRequest) {
     // Award karma for posting an update
     awardKarmaForUpdate(session.user.id, dailyUpdate.id).catch(console.error);
 
-    // Create the accountability check-in linked to the DailyUpdate
-    const result = await createCheckIn({
-      partnershipId,
-      userId: session.user.id,
-      note: note.trim(),
-      mood: mood as CheckInMood | undefined,
-      imageUrl: imageUrl || undefined,
-      dailyUpdateId: dailyUpdate.id,
-    });
+    // Create check-ins for ALL active partnerships, linked to the single DailyUpdate
+    const checkInResults: string[] = [];
+    for (const partnership of activePartnerships) {
+      const result = await createCheckIn({
+        partnershipId: partnership.id,
+        userId: session.user.id,
+        note: note.trim(),
+        mood: mood as CheckInMood | undefined,
+        imageUrl: imageUrl || undefined,
+        dailyUpdateId: dailyUpdate.id,
+      });
 
-    if (!result.success) {
-      // Clean up the daily update if check-in creation fails
+      if (result.success && result.checkInId) {
+        checkInResults.push(result.checkInId);
+      }
+    }
+
+    if (checkInResults.length === 0) {
+      // Clean up the daily update if no check-ins were created
       await prisma.dailyUpdate.delete({ where: { id: dailyUpdate.id } }).catch(console.error);
       return NextResponse.json(
-        { error: result.error },
+        { error: "Failed to create check-ins" },
         { status: 400 }
       );
     }
 
-    // Determine the partner to notify
-    const partnerId = partnership.requester.id === session.user.id
-      ? partnership.partner.id
-      : partnership.requester.id;
-
-    // Get current user info for notification
+    // Get current user info for notifications
     const currentUser = await prisma.user.findUnique({
       where: { id: session.user.id },
       select: { name: true, firstName: true, lastName: true, image: true },
@@ -165,32 +174,44 @@ export async function POST(request: NextRequest) {
       ? `${currentUser.firstName} ${currentUser.lastName}`
       : currentUser?.name || "Your partner";
 
-    // Create notification
-    await prisma.notification.create({
-      data: {
-        type: "ACCOUNTABILITY_CHECK_IN",
-        title: `${userName} checked in`,
-        message: note.length > 100
-          ? note.substring(0, 100) + "..."
-          : note,
-        userId: partnerId,
-        actorId: session.user.id,
-        actorName: userName,
-        actorImage: currentUser?.image,
-      },
-    });
+    // Notify each partner (deduplicated)
+    const notifiedPartnerIds = new Set<string>();
+    for (const partnership of activePartnerships) {
+      const partnerId = partnership.requesterId === session.user.id
+        ? partnership.partnerId
+        : partnership.requesterId;
 
-    // Send push notification
-    sendUserPushNotification(partnerId, {
-      title: "Partner Check-in",
-      body: `${userName} just checked in!`,
-      url: "/accountability",
-      tag: "accountability-checkin",
-    }).catch(console.error);
+      // Skip if we already notified this partner (shouldn't happen but just in case)
+      if (notifiedPartnerIds.has(partnerId)) continue;
+      notifiedPartnerIds.add(partnerId);
+
+      // Create notification
+      await prisma.notification.create({
+        data: {
+          type: "ACCOUNTABILITY_CHECK_IN",
+          title: `${userName} checked in`,
+          message: note.length > 100
+            ? note.substring(0, 100) + "..."
+            : note,
+          userId: partnerId,
+          actorId: session.user.id,
+          actorName: userName,
+          actorImage: currentUser?.image,
+        },
+      });
+
+      // Send push notification
+      sendUserPushNotification(partnerId, {
+        title: "Partner Check-in",
+        body: `${userName} just checked in!`,
+        url: "/accountability",
+        tag: "accountability-checkin",
+      }).catch(console.error);
+    }
 
     return NextResponse.json({
       success: true,
-      checkInId: result.checkInId,
+      checkInCount: checkInResults.length,
       updateId: dailyUpdate.id,
     }, { status: 201 });
   } catch (error) {

@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { Users, Plus, Search, Loader2 } from "lucide-react";
 import { PartnershipStatus, CheckInFrequency, CheckInMood } from "@prisma/client";
 import { PartnershipCard } from "@/components/accountability/partnership-card";
+import { CheckInCard } from "@/components/accountability/check-in-card";
 import { BuildingSimilar } from "@/components/matching/building-similar";
 
 interface Partner {
@@ -64,6 +65,25 @@ export function AccountabilityDashboard({ userId }: AccountabilityDashboardProps
     }
   }, [filter]);
 
+  // Compute whether the user has already checked in today (across any partnership)
+  const activePartnerships = useMemo(
+    () => partnerships.filter((p) => p.status === "ACTIVE"),
+    [partnerships]
+  );
+
+  const hasCheckedInToday = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    return activePartnerships.some((p) =>
+      p.recentCheckIns?.some((c) => {
+        const checkInDate = new Date(c.createdAt);
+        checkInDate.setHours(0, 0, 0, 0);
+        return c.userId === userId && checkInDate.getTime() === today.getTime();
+      })
+    );
+  }, [activePartnerships, userId]);
+
   useEffect(() => {
     fetchPartnerships();
   }, [fetchPartnerships]);
@@ -121,9 +141,6 @@ export function AccountabilityDashboard({ userId }: AccountabilityDashboardProps
   const pendingRequests = partnerships.filter(
     (p) => p.status === "PENDING" && p.partner.id === userId
   );
-  const activePartnerships = partnerships.filter(
-    (p) => p.status === "ACTIVE"
-  );
   const sentRequests = partnerships.filter(
     (p) => p.status === "PENDING" && p.requester.id === userId
   );
@@ -143,6 +160,17 @@ export function AccountabilityDashboard({ userId }: AccountabilityDashboardProps
             </div>
           </div>
         </div>
+
+        {/* Daily check-in (one for all partners) */}
+        {activePartnerships.length > 0 && (
+          <div className="mb-8">
+            <CheckInCard
+              partnerCount={activePartnerships.length}
+              hasCheckedInToday={hasCheckedInToday}
+              onCheckIn={() => fetchPartnerships()}
+            />
+          </div>
+        )}
 
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Main content */}

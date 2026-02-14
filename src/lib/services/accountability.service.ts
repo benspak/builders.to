@@ -496,10 +496,14 @@ export async function getPartnershipCheckIns(
 }
 
 /**
- * Auto-create check-in when user posts a daily update
- * Called from the updates API
+ * Auto-create check-ins for all active partnerships when user posts a daily update.
+ * Creates one check-in per partnership, all linked to the same DailyUpdate.
+ * Called from the updates API.
  */
-export async function autoCheckInFromUpdate(userId: string): Promise<void> {
+export async function autoCheckInFromUpdate(
+  userId: string,
+  dailyUpdateId?: string
+): Promise<void> {
   // Get active partnerships for this user
   const partnerships = await prisma.accountabilityPartnership.findMany({
     where: {
@@ -513,7 +517,7 @@ export async function autoCheckInFromUpdate(userId: string): Promise<void> {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  // Create check-ins for each partnership (if not already checked in)
+  // Create check-ins for each partnership (if not already checked in today)
   for (const partnership of partnerships) {
     const existing = await prisma.accountabilityCheckIn.findFirst({
       where: {
@@ -529,6 +533,7 @@ export async function autoCheckInFromUpdate(userId: string): Promise<void> {
           partnershipId: partnership.id,
           userId,
           note: "Checked in via daily update",
+          dailyUpdateId: dailyUpdateId || null,
         },
       });
     }

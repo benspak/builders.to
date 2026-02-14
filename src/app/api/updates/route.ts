@@ -279,8 +279,8 @@ export async function POST(request: NextRequest) {
       awardKarmaForStreakMilestone(session.user.id, newStreak, previousStreak).catch(console.error);
     }
 
-    // Auto check-in for accountability partnerships
-    autoCheckInFromUpdate(session.user.id).catch(console.error);
+    // Auto check-in for accountability partnerships (linked to this daily update)
+    autoCheckInFromUpdate(session.user.id, update.id).catch(console.error);
 
     // Extract mentions and create notifications
     const mentionedSlugs = extractMentions(content);

@@ -2,13 +2,12 @@
 
 import { useState, useRef } from "react";
 import Image from "next/image";
-import { CheckCircle, Loader2, Smile, Meh, Frown, Zap, ImageIcon, X } from "lucide-react";
+import { CheckCircle, Loader2, Smile, Meh, Frown, Zap, ImageIcon, X, Users } from "lucide-react";
 import { CheckInMood } from "@prisma/client";
 import { cn } from "@/lib/utils";
 
 interface CheckInCardProps {
-  partnershipId: string;
-  partnerName: string;
+  partnerCount: number;
   hasCheckedInToday?: boolean;
   onCheckIn?: () => void;
   className?: string;
@@ -22,8 +21,7 @@ const moodOptions: { value: CheckInMood; icon: typeof Smile; label: string; colo
 ];
 
 export function CheckInCard({
-  partnershipId,
-  partnerName,
+  partnerCount,
   hasCheckedInToday = false,
   onCheckIn,
   className,
@@ -92,7 +90,6 @@ export function CheckInCard({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          partnershipId,
           note: note.trim(),
           mood: selectedMood || undefined,
           imageUrl: imageUrl || undefined,
@@ -130,7 +127,9 @@ export function CheckInCard({
           <div>
             <p className="text-sm font-medium text-green-400">Checked in today!</p>
             <p className="text-xs text-green-600">
-              {partnerName} will see your check-in
+              {partnerCount === 1
+                ? "Your accountability partner will see your update"
+                : `All ${partnerCount} accountability partners will see your update`}
             </p>
           </div>
         </div>
@@ -154,7 +153,9 @@ export function CheckInCard({
           <div>
             <p className="text-sm font-medium text-white">Ready to check in?</p>
             <p className="text-xs text-zinc-500">
-              Let {partnerName} know you&apos;re on track
+              {partnerCount === 1
+                ? "Share your progress with your accountability partner"
+                : `One update shared with all ${partnerCount} partners`}
             </p>
           </div>
         </div>
@@ -169,6 +170,16 @@ export function CheckInCard({
         className
       )}
     >
+      {/* Header hint */}
+      <div className="flex items-center gap-2 mb-4 px-1">
+        <Users className="h-3.5 w-3.5 text-zinc-500" />
+        <p className="text-xs text-zinc-500">
+          {partnerCount === 1
+            ? "This update will be shared with your accountability partner"
+            : `This update will be shared with all ${partnerCount} accountability partners`}
+        </p>
+      </div>
+
       {/* Mood selection */}
       <div className="mb-4">
         <p className="text-sm font-medium text-white mb-2">How are you feeling?</p>
