@@ -208,20 +208,28 @@ export async function POST(request: Request) {
         }
 
         // Map Stripe status to our status
+        // Stripe statuses: incomplete, incomplete_expired, trialing, active, past_due, canceled, unpaid, paused
         let status: "ACTIVE" | "PAST_DUE" | "CANCELLED" | "INACTIVE";
         switch (subscription.status) {
           case "active":
+          case "trialing":
+            // Trialing users should have full Pro access
             status = "ACTIVE";
             break;
           case "past_due":
+          case "incomplete":
+            // Keep access during payment retry period
             status = "PAST_DUE";
             break;
           case "canceled":
           case "unpaid":
             status = "CANCELLED";
             break;
+          case "incomplete_expired":
+          case "paused":
           default:
             status = "INACTIVE";
+            console.log(`[Pro Webhook] Mapped Stripe status "${subscription.status}" to INACTIVE for subscription ${subscription.id}`);
         }
 
         const updatePeriodStart = getDateFromStripeTimestamp(subscription.current_period_start);

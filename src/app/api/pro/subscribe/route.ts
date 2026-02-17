@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { createProCheckoutSession } from "@/lib/stripe-subscription";
+import { createProCheckoutSession, verifyAndSyncProStatus } from "@/lib/stripe-subscription";
 
 /**
  * POST /api/pro/subscribe
@@ -90,16 +90,53 @@ export async function GET() {
       );
     }
 
-    const subscription = await prisma.proSubscription.findUnique({
+    // First, get the local subscription record
+    let subscription = await prisma.proSubscription.findUnique({
       where: { userId: session.user.id },
       select: {
         status: true,
         plan: true,
         currentPeriodEnd: true,
         cancelAtPeriodEnd: true,
-        lastTokenGrantAt: true,
+        stripeSubscriptionId: true,
+        stripeCustomerId: true,
       },
     });
+
+    // If user doesn't appear to have ACTIVE status, verify with Stripe
+    // This self-heals missed webhooks and out-of-sync states
+    if (!subscription || subscription.status !== "ACTIVE") {
+      const user = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { email: true },
+      });
+
+      try {
+        const syncResult = await verifyAndSyncProStatus(
+          session.user.id,
+          user?.email
+        );
+
+        if (syncResult?.synced) {
+          // Re-fetch the updated subscription data
+          subscription = await prisma.proSubscription.findUnique({
+            where: { userId: session.user.id },
+            select: {
+              status: true,
+              plan: true,
+              currentPeriodEnd: true,
+              cancelAtPeriodEnd: true,
+              stripeSubscriptionId: true,
+              stripeCustomerId: true,
+            },
+          });
+          console.log(`[Pro Subscribe] Synced subscription status from Stripe for user ${session.user.id}`);
+        }
+      } catch (syncError) {
+        // Don't fail the request if Stripe sync fails - return local data
+        console.error("[Pro Subscribe] Stripe sync failed (non-blocking):", syncError);
+      }
+    }
 
     if (!subscription) {
       return NextResponse.json({

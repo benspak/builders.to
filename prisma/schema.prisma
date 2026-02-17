@@ -1627,6 +1627,9 @@ model ProSubscription {
   currentPeriodEnd   DateTime?
   cancelAtPeriodEnd  Boolean   @default(false)
 
+  // Token grants tracking
+  lastTokenGrantAt DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
