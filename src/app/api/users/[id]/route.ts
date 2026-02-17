@@ -198,6 +198,7 @@ export async function PATCH(
       buildingCategory,
       // Email preferences
       dailyDigest,
+      accountabilityReminders,
     } = body;
 
     // Get current user data for comparison
@@ -471,7 +472,8 @@ export async function PATCH(
 
     // Update email preferences if any are provided
     const hasEmailPreferenceUpdate =
-      typeof dailyDigest === "boolean";
+      typeof dailyDigest === "boolean" ||
+      typeof accountabilityReminders === "boolean";
 
     if (hasEmailPreferenceUpdate) {
       await prisma.emailPreferences.upsert({
@@ -479,9 +481,11 @@ export async function PATCH(
         create: {
           userId: id,
           dailyDigest: dailyDigest ?? true,
+          accountabilityReminders: accountabilityReminders ?? true,
         },
         update: {
           ...(typeof dailyDigest === "boolean" && { dailyDigest }),
+          ...(typeof accountabilityReminders === "boolean" && { accountabilityReminders }),
         },
       });
     }

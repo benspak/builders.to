@@ -102,6 +102,7 @@ interface ProfileFormProps {
     // Email preferences
     emailPreferences?: {
       dailyDigest: boolean;
+      accountabilityReminders: boolean;
     } | null;
   };
 }
@@ -146,6 +147,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
     buildingCategory: user.buildingCategory ?? null,
     // Email preferences (default to true if not set)
     dailyDigest: user.emailPreferences?.dailyDigest ?? true,
+    accountabilityReminders: user.emailPreferences?.accountabilityReminders ?? true,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -828,6 +830,46 @@ export function ProfileForm({ user }: ProfileFormProps) {
                 <div className={`h-5 w-5 rounded-full bg-white shadow-sm transition-transform mt-0.5 ${
                   formData.dailyDigest ? "translate-x-5.5 ml-0.5" : "translate-x-0.5"
                 }`} style={{ transform: formData.dailyDigest ? 'translateX(22px)' : 'translateX(2px)' }} />
+              </div>
+            </div>
+          </label>
+
+          {/* Accountability Reminders */}
+          <label
+            className={`flex cursor-pointer items-center justify-between gap-4 rounded-xl border-2 p-4 transition-all ${
+              formData.accountabilityReminders
+                ? "border-orange-500/50 bg-orange-500/10"
+                : "border-zinc-700/50 bg-zinc-800/30 hover:border-zinc-600/50"
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${
+                formData.accountabilityReminders ? "bg-orange-500/20" : "bg-zinc-700/30"
+              }`}>
+                <Users className={`h-5 w-5 ${formData.accountabilityReminders ? "text-orange-400" : "text-zinc-500"}`} />
+              </div>
+              <div>
+                <div className={`font-medium ${formData.accountabilityReminders ? "text-orange-400" : "text-zinc-300"}`}>
+                  Accountability Reminders
+                </div>
+                <div className="text-xs text-zinc-500">
+                  Get a daily reminder to post your update when you have active partners
+                </div>
+              </div>
+            </div>
+            <div className="relative">
+              <input
+                type="checkbox"
+                checked={formData.accountabilityReminders}
+                onChange={(e) => setFormData({ ...formData, accountabilityReminders: e.target.checked })}
+                className="sr-only peer"
+              />
+              <div className={`h-6 w-11 rounded-full transition-colors ${
+                formData.accountabilityReminders ? "bg-orange-500" : "bg-zinc-600"
+              }`}>
+                <div className={`h-5 w-5 rounded-full bg-white shadow-sm transition-transform mt-0.5 ${
+                  formData.accountabilityReminders ? "translate-x-5.5 ml-0.5" : "translate-x-0.5"
+                }`} style={{ transform: formData.accountabilityReminders ? 'translateX(22px)' : 'translateX(2px)' }} />
               </div>
             </div>
           </label>

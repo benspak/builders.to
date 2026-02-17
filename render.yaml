@@ -63,6 +63,20 @@ services:
       - key: NEXTAUTH_URL
         sync: false
 
+  # Accountability reminders - nudges users to post their daily update
+  - type: cron
+    name: builders-to-accountability-reminders
+    runtime: node
+    region: oregon
+    schedule: "0 14 * * *"
+    buildCommand: npm install
+    startCommand: node scripts/run-cron.mjs accountability-reminders
+    envVars:
+      - key: CRON_SECRET
+        sync: false
+      - key: NEXTAUTH_URL
+        sync: false
+
   # Expire ads - marks expired advertisements
   - type: cron
     name: builders-to-expire-ads

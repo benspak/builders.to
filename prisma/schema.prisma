@@ -1032,10 +1032,12 @@ model EmailPreferences {
   userId String @unique
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  dailyDigest Boolean @default(true) // Daily summary of likes, upvotes, celebrations
+  dailyDigest              Boolean @default(true) // Daily summary of likes, upvotes, celebrations
+  accountabilityReminders  Boolean @default(true) // Daily reminder to post accountability update
 
   // Track last digests sent
-  lastDailyDigestSentAt DateTime? // Daily digest
+  lastDailyDigestSentAt              DateTime? // Daily digest
+  lastAccountabilityReminderSentAt   DateTime? // Accountability reminder
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

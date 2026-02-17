@@ -59,6 +59,7 @@ export default async function SettingsPage() {
       emailPreferences: {
         select: {
           dailyDigest: true,
+          accountabilityReminders: true,
         },
       },
     },
