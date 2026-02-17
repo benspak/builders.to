@@ -12,8 +12,6 @@ Allow: /companies
 Allow: /companies/*
 Allow: /services
 Allow: /services/*
-Allow: /events
-Allow: /events/*
 Allow: /local
 Allow: /local/*
 Allow: /listing/*

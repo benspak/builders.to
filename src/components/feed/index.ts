@@ -9,6 +9,5 @@ export { OpenJobs } from "./open-jobs";
 export { FeedEventComments } from "./feed-event-comments";
 export { EditorsPick } from "./editors-pick";
 export { UserInterviewCTA } from "./user-interview-cta";
-export { UpcomingEvents } from "./upcoming-events";
 export { TopBuilders } from "./top-builders";
 export { EmailOptIn } from "./email-opt-in";

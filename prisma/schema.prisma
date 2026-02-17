@@ -179,10 +179,6 @@ model User {
   userEarnings UserEarnings?
   payouts      Payout[]
 
-  // Events & Meetups
-  organizedEvents Event[]         @relation("EventOrganizer")
-  eventAttendees  EventAttendee[]
-  eventComments   EventComment[]
 
   // Direct Messaging
   conversationParticipants ConversationParticipant[]
@@ -843,7 +839,6 @@ enum FeedEventType {
   JOB_POSTED // A new job/role was posted by a company
   USER_JOINED // A new user signed up
   LISTING_CREATED // A new local listing was created
-  EVENT_CREATED // A new community event was created
 }
 
 // Feed events - aggregated activity feed
@@ -860,7 +855,6 @@ model FeedEvent {
   milestoneId    String? @unique // For milestone events
   companyRoleId  String? @unique // For job posted events
   localListingId String? @unique // For listing created events
-  eventId        String? @unique // For event created events
 
   // Denormalized data for fast feed rendering
   title       String // e.g., "shipped v1" or "hit $1k MRR"
@@ -870,7 +864,6 @@ model FeedEvent {
   milestone     ProjectMilestone?  @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
   companyRole   CompanyRole?       @relation(fields: [companyRoleId], references: [id], onDelete: Cascade)
   localListing  LocalListing?      @relation(fields: [localListingId], references: [id], onDelete: Cascade)
-  event         Event?             @relation(fields: [eventId], references: [id], onDelete: Cascade)
   likes         FeedEventLike[]
   comments      FeedEventComment[]
   notifications Notification[]
@@ -880,7 +873,6 @@ model FeedEvent {
   @@index([projectId])
   @@index([companyRoleId])
   @@index([localListingId])
-  @@index([eventId])
 }
 
 // Likes on feed events
@@ -1929,99 +1921,6 @@ model PostContentHash {
 
   @@unique([userId, hash])
   @@index([userId])
-}
-
-// ============================================
-// Events & Meetups System
-// ============================================
-
-enum EventRsvpStatus {
-  GOING
-  INTERESTED
-  NOT_GOING
-}
-
-model Event {
-  id          String @id @default(cuid())
-  title       String
-  description String @db.Text
-
-  // Date/time
-  startsAt DateTime
-  endsAt   DateTime?
-  timezone String    @default("UTC")
-
-  // Location (virtual or physical)
-  isVirtual  Boolean @default(false)
-  virtualUrl String? // Video call link for virtual events
-  venue      String? // Venue name
-  address    String? // Full address
-  city       String?
-  state      String?
-  country    String?
-  latitude   Float?
-  longitude  Float?
-
-  // Capacity and settings
-  maxAttendees Int?
-  isPublic     Boolean @default(true) // Public events visible to all
-
-  // Metadata
-  imageUrl  String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  organizerId String
-  organizer   User            @relation("EventOrganizer", fields: [organizerId], references: [id], onDelete: Cascade)
-  attendees   EventAttendee[]
-  comments    EventComment[]
-  feedEvent   FeedEvent?
-
-  @@index([startsAt])
-  @@index([city, country])
-  @@index([organizerId])
-  @@index([isPublic, startsAt])
-}
-
-model EventAttendee {
-  id        String          @id @default(cuid())
-  status    EventRsvpStatus @default(GOING)
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
-
-  userId  String
-  eventId String
-
-  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, eventId])
-  @@index([eventId])
-  @@index([status])
-}
-
-// Comments on events
-model EventComment {
-  id        String   @id @default(cuid())
-  content   String   @db.Text
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  userId  String
-  eventId String
-
-  // Threading support
-  parentId String?
-  parent   EventComment?  @relation("EventCommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
-  replies  EventComment[] @relation("EventCommentReplies")
-
-  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
-
-  @@index([eventId])
-  @@index([userId])
-  @@index([parentId])
 }
 
 // ============================================

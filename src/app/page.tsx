@@ -16,7 +16,6 @@ import {
   Globe,
   Map,
   Share2,
-  CalendarDays,
   Crown,
   BadgeCheck,
   Calendar,
@@ -89,15 +88,6 @@ export default async function HomePage() {
       href: "/map",
       color: "cyan",
       stats: "Global",
-    },
-    {
-      icon: CalendarDays,
-      title: "Events & Meetups",
-      description:
-        "Host and discover builder meetups, workshops, and networking events. RSVP to in-person or virtual gatherings.",
-      href: "/events",
-      color: "violet",
-      stats: "Community",
     },
     {
       icon: MessageSquare,

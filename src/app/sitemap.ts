@@ -36,12 +36,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     },
     {
-      url: `${BASE_URL}/events`,
-      lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 0.8,
-    },
-    {
       url: `${BASE_URL}/streamers`,
       lastModified: new Date(),
       changeFrequency: "daily",
@@ -168,10 +162,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let projects: Array<{ slug: string | null; updatedAt: Date }> = [];
   let companies: Array<{ slug: string | null; updatedAt: Date }> = [];
   let users: Array<{ slug: string | null; updatedAt: Date }> = [];
-  let events: Array<{ id: string; updatedAt: Date }> = [];
-
   try {
-    [projects, companies, users, events] = await Promise.all([
+    [projects, companies, users] = await Promise.all([
       // Projects with slugs
       prisma.project.findMany({
         where: { slug: { not: null } },
@@ -188,12 +180,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       prisma.user.findMany({
         where: { slug: { not: null } },
         select: { slug: true, updatedAt: true },
-        orderBy: { updatedAt: "desc" },
-      }),
-      // Public events
-      prisma.event.findMany({
-        where: { isPublic: true },
-        select: { id: true, updatedAt: true },
         orderBy: { updatedAt: "desc" },
       }),
     ]);
@@ -243,20 +229,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.5,
     }));
 
-  // Generate event pages
-  const eventPages: MetadataRoute.Sitemap = events.map((event) => ({
-    url: `${BASE_URL}/events/${event.id}`,
-    lastModified: event.updatedAt,
-    changeFrequency: "weekly" as const,
-    priority: 0.6,
-  }));
-
   return [
     ...staticPages,
     ...projectPages,
     ...companyPages,
     ...userPages,
     ...userUpdatesPages,
-    ...eventPages,
   ];
 }

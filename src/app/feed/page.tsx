@@ -3,7 +3,7 @@ import { Loader2, Sparkles } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { isProMember } from "@/lib/stripe-subscription";
-import { CombinedFeed, OpenJobs, UpcomingEvents, EmailOptIn } from "@/components/feed";
+import { CombinedFeed, OpenJobs, EmailOptIn } from "@/components/feed";
 import { SiteViewsCounter } from "@/components/analytics/site-views-counter";
 import { SidebarAd } from "@/components/ads";
 import { ProUpgradePrompt } from "@/components/pro";
@@ -182,9 +182,6 @@ async function FeedContent() {
         const jobPostedEvents = events.filter(e => e.type === "JOB_POSTED");
         // For user joined events, fetch user info with location
         const userJoinedEvents = events.filter(e => e.type === "USER_JOINED");
-        // For event created events, fetch community event info
-        const eventCreatedEvents = events.filter(e => e.type === "EVENT_CREATED");
-
         // Fetch users for status updates
         let userMap = new Map<string, { id: string; name: string | null; displayName: string | null; firstName: string | null; lastName: string | null; image: string | null; slug: string | null; headline: string | null; companies: { id: string; name: string; slug: string | null; logo: string | null }[] }>();
         if (statusEvents.length > 0) {
@@ -323,51 +320,6 @@ async function FeedContent() {
           companyRoleMap = new Map(companyRoles.map(r => [r.id, r]));
         }
 
-        // Fetch community events for event created events
-        let communityEventMap = new Map<string, { id: string; title: string; description: string; startsAt: Date; endsAt: Date | null; timezone: string; isVirtual: boolean; venue: string | null; city: string | null; country: string | null; organizer: { id: string; name: string | null; displayName: string | null; firstName: string | null; lastName: string | null; image: string | null; slug: string | null; companies: { id: string; name: string; slug: string | null; logo: string | null }[] } }>();
-        if (eventCreatedEvents.length > 0) {
-          const eventIds = Array.from(new Set(eventCreatedEvents.map(e => e.eventId).filter(Boolean))) as string[];
-          const communityEvents = await prisma.event.findMany({
-            where: { id: { in: eventIds } },
-            select: {
-              id: true,
-              title: true,
-              description: true,
-              startsAt: true,
-              endsAt: true,
-              timezone: true,
-              isVirtual: true,
-              venue: true,
-              city: true,
-              country: true,
-              organizer: {
-                select: {
-                  id: true,
-                  name: true,
-                  displayName: true,
-                  firstName: true,
-                  lastName: true,
-                  image: true,
-                  slug: true,
-                  // Include first company with logo for display next to username
-                  companies: {
-                    where: { logo: { not: null } },
-                    take: 1,
-                    orderBy: { createdAt: "asc" },
-                    select: {
-                      id: true,
-                      name: true,
-                      slug: true,
-                      logo: true,
-                    },
-                  },
-                },
-              },
-            },
-          });
-          communityEventMap = new Map(communityEvents.map(e => [e.id, e]));
-        }
-
         return events.map(event => ({
           ...event,
           user: event.type === "STATUS_UPDATE"
@@ -377,7 +329,6 @@ async function FeedContent() {
               : null,
           project: (event.type === "PROJECT_STATUS_CHANGE" || event.type === "PROJECT_CREATED") && event.projectId ? projectMap.get(event.projectId) || null : null,
           companyRole: event.type === "JOB_POSTED" && event.companyRoleId ? companyRoleMap.get(event.companyRoleId) || null : null,
-          event: event.type === "EVENT_CREATED" && event.eventId ? communityEventMap.get(event.eventId) || null : null,
         }));
       }),
     ]);
@@ -440,56 +391,6 @@ async function FeedContent() {
         <p className="text-zinc-500">Unable to load feed. Please try refreshing the page.</p>
       </div>
     );
-  }
-}
-
-async function UpcomingEventsSection() {
-  try {
-    // Fetch top 3 upcoming public events
-    const events = await prisma.event.findMany({
-      where: {
-        isPublic: true,
-        startsAt: { gte: new Date() },
-      },
-      orderBy: { startsAt: "asc" },
-      take: 3,
-      select: {
-        id: true,
-        title: true,
-        startsAt: true,
-        isVirtual: true,
-        city: true,
-        country: true,
-        venue: true,
-        organizer: {
-          select: {
-            id: true,
-            name: true,
-            firstName: true,
-            lastName: true,
-            image: true,
-            slug: true,
-          },
-        },
-        _count: {
-          select: {
-            attendees: {
-              where: { status: "GOING" },
-            },
-          },
-        },
-      },
-    });
-
-    const eventsWithCount = events.map((event) => ({
-      ...event,
-      attendeeCount: event._count.attendees,
-    }));
-
-    return <UpcomingEvents events={eventsWithCount} />;
-  } catch (error) {
-    console.error("Error fetching upcoming events:", error);
-    return null;
   }
 }
 
@@ -588,33 +489,6 @@ export default function FeedPage() {
               {/* Karma Leaderboard - Top Builders */}
               <KarmaLeaderboard limit={5} />
 
-              {/* Upcoming Events Section */}
-              <Suspense
-                fallback={
-                  <div className="rounded-xl border border-zinc-800/50 bg-zinc-900/50 overflow-hidden animate-pulse">
-                    <div className="px-4 py-3 border-b border-zinc-800/50">
-                      <div className="flex items-center gap-2">
-                        <div className="h-8 w-8 bg-zinc-800 rounded-lg" />
-                        <div className="h-5 w-28 bg-zinc-800 rounded" />
-                      </div>
-                    </div>
-                    <div className="divide-y divide-zinc-800/30">
-                      {[1, 2, 3].map((i) => (
-                        <div key={i} className="flex items-start gap-3 px-4 py-3">
-                          <div className="h-10 w-10 bg-zinc-800 rounded-lg" />
-                          <div className="flex-1">
-                            <div className="h-4 w-32 bg-zinc-800 rounded mb-1" />
-                            <div className="h-3 w-16 bg-zinc-800 rounded mb-2" />
-                            <div className="h-3 w-24 bg-zinc-800 rounded" />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                }
-              >
-                <UpcomingEventsSection />
-              </Suspense>
             </div>
           </aside>
 

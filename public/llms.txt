@@ -45,12 +45,6 @@ Builders.to is a community platform where indie hackers, solopreneurs, and devel
 - **Location-Based**: Browse builders and services in your area
 - **Ratings & Comments**: Rate listing authors and leave feedback
 
-### Events & Meetups
-- **Create Events**: Host physical, virtual, or hybrid events for the builder community
-- **RSVP System**: Attendees can mark Going, Interested, or Not Going
-- **Event Discovery**: Browse upcoming events; find events near you via geolocation
-- **Event Comments**: Discuss events with threaded comments
-
 ### Builder Map
 - **Interactive World Map**: See where builders are located globally
 - **Location Markers**: Visual pins for builders with approximate locations (privacy-offset)
@@ -118,8 +112,6 @@ Builders.to is a community platform where indie hackers, solopreneurs, and devel
 - `/companies/[slug]` - Individual company pages
 - `/services` - Marketplace for builder services
 - `/services/[id]` - Individual service listing pages
-- `/events` - Browse upcoming events and meetups
-- `/events/[id]` - Individual event pages with RSVP
 - `/local` - Find builders and listings by location
 - `/local/[locationSlug]` - Location-specific listings
 - `/listing/[slug]` - Individual local listing pages
