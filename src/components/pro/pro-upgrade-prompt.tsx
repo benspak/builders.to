@@ -104,8 +104,14 @@ export function ProUpgradePrompt({
         : "You can post 1 update per day";
       bannerSubtitle = "Upgrade to Pro for up to 20 posts per day";
     } else if (feature === "projects" && projectCount !== undefined) {
-      bannerTitle = `You've reached the free limit (${projectCount}/3 projects)`;
-      bannerSubtitle = "Upgrade to Pro to list unlimited projects";
+      const remaining = Math.max(0, 3 - projectCount);
+      if (projectCount >= 3) {
+        bannerTitle = `You've reached the free limit (${projectCount}/3 projects)`;
+        bannerSubtitle = "Upgrade to Pro to list unlimited projects";
+      } else {
+        bannerTitle = `You can share ${remaining} more free project${remaining === 1 ? "" : "s"}`;
+        bannerSubtitle = `${projectCount}/3 free projects used. Upgrade to Pro for unlimited projects.`;
+      }
     }
 
     return (

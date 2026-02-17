@@ -25,8 +25,13 @@ export default async function ProjectsPage({ searchParams }: ProjectsPageProps) 
     prisma.project.count(),
   ]);
 
-  // Check if user is a Pro member
+  // Check if user is a Pro member and get their project count
   const isPro = session?.user?.id ? await isProMember(session.user.id) : false;
+  
+  const userProjectCount = (!isPro && session?.user?.id)
+    ? await prisma.project.count({ where: { userId: session.user.id } })
+    : 0;
+  const canCreateMore = isPro || userProjectCount < 3;
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -51,7 +56,7 @@ export default async function ProjectsPage({ searchParams }: ProjectsPageProps) 
             Discover what builders, founders, and entrepreneurs are building and launching
           </p>
         </div>
-        {session && isPro ? (
+        {session && canCreateMore ? (
           <div className="flex gap-3">
             <Link
               href="/projects/import"
@@ -73,13 +78,14 @@ export default async function ProjectsPage({ searchParams }: ProjectsPageProps) 
         ) : null}
       </div>
 
-      {/* Pro Upgrade Banner for logged-in non-Pro users */}
+      {/* Project limit banner for logged-in non-Pro users */}
       {session && !isPro && (
         <div className="mb-8">
           <ProUpgradePrompt
             feature="projects"
             variant="banner"
             isAuthenticated={true}
+            projectCount={userProjectCount}
           />
         </div>
       )}

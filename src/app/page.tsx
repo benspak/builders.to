@@ -116,14 +116,23 @@ export default async function HomePage() {
       color: "orange",
       stats: "Smart match",
     },
+    {
+      icon: Rocket,
+      title: "Share Up to 3 Projects",
+      description:
+        "Free accounts can list up to 3 projects at any stage — from idea to launched. Track milestones, get feedback, and import from GitHub.",
+      href: "/projects/new",
+      color: "amber",
+      stats: "3 free",
+    },
   ];
 
   const proFeatures = [
     {
       icon: Rocket,
-      title: "Create & Share Projects",
+      title: "Unlimited Projects",
       description:
-        "Share your work at any stage — from idea to launched. Track progress with status updates and milestones. Import from GitHub.",
+        "Go beyond the 3 free projects. Pro members can create and share unlimited projects, track progress with milestones, and import from GitHub.",
       color: "amber",
     },
     {
@@ -546,7 +555,7 @@ export default async function HomePage() {
               <span className="gradient-text">Pro</span>
             </h2>
             <p className="text-lg text-zinc-400 max-w-2xl mx-auto">
-              Create projects, post updates, cross-post everywhere, and build your company profile.
+              Go beyond 3 free projects with unlimited listings, post updates, cross-post everywhere, and build your company profile.
               Everything you need to build in public.
             </p>
 

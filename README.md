@@ -8,7 +8,7 @@ A members-only launchpad and community platform for indie hackers and builders. 
 
 ### 🎯 Core Platform
 
-- **Project Showcase** — Post your work at any stage: `Idea → Building → Beta → Launched → Paused → Acquired`
+- **Project Showcase** — Post your work at any stage: `Idea → Building → Beta → Launched → Paused → Acquired`. Free accounts can share up to 3 projects; Pro members get unlimited.
 - **Daily Updates Feed** — Share what you're building with text, images, GIFs, and YouTube videos
 - **Milestone Tracking** — Celebrate achievements: v1 shipped, first user, first customer, MRR milestones, profitability, and more
 - **Top Builders Ranking** — Leaderboard based on launched projects, engagement, and community contribution
@@ -96,6 +96,7 @@ A members-only launchpad and community platform for indie hackers and builders. 
 
 - **Pro Monthly** — $3.99/month for premium features
 - **Pro Yearly** — $39.99/year (save ~17%)
+- **Unlimited Projects** — Free accounts can share up to 3 projects; Pro unlocks unlimited
 - **Pro Rewards** — Earn real money for quality content
 - **DALL-E Image Generation** — Create AI images for posts
 - **Enhanced AI Features** — Priority access to AI content tools

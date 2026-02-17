@@ -7,7 +7,7 @@ Builders.to is a community platform where indie hackers, solopreneurs, and devel
 ## Core Features
 
 ### Project Sharing
-- **Projects**: Post your work at any stage (Idea → Building → Beta → Launched → Paused → Acquired)
+- **Projects**: Post your work at any stage (Idea → Building → Beta → Launched → Paused → Acquired). Free accounts can share up to 3 projects; Pro members get unlimited projects.
 - **Co-Builders**: Credit multiple builders on a single project
 - **Milestones**: Track and celebrate project milestones (v1 shipped, first user, first customer, $1k MRR, $10k MRR, profitable, first hire, funding, pivot)
 - **Project Images**: Upload screenshots and media to showcase your work
