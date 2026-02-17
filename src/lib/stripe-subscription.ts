@@ -246,32 +246,74 @@ export async function activateProSubscription(
 }
 
 /**
- * Update subscription status from webhook
+ * Update subscription status from webhook.
+ *
+ * Looks up the record by stripeSubscriptionId first.  If not found (e.g. the
+ * user re-subscribed and the DB still has their old subscription ID), falls
+ * back to a userId lookup so the status can still be corrected.  When falling
+ * back, the stripeSubscriptionId on the record is also updated to the new one.
  */
 export async function updateProSubscriptionStatus(
   stripeSubscriptionId: string,
   status: "ACTIVE" | "PAST_DUE" | "CANCELLED" | "INACTIVE",
   currentPeriodStart?: Date,
   currentPeriodEnd?: Date,
-  cancelAtPeriodEnd?: boolean
+  cancelAtPeriodEnd?: boolean,
+  userId?: string
 ): Promise<void> {
   const updateData: {
     status: "ACTIVE" | "PAST_DUE" | "CANCELLED" | "INACTIVE";
     currentPeriodStart?: Date;
     currentPeriodEnd?: Date;
     cancelAtPeriodEnd?: boolean;
+    stripeSubscriptionId?: string;
   } = { status };
 
   if (currentPeriodStart) updateData.currentPeriodStart = currentPeriodStart;
   if (currentPeriodEnd) updateData.currentPeriodEnd = currentPeriodEnd;
   if (cancelAtPeriodEnd !== undefined) updateData.cancelAtPeriodEnd = cancelAtPeriodEnd;
 
-  await prisma.proSubscription.update({
-    where: { stripeSubscriptionId },
-    data: updateData,
-  });
+  try {
+    await prisma.proSubscription.update({
+      where: { stripeSubscriptionId },
+      data: updateData,
+    });
 
-  console.log(`[Pro Subscription] Updated status to ${status} for subscription ${stripeSubscriptionId}`);
+    console.log(`[Pro Subscription] Updated status to ${status} for subscription ${stripeSubscriptionId}`);
+    return;
+  } catch (error) {
+    // Record not found by stripeSubscriptionId – fall back to userId lookup
+    if (!userId) {
+      console.error(
+        `[Pro Subscription] No record found for subscription ${stripeSubscriptionId} and no userId provided for fallback`
+      );
+      throw error;
+    }
+
+    console.warn(
+      `[Pro Subscription] Subscription ${stripeSubscriptionId} not found in DB, falling back to userId ${userId}`
+    );
+  }
+
+  // Fallback: update by userId and also store the new stripeSubscriptionId
+  updateData.stripeSubscriptionId = stripeSubscriptionId;
+
+  try {
+    await prisma.proSubscription.update({
+      where: { userId },
+      data: updateData,
+    });
+
+    console.log(
+      `[Pro Subscription] Updated status to ${status} for user ${userId} (subscription ${stripeSubscriptionId} via userId fallback)`
+    );
+  } catch (fallbackError) {
+    console.error(
+      `[Pro Subscription] Failed to update by userId ${userId} as well:`,
+      fallbackError
+    );
+    throw fallbackError;
+  }
 }
 
 /**
@@ -306,15 +348,54 @@ export async function getCustomerPortalUrl(
 }
 
 /**
- * Check if a user has an active Pro subscription
+ * Check if a user has an active Pro subscription.
+ *
+ * When the local status is not ACTIVE but a subscription record exists (i.e.
+ * the status is CANCELLED, PAST_DUE, or INACTIVE), we attempt a lightweight
+ * Stripe sync to self-heal missed webhooks.  The sync is rate-limited to at
+ * most once per 5 minutes per user to avoid excessive Stripe API calls.
  */
+const _syncCooldowns = new Map<string, number>();
+const SYNC_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
+
 export async function isProMember(userId: string): Promise<boolean> {
   const subscription = await prisma.proSubscription.findUnique({
     where: { userId },
     select: { status: true },
   });
 
-  return subscription?.status === "ACTIVE";
+  if (subscription?.status === "ACTIVE") {
+    return true;
+  }
+
+  // No subscription record at all – nothing to sync
+  if (!subscription) {
+    return false;
+  }
+
+  // Status is CANCELLED / PAST_DUE / INACTIVE – try to self-heal via Stripe
+  const lastSync = _syncCooldowns.get(userId) ?? 0;
+  if (Date.now() - lastSync < SYNC_COOLDOWN_MS) {
+    return false; // Still within cooldown, return current (non-active) status
+  }
+  _syncCooldowns.set(userId, Date.now());
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true },
+    });
+
+    const syncResult = await verifyAndSyncProStatus(userId, user?.email);
+    if (syncResult?.synced && syncResult.status === "ACTIVE") {
+      console.log(`[Pro Subscription] isProMember self-healed status to ACTIVE for user ${userId}`);
+      return true;
+    }
+  } catch (error) {
+    console.error(`[Pro Subscription] isProMember sync failed for user ${userId}:`, error);
+  }
+
+  return false;
 }
 
 /**

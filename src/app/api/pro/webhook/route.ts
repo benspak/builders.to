@@ -216,7 +216,9 @@ export async function POST(request: Request) {
           invoiceSubId,
           "ACTIVE",
           finalPeriodStart || undefined,
-          finalPeriodEnd || undefined
+          finalPeriodEnd || undefined,
+          undefined,
+          userId
         );
 
         console.log(`[Pro Webhook] Invoice paid for user ${userId}`);
@@ -260,12 +262,15 @@ export async function POST(request: Request) {
         const subRawUpdate = subscription as unknown as Record<string, unknown>;
         const { periodStart: updatePeriodStart, periodEnd: updatePeriodEnd } = getSubscriptionPeriodDates(subRawUpdate);
 
+        const subUserId = subscription.metadata?.userId;
+
         await updateProSubscriptionStatus(
           subscription.id,
           status,
           updatePeriodStart || undefined,
           updatePeriodEnd || undefined,
-          subscription.cancel_at_period_end
+          subscription.cancel_at_period_end,
+          subUserId || undefined
         );
 
         console.log(`[Pro Webhook] Subscription updated: ${subscription.id} -> ${status}`);
@@ -280,9 +285,15 @@ export async function POST(request: Request) {
           break;
         }
 
+        const deletedSubUserId = subscription.metadata?.userId;
+
         await updateProSubscriptionStatus(
           subscription.id,
-          "CANCELLED"
+          "CANCELLED",
+          undefined,
+          undefined,
+          false, // Reset cancelAtPeriodEnd since the subscription is now fully cancelled
+          deletedSubUserId || undefined
         );
 
         console.log(`[Pro Webhook] Subscription cancelled: ${subscription.id}`);
@@ -311,9 +322,15 @@ export async function POST(request: Request) {
           break;
         }
 
+        const failedUserId = subscription.metadata?.userId;
+
         await updateProSubscriptionStatus(
           failedSubId,
-          "PAST_DUE"
+          "PAST_DUE",
+          undefined,
+          undefined,
+          undefined,
+          failedUserId || undefined
         );
 
         console.log(`[Pro Webhook] Payment failed for subscription: ${failedSubId}`);
