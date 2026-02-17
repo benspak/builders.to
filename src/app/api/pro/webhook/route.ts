@@ -4,6 +4,7 @@ import { getStripe } from "@/lib/stripe";
 import {
   activateProSubscription,
   updateProSubscriptionStatus,
+  getSubscriptionIdFromInvoice,
 } from "@/lib/stripe-subscription";
 
 // Route segment config for webhook handling
@@ -39,6 +40,25 @@ function getDateFromStripeTimestamp(timestamp: number | null | undefined): Date 
   }
   
   return date;
+}
+
+/**
+ * Safely extract period dates from a Stripe subscription object.
+ * Compatible with both old Stripe API (current_period_start/end on subscription)
+ * and Stripe SDK v20+ where these fields were removed from the type.
+ * The raw webhook payload may still include them depending on the account's API version.
+ */
+function getSubscriptionPeriodDates(sub: Record<string, unknown>): {
+  periodStart: Date | null;
+  periodEnd: Date | null;
+} {
+  const rawStart = sub.current_period_start as number | undefined;
+  const rawEnd = sub.current_period_end as number | undefined;
+
+  return {
+    periodStart: getDateFromStripeTimestamp(rawStart),
+    periodEnd: getDateFromStripeTimestamp(rawEnd),
+  };
 }
 
 /**
@@ -133,18 +153,14 @@ export async function POST(request: Request) {
         console.log(`[Pro Webhook] Retrieving subscription: ${subscriptionId}`);
         const subscription = await stripe.subscriptions.retrieve(subscriptionId);
         console.log(`[Pro Webhook] Subscription status: ${subscription.status}`);
-        console.log(`[Pro Webhook] Subscription raw data:`, JSON.stringify({
-          current_period_start: subscription.current_period_start,
-          current_period_end: subscription.current_period_end,
-        }));
 
-        // Handle period dates - they can be numbers (unix timestamps) or undefined
-        // In newer Stripe API versions, these are always numbers (seconds since epoch)
-        const periodStart = getDateFromStripeTimestamp(subscription.current_period_start);
-        const periodEnd = getDateFromStripeTimestamp(subscription.current_period_end);
+        // Extract period dates - compatible with both old and new Stripe API versions
+        // In SDK v20+ / newer API versions, current_period_start/end may not be on the type
+        const subRaw = subscription as unknown as Record<string, unknown>;
+        const { periodStart, periodEnd } = getSubscriptionPeriodDates(subRaw);
 
-        console.log(`[Pro Webhook] Period start: ${periodStart?.toISOString()}`);
-        console.log(`[Pro Webhook] Period end: ${periodEnd?.toISOString()}`);
+        console.log(`[Pro Webhook] Period start: ${periodStart?.toISOString() ?? "unavailable"}`);
+        console.log(`[Pro Webhook] Period end: ${periodEnd?.toISOString() ?? "unavailable"}`);
 
         await activateProSubscription(
           userId,
@@ -153,7 +169,7 @@ export async function POST(request: Request) {
           subscription.items.data[0].price.id,
           plan,
           periodStart || new Date(),
-          periodEnd || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // Default to 30 days from now
+          periodEnd || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
         );
 
         console.log(`[Pro Webhook] Activated Pro subscription for user ${userId}`);
@@ -163,18 +179,22 @@ export async function POST(request: Request) {
       case "invoice.paid": {
         const invoice = event.data.object as Stripe.Invoice;
 
-        // Get subscription to check if it's a Pro subscription
-        if (!invoice.subscription) {
+        // Extract subscription ID - compatible with both old and new Stripe API
+        const invoiceRaw = invoice as unknown as Record<string, unknown>;
+        const invoiceSubId = getSubscriptionIdFromInvoice(invoiceRaw);
+
+        if (!invoiceSubId) {
+          console.log("[Pro Webhook] invoice.paid: No subscription ID found, skipping");
           break;
         }
 
+        console.log(`[Pro Webhook] invoice.paid: subscription ID = ${invoiceSubId}`);
         const stripe = getStripe();
-        const subscription = await stripe.subscriptions.retrieve(
-          invoice.subscription as string
-        );
+        const subscription = await stripe.subscriptions.retrieve(invoiceSubId);
 
         // Only handle Pro subscriptions
         if (subscription.metadata?.type !== "pro_subscription") {
+          console.log("[Pro Webhook] invoice.paid: Not a Pro subscription, skipping");
           break;
         }
 
@@ -184,15 +204,19 @@ export async function POST(request: Request) {
           break;
         }
 
-        // Update period dates with safe timestamp conversion
-        const invoicePeriodStart = getDateFromStripeTimestamp(subscription.current_period_start);
-        const invoicePeriodEnd = getDateFromStripeTimestamp(subscription.current_period_end);
+        // Extract period dates from subscription - Stripe v20 compatible
+        const subRawInvoice = subscription as unknown as Record<string, unknown>;
+        const { periodStart: invoicePeriodStart, periodEnd: invoicePeriodEnd } = getSubscriptionPeriodDates(subRawInvoice);
+
+        // Also try invoice period dates as fallback (available in all Stripe versions)
+        const finalPeriodStart = invoicePeriodStart || getDateFromStripeTimestamp(invoice.period_start);
+        const finalPeriodEnd = invoicePeriodEnd || getDateFromStripeTimestamp(invoice.period_end);
 
         await updateProSubscriptionStatus(
-          invoice.subscription as string,
+          invoiceSubId,
           "ACTIVE",
-          invoicePeriodStart || undefined,
-          invoicePeriodEnd || undefined
+          finalPeriodStart || undefined,
+          finalPeriodEnd || undefined
         );
 
         console.log(`[Pro Webhook] Invoice paid for user ${userId}`);
@@ -232,8 +256,9 @@ export async function POST(request: Request) {
             console.log(`[Pro Webhook] Mapped Stripe status "${subscription.status}" to INACTIVE for subscription ${subscription.id}`);
         }
 
-        const updatePeriodStart = getDateFromStripeTimestamp(subscription.current_period_start);
-        const updatePeriodEnd = getDateFromStripeTimestamp(subscription.current_period_end);
+        // Extract period dates - Stripe v20 compatible
+        const subRawUpdate = subscription as unknown as Record<string, unknown>;
+        const { periodStart: updatePeriodStart, periodEnd: updatePeriodEnd } = getSubscriptionPeriodDates(subRawUpdate);
 
         await updateProSubscriptionStatus(
           subscription.id,
@@ -267,26 +292,31 @@ export async function POST(request: Request) {
       case "invoice.payment_failed": {
         const invoice = event.data.object as Stripe.Invoice;
 
-        if (!invoice.subscription) {
+        // Extract subscription ID - compatible with both old and new Stripe API
+        const failedInvoiceRaw = invoice as unknown as Record<string, unknown>;
+        const failedSubId = getSubscriptionIdFromInvoice(failedInvoiceRaw);
+
+        if (!failedSubId) {
+          console.log("[Pro Webhook] invoice.payment_failed: No subscription ID found, skipping");
           break;
         }
 
+        console.log(`[Pro Webhook] invoice.payment_failed: subscription ID = ${failedSubId}`);
         const stripe = getStripe();
-        const subscription = await stripe.subscriptions.retrieve(
-          invoice.subscription as string
-        );
+        const subscription = await stripe.subscriptions.retrieve(failedSubId);
 
         // Only handle Pro subscriptions
         if (subscription.metadata?.type !== "pro_subscription") {
+          console.log("[Pro Webhook] invoice.payment_failed: Not a Pro subscription, skipping");
           break;
         }
 
         await updateProSubscriptionStatus(
-          invoice.subscription as string,
+          failedSubId,
           "PAST_DUE"
         );
 
-        console.log(`[Pro Webhook] Payment failed for subscription: ${invoice.subscription}`);
+        console.log(`[Pro Webhook] Payment failed for subscription: ${failedSubId}`);
         break;
       }
 

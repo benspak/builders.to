@@ -318,6 +318,62 @@ export async function isProMember(userId: string): Promise<boolean> {
 }
 
 /**
+ * Safely extract period dates from a Stripe subscription object.
+ * Handles both old API versions (current_period_start/end on subscription)
+ * and Stripe SDK v20+ where these fields were removed.
+ */
+function getSubscriptionPeriodDates(sub: Record<string, unknown>): {
+  periodStart: Date | undefined;
+  periodEnd: Date | undefined;
+} {
+  // Try current_period_start/end (present in older API versions)
+  const rawStart = sub.current_period_start as number | undefined;
+  const rawEnd = sub.current_period_end as number | undefined;
+
+  const periodStart = typeof rawStart === "number" && rawStart > 0
+    ? new Date(rawStart * 1000)
+    : undefined;
+  const periodEnd = typeof rawEnd === "number" && rawEnd > 0
+    ? new Date(rawEnd * 1000)
+    : undefined;
+
+  return { periodStart, periodEnd };
+}
+
+/**
+ * Extract the subscription ID from a Stripe invoice.
+ * Handles both old API (invoice.subscription) and Stripe SDK v20+
+ * (invoice.parent.subscription_details.subscription).
+ */
+export function getSubscriptionIdFromInvoice(invoice: Record<string, unknown>): string | null {
+  // Try old format: invoice.subscription (string or object with id)
+  const directSub = invoice.subscription;
+  if (typeof directSub === "string" && directSub.startsWith("sub_")) {
+    return directSub;
+  }
+  if (directSub && typeof directSub === "object" && "id" in (directSub as Record<string, unknown>)) {
+    return (directSub as Record<string, unknown>).id as string;
+  }
+
+  // Try new format: invoice.parent.subscription_details.subscription
+  const parent = invoice.parent as Record<string, unknown> | undefined;
+  if (parent) {
+    const subDetails = parent.subscription_details as Record<string, unknown> | undefined;
+    if (subDetails) {
+      const sub = subDetails.subscription;
+      if (typeof sub === "string" && sub.startsWith("sub_")) {
+        return sub;
+      }
+      if (sub && typeof sub === "object" && "id" in (sub as Record<string, unknown>)) {
+        return (sub as Record<string, unknown>).id as string;
+      }
+    }
+  }
+
+  return null;
+}
+
+/**
  * Verify and sync Pro subscription status with Stripe.
  * 
  * This is a self-healing mechanism for cases where webhook delivery failed
@@ -336,7 +392,15 @@ export async function verifyAndSyncProStatus(
   synced: boolean;
   status: "ACTIVE" | "PAST_DUE" | "CANCELLED" | "INACTIVE";
 } | null> {
-  const stripe = getStripe();
+  console.log(`[Pro Sync] Starting sync for user ${userId}, email: ${userEmail || "none"}`);
+
+  let stripe: ReturnType<typeof getStripe>;
+  try {
+    stripe = getStripe();
+  } catch (error) {
+    console.error("[Pro Sync] Failed to initialize Stripe client:", error);
+    return null;
+  }
 
   // First, check if we have a local subscription record
   const localSub = await prisma.proSubscription.findUnique({
@@ -348,22 +412,25 @@ export async function verifyAndSyncProStatus(
     },
   });
 
+  console.log(`[Pro Sync] Local subscription: ${localSub ? `status=${localSub.status}, subId=${localSub.stripeSubscriptionId}, custId=${localSub.stripeCustomerId}` : "none"}`);
+
   // If local record shows ACTIVE, trust it (webhooks would handle any changes)
   if (localSub?.status === "ACTIVE") {
+    console.log("[Pro Sync] Local status is ACTIVE, no sync needed");
     return { synced: false, status: "ACTIVE" };
   }
 
   // Strategy 1: Verify by existing Stripe subscription ID
   if (localSub?.stripeSubscriptionId) {
+    console.log(`[Pro Sync] Strategy 1: Retrieving subscription ${localSub.stripeSubscriptionId}`);
     try {
       const stripeSub = await stripe.subscriptions.retrieve(localSub.stripeSubscriptionId);
-      if (stripeSub.status === "active" || stripeSub.status === "trialing") {
-        const periodStart = stripeSub.current_period_start
-          ? new Date(stripeSub.current_period_start * 1000)
-          : undefined;
-        const periodEnd = stripeSub.current_period_end
-          ? new Date(stripeSub.current_period_end * 1000)
-          : undefined;
+      const stripeStatus = stripeSub.status;
+      console.log(`[Pro Sync] Strategy 1: Stripe subscription status = "${stripeStatus}"`);
+
+      if (stripeStatus === "active" || stripeStatus === "trialing") {
+        const { periodStart, periodEnd } = getSubscriptionPeriodDates(stripeSub as unknown as Record<string, unknown>);
+        console.log(`[Pro Sync] Strategy 1: Period start=${periodStart?.toISOString() || "unknown"}, end=${periodEnd?.toISOString() || "unknown"}`);
 
         await prisma.proSubscription.update({
           where: { userId },
@@ -375,36 +442,37 @@ export async function verifyAndSyncProStatus(
           },
         });
 
-        console.log(`[Pro Sync] Synced subscription ${localSub.stripeSubscriptionId} to ACTIVE for user ${userId}`);
+        console.log(`[Pro Sync] Strategy 1 SUCCESS: Synced to ACTIVE for user ${userId}`);
         return { synced: true, status: "ACTIVE" };
+      } else {
+        console.log(`[Pro Sync] Strategy 1: Stripe status "${stripeStatus}" is not active, skipping`);
       }
     } catch (error) {
-      console.error(`[Pro Sync] Failed to retrieve subscription ${localSub.stripeSubscriptionId}:`, error);
+      console.error(`[Pro Sync] Strategy 1 FAILED for subscription ${localSub.stripeSubscriptionId}:`, error instanceof Error ? error.message : error);
     }
   }
 
   // Strategy 2: Search by Stripe customer ID
   if (localSub?.stripeCustomerId) {
+    console.log(`[Pro Sync] Strategy 2: Listing active subscriptions for customer ${localSub.stripeCustomerId}`);
     try {
       const subs = await stripe.subscriptions.list({
         customer: localSub.stripeCustomerId,
         status: "active",
-        limit: 1,
+        limit: 5,
       });
+
+      console.log(`[Pro Sync] Strategy 2: Found ${subs.data.length} active subscription(s)`);
 
       if (subs.data.length > 0) {
         const activeSub = subs.data[0];
-        const periodStart = activeSub.current_period_start
-          ? new Date(activeSub.current_period_start * 1000)
-          : undefined;
-        const periodEnd = activeSub.current_period_end
-          ? new Date(activeSub.current_period_end * 1000)
-          : undefined;
+        const { periodStart, periodEnd } = getSubscriptionPeriodDates(activeSub as unknown as Record<string, unknown>);
 
-        // Determine plan from price
         const monthlyPriceId = process.env.STRIPE_PRO_MONTHLY_PRICE_ID;
         const priceId = activeSub.items.data[0]?.price?.id;
         const plan = priceId === monthlyPriceId ? "MONTHLY" : "YEARLY";
+
+        console.log(`[Pro Sync] Strategy 2: Syncing sub ${activeSub.id}, plan=${plan}, priceId=${priceId}`);
 
         await prisma.proSubscription.update({
           where: { userId },
@@ -419,46 +487,46 @@ export async function verifyAndSyncProStatus(
           },
         });
 
-        console.log(`[Pro Sync] Found active subscription via customer ID for user ${userId}`);
+        console.log(`[Pro Sync] Strategy 2 SUCCESS: Synced via customer ID for user ${userId}`);
         return { synced: true, status: "ACTIVE" };
       }
     } catch (error) {
-      console.error(`[Pro Sync] Failed to list subscriptions for customer ${localSub.stripeCustomerId}:`, error);
+      console.error(`[Pro Sync] Strategy 2 FAILED for customer ${localSub.stripeCustomerId}:`, error instanceof Error ? error.message : error);
     }
   }
 
   // Strategy 3: Search by email (catches cases where no local record exists or customer ID changed)
   if (userEmail) {
+    console.log(`[Pro Sync] Strategy 3: Searching customers by email ${userEmail}`);
     try {
       const customers = await stripe.customers.list({
         email: userEmail,
         limit: 5,
       });
 
+      console.log(`[Pro Sync] Strategy 3: Found ${customers.data.length} customer(s) for email ${userEmail}`);
+
       for (const customer of customers.data) {
+        console.log(`[Pro Sync] Strategy 3: Checking customer ${customer.id}`);
         const subs = await stripe.subscriptions.list({
           customer: customer.id,
           status: "active",
-          limit: 1,
+          limit: 5,
         });
 
-        if (subs.data.length > 0) {
-          const activeSub = subs.data[0];
-          
-          // Verify this is a pro subscription (check metadata or price ID)
+        console.log(`[Pro Sync] Strategy 3: Customer ${customer.id} has ${subs.data.length} active subscription(s)`);
+
+        for (const activeSub of subs.data) {
           const monthlyPriceId = process.env.STRIPE_PRO_MONTHLY_PRICE_ID;
           const yearlyPriceId = process.env.STRIPE_PRO_YEARLY_PRICE_ID;
           const priceId = activeSub.items.data[0]?.price?.id;
           const isProPrice = priceId === monthlyPriceId || priceId === yearlyPriceId;
           const isProMetadata = activeSub.metadata?.type === "pro_subscription";
 
+          console.log(`[Pro Sync] Strategy 3: Sub ${activeSub.id} priceId=${priceId}, isProPrice=${isProPrice}, isProMetadata=${isProMetadata}, monthlyPriceId=${monthlyPriceId}, yearlyPriceId=${yearlyPriceId}`);
+
           if (isProPrice || isProMetadata) {
-            const periodStart = activeSub.current_period_start
-              ? new Date(activeSub.current_period_start * 1000)
-              : undefined;
-            const periodEnd = activeSub.current_period_end
-              ? new Date(activeSub.current_period_end * 1000)
-              : undefined;
+            const { periodStart, periodEnd } = getSubscriptionPeriodDates(activeSub as unknown as Record<string, unknown>);
             const plan = priceId === monthlyPriceId ? "MONTHLY" : "YEARLY";
 
             await prisma.proSubscription.upsert({
@@ -486,16 +554,18 @@ export async function verifyAndSyncProStatus(
               },
             });
 
-            console.log(`[Pro Sync] Found active subscription via email lookup for user ${userId}`);
+            console.log(`[Pro Sync] Strategy 3 SUCCESS: Synced via email for user ${userId}, sub ${activeSub.id}`);
             return { synced: true, status: "ACTIVE" };
           }
         }
       }
+
+      console.log(`[Pro Sync] Strategy 3: No matching Pro subscription found for email ${userEmail}`);
     } catch (error) {
-      console.error(`[Pro Sync] Failed email-based subscription lookup for ${userEmail}:`, error);
+      console.error(`[Pro Sync] Strategy 3 FAILED for email ${userEmail}:`, error instanceof Error ? error.message : error);
     }
   }
 
-  // No active subscription found in Stripe
+  console.log(`[Pro Sync] All strategies exhausted for user ${userId}. No active Pro subscription found in Stripe.`);
   return localSub ? { synced: false, status: localSub.status as "ACTIVE" | "PAST_DUE" | "CANCELLED" | "INACTIVE" } : null;
 }

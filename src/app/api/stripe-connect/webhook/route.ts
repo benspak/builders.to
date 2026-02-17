@@ -170,66 +170,28 @@ export async function POST(request: Request) {
         break;
       }
 
-      case "transfer.reversed": {
-        // Handle transfer reversal (e.g., payout failed)
+      case "transfer.reversed":
+      case "transfer.updated": {
+        // Handle transfer reversal or failure (e.g., payout failed)
+        // Note: "transfer.failed" was removed from Stripe SDK v20 event types.
+        // Failed transfers now surface as "transfer.reversed" or "transfer.updated".
         const transfer = event.data.object as Stripe.Transfer;
         const payoutId = transfer.metadata?.payoutId;
         const userId = transfer.metadata?.userId;
 
         if (payoutId) {
-          console.log("[Stripe Connect Webhook] Transfer reversed for payout:", payoutId);
+          const eventAction = event.type === "transfer.reversed" ? "reversed" : "updated";
+          console.log(`[Stripe Connect Webhook] Transfer ${eventAction} for payout:`, payoutId);
 
-          // Get the payout to find the amount
-          const payout = await prisma.payout.findUnique({
-            where: { id: payoutId },
-            include: { rewards: true },
-          });
-
-          if (payout) {
-            // Mark payout as failed
-            await prisma.payout.update({
-              where: { id: payoutId },
-              data: {
-                status: RewardStatus.FAILED,
-                failureReason: "Transfer was reversed",
-              },
-            });
-
-            // Restore pending rewards
-            await prisma.postReward.updateMany({
-              where: {
-                id: { in: payout.rewards.map((r) => r.id) },
-              },
-              data: {
-                status: RewardStatus.PENDING,
-                payoutId: null,
-              },
-            });
-
-            // Restore pending amount in earnings
-            if (userId) {
-              await prisma.userEarnings.update({
-                where: { userId },
-                data: {
-                  pendingAmount: { increment: payout.amount },
-                },
-              });
+          // For transfer.updated, only process if the transfer appears to have failed
+          // (check if the transfer was reversed by looking at amount_reversed)
+          if (event.type === "transfer.updated") {
+            const amountReversed = (transfer as unknown as Record<string, unknown>).amount_reversed as number | undefined;
+            if (!amountReversed || amountReversed === 0) {
+              console.log("[Stripe Connect Webhook] Transfer updated but not reversed, skipping");
+              break;
             }
-
-            console.log("[Stripe Connect Webhook] Payout reversed and rewards restored:", payoutId);
           }
-        }
-        break;
-      }
-
-      case "transfer.failed": {
-        // Handle failed transfer
-        const transfer = event.data.object as Stripe.Transfer;
-        const payoutId = transfer.metadata?.payoutId;
-        const userId = transfer.metadata?.userId;
-
-        if (payoutId) {
-          console.log("[Stripe Connect Webhook] Transfer failed for payout:", payoutId);
 
           // Get the payout to find the amount
           const payout = await prisma.payout.findUnique({
@@ -243,7 +205,9 @@ export async function POST(request: Request) {
               where: { id: payoutId },
               data: {
                 status: RewardStatus.FAILED,
-                failureReason: "Stripe transfer failed",
+                failureReason: event.type === "transfer.reversed"
+                  ? "Transfer was reversed"
+                  : "Stripe transfer failed",
               },
             });
 
@@ -268,7 +232,7 @@ export async function POST(request: Request) {
               });
             }
 
-            console.log("[Stripe Connect Webhook] Payout failed and rewards restored:", payoutId);
+            console.log(`[Stripe Connect Webhook] Payout ${eventAction} and rewards restored:`, payoutId);
           }
         }
         break;
