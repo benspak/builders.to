@@ -14,19 +14,28 @@ export async function GET(
 
   const { owner, repo } = await params;
 
-  // Get the GitHub account with access token
+  // Get the GitHub account with access token and scope
   const account = await prisma.account.findFirst({
     where: {
       userId: session.user.id,
       provider: "github",
     },
-    select: { access_token: true },
+    select: { access_token: true, scope: true },
   });
 
   if (!account?.access_token) {
     return NextResponse.json(
       { error: "No GitHub account linked" },
       { status: 400 }
+    );
+  }
+
+  // Check if the token has repo scope
+  const scopes = account.scope?.split(/[,\s]+/) || [];
+  if (!scopes.includes("repo")) {
+    return NextResponse.json(
+      { error: "repo_scope_required" },
+      { status: 403 }
     );
   }
 

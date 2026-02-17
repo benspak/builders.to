@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import {
   Github,
@@ -14,6 +14,7 @@ import {
   ArrowRight,
   FileText,
   X,
+  ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -53,23 +54,35 @@ const languageColors: Record<string, string> = {
 
 export function GitHubReposList() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [repos, setRepos] = useState<GitHubRepo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [needsRepoScope, setNeedsRepoScope] = useState(false);
   const [search, setSearch] = useState("");
   const [selectedRepo, setSelectedRepo] = useState<GitHubRepo | null>(null);
   const [readme, setReadme] = useState<string | null>(null);
   const [loadingReadme, setLoadingReadme] = useState(false);
 
   useEffect(() => {
+    // If returning from successful repo authorization, fetch repos immediately
+    if (searchParams.get("github_repos_authorized") === "true") {
+      setNeedsRepoScope(false);
+    }
     fetchRepos();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchRepos = async () => {
     try {
+      setLoading(true);
+      setNeedsRepoScope(false);
       const response = await fetch("/api/github/repos");
       if (!response.ok) {
         const data = await response.json();
+        if (data.error === "repo_scope_required") {
+          setNeedsRepoScope(true);
+          return;
+        }
         throw new Error(data.error || "Failed to fetch repos");
       }
       const data = await response.json();
@@ -122,6 +135,36 @@ export function GitHubReposList() {
     return (
       <div className="flex items-center justify-center py-20">
         <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
+      </div>
+    );
+  }
+
+  if (needsRepoScope) {
+    return (
+      <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-8 text-center">
+        <div className="mb-4 flex justify-center">
+          <div className="rounded-full bg-amber-500/20 p-3">
+            <ShieldCheck className="h-8 w-8 text-amber-400" />
+          </div>
+        </div>
+        <h3 className="text-lg font-semibold text-white mb-2">
+          Grant Repository Access
+        </h3>
+        <p className="text-zinc-400 mb-2 max-w-md mx-auto">
+          To import projects, we need read access to your GitHub repositories.
+          This is a one-time authorization step.
+        </p>
+        <p className="text-zinc-500 text-sm mb-6 max-w-md mx-auto">
+          We only use this to list your repos and read README files — we never
+          write to your repositories.
+        </p>
+        <a
+          href="/api/github/authorize-repos"
+          className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-2.5 text-sm font-bold text-black transition-all hover:bg-zinc-200 active:scale-95"
+        >
+          <Github className="h-4 w-4" />
+          Authorize Repository Access
+        </a>
       </div>
     );
   }
