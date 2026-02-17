@@ -10,7 +10,7 @@ export default async function NewUpdatePage() {
 
   // Check membership tier and daily usage
   const isPro = session?.user?.id ? await isProMember(session.user.id) : false;
-  const dailyPostLimit = isPro ? 20 : 1;
+  const dailyPostLimit = isPro ? 20 : 3;
 
   // Count today's posts
   const startOfDay = new Date();
@@ -42,7 +42,7 @@ export default async function NewUpdatePage() {
         <div className="text-sm text-zinc-400">
           <span className="text-white font-medium">{postsRemaining}</span> of{" "}
           <span className="text-white font-medium">{dailyPostLimit}</span>{" "}
-          {dailyPostLimit === 1 ? "post" : "posts"} remaining today
+          posts remaining today
         </div>
         {!isPro && (
           <Link

@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
 
     // Check membership tier and enforce daily post limits
     const isPro = await isProMember(session.user.id);
-    const dailyPostLimit = isPro ? 20 : 1;
+    const dailyPostLimit = isPro ? 20 : 3;
 
     // Count how many updates the user has posted today
     const startOfDay = new Date();
@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (todayPostCount >= dailyPostLimit) {
-      const limitLabel = isPro ? "20 posts" : "1 post";
+      const limitLabel = isPro ? "20 posts" : "3 posts";
       return NextResponse.json(
         {
           error: isPro

@@ -51,7 +51,7 @@ const featureConfig: Record<
   updates: {
     icon: MessageSquare,
     title: "Post More Updates",
-    description: "Free members get 1 post per day. Upgrade to Pro for up to 20 posts per day!",
+    description: "Free members get 3 posts per day. Upgrade to Pro for up to 20 posts per day!",
     benefit: "Post up to 20 updates per day",
   },
 };
@@ -101,7 +101,7 @@ export function ProUpgradePrompt({
     if (feature === "updates") {
       bannerTitle = hasPostedToday
         ? "Want to post more today?"
-        : "You can post 1 update per day";
+        : "You can post 3 updates per day";
       bannerSubtitle = "Upgrade to Pro for up to 20 posts per day";
     } else if (feature === "projects" && projectCount !== undefined) {
       const remaining = Math.max(0, 3 - projectCount);
@@ -240,7 +240,7 @@ export function ProUpgradePrompt({
             </li>
             <li className="flex items-center gap-3 text-zinc-300">
               <MessageSquare className="h-5 w-5 text-amber-400 flex-shrink-0" />
-              <span>Post up to 20 updates per day (free: 1/day)</span>
+              <span>Post up to 20 updates per day (free: 3/day)</span>
             </li>
           </ul>
         </div>

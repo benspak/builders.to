@@ -36,7 +36,7 @@ async function ProUpgradeBanner() {
     },
   });
 
-  const hasPostedToday = todayPostCount >= 1;
+  const hasPostedToday = todayPostCount >= 3;
   
   return (
     <div className="mb-6">
