@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
-  User, MessageSquareText, SmilePlus, Pin, Bookmark,
+  User, MessageSquareText, SmilePlus, Pin, Bookmark, BookmarkCheck,
   MoreHorizontal, Pencil, Trash2, Copy,
 } from "lucide-react";
 import { cn, formatRelativeTime } from "@/lib/utils";
@@ -22,6 +22,7 @@ export interface ChatMessageData {
   codeLanguage: string | null;
   isPinned: boolean;
   isDeleted: boolean;
+  isBookmarked?: boolean;
   editedAt: string | null;
   createdAt: string;
   senderId: string;
@@ -236,10 +237,19 @@ export function MessageItem({
           )}
           <button
             onClick={() => onBookmark?.(message.id)}
-            className="p-1 rounded text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
-            title="Bookmark"
+            className={cn(
+              "p-1 rounded hover:bg-white/10 transition-colors",
+              message.isBookmarked
+                ? "text-cyan-400 hover:text-cyan-300"
+                : "text-zinc-400 hover:text-white"
+            )}
+            title={message.isBookmarked ? "Remove bookmark" : "Bookmark"}
           >
-            <Bookmark className="h-3.5 w-3.5" />
+            {message.isBookmarked ? (
+              <BookmarkCheck className="h-3.5 w-3.5" />
+            ) : (
+              <Bookmark className="h-3.5 w-3.5" />
+            )}
           </button>
           <button
             onClick={() => setShowMore(!showMore)}

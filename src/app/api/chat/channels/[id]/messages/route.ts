@@ -116,6 +116,10 @@ export async function GET(
       reactions: {
         include: { user: { select: { id: true, name: true, firstName: true, lastName: true } } },
       },
+      bookmarks: {
+        where: { userId: session.user.id },
+        select: { id: true },
+      },
       _count: { select: { threadReplies: true } },
       poll: {
         include: {
@@ -133,8 +137,14 @@ export async function GET(
   const hasMore = messages.length > limit;
   if (hasMore) messages.pop();
 
+  const messagesWithBookmarkStatus = messages.reverse().map((msg) => ({
+    ...msg,
+    isBookmarked: msg.bookmarks.length > 0,
+    bookmarks: undefined,
+  }));
+
   return NextResponse.json({
-    messages: messages.reverse(),
+    messages: messagesWithBookmarkStatus,
     hasMore,
     nextCursor: hasMore && messages.length > 0 ? messages[0].createdAt.toISOString() : null,
     isPro,

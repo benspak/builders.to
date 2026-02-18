@@ -19,7 +19,7 @@ interface ReactionBarProps {
 }
 
 export function ReactionBar({ reactions, currentUserId, onToggle }: ReactionBarProps) {
-  if (reactions.length === 0) return null;
+  if (!reactions || reactions.length === 0) return null;
 
   // Group by emoji
   const grouped = new Map<string, Reaction>();

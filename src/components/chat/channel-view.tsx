@@ -146,11 +146,17 @@ export function ChannelView({ channelId }: ChannelViewProps) {
     if (socket?.connected) {
       socket.emit("message:react", { messageId, emoji });
     } else {
-      await fetch(`/api/chat/messages/${messageId}/reactions`, {
+      const res = await fetch(`/api/chat/messages/${messageId}/reactions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ emoji }),
       });
+      if (res.ok) {
+        const data = await res.json();
+        setMessages((prev) =>
+          prev.map((m) => (m.id === messageId ? { ...m, reactions: data.reactions } : m))
+        );
+      }
     }
   };
 
@@ -170,7 +176,13 @@ export function ChannelView({ channelId }: ChannelViewProps) {
   };
 
   const handleBookmark = async (messageId: string) => {
-    await fetch(`/api/chat/messages/${messageId}/bookmark`, { method: "POST" });
+    const res = await fetch(`/api/chat/messages/${messageId}/bookmark`, { method: "POST" });
+    if (res.ok) {
+      const data = await res.json();
+      setMessages((prev) =>
+        prev.map((m) => (m.id === messageId ? { ...m, isBookmarked: data.bookmarked } : m))
+      );
+    }
   };
 
   const handleDelete = async (messageId: string) => {

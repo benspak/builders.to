@@ -60,12 +60,23 @@ export function ThreadPanel({ messageId, channelId, onClose }: ThreadPanelProps)
       }
     };
 
+    const handleReaction = (data: { messageId: string; channelId: string; reactions: ChatMessageData["reactions"] }) => {
+      setReplies((prev) =>
+        prev.map((m) => (m.id === data.messageId ? { ...m, reactions: data.reactions } : m))
+      );
+      setParentMessage((prev) =>
+        prev && prev.id === data.messageId ? { ...prev, reactions: data.reactions } : prev
+      );
+    };
+
     socket.on("thread:new", handleThreadReply);
     socket.on("message:new", handleNewMessage);
+    socket.on("reaction:updated", handleReaction);
 
     return () => {
       socket.off("thread:new", handleThreadReply);
       socket.off("message:new", handleNewMessage);
+      socket.off("reaction:updated", handleReaction);
     };
   }, [socket, messageId]);
 
@@ -77,11 +88,20 @@ export function ThreadPanel({ messageId, channelId, onClose }: ThreadPanelProps)
     if (socket?.connected) {
       socket.emit("message:react", { messageId: msgId, emoji });
     } else {
-      await fetch(`/api/chat/messages/${msgId}/reactions`, {
+      const res = await fetch(`/api/chat/messages/${msgId}/reactions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ emoji }),
       });
+      if (res.ok) {
+        const data = await res.json();
+        const updateReactions = (msgs: ChatMessageData[]) =>
+          msgs.map((m) => (m.id === msgId ? { ...m, reactions: data.reactions } : m));
+        setReplies(updateReactions);
+        if (parentMessage && parentMessage.id === msgId) {
+          setParentMessage({ ...parentMessage, reactions: data.reactions });
+        }
+      }
     }
   };
 

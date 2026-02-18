@@ -76,6 +76,10 @@ export function registerMessageHandlers(
         },
         include: {
           sender: { select: { id: true, name: true, firstName: true, lastName: true, image: true, slug: true } },
+          reactions: {
+            include: { user: { select: { id: true, name: true, firstName: true, lastName: true } } },
+          },
+          _count: { select: { threadReplies: true } },
           threadParent: { select: { id: true, senderId: true } },
         },
       });
@@ -140,6 +144,10 @@ export function registerMessageHandlers(
         data: { content: content.trim(), editedAt: new Date() },
         include: {
           sender: { select: { id: true, name: true, firstName: true, lastName: true, image: true, slug: true } },
+          reactions: {
+            include: { user: { select: { id: true, name: true, firstName: true, lastName: true } } },
+          },
+          _count: { select: { threadReplies: true } },
         },
       });
 
