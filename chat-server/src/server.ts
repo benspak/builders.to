@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Request, Response } from "express";
 import { createServer } from "http";
 import { Server, Socket } from "socket.io";
 import cors from "cors";
@@ -17,7 +17,7 @@ const CORS_ORIGIN = process.env.CORS_ORIGIN || "http://localhost:3000";
 const app = express();
 app.use(cors({ origin: CORS_ORIGIN, credentials: true }));
 
-app.get("/health", (_req, res) => {
+app.get("/health", (_req: Request, res: Response) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 

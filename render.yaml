@@ -58,7 +58,7 @@ services:
     runtime: node
     region: oregon
     plan: starter
-    buildCommand: cd chat-server && npm install && npx prisma generate
+    buildCommand: cd chat-server && npm install --include=dev && npx prisma generate
     startCommand: cd chat-server && npm run build && npm start
     healthCheckPath: /health
     envVars:
