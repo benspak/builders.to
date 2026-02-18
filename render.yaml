@@ -57,7 +57,7 @@ services:
     name: builders-to-chat
     runtime: node
     region: oregon
-    plan: starter
+    plan: standard
     buildCommand: cd chat-server && npm install --include=dev && npx prisma generate
     startCommand: cd chat-server && npm run build && npm start
     healthCheckPath: /health
