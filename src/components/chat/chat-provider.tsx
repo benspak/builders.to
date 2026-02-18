@@ -7,6 +7,7 @@ import { connectSocket, disconnectSocket, getSocket } from "@/lib/socket";
 
 interface TypingUser {
   userId: string;
+  userName: string;
   channelId: string;
 }
 
@@ -67,11 +68,11 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       forceUpdate((c) => c + 1);
     });
 
-    sock.on("typing:update", (data: { userId: string; channelId: string; isTyping: boolean }) => {
+    sock.on("typing:update", (data: { userId: string; userName?: string; channelId: string; isTyping: boolean }) => {
       setTypingUsers((prev) => {
         if (data.isTyping) {
           if (prev.some((t) => t.userId === data.userId && t.channelId === data.channelId)) return prev;
-          return [...prev, { userId: data.userId, channelId: data.channelId }];
+          return [...prev, { userId: data.userId, userName: data.userName || "Someone", channelId: data.channelId }];
         }
         return prev.filter((t) => !(t.userId === data.userId && t.channelId === data.channelId));
       });
@@ -99,7 +100,15 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const markRead = useCallback((channelId: string, messageId: string) => {
-    socketRef.current?.emit("channel:mark-read", { channelId, messageId });
+    if (socketRef.current?.connected) {
+      socketRef.current.emit("channel:mark-read", { channelId, messageId });
+    } else {
+      fetch(`/api/chat/channels/${channelId}/read`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messageId }),
+      }).catch(() => {});
+    }
   }, []);
 
   return (

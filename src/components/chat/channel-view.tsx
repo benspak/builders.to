@@ -177,7 +177,12 @@ export function ChannelView({ channelId }: ChannelViewProps) {
     if (socket?.connected) {
       socket.emit("message:delete", { messageId });
     } else {
-      await fetch(`/api/chat/messages/${messageId}`, { method: "DELETE" });
+      const res = await fetch(`/api/chat/messages/${messageId}`, { method: "DELETE" });
+      if (res.ok) {
+        setMessages((prev) =>
+          prev.map((m) => (m.id === messageId ? { ...m, isDeleted: true, content: "[deleted]" } : m))
+        );
+      }
     }
   };
 
@@ -185,11 +190,17 @@ export function ChannelView({ channelId }: ChannelViewProps) {
     if (socket?.connected) {
       socket.emit("message:edit", { messageId, content });
     } else {
-      await fetch(`/api/chat/messages/${messageId}`, {
+      const res = await fetch(`/api/chat/messages/${messageId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content }),
       });
+      if (res.ok) {
+        const updated = await res.json();
+        setMessages((prev) =>
+          prev.map((m) => (m.id === messageId ? { ...m, ...updated } : m))
+        );
+      }
     }
   };
 
@@ -221,7 +232,7 @@ export function ChannelView({ channelId }: ChannelViewProps) {
 
   const channelTypingUsers = typingUsers
     .filter((t) => t.channelId === channelId && t.userId !== currentUserId)
-    .map((t) => t.userId);
+    .map((t) => t.userName);
 
   if (isLoading) {
     return (
@@ -340,7 +351,24 @@ export function ChannelView({ channelId }: ChannelViewProps) {
 
         <TypingIndicator userNames={channelTypingUsers} />
 
-        <MessageComposer channelId={channelId} />
+        <MessageComposer
+          channelId={channelId}
+          onSendViaRest={async (data) => {
+            const res = await fetch(`/api/chat/channels/${channelId}/messages`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(data),
+            });
+            if (!res.ok) {
+              const err = await res.json();
+              throw new Error(err.error || "Failed to send message");
+            }
+            const msg = await res.json();
+            if (!data.threadParentId) {
+              setMessages((prev) => [...prev, msg]);
+            }
+          }}
+        />
       </div>
 
       {/* Side panels */}

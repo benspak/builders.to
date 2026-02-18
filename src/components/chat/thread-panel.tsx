@@ -51,18 +51,21 @@ export function ThreadPanel({ messageId, channelId, onClose }: ThreadPanelProps)
       }
     };
 
-    socket.on("thread:new", handleThreadReply);
-    socket.on("message:new", (msg: ChatMessageData) => {
+    const handleNewMessage = (msg: ChatMessageData) => {
       if (msg.threadParentId === messageId) {
         setReplies((prev) => {
           if (prev.some((r) => r.id === msg.id)) return prev;
           return [...prev, msg];
         });
       }
-    });
+    };
+
+    socket.on("thread:new", handleThreadReply);
+    socket.on("message:new", handleNewMessage);
 
     return () => {
       socket.off("thread:new", handleThreadReply);
+      socket.off("message:new", handleNewMessage);
     };
   }, [socket, messageId]);
 
@@ -104,7 +107,7 @@ export function ThreadPanel({ messageId, channelId, onClose }: ThreadPanelProps)
 
   const threadTypingUsers = typingUsers
     .filter((t) => t.channelId === channelId && t.userId !== currentUserId)
-    .map((t) => t.userId);
+    .map((t) => t.userName);
 
   return (
     <div className="w-[400px] border-l border-white/5 bg-zinc-900/30 flex flex-col h-full">
@@ -163,6 +166,19 @@ export function ThreadPanel({ messageId, channelId, onClose }: ThreadPanelProps)
             channelId={channelId}
             threadParentId={messageId}
             placeholder="Reply in thread..."
+            onSendViaRest={async (data) => {
+              const res = await fetch(`/api/chat/channels/${channelId}/messages`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data),
+              });
+              if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.error || "Failed to send reply");
+              }
+              const msg = await res.json();
+              setReplies((prev) => [...prev, msg]);
+            }}
           />
         </>
       )}

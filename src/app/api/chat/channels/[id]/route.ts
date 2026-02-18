@@ -31,8 +31,23 @@ export async function GET(
     return NextResponse.json({ error: "Channel not found" }, { status: 404 });
   }
 
-  if (channel.type === "PRIVATE" && channel.members.length === 0) {
+  const isMember = channel.members.length > 0;
+
+  if (!isMember && channel.type === "PRIVATE") {
     return NextResponse.json({ error: "Not a member of this channel" }, { status: 403 });
+  }
+
+  // Auto-join public channels when a user navigates to them
+  if (!isMember && channel.type === "PUBLIC" && !channel.isArchived) {
+    const newMember = await prisma.chatChannelMember.create({
+      data: { userId: session.user.id, channelId: id },
+      select: { role: true, notificationPreference: true, lastReadMessageId: true },
+    });
+    return NextResponse.json({
+      ...channel,
+      membership: newMember,
+      _count: { ...channel._count, members: channel._count.members + 1 },
+    });
   }
 
   return NextResponse.json({

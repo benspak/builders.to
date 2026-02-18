@@ -19,19 +19,21 @@ export function registerTypingHandlers(
     const existing = typingTimers.get(key);
     if (existing) clearTimeout(existing);
 
-    // Broadcast typing to channel (exclude sender)
+    const userName = socket.user.name || "Someone";
+
     socket.to(`channel:${channelId}`).emit("typing:update", {
       userId,
+      userName,
       channelId,
       isTyping: true,
     });
 
-    // Auto-clear after 5 seconds
     typingTimers.set(
       key,
       setTimeout(() => {
         socket.to(`channel:${channelId}`).emit("typing:update", {
           userId,
+          userName,
           channelId,
           isTyping: false,
         });
@@ -53,6 +55,7 @@ export function registerTypingHandlers(
 
     socket.to(`channel:${channelId}`).emit("typing:update", {
       userId,
+      userName: socket.user.name || "Someone",
       channelId,
       isTyping: false,
     });

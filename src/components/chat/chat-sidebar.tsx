@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 import {
   Hash, Lock, ChevronDown, ChevronRight, MessageSquare,
   Search, Compass, User, PanelLeftClose, PanelLeft, Bookmark, Plus,
@@ -33,7 +34,9 @@ interface ChatSidebarProps {
 
 export function ChatSidebar({ collapsed, onToggle }: ChatSidebarProps) {
   const pathname = usePathname();
+  const { data: session } = useSession();
   const { onlineUsers } = useChatSocket();
+  const currentUserId = session?.user?.id;
   const [channels, setChannels] = useState<Channel[]>([]);
   const [isAdminUser, setIsAdminUser] = useState(false);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -190,7 +193,7 @@ export function ChatSidebar({ collapsed, onToggle }: ChatSidebarProps) {
             Direct Messages
           </div>
           {filteredDms.map((dm) => {
-            const otherMember = dm.members?.find((m) => m.user.slug !== undefined);
+            const otherMember = dm.members?.find((m) => m.user.id !== currentUserId) || dm.members?.[0];
             const displayName = otherMember
               ? (otherMember.user.firstName && otherMember.user.lastName
                   ? `${otherMember.user.firstName} ${otherMember.user.lastName}`
