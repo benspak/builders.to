@@ -91,12 +91,12 @@ export default async function HomePage() {
     },
     {
       icon: MessageSquare,
-      title: "Direct Messages",
+      title: "Community Chat",
       description:
-        "Connect privately with builders through direct messaging with rich media and image support.",
-      href: "/feed",
+        "Real-time chat channels for topics like AI Builders and Solo Founders. Threaded conversations, DMs, reactions, polls, and more.",
+      href: "/messages",
       color: "emerald",
-      stats: "Unlimited",
+      stats: "Real-time",
     },
     {
       icon: Handshake,
@@ -168,6 +168,13 @@ export default async function HomePage() {
       title: "Open to Meeting Status",
       description:
         "Display an \"Open to Meeting\" badge and link your calendar so others can book time with you for collaboration.",
+      color: "amber",
+    },
+    {
+      icon: MessageSquare,
+      title: "Unlimited Chat History",
+      description:
+        "Access your full message history across all channels and DMs. Free accounts are limited to 90 days.",
       color: "amber",
     },
     {

@@ -61,13 +61,18 @@ A members-only launchpad and community platform for indie hackers and builders. 
 - **Nearby Events** — Discover events within your radius using geolocation
 - **Event Comments** — Threaded discussions on event pages
 
-### 💬 Direct Messaging
+### 💬 Real-Time Chat (Slack/Discord-style)
 
-- **Private Conversations** — Send direct messages to other builders
-- **Rich Media Support** — Share images and GIFs in conversations
-- **Read Receipts** — See when messages are read
-- **Conversation Management** — Mute or archive conversations
-- **Unread Indicators** — Track unread message counts
+- **Community Channels** — Topic-based channels (e.g., "AI Builders", "Solo Founders") organized by categories
+- **Threaded Conversations** — Slack-style reply threads on any message with proper hierarchy
+- **Direct Messages** — Private 1:1 conversations unified into the same chat interface
+- **Rich Features** — Emoji reactions, @mentions, file/image uploads, GIF support, code snippets with syntax highlighting, link previews, polls, pinned messages, bookmarks, and Markdown formatting
+- **Real-Time Presence** — Online/away/DND/offline status, typing indicators, and "last seen"
+- **Full-Text Search** — Search across all messages in channels you belong to
+- **Moderation Tools** — Admin/moderator roles, auto-moderation (word filter, spam detection, link filter, slow mode), audit logs
+- **Configurable Notifications** — Per-channel notification preferences (all activity, mentions only, or muted)
+- **Message History** — Free: 90 days, Pro: unlimited
+- **Public & Private Channels** — Public channels visible to all, private channels by invite only
 
 ### 🗺️ Nearby Discovery
 
@@ -151,6 +156,7 @@ A members-only launchpad and community platform for indie hackers and builders. 
 | **Icons** | Lucide React |
 | **Animation** | Motion (Framer Motion) |
 | **Payments** | Stripe + Stripe Connect |
+| **Real-Time Chat** | Socket.io (separate server) |
 | **Push Notifications** | Web Push API |
 | **GIFs** | Giphy SDK |
 | **Image Processing** | Sharp |
@@ -218,6 +224,10 @@ OPENAI_API_KEY=""
 # Web Push VAPID Keys (generate with: npm run generate-vapid-keys)
 NEXT_PUBLIC_VAPID_PUBLIC_KEY=""
 VAPID_PRIVATE_KEY=""
+
+# Real-Time Chat (Socket.io)
+NEXT_PUBLIC_CHAT_SERVER_URL="http://localhost:3001"
+ADMIN_EMAILS="admin@builders.to"
 ```
 
 ### 3. Set Up Database
@@ -238,6 +248,17 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) to see the app.
+
+### 5. Run Chat Server (optional, for real-time chat)
+
+```bash
+cd chat-server
+npm install
+npx prisma generate
+npm run dev
+```
+
+The chat server runs on [http://localhost:3001](http://localhost:3001) by default.
 
 ## 🔐 OAuth Setup
 
@@ -267,11 +288,24 @@ Open [http://localhost:3000](http://localhost:3000) to see the app.
 ## 📁 Project Structure
 
 ```
+chat-server/                     # Standalone Socket.io real-time chat server
+├── src/
+│   ├── server.ts               # Express + Socket.io setup, auth middleware
+│   ├── auth.ts                 # JWT verification (NextAuth token compat)
+│   └── handlers/               # Socket event handlers
+│       ├── channels.ts         # Join/leave channels, read receipts
+│       ├── messages.ts         # Send/edit/delete messages, reactions, auto-mod
+│       ├── presence.ts         # Online status, heartbeat
+│       └── typing.ts           # Typing indicators
+├── package.json
+└── tsconfig.json
+
 src/
 ├── app/
 │   ├── (auth)/                 # Auth pages (signin)
 │   ├── (protected)/            # Protected routes (dashboard, settings, etc.)
 │   │   ├── ads/                # Advertisement management
+│   │   ├── messages/           # Chat system pages (channels, DMs, search, bookmarks)
 │   │   ├── my-companies/       # Company management
 │   │   ├── my-listings/        # Local listing management
 │   │   ├── notifications/      # Notification center
@@ -281,10 +315,11 @@ src/
 │   │   ├── settings/           # User settings & 2FA
 │   │   └── tokens/             # Token balance & history
 │   ├── [slug]/                 # Dynamic user profile pages
-│   ├── api/                    # API routes (102+ endpoints)
+│   ├── api/                    # API routes (120+ endpoints)
 │   │   ├── 2fa/                # Two-factor authentication
 │   │   ├── ads/                # Advertisement CRUD & tracking
 │   │   ├── auth/               # NextAuth handlers
+│   │   ├── chat/               # Chat system (channels, messages, moderation, DMs)
 │   │   ├── companies/          # Company management
 │   │   ├── feed-events/        # Feed event interactions
 │   │   ├── local-listings/     # Builders Local
@@ -303,6 +338,7 @@ src/
 │   ├── ads/                    # Advertisement components
 │   ├── analytics/              # View tracking components
 │   ├── auth/                   # Auth & 2FA components
+│   ├── chat/                   # Real-time chat UI (channels, messages, threads, moderation)
 │   ├── comments/               # Comment system
 │   ├── companies/              # Company components
 │   ├── feed/                   # Feed & updates components
@@ -317,6 +353,7 @@ src/
 ├── lib/
 │   ├── auth.ts                 # NextAuth configuration
 │   ├── prisma.ts               # Prisma client singleton
+│   ├── socket.ts               # Socket.io client singleton
 │   ├── stripe.ts               # Stripe utilities
 │   ├── tokens.ts               # Token system
 │   └── utils.ts                # Helper utilities
@@ -335,6 +372,7 @@ This project includes a `render.yaml` blueprint for one-click deployment.
 4. Connect your GitHub repository
 5. Render will automatically detect `render.yaml` and create:
    - A **Web Service** for the Next.js app
+   - A **Web Service** for the Socket.io chat server
    - A **PostgreSQL Database**
    - A **Persistent Disk** for user uploads
 
@@ -347,6 +385,8 @@ Configure these environment variables in the Render dashboard:
 3. **GITHUB_CLIENT_ID** & **GITHUB_CLIENT_SECRET**: From GitHub Developer Settings
 4. **STRIPE_SECRET_KEY**, **STRIPE_PUBLISHABLE_KEY**, **STRIPE_WEBHOOK_SECRET**: From Stripe Dashboard
 5. **RESEND_API_KEY**: From Resend Dashboard
+6. **NEXT_PUBLIC_CHAT_SERVER_URL**: URL of the chat server (e.g., `https://builders-to-chat.onrender.com`)
+7. **ADMIN_EMAILS**: Comma-separated list of admin email addresses for chat moderation
 
 **Important**: Update your OAuth callback URLs to use your production domain:
 - Twitter (both required):
@@ -368,8 +408,14 @@ npx prisma db push   # Push schema to database
 npx prisma studio    # Open Prisma Studio GUI
 npx prisma migrate   # Run database migrations
 
+# Chat Server (in /chat-server)
+cd chat-server && npm run dev    # Start chat server in dev mode
+cd chat-server && npm run build  # Build chat server for production
+cd chat-server && npm start      # Start production chat server
+
 # Utilities (in /scripts)
 npm run generate-vapid-keys   # Generate VAPID keys for push notifications
+npx tsx scripts/migrate-dms.ts  # Migrate old DMs to new chat system (one-time)
 ```
 
 ## 🗂️ Database Schema
@@ -383,7 +429,7 @@ The database includes 50+ models covering:
 - **Marketplace**: ServiceListing, ServicePortfolio, ServiceOrder
 - **Local**: LocalListing, LocalListingImage, LocalListingComment, LocalListingFlag, LocalListingRating
 - **Events**: Event, EventAttendee, EventComment
-- **Messaging**: Conversation, ConversationParticipant, Message
+- **Chat**: ChatChannel, ChatChannelCategory, ChatChannelMember, ChatMessage, ChatMessageReaction, ChatMention, ChatPoll, ChatPollOption, ChatPollVote, ChatMessageBookmark, ChatChannelInvite, ChatAutoModRule, ChatModAction, UserPresence
 - **Tokens**: TokenTransaction
 - **Notifications**: Notification, EmailPreferences, PushSubscription
 - **Advertising**: Advertisement, AdView, AdClick
@@ -401,6 +447,7 @@ The database includes 50+ models covering:
 - [ ] **AI Features**: Smart project recommendations and auto-tagging
 - [ ] **Mobile App**: React Native companion app
 - [ ] **Webhooks**: External integrations for project milestones
+- [ ] **Voice/Video Chat**: Real-time voice and video channels in the chat system
 
 ## 🤝 Community
 

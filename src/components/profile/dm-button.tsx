@@ -29,19 +29,19 @@ export function DMButton({
   const handleClick = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/messages/conversations", {
+      // Use the new chat DM endpoint
+      const response = await fetch("/api/chat/dm", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ recipientId: userId }),
+        body: JSON.stringify({ userId }),
       });
 
       if (!response.ok) {
         throw new Error("Failed to start conversation");
       }
 
-      const data = await response.json();
-      // Navigate to the conversation
-      router.push(`/messages/${data.conversation.id}`);
+      const channel = await response.json();
+      router.push(`/messages/${channel.id}`);
     } catch (error) {
       console.error("Error starting conversation:", error);
       setIsLoading(false);

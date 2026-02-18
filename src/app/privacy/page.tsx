@@ -20,7 +20,7 @@ export default function PrivacyPolicyPage() {
         </div>
 
         <h1 className="text-4xl font-bold text-white mb-2">Privacy Policy</h1>
-        <p className="text-zinc-500 mb-12">Last updated: February 12, 2026</p>
+        <p className="text-zinc-500 mb-12">Last updated: February 18, 2026</p>
 
         <div className="prose prose-invert prose-zinc max-w-none">
           <div className="space-y-8 text-zinc-300">
@@ -50,7 +50,8 @@ export default function PrivacyPolicyPage() {
                 <li><strong className="text-white">Job Postings:</strong> Information about roles and positions you post for your company.</li>
                 <li><strong className="text-white">AI Preferences:</strong> Your interests, tone preferences, and posting style preferences when using AI content features.</li>
                 <li><strong className="text-white">Events:</strong> Event details you create including title, description, date, time, location, and whether events are physical, virtual, or hybrid.</li>
-                <li><strong className="text-white">Direct Messages:</strong> Private messages you send to other users, including text content, images, and GIFs.</li>
+                <li><strong className="text-white">Chat & Messages:</strong> Messages you send in community channels and direct conversations, including text content, images, GIFs, code snippets, polls, and emoji reactions.</li>
+                <li><strong className="text-white">Presence Data:</strong> Your online/offline status, &quot;last seen&quot; timestamps, and typing indicators when using the real-time chat.</li>
                 <li><strong className="text-white">Accountability Check-Ins:</strong> When you use the accountability partners feature, we collect check-in data including mood (e.g., Crushing It, Good, Okay, Struggling), notes, and check-in frequency preferences.</li>
                 <li><strong className="text-white">Builder Matching Data:</strong> Your building category (e.g., SaaS, Mobile App, AI/ML, Developer Tools), tech stack, and interests used for discovering similar builders and accountability partner matching.</li>
               </ul>
@@ -87,7 +88,7 @@ export default function PrivacyPolicyPage() {
                 <li>Provide, maintain, and improve our services</li>
                 <li>Create and manage your account</li>
                 <li>Display your projects, profile, and content to the community</li>
-                <li>Enable interactions between community members (comments, upvotes, follows, direct messages)</li>
+                <li>Enable interactions between community members (comments, upvotes, follows, chat channels, direct messages)</li>
                 <li>Process token rewards for engagement, referrals, and profile completion</li>
                 <li>Process Pro subscription payments and rewards payouts through Stripe</li>
                 <li>Process payments through Stripe for services, listings, and advertisements</li>
@@ -101,7 +102,9 @@ export default function PrivacyPolicyPage() {
                 <li>Generate anonymized analytics and statistics</li>
                 <li>Facilitate event RSVPs</li>
                 <li>Find nearby users and events based on your location</li>
-                <li>Enable private messaging between community members</li>
+                <li>Provide real-time community chat channels and private messaging between members</li>
+                <li>Display your online/offline presence status and typing indicators to other chat participants</li>
+                <li>Enforce chat moderation rules including auto-moderation filters and slow mode</li>
                 <li>Match you with similar builders based on tech stack, building category, and interests</li>
                 <li>Facilitate accountability partnerships and track check-in activity</li>
               </ul>
@@ -193,7 +196,7 @@ export default function PrivacyPolicyPage() {
               <p className="mb-4">You have the following rights regarding your information:</p>
               <ul className="list-disc pl-6 space-y-2">
                 <li><strong className="text-white">Access and Update:</strong> You can access and update your profile information through your account settings.</li>
-                <li><strong className="text-white">Delete Content:</strong> You can delete your projects, companies, updates, comments, listings, events, and direct messages.</li>
+                <li><strong className="text-white">Delete Content:</strong> You can delete your projects, companies, updates, comments, listings, events, and chat messages.</li>
                 <li><strong className="text-white">Account Deletion:</strong> To delete your account entirely, please contact us through our community channels.</li>
                 <li><strong className="text-white">Email Preferences:</strong> You can opt out of daily and weekly digest emails in your settings.</li>
                 <li><strong className="text-white">Push Notifications:</strong> You can disable push notifications through your browser settings or account preferences.</li>
@@ -226,15 +229,20 @@ export default function PrivacyPolicyPage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">11. Direct Messaging</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">11. Chat & Messaging</h2>
               <p className="leading-relaxed mb-4">
-                We provide direct messaging features to facilitate private communication between builders:
+                We provide real-time community chat channels and private messaging to facilitate communication between builders:
               </p>
               <ul className="list-disc pl-6 space-y-2">
-                <li><strong className="text-white">Message Content:</strong> Your messages, including text, images, and GIFs, are stored to deliver them to recipients and maintain conversation history.</li>
-                <li><strong className="text-white">Read Receipts:</strong> We track when messages are read to provide read receipt functionality.</li>
-                <li><strong className="text-white">Message Retention:</strong> Messages are retained as long as either participant&apos;s account is active. You can delete individual messages or entire conversations.</li>
-                <li><strong className="text-white">Privacy:</strong> Direct messages are private between participants and are not publicly visible. However, we may access message content to investigate reported abuse or violations of our Terms.</li>
+                <li><strong className="text-white">Message Content:</strong> Your messages in channels and direct conversations, including text, images, GIFs, code snippets, polls, and emoji reactions, are stored to deliver them to recipients and maintain conversation history.</li>
+                <li><strong className="text-white">Channel Membership:</strong> When you join a chat channel, your membership, role (member, moderator, or owner), and notification preferences are stored.</li>
+                <li><strong className="text-white">Presence & Status:</strong> Your online/offline/away/do-not-disturb status and &quot;last seen&quot; timestamp are visible to other users in the chat. Typing indicators show when you are composing a message.</li>
+                <li><strong className="text-white">Read Receipts:</strong> We track when messages are read to provide unread count indicators and read receipt functionality.</li>
+                <li><strong className="text-white">Bookmarks & Pins:</strong> Messages you bookmark and messages pinned by channel moderators are tracked per user and per channel.</li>
+                <li><strong className="text-white">Search Indexing:</strong> Message content is indexed for full-text search to enable you to find past messages across channels.</li>
+                <li><strong className="text-white">Message Retention:</strong> Free accounts can access up to 90 days of message history. Pro subscribers receive unlimited history. Messages beyond the retention window may become inaccessible.</li>
+                <li><strong className="text-white">Moderation Data:</strong> Auto-moderation rules (word filters, spam detection) may analyze message content in real time. Moderation actions taken on your messages are logged.</li>
+                <li><strong className="text-white">Privacy:</strong> Messages in public channels are visible to all channel members. Direct messages are private between participants. We may access any message content to investigate reported abuse or violations of our Terms.</li>
               </ul>
             </section>
 
@@ -344,7 +352,9 @@ export default function PrivacyPolicyPage() {
                 services. We may retain certain information for legitimate business purposes, legal compliance,
                 dispute resolution, or to enforce our agreements. Token transaction history is retained
                 for audit purposes. Pro subscription and rewards data is retained for financial records.
-                Platform connection tokens are deleted when you disconnect a platform. Anonymized analytics
+                Platform connection tokens are deleted when you disconnect a platform. Chat message
+                accessibility depends on your subscription tier (90 days for free accounts, unlimited for
+                Pro). Chat moderation audit logs are retained for platform integrity. Anonymized analytics
                 data may be retained indefinitely.
               </p>
             </section>

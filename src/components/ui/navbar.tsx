@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import { useState } from "react";
 import { UserMenu } from "@/components/auth/user-menu";
 import { SearchCommand } from "@/components/ui/search-command";
-import { Plus, Rocket, ChevronDown, Sparkles, Menu, X, Building2, Rss, FolderKanban, Globe, Compass } from "lucide-react";
+import { Plus, Rocket, ChevronDown, Sparkles, Menu, X, Building2, Rss, FolderKanban, Globe, Compass, MessageSquare } from "lucide-react";
 import { BuildersLogo } from "@/components/ui/builders-logo";
 import { cn } from "@/lib/utils";
 
@@ -267,6 +267,16 @@ export function Navbar() {
                   </>
                 )}
               </div>
+
+              {/* Chat */}
+              <Link
+                href="/messages"
+                className="relative p-2 rounded-lg transition-colors hover:bg-white/5"
+                style={{ color: "var(--foreground-muted)" }}
+                title="Chat"
+              >
+                <MessageSquare className="h-5 w-5" />
+              </Link>
 
               <UserMenu />
             </>

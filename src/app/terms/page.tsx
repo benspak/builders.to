@@ -20,7 +20,7 @@ export default function TermsOfServicePage() {
         </div>
 
         <h1 className="text-4xl font-bold text-white mb-2">Terms of Service</h1>
-        <p className="text-zinc-500 mb-12">Last updated: February 12, 2026</p>
+        <p className="text-zinc-500 mb-12">Last updated: February 18, 2026</p>
 
         <div className="prose prose-invert prose-zinc max-w-none">
           <div className="space-y-8 text-zinc-300">
@@ -53,6 +53,7 @@ export default function TermsOfServicePage() {
                 <li>Using AI-powered content generation and analysis tools</li>
                 <li>Cross-posting content to connected social media platforms (Twitter/X, LinkedIn)</li>
                 <li>Hosting and attending events and meetups</li>
+                <li>Participating in real-time community chat channels and threaded conversations</li>
                 <li>Sending and receiving direct messages with other builders</li>
                 <li>Discovering nearby builders and events</li>
                 <li>Viewing the builder leaderboard and earning karma through contributions</li>
@@ -318,11 +319,31 @@ export default function TermsOfServicePage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">13. Direct Messaging</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">13. Chat & Messaging</h2>
 
-              <h3 className="text-xl font-medium text-white mt-6 mb-3">12.1 Acceptable Use</h3>
+              <h3 className="text-xl font-medium text-white mt-6 mb-3">13.1 Community Channels</h3>
               <p className="leading-relaxed mb-4">
-                Direct messaging is provided for legitimate communication between builders. You agree not to:
+                Builders.to provides real-time community chat channels organized by topic (e.g., &quot;AI Builders,&quot; &quot;Solo Founders&quot;).
+                Channels may be public (visible to all members) or private (invite-only). Channel creation is restricted
+                to platform administrators. By participating in channels, you agree to:
+              </p>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>Follow channel-specific guidelines and topics</li>
+                <li>Respect channel moderators and their decisions</li>
+                <li>Not abuse channel features such as polls, reactions, or @mentions</li>
+                <li>Not share private channel content outside the channel without consent</li>
+              </ul>
+
+              <h3 className="text-xl font-medium text-white mt-6 mb-3">13.2 Threaded Conversations</h3>
+              <p className="leading-relaxed">
+                Chat messages support threaded replies to keep discussions organized. All content
+                guidelines apply equally to thread replies. Thread chains may be moderated if they
+                violate our policies or become disruptive.
+              </p>
+
+              <h3 className="text-xl font-medium text-white mt-6 mb-3">13.3 Direct Messages</h3>
+              <p className="leading-relaxed mb-4">
+                Direct messaging is provided for legitimate private communication between builders. You agree not to:
               </p>
               <ul className="list-disc pl-6 space-y-2">
                 <li>Send spam, unsolicited promotions, or bulk messages</li>
@@ -332,11 +353,31 @@ export default function TermsOfServicePage() {
                 <li>Use messaging to circumvent platform rules or fees</li>
               </ul>
 
-              <h3 className="text-xl font-medium text-white mt-6 mb-3">12.2 Privacy and Moderation</h3>
+              <h3 className="text-xl font-medium text-white mt-6 mb-3">13.4 Message History Limits</h3>
               <p className="leading-relaxed">
-                Messages are private between participants. However, we may access message content
-                to investigate reports of abuse, harassment, or Terms violations. Users can report
-                abusive messages, and we may take action including account suspension for violations.
+                Free accounts can access up to 90 days of message history. Pro subscribers
+                receive unlimited message history. Messages older than the retention window may
+                become inaccessible but are not immediately deleted.
+              </p>
+
+              <h3 className="text-xl font-medium text-white mt-6 mb-3">13.5 Chat Moderation</h3>
+              <p className="leading-relaxed mb-4">
+                Chat channels are subject to moderation by platform administrators and designated
+                channel moderators. Moderation tools include:
+              </p>
+              <ul className="list-disc pl-6 space-y-2">
+                <li><strong className="text-white">Auto-Moderation:</strong> Automated filters for prohibited words, spam detection, and link filtering may be applied to channels.</li>
+                <li><strong className="text-white">Slow Mode:</strong> Channels may have rate limits on how frequently you can send messages.</li>
+                <li><strong className="text-white">Manual Actions:</strong> Moderators may delete messages, mute users, or restrict access to channels for violations.</li>
+                <li><strong className="text-white">Audit Logs:</strong> Moderation actions are logged for accountability and review.</li>
+              </ul>
+
+              <h3 className="text-xl font-medium text-white mt-6 mb-3">13.6 Privacy and Monitoring</h3>
+              <p className="leading-relaxed">
+                Channel messages in public channels are visible to all channel members. Direct messages
+                are private between participants. However, we may access message content to investigate
+                reports of abuse, harassment, or Terms violations. Users can report abusive messages,
+                and we may take action including account suspension for violations.
               </p>
             </section>
 
@@ -360,6 +401,7 @@ export default function TermsOfServicePage() {
               <ul className="list-disc pl-6 space-y-2">
                 <li><strong className="text-white">Plan Options:</strong> Monthly ($3.99/month) or Yearly ($39.99/year) billing</li>
                 <li><strong className="text-white">Pro Rewards:</strong> Pro users may earn money for quality content. Rewards are discretionary and subject to our policies.</li>
+                <li><strong className="text-white">Unlimited Chat History:</strong> Pro users receive unlimited message history across all channels and DMs (free accounts: 90 days).</li>
                 <li><strong className="text-white">DALL-E Access:</strong> Pro users can generate AI images. Usage is subject to OpenAI&apos;s policies.</li>
                 <li><strong className="text-white">Billing:</strong> Subscriptions are billed through Stripe and auto-renew unless cancelled.</li>
                 <li><strong className="text-white">Cancellation:</strong> You may cancel at any time. Access continues until the end of the billing period.</li>
@@ -450,7 +492,7 @@ export default function TermsOfServicePage() {
                 AI-GENERATED CONTENT, OR ANY METRICS DISPLAYED ON THE PLATFORM. AI FEATURES ARE PROVIDED
                 WITHOUT WARRANTIES REGARDING ACCURACY, APPROPRIATENESS, OR FITNESS FOR ANY PURPOSE.
                 WE DO NOT GUARANTEE THE SAFETY, QUALITY, OR OUTCOMES OF EVENTS
-                OR INTERACTIONS RESULTING FROM DIRECT MESSAGING, NEARBY DISCOVERY,
+                OR INTERACTIONS RESULTING FROM CHAT CHANNELS, DIRECT MESSAGING, NEARBY DISCOVERY,
                 SIMILAR BUILDER MATCHING, OR ACCOUNTABILITY PARTNER FEATURES.
               </p>
             </section>
@@ -465,7 +507,7 @@ export default function TermsOfServicePage() {
                 SERVICE, INCLUDING BUT NOT LIMITED TO LOSSES RELATED TO THE TOKEN SYSTEM, PRO
                 REWARDS, SERVICE MARKETPLACE TRANSACTIONS, AI-GENERATED CONTENT, OR CROSS-POSTED
                 CONTENT ON THIRD-PARTY PLATFORMS, EVENTS, OR INTERACTIONS
-                FACILITATED THROUGH DIRECT MESSAGING, NEARBY DISCOVERY,
+                FACILITATED THROUGH CHAT CHANNELS, DIRECT MESSAGING, NEARBY DISCOVERY,
                 SIMILAR BUILDER MATCHING, OR ACCOUNTABILITY PARTNER FEATURES.
               </p>
             </section>
@@ -496,7 +538,7 @@ export default function TermsOfServicePage() {
                 <li>Active listings and advertisements may be removed</li>
                 <li>Connected platform authorizations will be revoked</li>
                 <li>Hosted events may be cancelled</li>
-                <li>Direct message history may be deleted</li>
+                <li>Chat channel memberships will be revoked and message history may be deleted</li>
                 <li>Accountability partnerships and check-in history may be removed</li>
               </ul>
               <p className="mt-4">

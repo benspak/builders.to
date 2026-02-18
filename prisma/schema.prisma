@@ -180,9 +180,25 @@ model User {
   payouts      Payout[]
 
 
-  // Direct Messaging
+  // Direct Messaging (legacy - being replaced by Chat system)
   conversationParticipants ConversationParticipant[]
   sentMessages             Message[]
+
+  // Chat System
+  chatChannelMemberships ChatChannelMember[]
+  chatMessages           ChatMessage[]
+  chatReactions          ChatMessageReaction[]
+  chatBookmarks          ChatMessageBookmark[]
+  chatMentions           ChatMention[]
+  chatPollVotes          ChatPollVote[]
+  chatModActionsPerformed ChatModAction[]      @relation("ChatModerator")
+  chatModActionsReceived  ChatModAction[]      @relation("ChatModTarget")
+  chatChannelsCreated    ChatChannel[]
+  chatInvitesSent        ChatChannelInvite[]   @relation("ChatInviter")
+  chatInvitesReceived    ChatChannelInvite[]   @relation("ChatInvitee")
+  chatPresence           UserPresence?
+  chatMessagesPinned     ChatMessage[]         @relation("ChatPinnedBy")
+  chatMessagesDeleted    ChatMessage[]         @relation("ChatDeletedBy")
 
   // Accountability Partners
   partnershipRequestsSent     AccountabilityPartnership[] @relation("PartnershipRequester")
@@ -1976,6 +1992,312 @@ model Message {
 
   @@index([conversationId, createdAt])
   @@index([senderId])
+}
+
+// ============================================
+// Real-Time Chat System
+// ============================================
+
+enum ChatChannelType {
+  PUBLIC
+  PRIVATE
+  DM
+  GROUP_DM
+}
+
+enum ChatChannelMemberRole {
+  OWNER
+  ADMIN
+  MODERATOR
+  MEMBER
+}
+
+enum ChatNotificationPreference {
+  ALL
+  MENTIONS
+  NONE
+}
+
+enum ChatMessageType {
+  TEXT
+  SYSTEM
+  POLL
+}
+
+enum ChatAutoModRuleType {
+  WORD_FILTER
+  SPAM
+  LINK_FILTER
+}
+
+enum ChatModActionType {
+  DELETE_MESSAGE
+  MUTE_USER
+  BAN_USER
+  WARN_USER
+}
+
+enum ChatChannelInviteStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+enum UserPresenceStatus {
+  ONLINE
+  AWAY
+  DND
+  OFFLINE
+}
+
+model ChatChannelCategory {
+  id        String   @id @default(cuid())
+  name      String
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  channels ChatChannel[]
+
+  @@index([position])
+}
+
+model ChatChannel {
+  id          String          @id @default(cuid())
+  name        String
+  slug        String          @unique
+  description String?         @db.Text
+  topic       String?
+  type        ChatChannelType @default(PUBLIC)
+  isArchived  Boolean         @default(false)
+
+  slowModeSeconds      Int @default(0)
+  messageRetentionDays Int @default(0) // 0 = unlimited
+
+  createdById String
+  createdBy   User   @relation(fields: [createdById], references: [id], onDelete: Cascade)
+
+  categoryId String?
+  category   ChatChannelCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  members  ChatChannelMember[]
+  messages ChatMessage[]
+  invites  ChatChannelInvite[]
+  modRules ChatAutoModRule[]
+  modActions ChatModAction[]
+
+  @@index([type])
+  @@index([categoryId])
+  @@index([createdById])
+  @@index([isArchived])
+}
+
+model ChatChannelMember {
+  id                     String                     @id @default(cuid())
+  role                   ChatChannelMemberRole      @default(MEMBER)
+  notificationPreference ChatNotificationPreference @default(MENTIONS)
+  lastReadMessageId      String?
+  joinedAt               DateTime                   @default(now())
+
+  userId    String
+  channelId String
+
+  user    User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  channel ChatChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, channelId])
+  @@index([channelId])
+  @@index([userId])
+}
+
+model ChatChannelInvite {
+  id        String                    @id @default(cuid())
+  status    ChatChannelInviteStatus   @default(PENDING)
+  createdAt DateTime                  @default(now())
+
+  channelId String
+  inviterId String
+  inviteeId String
+
+  channel ChatChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  inviter User        @relation("ChatInviter", fields: [inviterId], references: [id], onDelete: Cascade)
+  invitee User        @relation("ChatInvitee", fields: [inviteeId], references: [id], onDelete: Cascade)
+
+  @@unique([channelId, inviteeId])
+  @@index([inviteeId])
+  @@index([channelId])
+}
+
+model ChatMessage {
+  id      String          @id @default(cuid())
+  content String          @db.Text
+  type    ChatMessageType @default(TEXT)
+
+  gifUrl       String?
+  imageUrl     String?
+  codeSnippet  String? @db.Text
+  codeLanguage String?
+
+  isPinned   Boolean  @default(false)
+  pinnedById String?
+  pinnedBy   User?    @relation("ChatPinnedBy", fields: [pinnedById], references: [id], onDelete: SetNull)
+
+  isDeleted   Boolean  @default(false)
+  deletedById String?
+  deletedBy   User?    @relation("ChatDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull)
+
+  editedAt  DateTime?
+  createdAt DateTime  @default(now())
+
+  senderId  String
+  sender    User        @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  channelId String
+  channel   ChatChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  threadParentId String?
+  threadParent   ChatMessage?  @relation("ChatThreadReplies", fields: [threadParentId], references: [id], onDelete: Cascade)
+  threadReplies  ChatMessage[] @relation("ChatThreadReplies")
+
+  reactions ChatMessageReaction[]
+  bookmarks ChatMessageBookmark[]
+  mentions  ChatMention[]
+  poll      ChatPoll?
+
+  @@index([channelId, createdAt])
+  @@index([senderId])
+  @@index([threadParentId])
+  @@index([isPinned])
+}
+
+model ChatMessageReaction {
+  id        String   @id @default(cuid())
+  emoji     String
+  createdAt DateTime @default(now())
+
+  messageId String
+  userId    String
+
+  message ChatMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user    User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId, emoji])
+  @@index([messageId])
+}
+
+model ChatMessageBookmark {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  messageId String
+  userId    String
+
+  message ChatMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user    User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId])
+  @@index([userId])
+}
+
+model ChatMention {
+  id        String @id @default(cuid())
+  messageId String
+  userId    String
+
+  message ChatMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user    User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([messageId])
+  @@index([userId])
+}
+
+model ChatPoll {
+  id            String    @id @default(cuid())
+  question      String
+  allowMultiple Boolean   @default(false)
+  expiresAt     DateTime?
+
+  messageId String      @unique
+  message   ChatMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  options ChatPollOption[]
+}
+
+model ChatPollOption {
+  id       String @id @default(cuid())
+  text     String
+  position Int    @default(0)
+
+  pollId String
+  poll   ChatPoll @relation(fields: [pollId], references: [id], onDelete: Cascade)
+
+  votes ChatPollVote[]
+
+  @@index([pollId])
+}
+
+model ChatPollVote {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  optionId String
+  userId   String
+
+  option ChatPollOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  user   User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([optionId, userId])
+  @@index([optionId])
+}
+
+model ChatAutoModRule {
+  id        String              @id @default(cuid())
+  type      ChatAutoModRuleType
+  config    Json
+  isEnabled Boolean             @default(true)
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+
+  channelId String?
+  channel   ChatChannel? @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  @@index([channelId])
+  @@index([type])
+}
+
+model ChatModAction {
+  id        String             @id @default(cuid())
+  action    ChatModActionType
+  reason    String?            @db.Text
+  duration  Int?               // Duration in minutes for mutes
+  createdAt DateTime           @default(now())
+
+  channelId    String
+  messageId    String?
+  targetUserId String
+  moderatorId  String
+
+  channel   ChatChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  target    User        @relation("ChatModTarget", fields: [targetUserId], references: [id], onDelete: Cascade)
+  moderator User        @relation("ChatModerator", fields: [moderatorId], references: [id], onDelete: Cascade)
+
+  @@index([channelId])
+  @@index([targetUserId])
+  @@index([moderatorId])
+  @@index([createdAt])
+}
+
+model UserPresence {
+  id           String             @id @default(cuid())
+  status       UserPresenceStatus @default(OFFLINE)
+  customStatus String?
+  lastSeenAt   DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 // ============================================
