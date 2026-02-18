@@ -1,10 +1,17 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ProductHuntBadge } from "./product-hunt-badge";
 import { BuildersLogo } from "@/components/ui/builders-logo";
 
 export function Footer() {
+  const pathname = usePathname();
+
+  if (pathname?.startsWith("/messages")) {
+    return null;
+  }
+
   return (
     <footer
       className="transition-colors duration-300"

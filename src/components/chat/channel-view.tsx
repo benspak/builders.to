@@ -38,7 +38,6 @@ export function ChannelView({ channelId }: ChannelViewProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<ChatMessageData[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   const currentUserId = session?.user?.id || "";
@@ -129,11 +128,6 @@ export function ChannelView({ channelId }: ChannelViewProps) {
       socket.off("reaction:updated", handleReaction);
     };
   }, [socket, channelId, markRead]);
-
-  // Scroll to bottom on new messages
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages.length]);
 
   // Mark last message as read
   useEffect(() => {
@@ -356,7 +350,6 @@ export function ChannelView({ channelId }: ChannelViewProps) {
                   onEdit={handleEdit}
                 />
               ))}
-              <div ref={messagesEndRef} />
             </div>
           )}
         </div>

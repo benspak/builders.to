@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { X, Loader2 } from "lucide-react";
 import { useChatSocket } from "./chat-provider";
@@ -20,7 +20,6 @@ export function ThreadPanel({ messageId, channelId, onClose }: ThreadPanelProps)
   const [parentMessage, setParentMessage] = useState<ChatMessageData | null>(null);
   const [replies, setReplies] = useState<ChatMessageData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const repliesEndRef = useRef<HTMLDivElement>(null);
 
   const currentUserId = session?.user?.id || "";
 
@@ -79,10 +78,6 @@ export function ThreadPanel({ messageId, channelId, onClose }: ThreadPanelProps)
       socket.off("reaction:updated", handleReaction);
     };
   }, [socket, messageId]);
-
-  useEffect(() => {
-    repliesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [replies.length]);
 
   const handleReact = async (msgId: string, emoji: string) => {
     if (socket?.connected) {
@@ -177,7 +172,6 @@ export function ThreadPanel({ messageId, channelId, onClose }: ThreadPanelProps)
                 isThreadReply
               />
             ))}
-            <div ref={repliesEndRef} />
           </div>
 
           <TypingIndicator userNames={threadTypingUsers} />
