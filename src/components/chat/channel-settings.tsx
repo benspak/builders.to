@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { X, Loader2, Trash2 } from "lucide-react";
+import { X, Loader2, Trash2, UserPlus, Check, AlertCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface ChannelSettingsProps {
@@ -24,8 +24,12 @@ export function ChannelSettings({ channel, membership, onClose }: ChannelSetting
   const [topic, setTopic] = useState(channel.topic || "");
   const [slowMode, setSlowMode] = useState(channel.slowModeSeconds);
   const [isSaving, setIsSaving] = useState(false);
+  const [inviteSearch, setInviteSearch] = useState("");
+  const [inviteStatus, setInviteStatus] = useState<{ type: "success" | "error"; msg: string } | null>(null);
+  const [isInviting, setIsInviting] = useState(false);
 
   const isAdmin = membership && ["OWNER", "ADMIN"].includes(membership.role);
+  const isPrivate = channel.type === "PRIVATE";
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -40,6 +44,41 @@ export function ChannelSettings({ channel, membership, onClose }: ChannelSetting
       console.error("Failed to update channel:", error);
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleInvite = async () => {
+    if (!inviteSearch.trim()) return;
+    setIsInviting(true);
+    setInviteStatus(null);
+    try {
+      const searchRes = await fetch(`/api/users/search?q=${encodeURIComponent(inviteSearch.trim())}&limit=1`);
+      if (!searchRes.ok) {
+        setInviteStatus({ type: "error", msg: "User search failed. Try a username or email." });
+        return;
+      }
+      const searchData = await searchRes.json();
+      const user = searchData.users?.[0];
+      if (!user) {
+        setInviteStatus({ type: "error", msg: "No user found with that name or email." });
+        return;
+      }
+      const res = await fetch(`/api/chat/channels/${channel.id}/invites`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ inviteeId: user.id }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        setInviteStatus({ type: "error", msg: data.error || "Invite failed" });
+        return;
+      }
+      setInviteStatus({ type: "success", msg: `Invited ${user.name || user.username || "user"} successfully.` });
+      setInviteSearch("");
+    } catch {
+      setInviteStatus({ type: "error", msg: "Something went wrong" });
+    } finally {
+      setIsInviting(false);
     }
   };
 
@@ -115,6 +154,40 @@ export function ChannelSettings({ channel, membership, onClose }: ChannelSetting
               <option value="300">5 minutes</option>
             </select>
           </div>
+
+          {/* Invite section for private channels */}
+          {isPrivate && isAdmin && (
+            <div>
+              <label className="text-xs font-medium text-zinc-400 mb-1 block">
+                <span className="flex items-center gap-1">
+                  <UserPlus className="h-3.5 w-3.5" />
+                  Invite User
+                </span>
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={inviteSearch}
+                  onChange={(e) => { setInviteSearch(e.target.value); setInviteStatus(null); }}
+                  placeholder="Username or name..."
+                  className="flex-1 rounded-lg border border-white/10 bg-zinc-800/50 px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:border-cyan-500/50 focus:outline-none"
+                />
+                <button
+                  onClick={handleInvite}
+                  disabled={isInviting || !inviteSearch.trim()}
+                  className="px-3 py-2 rounded-lg bg-cyan-500/20 text-sm text-cyan-400 hover:bg-cyan-500/30 transition-colors disabled:opacity-50"
+                >
+                  {isInviting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Invite"}
+                </button>
+              </div>
+              {inviteStatus && (
+                <div className={`mt-2 flex items-center gap-1.5 text-xs ${inviteStatus.type === "success" ? "text-green-400" : "text-red-400"}`}>
+                  {inviteStatus.type === "success" ? <Check className="h-3 w-3" /> : <AlertCircle className="h-3 w-3" />}
+                  {inviteStatus.msg}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="flex items-center justify-between px-6 py-4 border-t border-white/5">

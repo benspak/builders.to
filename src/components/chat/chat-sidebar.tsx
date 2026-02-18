@@ -6,11 +6,12 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   Hash, Lock, ChevronDown, ChevronRight, MessageSquare,
-  Search, Compass, User, PanelLeftClose, PanelLeft, Bookmark,
+  Search, Compass, User, PanelLeftClose, PanelLeft, Bookmark, Plus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useChatSocket } from "./chat-provider";
 import { PresenceIndicator } from "./presence-indicator";
+import { CreateChannelDialog } from "./create-channel-dialog";
 
 interface Channel {
   id: string;
@@ -34,19 +35,23 @@ export function ChatSidebar({ collapsed, onToggle }: ChatSidebarProps) {
   const pathname = usePathname();
   const { onlineUsers } = useChatSocket();
   const [channels, setChannels] = useState<Channel[]>([]);
+  const [isAdminUser, setIsAdminUser] = useState(false);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState("");
 
-  useEffect(() => {
-    async function fetchChannels() {
-      try {
-        const res = await fetch("/api/chat/channels");
-        const data = await res.json();
-        setChannels(data.channels || []);
-      } catch (error) {
-        console.error("Failed to fetch channels:", error);
-      }
+  const fetchChannels = async () => {
+    try {
+      const res = await fetch("/api/chat/channels");
+      const data = await res.json();
+      setChannels(data.channels || []);
+      if (data.isAdmin !== undefined) setIsAdminUser(data.isAdmin);
+    } catch (error) {
+      console.error("Failed to fetch channels:", error);
     }
+  };
+
+  useEffect(() => {
     fetchChannels();
     const interval = setInterval(fetchChannels, 30000);
     return () => clearInterval(interval);
@@ -103,9 +108,20 @@ export function ChatSidebar({ collapsed, onToggle }: ChatSidebarProps) {
       {/* Header */}
       <div className="p-3 border-b border-white/5 flex items-center justify-between">
         <h2 className="text-sm font-semibold text-white">Chat</h2>
-        <button onClick={onToggle} className="p-1 text-zinc-400 hover:text-white transition-colors">
-          <PanelLeftClose className="h-4 w-4" />
-        </button>
+        <div className="flex items-center gap-1">
+          {isAdminUser && (
+            <button
+              onClick={() => setShowCreateDialog(true)}
+              className="p-1 text-zinc-400 hover:text-cyan-400 transition-colors"
+              title="Create Channel"
+            >
+              <Plus className="h-4 w-4" />
+            </button>
+          )}
+          <button onClick={onToggle} className="p-1 text-zinc-400 hover:text-white transition-colors">
+            <PanelLeftClose className="h-4 w-4" />
+          </button>
+        </div>
       </div>
 
       {/* Search */}
@@ -219,6 +235,14 @@ export function ChatSidebar({ collapsed, onToggle }: ChatSidebarProps) {
           })}
         </div>
       </div>
+
+      <CreateChannelDialog
+        open={showCreateDialog}
+        onClose={() => {
+          setShowCreateDialog(false);
+          fetchChannels();
+        }}
+      />
     </div>
   );
 }

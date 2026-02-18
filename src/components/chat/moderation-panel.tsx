@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { Shield, Loader2, User, AlertTriangle, Plus, Trash2, X } from "lucide-react";
+import { Shield, Loader2, User, AlertTriangle, Plus, Trash2, X, Gavel } from "lucide-react";
 import { formatRelativeTime } from "@/lib/utils";
 
 interface ModAction {
@@ -21,29 +21,45 @@ interface AutoModRule {
   isEnabled: boolean;
 }
 
+interface MemberForMod {
+  id: string;
+  role: string;
+  user: { id: string; name: string | null; firstName: string | null; lastName: string | null; image: string | null };
+}
+
 interface ModerationPanelProps {
   channelId: string;
   onClose: () => void;
 }
 
 export function ModerationPanel({ channelId, onClose }: ModerationPanelProps) {
-  const [tab, setTab] = useState<"rules" | "log">("rules");
+  const [tab, setTab] = useState<"rules" | "actions" | "log">("rules");
   const [rules, setRules] = useState<AutoModRule[]>([]);
   const [actions, setActions] = useState<ModAction[]>([]);
+  const [members, setMembers] = useState<MemberForMod[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [newWords, setNewWords] = useState("");
+  const [actionTarget, setActionTarget] = useState("");
+  const [actionType, setActionType] = useState("WARN_USER");
+  const [actionReason, setActionReason] = useState("");
+  const [actionDuration, setActionDuration] = useState("");
+  const [isSubmittingAction, setIsSubmittingAction] = useState(false);
+  const [actionError, setActionError] = useState("");
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const [rulesRes, actionsRes] = await Promise.all([
+        const [rulesRes, actionsRes, membersRes] = await Promise.all([
           fetch(`/api/chat/moderation/rules?channelId=${channelId}`),
           fetch(`/api/chat/moderation/actions?channelId=${channelId}`),
+          fetch(`/api/chat/channels/${channelId}/members`),
         ]);
         const rulesData = await rulesRes.json();
         const actionsData = await actionsRes.json();
+        const membersData = await membersRes.json();
         setRules(rulesData.rules || []);
         setActions(actionsData.actions || []);
+        setMembers(membersData.members || []);
       } catch (error) {
         console.error("Failed to fetch moderation data:", error);
       } finally {
@@ -52,6 +68,42 @@ export function ModerationPanel({ channelId, onClose }: ModerationPanelProps) {
     }
     fetchData();
   }, [channelId]);
+
+  const submitModAction = async () => {
+    if (!actionTarget || !actionType) return;
+    setIsSubmittingAction(true);
+    setActionError("");
+    try {
+      const res = await fetch("/api/chat/moderation/actions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          channelId,
+          targetUserId: actionTarget,
+          action: actionType,
+          reason: actionReason.trim() || undefined,
+          duration: actionDuration ? parseInt(actionDuration) : undefined,
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        setActionError(data.error || "Action failed");
+        return;
+      }
+      const newAction = await res.json();
+      setActions((prev) => [newAction, ...prev]);
+      setActionTarget("");
+      setActionReason("");
+      setActionDuration("");
+      if (actionType === "BAN_USER") {
+        setMembers((prev) => prev.filter((m) => m.user.id !== actionTarget));
+      }
+    } catch {
+      setActionError("Something went wrong");
+    } finally {
+      setIsSubmittingAction(false);
+    }
+  };
 
   const addWordFilter = async () => {
     if (!newWords.trim()) return;
@@ -104,6 +156,12 @@ export function ModerationPanel({ channelId, onClose }: ModerationPanelProps) {
             Auto-Mod Rules
           </button>
           <button
+            onClick={() => setTab("actions")}
+            className={`px-4 py-2 text-sm ${tab === "actions" ? "text-white border-b-2 border-cyan-500" : "text-zinc-400"}`}
+          >
+            Take Action
+          </button>
+          <button
             onClick={() => setTab("log")}
             className={`px-4 py-2 text-sm ${tab === "log" ? "text-white border-b-2 border-cyan-500" : "text-zinc-400"}`}
           >
@@ -115,6 +173,96 @@ export function ModerationPanel({ channelId, onClose }: ModerationPanelProps) {
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="h-5 w-5 animate-spin text-cyan-500" />
+            </div>
+          ) : tab === "actions" ? (
+            <div className="space-y-4">
+              <div className="rounded-lg border border-white/10 bg-zinc-800/30 p-4 space-y-3">
+                <h3 className="text-sm font-medium text-white flex items-center gap-2">
+                  <Gavel className="h-4 w-4 text-yellow-500" />
+                  Moderation Action
+                </h3>
+
+                {actionError && (
+                  <div className="rounded-md bg-red-500/10 border border-red-500/20 px-3 py-2 text-xs text-red-400">
+                    {actionError}
+                  </div>
+                )}
+
+                <div>
+                  <label className="text-xs font-medium text-zinc-400 mb-1 block">Target User</label>
+                  <select
+                    value={actionTarget}
+                    onChange={(e) => setActionTarget(e.target.value)}
+                    className="w-full rounded-lg border border-white/10 bg-zinc-800/50 px-3 py-2 text-sm text-white focus:border-cyan-500/50 focus:outline-none"
+                  >
+                    <option value="">Select a user...</option>
+                    {members
+                      .filter((m) => m.role === "MEMBER")
+                      .map((m) => {
+                        const name = m.user.firstName && m.user.lastName
+                          ? `${m.user.firstName} ${m.user.lastName}`
+                          : m.user.name || "User";
+                        return (
+                          <option key={m.user.id} value={m.user.id}>{name}</option>
+                        );
+                      })}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-xs font-medium text-zinc-400 mb-1 block">Action</label>
+                  <select
+                    value={actionType}
+                    onChange={(e) => setActionType(e.target.value)}
+                    className="w-full rounded-lg border border-white/10 bg-zinc-800/50 px-3 py-2 text-sm text-white focus:border-cyan-500/50 focus:outline-none"
+                  >
+                    <option value="WARN_USER">Warn User</option>
+                    <option value="MUTE_USER">Mute User</option>
+                    <option value="BAN_USER">Ban User (removes from channel)</option>
+                    <option value="DELETE_MESSAGE">Delete Message</option>
+                  </select>
+                </div>
+
+                {actionType === "MUTE_USER" && (
+                  <div>
+                    <label className="text-xs font-medium text-zinc-400 mb-1 block">Duration (minutes)</label>
+                    <select
+                      value={actionDuration}
+                      onChange={(e) => setActionDuration(e.target.value)}
+                      className="w-full rounded-lg border border-white/10 bg-zinc-800/50 px-3 py-2 text-sm text-white focus:border-cyan-500/50 focus:outline-none"
+                    >
+                      <option value="5">5 minutes</option>
+                      <option value="15">15 minutes</option>
+                      <option value="60">1 hour</option>
+                      <option value="1440">24 hours</option>
+                    </select>
+                  </div>
+                )}
+
+                <div>
+                  <label className="text-xs font-medium text-zinc-400 mb-1 block">Reason</label>
+                  <input
+                    type="text"
+                    value={actionReason}
+                    onChange={(e) => setActionReason(e.target.value)}
+                    placeholder="Reason for this action..."
+                    className="w-full rounded-lg border border-white/10 bg-zinc-800/50 px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:border-cyan-500/50 focus:outline-none"
+                  />
+                </div>
+
+                <button
+                  onClick={submitModAction}
+                  disabled={!actionTarget || isSubmittingAction}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-yellow-500/20 text-sm text-yellow-400 hover:bg-yellow-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSubmittingAction ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Gavel className="h-4 w-4" />
+                  )}
+                  Execute Action
+                </button>
+              </div>
             </div>
           ) : tab === "rules" ? (
             <div className="space-y-4">

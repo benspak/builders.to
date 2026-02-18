@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
+function isAdmin(email: string | null | undefined): boolean {
+  if (!email) return false;
+  const adminEmails = (process.env.ADMIN_EMAILS || "").split(",").map((e) => e.trim().toLowerCase()).filter(Boolean);
+  return adminEmails.includes(email.toLowerCase());
+}
+
 // GET /api/chat/channels - List channels the user has joined
 export async function GET() {
   const session = await auth();
@@ -58,7 +64,12 @@ export async function GET() {
     })
   );
 
-  return NextResponse.json({ channels });
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { email: true },
+  });
+
+  return NextResponse.json({ channels, isAdmin: isAdmin(user?.email) });
 }
 
 // POST /api/chat/channels - Create a new channel (admin only)
@@ -68,14 +79,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Check if user is admin (has admin project or specific role)
-  const user = await prisma.user.findUnique({
+  const adminUser = await prisma.user.findUnique({
     where: { id: session.user.id },
     select: { email: true },
   });
 
-  const adminEmails = process.env.ADMIN_EMAILS?.split(",") || [];
-  if (!user?.email || !adminEmails.includes(user.email)) {
+  if (!isAdmin(adminUser?.email)) {
     return NextResponse.json({ error: "Only admins can create channels" }, { status: 403 });
   }
 

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-// PATCH /api/chat/messages/[id] - Edit message
+// PATCH /api/chat/messages/[id] - Edit message or toggle pin
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -18,11 +18,38 @@ export async function PATCH(
   if (!message) {
     return NextResponse.json({ error: "Message not found" }, { status: 404 });
   }
+
+  const body = await req.json();
+
+  // Handle pin toggle (requires mod permissions)
+  if (typeof body.isPinned === "boolean") {
+    const member = await prisma.chatChannelMember.findUnique({
+      where: { userId_channelId: { userId: session.user.id, channelId: message.channelId } },
+    });
+    if (!member || !["OWNER", "ADMIN", "MODERATOR"].includes(member.role)) {
+      return NextResponse.json({ error: "Only moderators can pin messages" }, { status: 403 });
+    }
+
+    const updated = await prisma.chatMessage.update({
+      where: { id },
+      data: {
+        isPinned: body.isPinned,
+        pinnedById: body.isPinned ? session.user.id : null,
+      },
+      include: {
+        sender: { select: { id: true, name: true, firstName: true, lastName: true, image: true, slug: true } },
+      },
+    });
+
+    return NextResponse.json(updated);
+  }
+
+  // Handle content edit (owner only)
   if (message.senderId !== session.user.id) {
     return NextResponse.json({ error: "Can only edit own messages" }, { status: 403 });
   }
 
-  const { content } = await req.json();
+  const { content } = body;
   if (!content?.trim()) {
     return NextResponse.json({ error: "Content is required" }, { status: 400 });
   }
