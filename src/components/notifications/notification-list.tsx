@@ -16,7 +16,8 @@ import {
   MessageCircle,
   Gift,
   UserPlus,
-  Handshake
+  Handshake,
+  Hash,
 } from "lucide-react";
 import { cn, formatRelativeTime } from "@/lib/utils";
 
@@ -59,6 +60,8 @@ export interface Notification {
     slug?: string | null;
     title?: string | null;
   } | null;
+  chatMessageId?: string | null;
+  chatChannelId?: string | null;
 }
 
 interface NotificationListProps {
@@ -140,6 +143,8 @@ export function NotificationList({ onItemClick, showMarkAllRead = true }: Notifi
         return <MessageCircle className="h-4 w-4 text-sky-400" />;
       case "USER_MENTIONED":
         return <AtSign className="h-4 w-4 text-orange-400" />;
+      case "CHAT_MENTION":
+        return <Hash className="h-4 w-4 text-cyan-400" />;
       case "WEEKLY_DIGEST":
         return <Mail className="h-4 w-4 text-blue-400" />;
       case "PROJECT_UPVOTED":
@@ -209,6 +214,10 @@ export function NotificationList({ onItemClick, showMarkAllRead = true }: Notifi
     }
     if (notification.type === "USER_FOLLOWED" && notification.actorSlug) {
       return `/${notification.actorSlug}`;
+    }
+    if (notification.type === "CHAT_MENTION" && notification.chatChannelId) {
+      const base = `/messages/${notification.chatChannelId}`;
+      return notification.chatMessageId ? `${base}?highlight=${notification.chatMessageId}` : base;
     }
     if (notification.type === "USER_MENTIONED") {
       // If mentioned on a feed event comment, link to feed with comment anchor

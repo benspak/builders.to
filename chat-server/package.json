@@ -13,12 +13,14 @@
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "jose": "^6.0.11",
-    "socket.io": "^4.8.1"
+    "socket.io": "^4.8.1",
+    "web-push": "^3.6.7"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.2",
     "@types/node": "^25.0.3",
+    "@types/web-push": "^3.6.4",
     "prisma": "^6.19.1",
     "tsx": "^4.19.0",
     "typescript": "^5.9.3"

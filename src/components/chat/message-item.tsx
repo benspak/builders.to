@@ -62,6 +62,7 @@ interface MessageItemProps {
   onDelete?: (messageId: string) => void;
   onEdit?: (messageId: string, content: string) => void;
   isThreadReply?: boolean;
+  highlighted?: boolean;
 }
 
 const QUICK_REACTIONS = ["👍", "❤️", "😂", "🎉", "🔥", "👀"];
@@ -76,6 +77,7 @@ export function MessageItem({
   onDelete,
   onEdit,
   isThreadReply = false,
+  highlighted = false,
 }: MessageItemProps) {
   const [showActions, setShowActions] = useState(false);
   const [showReactionPicker, setShowReactionPicker] = useState(false);
@@ -95,6 +97,27 @@ export function MessageItem({
     setIsEditing(false);
   };
 
+  // Convert @[Name](userId) mention tokens to markdown links with a special scheme,
+  // then let ReactMarkdown render them with a custom link component for styling.
+  const prepareMentionMarkdown = (text: string) =>
+    text.replace(/@\[([^\]]+)\]\(([^)]+)\)/g, "[@$1](mention://$2)");
+
+  const markdownComponents = {
+    a: ({ href, children, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => {
+      if (href?.startsWith("mention://")) {
+        return (
+          <span
+            className="inline-flex items-center gap-0.5 rounded bg-cyan-500/15 px-1 py-0.5 text-cyan-400 font-medium cursor-default"
+            {...props}
+          >
+            {children}
+          </span>
+        );
+      }
+      return <a href={href} className="text-cyan-400 hover:underline" {...props}>{children}</a>;
+    },
+  };
+
   if (message.isDeleted) {
     return (
       <div className="flex items-start gap-3 px-4 py-1 opacity-50">
@@ -106,9 +129,11 @@ export function MessageItem({
 
   return (
     <div
+      id={`message-${message.id}`}
       className={cn(
-        "group flex items-start gap-3 px-4 py-1.5 hover:bg-white/[0.02] transition-colors relative",
-        message.isPinned && "bg-yellow-500/5 border-l-2 border-yellow-500/50"
+        "group flex items-start gap-3 px-4 py-1.5 hover:bg-white/[0.02] transition-all relative",
+        message.isPinned && "bg-yellow-500/5 border-l-2 border-yellow-500/50",
+        highlighted && "bg-cyan-500/10 border-l-2 border-cyan-400 animate-pulse"
       )}
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => {
@@ -156,7 +181,9 @@ export function MessageItem({
         ) : (
           <>
             <div className="text-sm text-zinc-300 break-words prose prose-invert prose-sm max-w-none prose-p:my-0 prose-a:text-cyan-400">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
+              <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                {prepareMentionMarkdown(message.content)}
+              </ReactMarkdown>
             </div>
 
             {message.codeSnippet && (

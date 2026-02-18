@@ -1,6 +1,56 @@
 import { Server, Socket } from "socket.io";
 import { PrismaClient } from "@prisma/client";
+import webPush from "web-push";
 import type { AuthenticatedSocket } from "../server";
+
+const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || "";
+const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY || "";
+if (vapidPublicKey && vapidPrivateKey) {
+  webPush.setVapidDetails("mailto:support@builders.to", vapidPublicKey, vapidPrivateKey);
+}
+
+async function sendMentionPush(
+  prisma: PrismaClient,
+  mentionedUserId: string,
+  senderName: string,
+  channelName: string,
+  channelId: string,
+  messageId: string
+) {
+  if (!vapidPublicKey || !vapidPrivateKey) return;
+  try {
+    const subs = await prisma.pushSubscription.findMany({ where: { userId: mentionedUserId } });
+    if (subs.length === 0) return;
+    const payload = JSON.stringify({
+      title: `${senderName} mentioned you`,
+      body: `You were mentioned in #${channelName}`,
+      icon: "/icons/icon-192x192.png",
+      badge: "/icons/icon-96x96.png",
+      url: `/messages/${channelId}?highlight=${messageId}`,
+      tag: "chat-mention",
+    });
+    const failed: string[] = [];
+    await Promise.allSettled(
+      subs.map(async (sub) => {
+        try {
+          await webPush.sendNotification(
+            { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
+            payload,
+            { TTL: 86400, urgency: "normal" }
+          );
+        } catch (err: unknown) {
+          const e = err as { statusCode?: number };
+          if (e.statusCode === 404 || e.statusCode === 410) failed.push(sub.endpoint);
+        }
+      })
+    );
+    if (failed.length > 0) {
+      await prisma.pushSubscription.deleteMany({ where: { endpoint: { in: failed } } });
+    }
+  } catch (err) {
+    console.error("[Push] mention notification error:", err);
+  }
+}
 
 export function registerMessageHandlers(
   io: Server,
@@ -28,7 +78,7 @@ export function registerMessageHandlers(
       // Check slow mode
       const channel = await prisma.chatChannel.findUnique({
         where: { id: channelId },
-        select: { slowModeSeconds: true },
+        select: { slowModeSeconds: true, name: true },
       });
       if (channel && channel.slowModeSeconds > 0) {
         const lastMessage = await prisma.chatMessage.findFirst({
@@ -84,18 +134,74 @@ export function registerMessageHandlers(
         },
       });
 
-      // Parse @mentions
+      // Parse @mentions and create notifications
       const mentionRegex = /@\[([^\]]+)\]\(([^)]+)\)/g;
       let match;
       const mentionUserIds: string[] = [];
       while ((match = mentionRegex.exec(content)) !== null) {
         mentionUserIds.push(match[2]);
       }
+
       if (mentionUserIds.length > 0) {
         await prisma.chatMention.createMany({
           data: mentionUserIds.map((uid) => ({ messageId: message.id, userId: uid })),
           skipDuplicates: true,
         });
+
+        const senderName = message.sender.firstName && message.sender.lastName
+          ? `${message.sender.firstName} ${message.sender.lastName}`
+          : message.sender.name || "Someone";
+        const channelName = channel?.name || "chat";
+
+        const contentPreview = content
+          .replace(/@\[([^\]]+)\]\([^)]+\)/g, "@$1")
+          .slice(0, 120);
+
+        for (const mentionedId of mentionUserIds) {
+          if (mentionedId === userId) continue;
+
+          // Check notification preference
+          const mentionedMember = await prisma.chatChannelMember.findUnique({
+            where: { userId_channelId: { userId: mentionedId, channelId } },
+            select: { notificationPreference: true },
+          });
+          if (mentionedMember?.notificationPreference === "NONE") continue;
+
+          const notification = await prisma.notification.create({
+            data: {
+              type: "CHAT_MENTION",
+              title: `${senderName} mentioned you in #${channelName}`,
+              message: contentPreview,
+              userId: mentionedId,
+              actorId: userId,
+              actorName: senderName,
+              actorImage: message.sender.image,
+              chatMessageId: message.id,
+              chatChannelId: channelId,
+            },
+          });
+
+          // Real-time notification via socket
+          const mentionedSockets = connectedUsers.get(mentionedId);
+          if (mentionedSockets) {
+            for (const sid of mentionedSockets) {
+              io.to(sid).emit("notification:new", {
+                id: notification.id,
+                type: "CHAT_MENTION",
+                title: notification.title,
+                message: notification.message,
+                actorName: senderName,
+                actorImage: message.sender.image,
+                channelId,
+                messageId: message.id,
+                createdAt: notification.createdAt.toISOString(),
+              });
+            }
+          }
+
+          // Push notification (fire-and-forget)
+          sendMentionPush(prisma, mentionedId, senderName, channelName, channelId, message.id);
+        }
       }
 
       // Broadcast to channel

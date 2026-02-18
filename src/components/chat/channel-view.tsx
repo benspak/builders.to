@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSession } from "next-auth/react";
+import { useSearchParams } from "next/navigation";
 import { Loader2, Crown } from "lucide-react";
 import { useChatSocket } from "./chat-provider";
 import { useThreadState } from "./chat-layout";
@@ -22,6 +23,9 @@ export function ChannelView({ channelId }: ChannelViewProps) {
   const { data: session } = useSession();
   const { socket, typingUsers, joinChannel, markRead } = useChatSocket();
   const { openThread } = useThreadState();
+  const searchParams = useSearchParams();
+  const highlightMessageId = searchParams.get("highlight");
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessageData[]>([]);
   const [channel, setChannel] = useState<{
     id: string; name: string; type: string; topic: string | null;
@@ -135,6 +139,18 @@ export function ChannelView({ channelId }: ChannelViewProps) {
       markRead(channelId, messages[messages.length - 1].id);
     }
   }, [messages, channelId, markRead]);
+
+  // Scroll to and highlight mentioned message from notification deep-link
+  useEffect(() => {
+    if (!highlightMessageId || messages.length === 0) return;
+    const el = document.getElementById(`message-${highlightMessageId}`);
+    if (el) {
+      setHighlightedId(highlightMessageId);
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      const timer = setTimeout(() => setHighlightedId(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [highlightMessageId, messages]);
 
   const handleReact = async (messageId: string, emoji: string) => {
     if (socket?.connected) {
@@ -348,6 +364,7 @@ export function ChannelView({ channelId }: ChannelViewProps) {
                   onBookmark={handleBookmark}
                   onDelete={handleDelete}
                   onEdit={handleEdit}
+                  highlighted={msg.id === highlightedId}
                 />
               ))}
             </div>

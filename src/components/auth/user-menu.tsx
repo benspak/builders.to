@@ -56,7 +56,14 @@ export function UserMenu() {
     }
     fetchUnreadCount();
     const interval = setInterval(fetchUnreadCount, 60000);
-    return () => clearInterval(interval);
+
+    const handleChatNotification = () => setUnreadCount((c) => c + 1);
+    window.addEventListener("chat:notification", handleChatNotification);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("chat:notification", handleChatNotification);
+    };
   }, [session?.user?.id]);
 
   useEffect(() => {

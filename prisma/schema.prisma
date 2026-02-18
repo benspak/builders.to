@@ -995,6 +995,8 @@ enum NotificationType {
   COMMENT_MARKED_HELPFUL // Your comment was marked as helpful
   // Social notifications
   USER_FOLLOWED // Someone followed you
+  // Chat notifications
+  CHAT_MENTION // Someone mentioned you in a chat message
 }
 
 // In-app notifications
@@ -1030,6 +1032,13 @@ model Notification {
   updateCommentId String?
   updateComment   UpdateComment? @relation(fields: [updateCommentId], references: [id], onDelete: Cascade)
 
+  // Optional link to chat message (for @mention deep-linking)
+  chatMessageId String?
+  chatMessage   ChatMessage? @relation(fields: [chatMessageId], references: [id], onDelete: Cascade)
+
+  chatChannelId String?
+  chatChannel   ChatChannel? @relation(fields: [chatChannelId], references: [id], onDelete: Cascade)
+
   // Actor who triggered the notification (if applicable)
   actorId    String?
   actorName  String? // Denormalized for deleted users
@@ -1040,6 +1049,8 @@ model Notification {
   @@index([projectId])
   @@index([feedEventCommentId])
   @@index([updateCommentId])
+  @@index([chatMessageId])
+  @@index([chatChannelId])
 }
 
 // Email preferences per user
@@ -2082,9 +2093,10 @@ model ChatChannel {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  members  ChatChannelMember[]
-  messages ChatMessage[]
-  invites  ChatChannelInvite[]
+  members       ChatChannelMember[]
+  messages      ChatMessage[]
+  invites       ChatChannelInvite[]
+  notifications Notification[]
   modRules ChatAutoModRule[]
   modActions ChatModAction[]
 
@@ -2161,10 +2173,11 @@ model ChatMessage {
   threadParent   ChatMessage?  @relation("ChatThreadReplies", fields: [threadParentId], references: [id], onDelete: Cascade)
   threadReplies  ChatMessage[] @relation("ChatThreadReplies")
 
-  reactions ChatMessageReaction[]
-  bookmarks ChatMessageBookmark[]
-  mentions  ChatMention[]
-  poll      ChatPoll?
+  reactions      ChatMessageReaction[]
+  bookmarks      ChatMessageBookmark[]
+  mentions       ChatMention[]
+  poll           ChatPoll?
+  notifications  Notification[]
 
   @@index([channelId, createdAt])
   @@index([senderId])

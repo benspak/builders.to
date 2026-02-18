@@ -68,6 +68,11 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       forceUpdate((c) => c + 1);
     });
 
+    // Real-time notification forwarding (e.g. @mention) — dispatch to global listeners
+    sock.on("notification:new", (data: Record<string, unknown>) => {
+      window.dispatchEvent(new CustomEvent("chat:notification", { detail: data }));
+    });
+
     sock.on("typing:update", (data: { userId: string; userName?: string; channelId: string; isTyping: boolean }) => {
       setTypingUsers((prev) => {
         if (data.isTyping) {
