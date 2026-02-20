@@ -208,6 +208,11 @@ model User {
   // Karma Events
   karmaEvents KarmaEvent[]
 
+  // Discounts Directory
+  discounts       Discount[]
+  discountClaims  DiscountClaim[]
+  discountReports DiscountReport[]
+
   @@index([slug])
   @@index([stripeConnectId])
   @@index([locationSlug])
@@ -2388,4 +2393,77 @@ model KarmaEvent {
   @@index([userId])
   @@index([createdAt])
   @@index([type])
+}
+
+// ============================================
+// Discounts Directory
+// ============================================
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED_AMOUNT
+  CUSTOM
+}
+
+model Discount {
+  id          String       @id @default(cuid())
+  slug        String       @unique
+  title       String
+  description String       @db.Text
+  productName String
+  productUrl  String
+  discountType DiscountType
+  discountValue String // "20" for 20%, "$10", or freeform like "Free month trial"
+
+  couponCode  String? // Code to reveal after claiming
+  discountUrl String? // Link that auto-applies the discount
+
+  maxUses    Int? // null = unlimited
+  expiresAt  DateTime?
+  isActive   Boolean  @default(true)
+  claimCount Int      @default(0)
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  claims  DiscountClaim[]
+  reports DiscountReport[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([slug])
+  @@index([userId])
+  @@index([isActive])
+  @@index([expiresAt])
+  @@index([createdAt])
+}
+
+model DiscountClaim {
+  id         String   @id @default(cuid())
+  claimedAt  DateTime @default(now())
+
+  discountId String
+  discount   Discount @relation(fields: [discountId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([discountId, userId])
+  @@index([discountId])
+  @@index([userId])
+}
+
+model DiscountReport {
+  id        String   @id @default(cuid())
+  reason    String   @db.Text
+  createdAt DateTime @default(now())
+
+  discountId String
+  discount   Discount @relation(fields: [discountId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([discountId, userId])
+  @@index([discountId])
+  @@index([userId])
 }
