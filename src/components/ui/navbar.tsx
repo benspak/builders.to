@@ -14,6 +14,7 @@ export function Navbar() {
   const [shareOpen, setShareOpen] = useState(false);
   const [mobileShareOpen, setMobileShareOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [discoverOpen, setDiscoverOpen] = useState(false);
 
   return (
     <header
@@ -77,33 +78,38 @@ export function Navbar() {
                     <Building2 className="h-3.5 w-3.5 text-blue-400" />
                     Companies
                   </Link>
-                  <Link
-                    href="/discounts"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-white/5"
-                    style={{ color: "var(--foreground-muted)" }}
-                  >
-                    <Ticket className="h-3.5 w-3.5 text-emerald-400" />
-                    Discounts
-                  </Link>
-                  <Link
-                    href="/map"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-white/5"
-                    style={{ color: "var(--foreground-muted)" }}
-                  >
-                    <Globe className="h-3.5 w-3.5 text-cyan-400" />
-                    Map
-                  </Link>
-                  <Link
-                    href="/discover"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-white/5"
-                    style={{ color: "var(--foreground-muted)" }}
-                  >
-                    <Compass className="h-3.5 w-3.5 text-cyan-400" />
-                    Discover
-                  </Link>
+                  <div className="mt-1 pt-1 border-t" style={{ borderColor: "var(--card-border)" }}>
+                    <div className="px-3 py-1.5 text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--foreground-muted)", opacity: 0.5 }}>
+                      Discover
+                    </div>
+                    <Link
+                      href="/discover"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-white/5"
+                      style={{ color: "var(--foreground-muted)" }}
+                    >
+                      <Compass className="h-3.5 w-3.5 text-cyan-400" />
+                      Discover
+                    </Link>
+                    <Link
+                      href="/discounts"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-white/5"
+                      style={{ color: "var(--foreground-muted)" }}
+                    >
+                      <Ticket className="h-3.5 w-3.5 text-emerald-400" />
+                      Discounts
+                    </Link>
+                    <Link
+                      href="/map"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-white/5"
+                      style={{ color: "var(--foreground-muted)" }}
+                    >
+                      <Globe className="h-3.5 w-3.5 text-cyan-400" />
+                      Map
+                    </Link>
+                  </div>
                 </div>
               </>
             )}
@@ -146,15 +152,6 @@ export function Navbar() {
           </Link>
 
           <Link
-            href="/map"
-            className="hidden lg:flex items-center gap-1.5 text-sm font-medium transition-colors"
-            style={{ color: "var(--foreground-muted)" }}
-          >
-            <Globe className="h-3.5 w-3.5 text-cyan-400" />
-            Map
-          </Link>
-
-          <Link
             href="/companies"
             className="hidden lg:flex items-center gap-1.5 text-sm font-medium transition-colors"
             style={{ color: "var(--foreground-muted)" }}
@@ -163,23 +160,64 @@ export function Navbar() {
             Companies
           </Link>
 
-          <Link
-            href="/discounts"
-            className="hidden lg:flex items-center gap-1.5 text-sm font-medium transition-colors"
-            style={{ color: "var(--foreground-muted)" }}
-          >
-            <Ticket className="h-3.5 w-3.5 text-emerald-400" />
-            Discounts
-          </Link>
+          {/* Desktop: Discover Dropdown */}
+          <div className="relative hidden lg:block">
+            <button
+              onClick={() => setDiscoverOpen(!discoverOpen)}
+              className="flex items-center gap-1.5 text-sm font-medium transition-colors"
+              style={{ color: "var(--foreground-muted)" }}
+            >
+              <Compass className="h-3.5 w-3.5 text-cyan-400" />
+              Discover
+              <ChevronDown className={cn(
+                "h-3 w-3 transition-transform",
+                discoverOpen && "rotate-180"
+              )} />
+            </button>
 
-          <Link
-            href="/discover"
-            className="hidden lg:flex items-center gap-1.5 text-sm font-medium transition-colors"
-            style={{ color: "var(--foreground-muted)" }}
-          >
-            <Compass className="h-3.5 w-3.5 text-cyan-400" />
-            Discover
-          </Link>
+            {discoverOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-10"
+                  onClick={() => setDiscoverOpen(false)}
+                />
+                <div className="absolute right-0 top-full z-20 mt-2 w-48 rounded-xl border p-2 shadow-2xl"
+                  style={{
+                    background: "var(--background-secondary)",
+                    borderColor: "var(--card-border)"
+                  }}
+                >
+                  <Link
+                    href="/discover"
+                    onClick={() => setDiscoverOpen(false)}
+                    className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-white/5"
+                    style={{ color: "var(--foreground-muted)" }}
+                  >
+                    <Compass className="h-4 w-4 text-cyan-400" />
+                    Discover
+                  </Link>
+                  <Link
+                    href="/discounts"
+                    onClick={() => setDiscoverOpen(false)}
+                    className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-white/5"
+                    style={{ color: "var(--foreground-muted)" }}
+                  >
+                    <Ticket className="h-4 w-4 text-emerald-400" />
+                    Discounts
+                  </Link>
+                  <Link
+                    href="/map"
+                    onClick={() => setDiscoverOpen(false)}
+                    className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-white/5"
+                    style={{ color: "var(--foreground-muted)" }}
+                  >
+                    <Globe className="h-4 w-4 text-cyan-400" />
+                    Map
+                  </Link>
+                </div>
+              </>
+            )}
+          </div>
           {/* Mobile Search */}
           <div className="sm:hidden">
             <SearchCommand />
