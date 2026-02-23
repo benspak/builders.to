@@ -9,6 +9,7 @@ const MASTERMIND_SLACK_INVITE_URL = "https://join.slack.com/t/buildersto-masterm
 export function MastermindTelegramSection() {
   const [status, setStatus] = useState<"loading" | "subscribed" | "not-subscribed" | "signed-out">("loading");
   const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [joinError, setJoinError] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/mastermind/subscribe")
@@ -25,6 +26,7 @@ export function MastermindTelegramSection() {
 
   const handleJoin = async () => {
     setCheckoutLoading(true);
+    setJoinError(null);
     try {
       const res = await fetch("/api/mastermind/subscribe", { method: "POST" });
       const data = await res.json();
@@ -32,8 +34,10 @@ export function MastermindTelegramSection() {
         window.location.href = data.url;
         return;
       }
-      setCheckoutLoading(false);
+      setJoinError(data.error || "Something went wrong. Please try again.");
     } catch {
+      setJoinError("Network error. Please try again.");
+    } finally {
       setCheckoutLoading(false);
     }
   };
@@ -128,6 +132,9 @@ export function MastermindTelegramSection() {
             </>
           )}
         </button>
+        {joinError && (
+          <p className="mt-2 text-xs text-amber-400">{joinError}</p>
+        )}
       </div>
     </div>
   );

@@ -61,9 +61,27 @@ export async function POST() {
 
     return NextResponse.json({ sessionId, url });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
+    const message = error instanceof Error ? error.message : String(error);
     const stack = error instanceof Error ? error.stack : undefined;
-    console.error("[Mastermind Subscribe] Error:", message, stack ?? "");
+    console.error("[Mastermind Subscribe] POST Error:", message, stack ?? "");
+
+    // Missing table or schema not migrated
+    if (
+      typeof message === "string" &&
+      (message.includes("MastermindSubscription") ||
+        message.includes("does not exist") ||
+        message.includes("Unknown arg") ||
+        message.includes("Invalid `prisma.mastermindSubscription"))
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Mastermind is not set up yet. Run database migrations (e.g. npx prisma migrate deploy) and set STRIPE_MASTERMIND_MONTHLY_PRICE_ID.",
+        },
+        { status: 503 }
+      );
+    }
+
     return NextResponse.json(
       { error: "Failed to create checkout session" },
       { status: 500 }
@@ -73,7 +91,8 @@ export async function POST() {
 
 /**
  * GET /api/mastermind/subscribe
- * Get current Mastermind subscription status
+ * Get current Mastermind subscription status.
+ * On any error (e.g. missing table), returns isActive: false so the feed still loads.
  */
 export async function GET() {
   try {
@@ -97,10 +116,13 @@ export async function GET() {
       cancelAtPeriodEnd: sub?.cancelAtPeriodEnd ?? false,
     });
   } catch (error) {
-    console.error("[Mastermind Subscribe] Error fetching status:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch subscription status" },
-      { status: 500 }
-    );
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error("[Mastermind Subscribe] GET error (returning isActive: false):", msg);
+    // Return safe default so the feed page doesn't 500 (e.g. if migration not run)
+    return NextResponse.json({
+      isActive: false,
+      currentPeriodEnd: null,
+      cancelAtPeriodEnd: false,
+    });
   }
 }
