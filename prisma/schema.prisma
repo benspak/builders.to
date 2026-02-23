@@ -160,6 +160,9 @@ model User {
   // Pro Subscription
   proSubscription ProSubscription?
 
+  // Mastermind (Telegram) Subscription - $9/mo
+  mastermindSubscription MastermindSubscription?
+
   // Pinned Posts
   pinnedPosts PinnedPost[]
 
@@ -1663,6 +1666,29 @@ model ProSubscription {
 
   // Token grants tracking
   lastTokenGrantAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([stripeSubscriptionId])
+  @@index([status])
+}
+
+// Mastermind Subscription - $9/month for Telegram group access
+model MastermindSubscription {
+  id     String @id @default(cuid())
+  userId String @unique
+
+  stripeCustomerId     String?
+  stripeSubscriptionId String? @unique
+  stripePriceId        String?
+
+  status ProSubscriptionStatus @default(INACTIVE)
+  currentPeriodStart   DateTime?
+  currentPeriodEnd     DateTime?
+  cancelAtPeriodEnd    Boolean   @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

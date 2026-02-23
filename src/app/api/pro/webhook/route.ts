@@ -6,6 +6,10 @@ import {
   updateProSubscriptionStatus,
   getSubscriptionIdFromInvoice,
 } from "@/lib/stripe-subscription";
+import {
+  activateMastermindSubscription,
+  updateMastermindSubscriptionStatus,
+} from "@/lib/stripe-mastermind";
 
 // Route segment config for webhook handling
 // Use nodejs runtime and disable body size limit for webhook payloads
@@ -125,10 +129,39 @@ export async function POST(request: Request) {
         console.log(`[Pro Webhook] Session mode: ${session.mode}`);
         console.log(`[Pro Webhook] Session subscription: ${session.subscription}`);
 
-        // Only handle Pro subscription checkouts
+        const subscriptionId = session.subscription as string;
+        if (!subscriptionId) {
+          console.error("[Pro Webhook] No subscription ID in session");
+          break;
+        }
+
+        const stripe = getStripe();
+        const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+        const subRaw = subscription as unknown as Record<string, unknown>;
+        const { periodStart, periodEnd } = getSubscriptionPeriodDates(subRaw);
+
+        // Mastermind subscription ($9/mo Slack access)
+        if (session.metadata?.type === "mastermind_subscription") {
+          const userId = session.metadata.userId;
+          if (!userId) {
+            console.error("[Pro Webhook] Mastermind: missing userId in metadata");
+            break;
+          }
+          await activateMastermindSubscription(
+            userId,
+            session.customer as string,
+            subscriptionId,
+            subscription.items.data[0].price.id,
+            periodStart || new Date(),
+            periodEnd || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+          );
+          console.log(`[Pro Webhook] Activated Mastermind subscription for user ${userId}`);
+          break;
+        }
+
+        // Pro subscription
         if (session.metadata?.type !== "pro_subscription") {
           console.log("[Pro Webhook] Not a Pro subscription checkout, skipping");
-          console.log(`[Pro Webhook] metadata.type = "${session.metadata?.type}"`);
           break;
         }
 
@@ -137,30 +170,8 @@ export async function POST(request: Request) {
 
         if (!userId || !plan) {
           console.error("[Pro Webhook] Missing userId or plan in metadata");
-          console.error(`[Pro Webhook] userId: ${userId}, plan: ${plan}`);
           break;
         }
-
-        // Get subscription details
-        const stripe = getStripe();
-        const subscriptionId = session.subscription as string;
-        
-        if (!subscriptionId) {
-          console.error("[Pro Webhook] No subscription ID in session");
-          break;
-        }
-
-        console.log(`[Pro Webhook] Retrieving subscription: ${subscriptionId}`);
-        const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-        console.log(`[Pro Webhook] Subscription status: ${subscription.status}`);
-
-        // Extract period dates - compatible with both old and new Stripe API versions
-        // In SDK v20+ / newer API versions, current_period_start/end may not be on the type
-        const subRaw = subscription as unknown as Record<string, unknown>;
-        const { periodStart, periodEnd } = getSubscriptionPeriodDates(subRaw);
-
-        console.log(`[Pro Webhook] Period start: ${periodStart?.toISOString() ?? "unavailable"}`);
-        console.log(`[Pro Webhook] Period end: ${periodEnd?.toISOString() ?? "unavailable"}`);
 
         await activateProSubscription(
           userId,
@@ -191,6 +202,25 @@ export async function POST(request: Request) {
         console.log(`[Pro Webhook] invoice.paid: subscription ID = ${invoiceSubId}`);
         const stripe = getStripe();
         const subscription = await stripe.subscriptions.retrieve(invoiceSubId);
+        const subRawInvoice = subscription as unknown as Record<string, unknown>;
+        const { periodStart: invoicePeriodStart, periodEnd: invoicePeriodEnd } = getSubscriptionPeriodDates(subRawInvoice);
+        const finalPeriodStart = invoicePeriodStart || getDateFromStripeTimestamp(invoice.period_start);
+        const finalPeriodEnd = invoicePeriodEnd || getDateFromStripeTimestamp(invoice.period_end);
+        const userId = subscription.metadata?.userId;
+
+        if (subscription.metadata?.type === "mastermind_subscription") {
+          if (!userId) break;
+          await updateMastermindSubscriptionStatus(
+            invoiceSubId,
+            "ACTIVE",
+            finalPeriodStart || undefined,
+            finalPeriodEnd || undefined,
+            undefined,
+            userId
+          );
+          console.log(`[Pro Webhook] Invoice paid (Mastermind) for user ${userId}`);
+          break;
+        }
 
         // Only handle Pro subscriptions
         if (subscription.metadata?.type !== "pro_subscription") {
@@ -198,19 +228,10 @@ export async function POST(request: Request) {
           break;
         }
 
-        const userId = subscription.metadata.userId;
         if (!userId) {
           console.error("[Pro Webhook] Missing userId in subscription metadata");
           break;
         }
-
-        // Extract period dates from subscription - Stripe v20 compatible
-        const subRawInvoice = subscription as unknown as Record<string, unknown>;
-        const { periodStart: invoicePeriodStart, periodEnd: invoicePeriodEnd } = getSubscriptionPeriodDates(subRawInvoice);
-
-        // Also try invoice period dates as fallback (available in all Stripe versions)
-        const finalPeriodStart = invoicePeriodStart || getDateFromStripeTimestamp(invoice.period_start);
-        const finalPeriodEnd = invoicePeriodEnd || getDateFromStripeTimestamp(invoice.period_end);
 
         await updateProSubscriptionStatus(
           invoiceSubId,
@@ -227,6 +248,39 @@ export async function POST(request: Request) {
 
       case "customer.subscription.updated": {
         const subscription = event.data.object as Stripe.Subscription;
+        const subRawUpdate = subscription as unknown as Record<string, unknown>;
+        const { periodStart: updatePeriodStart, periodEnd: updatePeriodEnd } = getSubscriptionPeriodDates(subRawUpdate);
+        const subUserId = subscription.metadata?.userId;
+
+        if (subscription.metadata?.type === "mastermind_subscription") {
+          let status: "ACTIVE" | "PAST_DUE" | "CANCELLED" | "INACTIVE";
+          switch (subscription.status) {
+            case "active":
+            case "trialing":
+              status = "ACTIVE";
+              break;
+            case "past_due":
+            case "incomplete":
+              status = "PAST_DUE";
+              break;
+            case "canceled":
+            case "unpaid":
+              status = "CANCELLED";
+              break;
+            default:
+              status = "INACTIVE";
+          }
+          await updateMastermindSubscriptionStatus(
+            subscription.id,
+            status,
+            updatePeriodStart || undefined,
+            updatePeriodEnd || undefined,
+            subscription.cancel_at_period_end,
+            subUserId || undefined
+          );
+          console.log(`[Pro Webhook] Mastermind subscription updated: ${subscription.id} -> ${status}`);
+          break;
+        }
 
         // Only handle Pro subscriptions
         if (subscription.metadata?.type !== "pro_subscription") {
@@ -258,12 +312,6 @@ export async function POST(request: Request) {
             console.log(`[Pro Webhook] Mapped Stripe status "${subscription.status}" to INACTIVE for subscription ${subscription.id}`);
         }
 
-        // Extract period dates - Stripe v20 compatible
-        const subRawUpdate = subscription as unknown as Record<string, unknown>;
-        const { periodStart: updatePeriodStart, periodEnd: updatePeriodEnd } = getSubscriptionPeriodDates(subRawUpdate);
-
-        const subUserId = subscription.metadata?.userId;
-
         await updateProSubscriptionStatus(
           subscription.id,
           status,
@@ -279,13 +327,25 @@ export async function POST(request: Request) {
 
       case "customer.subscription.deleted": {
         const subscription = event.data.object as Stripe.Subscription;
+        const deletedSubUserId = subscription.metadata?.userId;
+
+        if (subscription.metadata?.type === "mastermind_subscription") {
+          await updateMastermindSubscriptionStatus(
+            subscription.id,
+            "CANCELLED",
+            undefined,
+            undefined,
+            false,
+            deletedSubUserId || undefined
+          );
+          console.log(`[Pro Webhook] Mastermind subscription cancelled: ${subscription.id}`);
+          break;
+        }
 
         // Only handle Pro subscriptions
         if (subscription.metadata?.type !== "pro_subscription") {
           break;
         }
-
-        const deletedSubUserId = subscription.metadata?.userId;
 
         await updateProSubscriptionStatus(
           subscription.id,
@@ -315,14 +375,28 @@ export async function POST(request: Request) {
         console.log(`[Pro Webhook] invoice.payment_failed: subscription ID = ${failedSubId}`);
         const stripe = getStripe();
         const subscription = await stripe.subscriptions.retrieve(failedSubId);
+        const failedUserId = subscription.metadata?.userId;
+
+        if (subscription.metadata?.type === "mastermind_subscription") {
+          if (failedUserId) {
+            await updateMastermindSubscriptionStatus(
+              failedSubId,
+              "PAST_DUE",
+              undefined,
+              undefined,
+              undefined,
+              failedUserId
+            );
+          }
+          console.log(`[Pro Webhook] Mastermind payment failed: ${failedSubId}`);
+          break;
+        }
 
         // Only handle Pro subscriptions
         if (subscription.metadata?.type !== "pro_subscription") {
           console.log("[Pro Webhook] invoice.payment_failed: Not a Pro subscription, skipping");
           break;
         }
-
-        const failedUserId = subscription.metadata?.userId;
 
         await updateProSubscriptionStatus(
           failedSubId,

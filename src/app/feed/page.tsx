@@ -3,7 +3,7 @@ import { Loader2, Sparkles } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { isProMember } from "@/lib/stripe-subscription";
-import { CombinedFeed, OpenJobs, EmailOptIn } from "@/components/feed";
+import { CombinedFeed, OpenJobs, EmailOptIn, MastermindTelegramSection } from "@/components/feed";
 import { SiteViewsCounter } from "@/components/analytics/site-views-counter";
 import { SidebarAd } from "@/components/ads";
 import { ProUpgradePrompt } from "@/components/pro";
@@ -513,6 +513,9 @@ export default function FeedPage() {
           {/* Right Sidebar */}
           <aside className="xl:w-72 shrink-0 order-2 xl:order-3">
             <div className="xl:sticky xl:top-24 space-y-6">
+              {/* Mastermind - $9/mo for Slack access */}
+              <MastermindTelegramSection />
+
               {/* Email Opt-In */}
               <EmailOptIn />
 

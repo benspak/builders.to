@@ -60,33 +60,6 @@ export function Navbar() {
                     <Rss className="h-3.5 w-3.5 text-orange-400" />
                     Feed
                   </Link>
-                  <Link
-                    href="/projects"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-white/5"
-                    style={{ color: "var(--foreground-muted)" }}
-                  >
-                    <FolderKanban className="h-3.5 w-3.5 text-sky-400" />
-                    Projects
-                  </Link>
-                  <Link
-                    href="/companies"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-white/5"
-                    style={{ color: "var(--foreground-muted)" }}
-                  >
-                    <Building2 className="h-3.5 w-3.5 text-blue-400" />
-                    Companies
-                  </Link>
-                  <Link
-                    href="/services"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-white/5"
-                    style={{ color: "var(--foreground-muted)" }}
-                  >
-                    <Briefcase className="h-3.5 w-3.5 text-violet-400" />
-                    Services
-                  </Link>
                   <div className="mt-1 pt-1 border-t" style={{ borderColor: "var(--card-border)" }}>
                     <div className="px-3 py-1.5 text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--foreground-muted)", opacity: 0.5 }}>
                       Discover
@@ -99,6 +72,33 @@ export function Navbar() {
                     >
                       <Compass className="h-3.5 w-3.5 text-cyan-400" />
                       Discover
+                    </Link>
+                    <Link
+                      href="/projects"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-white/5"
+                      style={{ color: "var(--foreground-muted)" }}
+                    >
+                      <FolderKanban className="h-3.5 w-3.5 text-sky-400" />
+                      Projects
+                    </Link>
+                    <Link
+                      href="/companies"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-white/5"
+                      style={{ color: "var(--foreground-muted)" }}
+                    >
+                      <Building2 className="h-3.5 w-3.5 text-blue-400" />
+                      Companies
+                    </Link>
+                    <Link
+                      href="/services"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-white/5"
+                      style={{ color: "var(--foreground-muted)" }}
+                    >
+                      <Briefcase className="h-3.5 w-3.5 text-violet-400" />
+                      Services
                     </Link>
                     <Link
                       href="/discounts"
@@ -151,31 +151,6 @@ export function Navbar() {
             <Rss className="h-3.5 w-3.5 text-orange-400" />
             Feed
           </Link>
-          <Link
-            href="/projects"
-            className="hidden lg:flex items-center gap-1.5 text-sm font-medium transition-colors"
-            style={{ color: "var(--foreground-muted)" }}
-          >
-            <FolderKanban className="h-3.5 w-3.5 text-sky-400" />
-            Projects
-          </Link>
-
-          <Link
-            href="/companies"
-            className="hidden lg:flex items-center gap-1.5 text-sm font-medium transition-colors"
-            style={{ color: "var(--foreground-muted)" }}
-          >
-            <Building2 className="h-3.5 w-3.5 text-blue-400" />
-            Companies
-          </Link>
-          <Link
-            href="/services"
-            className="hidden lg:flex items-center gap-1.5 text-sm font-medium transition-colors"
-            style={{ color: "var(--foreground-muted)" }}
-          >
-            <Briefcase className="h-3.5 w-3.5 text-violet-400" />
-            Services
-          </Link>
 
           {/* Desktop: Discover Dropdown */}
           <div className="relative hidden lg:block">
@@ -212,6 +187,33 @@ export function Navbar() {
                   >
                     <Compass className="h-4 w-4 text-cyan-400" />
                     Discover
+                  </Link>
+                  <Link
+                    href="/projects"
+                    onClick={() => setDiscoverOpen(false)}
+                    className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-white/5"
+                    style={{ color: "var(--foreground-muted)" }}
+                  >
+                    <FolderKanban className="h-4 w-4 text-sky-400" />
+                    Projects
+                  </Link>
+                  <Link
+                    href="/companies"
+                    onClick={() => setDiscoverOpen(false)}
+                    className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-white/5"
+                    style={{ color: "var(--foreground-muted)" }}
+                  >
+                    <Building2 className="h-4 w-4 text-blue-400" />
+                    Companies
+                  </Link>
+                  <Link
+                    href="/services"
+                    onClick={() => setDiscoverOpen(false)}
+                    className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-white/5"
+                    style={{ color: "var(--foreground-muted)" }}
+                  >
+                    <Briefcase className="h-4 w-4 text-violet-400" />
+                    Services
                   </Link>
                   <Link
                     href="/discounts"

@@ -11,3 +11,4 @@ export { EditorsPick } from "./editors-pick";
 export { UserInterviewCTA } from "./user-interview-cta";
 export { TopBuilders } from "./top-builders";
 export { EmailOptIn } from "./email-opt-in";
+export { MastermindTelegramSection } from "./mastermind-telegram-section";
