@@ -243,6 +243,33 @@ export function getCategoryColor(category: string): string {
   return colors[category] || colors.OTHER;
 }
 
+// Service Marketplace category helpers
+export function getServiceCategoryLabel(category: string): string {
+  const labels: Record<string, string> = {
+    MVP_BUILD: "MVP Build",
+    DESIGN: "Design",
+    MARKETING: "Marketing",
+    AI_INTEGRATION: "AI Integration",
+    DEVOPS: "DevOps",
+    AUDIT: "Audit",
+    OTHER: "Other",
+  };
+  return labels[category] || category;
+}
+
+export function getServiceCategoryColor(category: string): string {
+  const colors: Record<string, string> = {
+    MVP_BUILD: "bg-orange-500/20 text-orange-300 border-orange-500/30",
+    DESIGN: "bg-pink-500/20 text-pink-300 border-pink-500/30",
+    MARKETING: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30",
+    AI_INTEGRATION: "bg-violet-500/20 text-violet-300 border-violet-500/30",
+    DEVOPS: "bg-cyan-500/20 text-cyan-300 border-cyan-500/30",
+    AUDIT: "bg-amber-500/20 text-amber-300 border-amber-500/30",
+    OTHER: "bg-zinc-500/20 text-zinc-300 border-zinc-500/30",
+  };
+  return colors[category] || colors.OTHER;
+}
+
 // Company Member Role helpers
 export function getMemberRoleLabel(role: string): string {
   const labels: Record<string, string> = {

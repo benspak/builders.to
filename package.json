@@ -37,7 +37,11 @@
     "socket.io-client": "^4.8.3",
     "stripe": "^20.1.2",
     "tailwind-merge": "^3.4.0",
-    "web-push": "^3.6.7"
+    "@block65/webcrypto-web-push": "^1.0.2"
+  },
+  "overrides": {
+    "bn.js": "4.12.3",
+    "minimatch": ">=10.2.1"
   },
   "devDependencies": {
     "@types/node": "^25.0.3",

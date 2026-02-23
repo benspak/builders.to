@@ -1,16 +1,20 @@
-import webPush from 'web-push';
+import {
+  buildPushPayload,
+  type PushSubscription,
+  type PushMessage,
+  type VapidKeys,
+} from "@block65/webcrypto-web-push";
 
-// Initialize web-push with VAPID keys
-// Generate keys with: npx web-push generate-vapid-keys
-const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || '';
-const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY || '';
+const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || "";
+const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY || "";
 
-if (vapidPublicKey && vapidPrivateKey) {
-  webPush.setVapidDetails(
-    'mailto:support@builders.to',
-    vapidPublicKey,
-    vapidPrivateKey
-  );
+function getVapid(): VapidKeys | null {
+  if (!vapidPublicKey || !vapidPrivateKey) return null;
+  return {
+    subject: "mailto:support@builders.to",
+    publicKey: vapidPublicKey,
+    privateKey: vapidPrivateKey,
+  };
 }
 
 export interface PushPayload {
@@ -38,8 +42,9 @@ export async function sendPushNotification(
   subscription: PushSubscriptionData,
   payload: PushPayload
 ): Promise<boolean> {
-  if (!vapidPublicKey || !vapidPrivateKey) {
-    console.warn('[Push] VAPID keys not configured');
+  const vapid = getVapid();
+  if (!vapid) {
+    console.warn("[Push] VAPID keys not configured");
     return false;
   }
 
@@ -47,35 +52,45 @@ export async function sendPushNotification(
     const pushPayload = JSON.stringify({
       title: payload.title,
       body: payload.body,
-      icon: payload.icon || '/icons/icon-192x192.png',
-      badge: payload.badge || '/icons/icon-96x96.png',
-      url: payload.url || '/',
+      icon: payload.icon || "/icons/icon-192x192.png",
+      badge: payload.badge || "/icons/icon-96x96.png",
+      url: payload.url || "/",
       tag: payload.tag,
       ...payload.data,
     });
 
-    await webPush.sendNotification(
-      {
-        endpoint: subscription.endpoint,
-        keys: subscription.keys,
+    const pushSubscription: PushSubscription = {
+      endpoint: subscription.endpoint,
+      expirationTime: null,
+      keys: {
+        p256dh: subscription.keys.p256dh,
+        auth: subscription.keys.auth,
       },
-      pushPayload,
-      {
-        TTL: 60 * 60 * 24, // 24 hours
-        urgency: 'normal',
-      }
-    );
+    };
 
-    return true;
-  } catch (error: unknown) {
-    const err = error as { statusCode?: number };
-    // Handle expired/invalid subscriptions
-    if (err.statusCode === 404 || err.statusCode === 410) {
-      console.log('[Push] Subscription expired or invalid:', subscription.endpoint);
+    const message: PushMessage = {
+      data: pushPayload,
+      options: {
+        ttl: 60 * 60 * 24, // 24 hours
+      },
+    };
+
+    const requestInit = await buildPushPayload(message, pushSubscription, vapid);
+    const res = await fetch(subscription.endpoint, requestInit);
+
+    if (res.status === 404 || res.status === 410) {
+      console.log("[Push] Subscription expired or invalid:", subscription.endpoint);
       return false;
     }
 
-    console.error('[Push] Failed to send notification:', error);
+    if (!res.ok) {
+      console.error("[Push] Failed to send:", res.status, await res.text());
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error("[Push] Failed to send notification:", error);
     return false;
   }
 }
@@ -96,7 +111,7 @@ export async function sendPushNotifications(
   let successful = 0;
 
   results.forEach((result, index) => {
-    if (result.status === 'fulfilled' && result.value) {
+    if (result.status === "fulfilled" && result.value) {
       successful++;
     } else {
       failed.push(subscriptions[index].endpoint);
