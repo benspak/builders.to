@@ -18,6 +18,14 @@ export async function POST() {
       );
     }
 
+    if (!process.env.STRIPE_MASTERMIND_MONTHLY_PRICE_ID?.trim()) {
+      console.error("[Mastermind Subscribe] STRIPE_MASTERMIND_MONTHLY_PRICE_ID is not set");
+      return NextResponse.json(
+        { error: "Mastermind subscription is not configured. Please add STRIPE_MASTERMIND_MONTHLY_PRICE_ID to your environment." },
+        { status: 503 }
+      );
+    }
+
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
       select: { email: true },
@@ -53,7 +61,9 @@ export async function POST() {
 
     return NextResponse.json({ sessionId, url });
   } catch (error) {
-    console.error("[Mastermind Subscribe] Error:", error);
+    const message = error instanceof Error ? error.message : "Unknown error";
+    const stack = error instanceof Error ? error.stack : undefined;
+    console.error("[Mastermind Subscribe] Error:", message, stack ?? "");
     return NextResponse.json(
       { error: "Failed to create checkout session" },
       { status: 500 }
