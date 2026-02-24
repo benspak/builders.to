@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { MessageCircle, Loader2, ExternalLink } from "lucide-react";
 
-const MASTERMIND_SLACK_INVITE_URL = "https://join.slack.com/t/buildersto-mastermind/shared_invite/zt-3qdfqmuhu-TKxv5fHttfQ5nJooGrJLYw";
+const MASTERMIND_SLACK_INVITE_URL = "https://join.slack.com/t/buildersto/shared_invite/zt-3qdfqmuhu-TKxv5fHttfQ5nJooGrJLYw";
 
 export function MastermindTelegramSection() {
   const [status, setStatus] = useState<"loading" | "subscribed" | "not-subscribed" | "signed-out">("loading");
