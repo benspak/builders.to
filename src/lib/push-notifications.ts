@@ -48,11 +48,20 @@ export async function sendUserPushNotification(
   const slackPromise = (async () => {
     const conn = await getSlackConnectionByUserId(userId);
     if (!conn) return;
+    const baseUrl = process.env.NEXTAUTH_URL || "https://builders.to";
+    const absoluteUrl = payload.url?.startsWith("http")
+      ? payload.url
+      : payload.url
+        ? `${baseUrl}${payload.url.startsWith("/") ? payload.url : `/${payload.url}`}`
+        : undefined;
     const text = `${payload.title}\n${payload.body}`;
-    const blocks = payload.url
-      ? buildSlackBlocks(payload.title, payload.body, payload.url)
+    const blocks = absoluteUrl
+      ? buildSlackBlocks(payload.title, payload.body, absoluteUrl)
       : undefined;
-    await sendSlackDM(conn.slackUserId, text, blocks);
+    const sent = await sendSlackDM(conn.slackUserId, text, blocks);
+    if (!sent) {
+      console.warn("[Slack] Notification DM failed for user", userId, "- see logs above for Slack API error");
+    }
   })();
 
   const [pushResult] = await Promise.all([pushPromise, slackPromise]);

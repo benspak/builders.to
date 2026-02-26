@@ -25,6 +25,7 @@ export function ConnectedPlatforms() {
   const [isLoading, setIsLoading] = useState(true);
   const [disconnecting, setDisconnecting] = useState<SocialPlatform | null>(null);
   const [disconnectingSlack, setDisconnectingSlack] = useState(false);
+  const [testingSlack, setTestingSlack] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -125,6 +126,26 @@ export function ConnectedPlatforms() {
     }
   };
 
+  const handleTestSlack = async () => {
+    setTestingSlack(true);
+    setErrorMessage(null);
+    setSuccessMessage(null);
+    try {
+      const response = await fetch("/api/slack", { method: "POST" });
+      const data = await response.json();
+      if (!response.ok) {
+        setErrorMessage(data.error || "Test failed");
+        return;
+      }
+      setSuccessMessage(data.message || "Test notification sent. Check your Slack DMs.");
+    } catch (error) {
+      console.error("Error testing Slack:", error);
+      setErrorMessage("Failed to send test notification");
+    } finally {
+      setTestingSlack(false);
+    }
+  };
+
   const connectedSet = new Set(platforms.map((p) => p.platform));
 
   // Available external platforms (excluding BUILDERS which is always available)
@@ -200,6 +221,17 @@ export function ConnectedPlatforms() {
                   <CheckCircle className="w-3 h-3" />
                   Connected
                 </span>
+                <button
+                  onClick={handleTestSlack}
+                  disabled={testingSlack}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs border rounded-lg hover:bg-muted disabled:opacity-50"
+                >
+                  {testingSlack ? (
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                  ) : (
+                    "Test notification"
+                  )}
+                </button>
                 <button
                   onClick={handleDisconnectSlack}
                   disabled={disconnectingSlack}

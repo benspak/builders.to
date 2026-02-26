@@ -2,15 +2,17 @@
 
 If notifications and the `/builders` command are not working, or you see **"Sending messages to this app has been turned off"**, complete these steps in your Slack app configuration.
 
-## 1. OAuth & Permissions – Bot Token Scopes
+## 1. OAuth & Permissions – Bot Token Scopes only
 
 In [api.slack.com/apps](https://api.slack.com/apps) → your app → **OAuth & Permissions**:
 
-Under **Bot Token Scopes**, add:
+Add these scopes under **Bot Token Scopes** (the top section). Do **not** add anything under User Token Scopes — we don’t use user tokens, and `commands` is only available as a Bot Token Scope.
+
+**Bot Token Scopes** (add all three):
 
 - `chat:write` – post messages (notifications, reminders)
 - `im:write` – open and post to DMs (required for notifications to users)
-- `commands` – slash command `/builders`
+- `commands` – slash command `/builders` (only appears under Bot Token Scopes)
 
 If you add or change scopes, **reinstall the app** to your workspace (Install App → Reinstall to Workspace). Then copy the new **Bot User OAuth Token** into `.env` as `SLACK_BOT_TOKEN`.
 
@@ -43,7 +45,7 @@ Redirect URL for OAuth: `https://builders.to/api/slack/callback` (add under OAut
 
 ## Summary checklist
 
-- [ ] Bot Token Scopes: `chat:write`, `im:write`, `commands`
+- [ ] Bot Token Scopes only (not User Token Scopes): `chat:write`, `im:write`, `commands`
 - [ ] App reinstalled to workspace after adding scopes
 - [ ] App Home: Messages tab / “Allow users to send Slash commands and messages” enabled
 - [ ] Slash command `/builders` → Request URL `https://builders.to/api/slack/commands`
