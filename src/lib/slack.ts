@@ -74,7 +74,11 @@ export async function sendSlackDM(
     };
 
     if (!openData.ok || !openData.channel?.id) {
-      console.error("[Slack] conversations.open failed:", openData.error ?? openRes.status);
+      console.error(
+        "[Slack] conversations.open failed:",
+        openData.error ?? openRes.status,
+        "- Add Bot Token Scope im:write and enable App Home Messages tab. See docs/SLACK_APP_SETUP.md"
+      );
       return false;
     }
 
@@ -100,7 +104,13 @@ export async function sendSlackDM(
     const postData = (await postRes.json()) as { ok?: boolean; error?: string };
 
     if (!postData.ok) {
-      console.error("[Slack] chat.postMessage failed:", postData.error ?? postRes.status);
+      console.error(
+        "[Slack] chat.postMessage failed:",
+        postData.error ?? postRes.status,
+        postData.error === "messages_tab_disabled"
+          ? "- In Slack app: App Home → enable Messages tab. See docs/SLACK_APP_SETUP.md"
+          : ""
+      );
       return false;
     }
 

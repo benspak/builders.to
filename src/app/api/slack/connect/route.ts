@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     });
 
     const redirectUri = `${BASE_URL}/api/slack/callback`;
-    const scope = "chat:write,commands";
+    const scope = "chat:write,im:write,commands";
     const authUrl = new URL("https://slack.com/oauth/v2/authorize");
     authUrl.searchParams.set("client_id", SLACK_CLIENT_ID);
     authUrl.searchParams.set("scope", scope);
