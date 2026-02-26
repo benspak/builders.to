@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendBatchEmails, generateAccountabilityReminderEmail } from "@/lib/email";
+import { sendSlackDM } from "@/lib/slack";
 
 /**
  * POST /api/cron/accountability-reminders
@@ -105,6 +106,9 @@ export async function POST(request: NextRequest) {
             lastAccountabilityReminderSentAt: true,
           },
         },
+        slackConnection: {
+          select: { slackUserId: true },
+        },
       },
     });
 
@@ -115,6 +119,7 @@ export async function POST(request: NextRequest) {
       html: string;
       text: string;
     }> = [];
+    const slackRemindersToSend: Array<{ userId: string; slackUserId: string; text: string }> = [];
 
     for (const user of usersWithActivePartnerships) {
       if (!user.email) continue;
@@ -185,6 +190,15 @@ export async function POST(request: NextRequest) {
         html,
         text,
       });
+
+      if (user.slackConnection?.slackUserId) {
+        const slackText = `Don't forget to check in today${streakEmoji}\n${baseUrl}/feed`;
+        slackRemindersToSend.push({
+          userId: user.id,
+          slackUserId: user.slackConnection.slackUserId,
+          text: slackText,
+        });
+      }
     }
 
     // Send emails in batch
@@ -197,12 +211,23 @@ export async function POST(request: NextRequest) {
       }))
     );
 
-    // Update last sent timestamp for successfully queued emails
-    if (sentCount > 0) {
-      const userIds = emailsToSend.map((e) => e.userId);
+    // Send Slack reminders
+    let slackSent = 0;
+    for (const r of slackRemindersToSend) {
+      const ok = await sendSlackDM(r.slackUserId, r.text);
+      if (ok) slackSent++;
+    }
 
+    // Update last sent timestamp for users who received email or Slack reminder
+    const uniqueUserIds = [
+      ...new Set([
+        ...emailsToSend.map((e) => e.userId),
+        ...slackRemindersToSend.map((r) => r.userId),
+      ]),
+    ];
+    if (sentCount > 0 || slackSent > 0) {
       await Promise.all(
-        userIds.map((userId) =>
+        uniqueUserIds.map((userId) =>
           prisma.emailPreferences.upsert({
             where: { userId },
             create: {
@@ -225,6 +250,7 @@ export async function POST(request: NextRequest) {
         emailsQueued: emailsToSend.length,
         emailsSent: sentCount,
         errors: errorCount,
+        slackRemindersSent: slackSent,
       },
     });
   } catch (error) {

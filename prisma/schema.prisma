@@ -173,6 +173,7 @@ model User {
 
   // Cross-Platform Posting
   platformConnections PlatformConnection[]
+  slackConnection    SlackConnection?
   crossPosts          CrossPost[]
   agentSuggestions    AgentSuggestion[]
   aiProfile           UserAIProfile?
@@ -1073,6 +1074,7 @@ model EmailPreferences {
   // Track last digests sent
   lastDailyDigestSentAt              DateTime? // Daily digest
   lastAccountabilityReminderSentAt   DateTime? // Accountability reminder
+  lastStreakReminderSentAt           DateTime? // Slack "time to post" streak reminder
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1787,6 +1789,21 @@ model PlatformConnection {
   @@unique([userId, platform])
   @@index([userId])
   @@index([platform])
+}
+
+// Slack connection - links a Builders.to user to a Slack user (Mastermind workspace)
+model SlackConnection {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  slackTeamId  String
+  slackUserId  String
+  connectedAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([slackTeamId, slackUserId])
+  @@index([userId])
+  @@index([slackTeamId, slackUserId])
 }
 
 // Cross-platform posts - posts that can be published to multiple platforms

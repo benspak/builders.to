@@ -1,50 +1,62 @@
 import { prisma } from './prisma';
 import { sendPushNotifications, isPushConfigured, type PushPayload } from './web-push';
+import {
+  getSlackConnectionByUserId,
+  sendSlackDM,
+  buildSlackBlocks,
+} from './slack';
 
 /**
- * Send push notification to a specific user
+ * Send push notification to a specific user.
+ * If the user has Slack connected, also sends the notification to their Slack DM.
  */
 export async function sendUserPushNotification(
   userId: string,
   payload: PushPayload
 ): Promise<{ sent: boolean; count: number }> {
-  if (!isPushConfigured()) {
-    return { sent: false, count: 0 };
-  }
-
-  try {
-    const subscriptions = await prisma.pushSubscription.findMany({
-      where: { userId },
-    });
-
-    if (subscriptions.length === 0) {
+  const pushPromise = (async () => {
+    if (!isPushConfigured()) {
       return { sent: false, count: 0 };
     }
-
-    const pushSubscriptions = subscriptions.map((sub) => ({
-      endpoint: sub.endpoint,
-      keys: {
-        p256dh: sub.p256dh,
-        auth: sub.auth,
-      },
-    }));
-
-    const result = await sendPushNotifications(pushSubscriptions, payload);
-
-    // Clean up failed subscriptions
-    if (result.failed.length > 0) {
-      await prisma.pushSubscription.deleteMany({
-        where: {
-          endpoint: { in: result.failed },
-        },
+    try {
+      const subscriptions = await prisma.pushSubscription.findMany({
+        where: { userId },
       });
+      if (subscriptions.length === 0) {
+        return { sent: false, count: 0 };
+      }
+      const pushSubscriptions = subscriptions.map((sub) => ({
+        endpoint: sub.endpoint,
+        keys: {
+          p256dh: sub.p256dh,
+          auth: sub.auth,
+        },
+      }));
+      const result = await sendPushNotifications(pushSubscriptions, payload);
+      if (result.failed.length > 0) {
+        await prisma.pushSubscription.deleteMany({
+          where: { endpoint: { in: result.failed } },
+        });
+      }
+      return { sent: result.successful > 0, count: result.successful };
+    } catch (error) {
+      console.error('[Push] Error sending to user:', userId, error);
+      return { sent: false, count: 0 };
     }
+  })();
 
-    return { sent: result.successful > 0, count: result.successful };
-  } catch (error) {
-    console.error('[Push] Error sending to user:', userId, error);
-    return { sent: false, count: 0 };
-  }
+  const slackPromise = (async () => {
+    const conn = await getSlackConnectionByUserId(userId);
+    if (!conn) return;
+    const text = `${payload.title}\n${payload.body}`;
+    const blocks = payload.url
+      ? buildSlackBlocks(payload.title, payload.body, payload.url)
+      : undefined;
+    await sendSlackDM(conn.slackUserId, text, blocks);
+  })();
+
+  const [pushResult] = await Promise.all([pushPromise, slackPromise]);
+  return pushResult;
 }
 
 /**

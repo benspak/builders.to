@@ -7,6 +7,7 @@
  * Endpoints:
  *   - daily-digest
  *   - accountability-reminders
+ *   - streak-reminders
  *   - expire-ads
  *   - expire-services
  *   - expire-local-listings
@@ -16,6 +17,7 @@
 const ENDPOINTS = {
   'daily-digest': '/api/email/daily-digest',
   'accountability-reminders': '/api/cron/accountability-reminders',
+  'streak-reminders': '/api/cron/streak-reminders',
   'expire-ads': '/api/cron/expire-ads',
   'expire-services': '/api/cron/expire-services',
   'expire-local-listings': '/api/cron/expire-local-listings',

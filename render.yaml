@@ -107,6 +107,20 @@ services:
       - key: NEXTAUTH_URL
         sync: false
 
+  # Streak reminders - Slack DM to connected users who haven't posted today
+  - type: cron
+    name: builders-to-streak-reminders
+    runtime: node
+    region: oregon
+    schedule: "0 20 * * *"
+    buildCommand: npm install
+    startCommand: node scripts/run-cron.mjs streak-reminders
+    envVars:
+      - key: CRON_SECRET
+        sync: false
+      - key: NEXTAUTH_URL
+        sync: false
+
   # Expire ads - marks expired advertisements
   - type: cron
     name: builders-to-expire-ads

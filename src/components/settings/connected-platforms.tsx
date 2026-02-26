@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { SocialPlatform } from "@prisma/client";
-import { Link2, Unlink, Loader2, CheckCircle, AlertCircle, ExternalLink } from "lucide-react";
+import { Link2, Unlink, Loader2, CheckCircle, AlertCircle, ExternalLink, MessageCircle } from "lucide-react";
 import { PLATFORMS } from "@/components/composer/platform-selector";
 import { cn } from "@/lib/utils";
 
@@ -20,8 +20,11 @@ export function ConnectedPlatforms() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [platforms, setPlatforms] = useState<ConnectedPlatform[]>([]);
+  const [slackConnected, setSlackConnected] = useState(false);
+  const [slackConnectedAt, setSlackConnectedAt] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [disconnecting, setDisconnecting] = useState<SocialPlatform | null>(null);
+  const [disconnectingSlack, setDisconnectingSlack] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -61,6 +64,8 @@ export function ConnectedPlatforms() {
         if (response.ok) {
           const data = await response.json();
           setPlatforms(data.platforms || []);
+          setSlackConnected(!!data.slack?.connected);
+          setSlackConnectedAt(data.slack?.connectedAt ?? null);
         }
       } catch (error) {
         console.error("Error fetching platforms:", error);
@@ -96,6 +101,27 @@ export function ConnectedPlatforms() {
       setErrorMessage("Failed to disconnect platform");
     } finally {
       setDisconnecting(null);
+    }
+  };
+
+  const handleConnectSlack = () => {
+    window.location.href = "/api/slack/connect";
+  };
+
+  const handleDisconnectSlack = async () => {
+    setDisconnectingSlack(true);
+    setErrorMessage(null);
+    try {
+      const response = await fetch("/api/slack", { method: "DELETE" });
+      if (!response.ok) throw new Error("Failed to disconnect");
+      setSlackConnected(false);
+      setSlackConnectedAt(null);
+      setSuccessMessage("Disconnected Slack");
+    } catch (error) {
+      console.error("Error disconnecting Slack:", error);
+      setErrorMessage("Failed to disconnect Slack");
+    } finally {
+      setDisconnectingSlack(false);
     }
   };
 
@@ -149,6 +175,59 @@ export function ConnectedPlatforms() {
             <CheckCircle className="w-3 h-3" />
             Connected
           </span>
+        </div>
+      </div>
+
+      {/* Slack (notifications + post from Slack) */}
+      <div className="space-y-4">
+        <h3 className="text-sm font-medium text-muted-foreground">Slack</h3>
+        <div className="border rounded-lg p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="w-10 h-10 rounded-lg flex items-center justify-center bg-[#4A154B] text-white">
+                <MessageCircle className="w-5 h-5" />
+              </span>
+              <div>
+                <p className="font-medium">Slack</p>
+                <p className="text-sm text-muted-foreground">
+                  Get notifications in DMs and post daily updates with /builders
+                </p>
+              </div>
+            </div>
+            {slackConnected ? (
+              <div className="flex items-center gap-2">
+                <span className="flex items-center gap-1.5 px-3 py-1 text-xs bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 rounded-full">
+                  <CheckCircle className="w-3 h-3" />
+                  Connected
+                </span>
+                <button
+                  onClick={handleDisconnectSlack}
+                  disabled={disconnectingSlack}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-destructive border border-destructive/30 rounded-lg hover:bg-destructive/10 disabled:opacity-50"
+                >
+                  {disconnectingSlack ? (
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                  ) : (
+                    <Unlink className="w-3 h-3" />
+                  )}
+                  Disconnect
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={handleConnectSlack}
+                className="flex items-center gap-1.5 px-4 py-2 text-sm bg-[#4A154B] text-white rounded-lg hover:bg-[#5c1d5d]"
+              >
+                <Link2 className="w-4 h-4" />
+                Connect Slack
+              </button>
+            )}
+          </div>
+          {slackConnectedAt && (
+            <div className="mt-3 pt-3 border-t text-xs text-muted-foreground">
+              Connected on {new Date(slackConnectedAt).toLocaleDateString()}
+            </div>
+          )}
         </div>
       </div>
 

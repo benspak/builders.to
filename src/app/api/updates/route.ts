@@ -4,8 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { rateLimit, RATE_LIMITS, rateLimitResponse } from "@/lib/rate-limit";
 import { extractMentions } from "@/lib/utils";
 import { sendUserPushNotification } from "@/lib/push-notifications";
-import { awardKarmaForUpdate, awardKarmaForStreakMilestone } from "@/lib/services/karma.service";
-import { autoCheckInFromUpdate } from "@/lib/services/accountability.service";
+import { createDailyUpdateForUser } from "@/lib/services/updates.service";
 import { isProMember } from "@/lib/stripe-subscription";
 
 // GET /api/updates - Get updates for a user or global feed
@@ -167,120 +166,54 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Calculate and update streak
+    const { updateId, url: _updateUrl } = await createDailyUpdateForUser(
+      session.user.id,
+      content.trim(),
+      {
+        imageUrl: imageUrl || null,
+        gifUrl: gifUrl || null,
+        pollOptions: validatedPollOptions || undefined,
+      }
+    );
+
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { currentStreak: true, longestStreak: true, lastActivityDate: true },
+      select: { currentStreak: true, longestStreak: true },
     });
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    let newStreak = 1;
-    let longestStreak = user?.longestStreak || 0;
-
-    if (user?.lastActivityDate) {
-      const lastActivity = new Date(user.lastActivityDate);
-      lastActivity.setHours(0, 0, 0, 0);
-
-      const daysDiff = Math.floor((today.getTime() - lastActivity.getTime()) / (1000 * 60 * 60 * 24));
-
-      if (daysDiff === 0) {
-        // Same day - keep current streak
-        newStreak = user.currentStreak || 1;
-      } else if (daysDiff === 1) {
-        // Consecutive day - increment streak
-        newStreak = (user.currentStreak || 0) + 1;
-      }
-      // daysDiff > 1 means streak is broken, starts at 1
-    }
-
-    if (newStreak > longestStreak) {
-      longestStreak = newStreak;
-    }
-
-    // Calculate poll expiration (7 days from now) if poll is included
-    let pollExpiresAt: Date | null = null;
-    if (validatedPollOptions) {
-      pollExpiresAt = new Date();
-      pollExpiresAt.setDate(pollExpiresAt.getDate() + 7);
-    }
-
-    // Create update and update user streak in a transaction
-    const [update] = await prisma.$transaction([
-      prisma.dailyUpdate.create({
-        data: {
-          content: content.trim(),
-          imageUrl: imageUrl || null,
-          gifUrl: gifUrl || null,
-          userId: session.user.id,
-          // Poll fields
-          pollQuestion: validatedPollOptions ? content.trim() : null,
-          pollExpiresAt: pollExpiresAt,
-          // Create poll options if present
-          ...(validatedPollOptions && {
-            pollOptions: {
-              create: validatedPollOptions,
-            },
-          }),
-        },
-        include: {
-          user: {
-            select: {
-              id: true,
-              name: true,
-              firstName: true,
-              lastName: true,
-              image: true,
-              slug: true,
-              headline: true,
-              // Include first company with logo for display next to username
-              companies: {
-                where: {
-                  logo: { not: null },
-                },
-                take: 1,
-                orderBy: { createdAt: "asc" },
-                select: {
-                  id: true,
-                  name: true,
-                  slug: true,
-                  logo: true,
-                },
-              },
-            },
-          },
-          pollOptions: {
-            orderBy: { order: "asc" },
-            include: {
-              _count: {
-                select: { votes: true },
-              },
+    const update = await prisma.dailyUpdate.findUnique({
+      where: { id: updateId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            firstName: true,
+            lastName: true,
+            image: true,
+            slug: true,
+            headline: true,
+            companies: {
+              where: { logo: { not: null } },
+              take: 1,
+              orderBy: { createdAt: "asc" },
+              select: { id: true, name: true, slug: true, logo: true },
             },
           },
         },
-      }),
-      prisma.user.update({
-        where: { id: session.user.id },
-        data: {
-          currentStreak: newStreak,
-          longestStreak: longestStreak,
-          lastActivityDate: today,
+        pollOptions: {
+          orderBy: { order: "asc" },
+          include: { _count: { select: { votes: true } } },
         },
-      }),
-    ]);
+      },
+    });
 
-    // Award karma for posting an update
-    awardKarmaForUpdate(session.user.id, update.id).catch(console.error);
-
-    // Award karma for streak milestones (if crossing 7, 30, or 100 days)
-    const previousStreak = user?.currentStreak || 0;
-    if (newStreak !== previousStreak) {
-      awardKarmaForStreakMilestone(session.user.id, newStreak, previousStreak).catch(console.error);
+    if (!update) {
+      return NextResponse.json(
+        { error: "Failed to create update" },
+        { status: 500 }
+      );
     }
-
-    // Auto check-in for accountability partnerships (linked to this daily update)
-    autoCheckInFromUpdate(session.user.id, update.id).catch(console.error);
 
     // Extract mentions and create notifications
     const mentionedSlugs = extractMentions(content);
@@ -336,13 +269,16 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({
-      ...update,
-      streak: {
-        current: newStreak,
-        longest: longestStreak,
+    return NextResponse.json(
+      {
+        ...update,
+        streak: {
+          current: user?.currentStreak ?? 0,
+          longest: user?.longestStreak ?? 0,
+        },
       },
-    }, { status: 201 });
+      { status: 201 }
+    );
   } catch (error) {
     console.error("Error creating update:", error);
     return NextResponse.json(
