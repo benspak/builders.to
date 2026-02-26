@@ -4,7 +4,9 @@ import { getUserIdBySlackConnection } from "@/lib/slack";
 import { createDailyUpdateForUser } from "@/lib/services/updates.service";
 
 const SLACK_SIGNING_SECRET = process.env.SLACK_SIGNING_SECRET;
+const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN;
 const BASE_URL = process.env.NEXTAUTH_URL || "https://builders.to";
+const SLACK_API_BASE = "https://slack.com/api";
 
 function verifySlackRequest(
   rawBody: string,
@@ -28,15 +30,30 @@ function verifySlackRequest(
 function parseFormBody(body: string): Record<string, string> {
   const out: Record<string, string> = {};
   for (const part of body.split("&")) {
-    const [k, v] = part.split("=");
-    if (k && v !== undefined)
+    const eq = part.indexOf("=");
+    if (eq === -1) continue;
+    const k = part.slice(0, eq);
+    const v = part.slice(eq + 1);
+    if (!k) continue;
+    try {
       out[decodeURIComponent(k)] = decodeURIComponent(v.replace(/\+/g, " "));
+    } catch {
+      // skip malformed percent-encoding
+    }
   }
   return out;
 }
 
 export async function POST(request: NextRequest) {
-  const rawBody = await request.text();
+  let rawBody: string;
+  try {
+    rawBody = await request.text();
+  } catch {
+    return NextResponse.json(
+      { response_type: "ephemeral", text: "Request failed. Try again." },
+      { status: 200 }
+    );
+  }
   const signature = request.headers.get("x-slack-signature");
   const timestamp = request.headers.get("x-slack-request-timestamp");
 
@@ -44,9 +61,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
   }
 
-  const params = parseFormBody(rawBody);
+  try {
+    const params = parseFormBody(rawBody);
 
-  if (params.payload) {
+    if (params.payload) {
     let payload: {
       type?: string;
       view?: {
@@ -114,6 +132,18 @@ export async function POST(request: NextRequest) {
   }
 
   if (!text) {
+    const triggerId = params.trigger_id;
+    if (!triggerId || !SLACK_BOT_TOKEN) {
+      return NextResponse.json(
+        {
+          response_type: "ephemeral",
+          text: triggerId
+            ? "Slack integration misconfigured. Please try again later."
+            : "Could not open form. Try again.",
+        },
+        { status: 200 }
+      );
+    }
     const modal = {
       type: "modal",
       callback_id: "builders_post_modal",
@@ -134,7 +164,26 @@ export async function POST(request: NextRequest) {
         },
       ],
     };
-    return NextResponse.json({ response_action: "push", view: modal }, { status: 200 });
+    const openRes = await fetch(`${SLACK_API_BASE}/views.open`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        Authorization: `Bearer ${SLACK_BOT_TOKEN}`,
+      },
+      body: JSON.stringify({ trigger_id: triggerId, view: modal }),
+    });
+    const openData = (await openRes.json()) as { ok?: boolean; error?: string };
+    if (!openData.ok) {
+      console.error("[Slack command] views.open failed:", openData.error);
+      return NextResponse.json(
+        {
+          response_type: "ephemeral",
+          text: "Could not open form. Try again later.",
+        },
+        { status: 200 }
+      );
+    }
+    return new NextResponse(null, { status: 200 });
   }
 
   if (text.length > 10000) {
@@ -154,6 +203,13 @@ export async function POST(request: NextRequest) {
     console.error("[Slack command] createDailyUpdateForUser error:", err);
     return NextResponse.json(
       { response_type: "ephemeral", text: "Failed to post. Try again later." },
+      { status: 200 }
+    );
+  }
+  } catch (err) {
+    console.error("[Slack command] Unhandled error:", err);
+    return NextResponse.json(
+      { response_type: "ephemeral", text: "Something went wrong. Try again later." },
       { status: 200 }
     );
   }
