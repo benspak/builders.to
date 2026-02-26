@@ -90,15 +90,19 @@ export async function POST(
 
       // Create notification for the update owner (if not liking own update)
       if (update.userId !== session.user.id) {
-        // Get liker's info for notification
+        // Get liker's info for notification (prefer display name so we never show "Someone")
         const liker = await prisma.user.findUnique({
           where: { id: session.user.id },
-          select: { name: true, firstName: true, lastName: true, image: true },
+          select: { name: true, firstName: true, lastName: true, displayName: true, slug: true, image: true },
         });
 
-        const likerName = liker?.firstName && liker?.lastName
-          ? `${liker.firstName} ${liker.lastName}`
-          : liker?.name || "Someone";
+        const likerName =
+          liker?.firstName && liker?.lastName
+            ? `${liker.firstName} ${liker.lastName}`
+            : liker?.displayName ||
+              (liker?.slug ? `@${liker.slug}` : null) ||
+              liker?.name ||
+              "A builder";
 
         // Truncate update content for notification message
         const contentPreview = update.content.length > 50
@@ -108,7 +112,7 @@ export async function POST(
         await prisma.notification.create({
           data: {
             type: "UPDATE_LIKED",
-            title: "Someone liked your update! ❤️",
+            title: "New like on your update! ❤️",
             message: `${likerName} liked your update: "${contentPreview}"`,
             userId: update.userId,
             updateId: update.id,
@@ -118,15 +122,16 @@ export async function POST(
           },
         });
 
-        // Send push + Slack notification (post owner gets DM when their update is liked)
-        const updateUrl = update.user?.slug
+        // Send push + Slack notification (post owner gets DM when their update is liked).
+        // Link to the specific post that was liked, not the liker's profile.
+        const postUrl = update.user?.slug
           ? `/${update.user.slug}/updates/${update.id}`
           : "/updates";
         notifyLike(
           update.userId,
           likerName,
           contentPreview,
-          updateUrl
+          postUrl
         ).catch(console.error);
 
         // Award karma to update owner for receiving a like
