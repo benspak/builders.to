@@ -118,8 +118,10 @@ export async function POST(
           },
         });
 
-        // Send push notification
-        const updateUrl = update.user?.slug ? `/${update.user.slug}` : '/updates';
+        // Send push + Slack notification (post owner gets DM when their update is liked)
+        const updateUrl = update.user?.slug
+          ? `/${update.user.slug}/updates/${update.id}`
+          : "/updates";
         notifyLike(
           update.userId,
           likerName,
