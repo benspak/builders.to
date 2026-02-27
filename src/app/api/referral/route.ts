@@ -63,10 +63,10 @@ export async function GET() {
       link: referralLink,
     });
   } catch (error) {
-    console.error("[Referral] GET error:", error);
+    console.warn("[Referral] GET failed (run token migrations?):", error);
     return NextResponse.json(
-      { error: "Failed to get referral info" },
-      { status: 500 }
+      { code: null, link: null },
+      { status: 200 }
     );
   }
 }

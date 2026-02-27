@@ -33,11 +33,17 @@ export function getAdSlotCostTokens(pricingTier: number): number {
 // ============================================
 
 export async function getBalance(userId: string): Promise<number> {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { tokenBalance: true },
-  });
-  return user?.tokenBalance ?? 0;
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { tokenBalance: true },
+    });
+    return user?.tokenBalance ?? 0;
+  } catch (err) {
+    // DB may not have token columns yet (migrations not applied)
+    console.warn("[Tokens] getBalance failed (run token migrations?):", err);
+    return 0;
+  }
 }
 
 export async function canAfford(userId: string, amount: number): Promise<boolean> {
@@ -167,11 +173,16 @@ export async function getRecentTransactions(
     createdAt: Date;
   }>
 > {
-  const list = await prisma.tokenTransaction.findMany({
-    where: { userId },
-    orderBy: { createdAt: "desc" },
-    take: limit,
-    select: { id: true, amount: true, type: true, description: true, createdAt: true },
-  });
-  return list;
+  try {
+    const list = await prisma.tokenTransaction.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+      take: limit,
+      select: { id: true, amount: true, type: true, description: true, createdAt: true },
+    });
+    return list;
+  } catch (err) {
+    console.warn("[Tokens] getRecentTransactions failed (run token migrations?):", err);
+    return [];
+  }
 }

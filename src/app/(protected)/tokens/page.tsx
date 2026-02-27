@@ -21,13 +21,20 @@ export default async function TokensPage({ searchParams }: TokensPageProps) {
 
   const { ref: refCode } = await searchParams;
 
-  const [balance, user] = await Promise.all([
-    getBalance(session.user.id),
-    prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { referralCode: true },
-    }),
-  ]);
+  let balance = 0;
+  let user: { referralCode: string | null } | null = null;
+  try {
+    [balance, user] = await Promise.all([
+      getBalance(session.user.id),
+      prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { referralCode: true },
+      }),
+    ]);
+  } catch (err) {
+    console.warn("[Tokens] Page load failed (run token migrations?):", err);
+    // balance stays 0, user stays null so referral section still renders
+  }
 
   const baseUrl = process.env.NEXTAUTH_URL || "https://builders.to";
   const referralLink = user?.referralCode
