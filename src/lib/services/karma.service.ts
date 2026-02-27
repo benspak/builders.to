@@ -11,6 +11,7 @@
 
 import { KarmaEventType, KarmaLevel } from "@prisma/client";
 import prisma from "@/lib/prisma";
+import { credit as creditTokens } from "@/lib/services/tokens.service";
 
 // ============================================
 // Constants & Types
@@ -207,6 +208,23 @@ export async function awardKarma(input: KarmaEventInput): Promise<{
     }),
   ]);
 
+  // Award engagement tokens when karma is earned (positive points only)
+  if (points > 0) {
+    const engagementTokens = Math.max(1, Math.floor(points / 5)); // 1 token per 5 karma, min 1
+    try {
+      await creditTokens({
+        userId,
+        amount: engagementTokens,
+        type: "ENGAGEMENT_BONUS",
+        description: `Karma: ${type}`,
+        metadata: { karmaEventType: type, karmaPoints: points, updateId, commentId, projectId },
+      });
+    } catch (err) {
+      console.error("[Karma] Failed to credit engagement tokens:", err);
+      // Don't fail the karma award if token credit fails
+    }
+  }
+
   return {
     success: true,
     newKarma,
@@ -341,6 +359,13 @@ export async function awardKarmaForProjectUpvote(
   });
 }
 
+/** Token amounts for streak milestones (STREAK_BONUS) */
+const STREAK_BONUS_TOKENS: Record<number, number> = {
+  7: 10,
+  30: 25,
+  100: 50,
+};
+
 /**
  * Award karma for reaching streak milestones
  */
@@ -364,6 +389,21 @@ export async function awardKarmaForStreakMilestone(
         type: "STREAK_MILESTONE",
         points: milestone.points,
       });
+      // Award STREAK_BONUS tokens (in addition to engagement tokens from awardKarma)
+      const tokens = STREAK_BONUS_TOKENS[milestone.days];
+      if (tokens) {
+        try {
+          await creditTokens({
+            userId,
+            amount: tokens,
+            type: "STREAK_BONUS",
+            description: `${milestone.days}-day streak`,
+            metadata: { streakDays: milestone.days },
+          });
+        } catch (err) {
+          console.error("[Karma] Failed to credit streak bonus tokens:", err);
+        }
+      }
     }
   }
 }

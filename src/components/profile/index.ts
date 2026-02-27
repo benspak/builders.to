@@ -5,6 +5,7 @@ export { FollowStats } from "./follow-stats";
 export { ProfileForm } from "./profile-form";
 export { ProfileCompleteness } from "./profile-completeness";
 export { GiftSuccessToast } from "./gift-success-toast";
+export { GiftTokensButton } from "./gift-tokens-button";
 export { AvatarUpload } from "./avatar-upload";
 export { EmailRequiredModal } from "./email-required-modal";
 export { EmailCollectionWrapper } from "./email-collection-wrapper";

@@ -104,6 +104,12 @@ model User {
   karma      Int        @default(0) // Total karma points
   karmaLevel KarmaLevel @default(NEWCOMER)
 
+  // Token balance and referral (in-app currency)
+  tokenBalance        Int     @default(0)
+  lifetimeTokensEarned Int   @default(0)
+  referralCode        String? @unique
+  referredById        String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -123,6 +129,13 @@ model User {
   // Follows
   followers Follow[] @relation("FollowingRelation") // Users who follow this user
   following Follow[] @relation("FollowerRelation") // Users this user follows
+
+  // Referral (who referred this user; users this user referred)
+  referredBy   User?   @relation("ReferralRelation", fields: [referredById], references: [id], onDelete: SetNull)
+  referredUsers User[] @relation("ReferralRelation")
+
+  // Token transactions (earn/spend history)
+  tokenTransactions TokenTransaction[]
 
   // Feed and notifications
   feedEventLikes    FeedEventLike[]
@@ -376,6 +389,22 @@ enum KarmaLevel {
   BUILDER // 500-1999 karma
   MENTOR // 2000-4999 karma
   LEGEND // 5000+ karma
+}
+
+// Token transaction types (earn and spend)
+enum TokenTransactionType {
+  WELCOME_BONUS
+  REFERRAL_REWARD
+  STREAK_BONUS
+  ENGAGEMENT_BONUS
+  AD_REDEMPTION
+  SERVICE_REDEMPTION
+  LOCAL_LISTING_REDEMPTION
+  ADMIN_ADJUSTMENT
+  GIFT_SENT
+  GIFT_RECEIVED
+  GIFT_PURCHASED
+  PRO_SUBSCRIPTION_GRANT
 }
 
 // Accountability Partnership status
@@ -2432,6 +2461,26 @@ model KarmaEvent {
   commentId String? // If from a comment
   projectId String? // If from a project
   actorId   String? // Who triggered this (e.g., who liked)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([type])
+}
+
+// ============================================
+// Token System (in-app currency)
+// ============================================
+
+model TokenTransaction {
+  id          String                @id @default(cuid())
+  userId      String
+  amount      Int // Positive = credit, negative = debit
+  type        TokenTransactionType
+  description String?
+  metadata    Json?
+  createdAt   DateTime              @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([createdAt])

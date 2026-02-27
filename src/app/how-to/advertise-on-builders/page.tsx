@@ -397,45 +397,31 @@ export default function AdvertiseOnBuildersPage() {
                 </div>
               </div>
 
-              <h3 className="text-lg font-medium text-white mt-6 mb-3">Payment Options</h3>
+              <h3 className="text-lg font-medium text-white mt-6 mb-3">Payment: Tokens Only</h3>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="rounded-xl border border-zinc-700 bg-zinc-800/50 p-5">
-                  <div className="flex items-center gap-3 mb-3">
-                    <CreditCard className="h-5 w-5 text-emerald-400" />
-                    <h4 className="font-medium text-white">Pay with Card</h4>
-                  </div>
-                  <p className="text-xl font-bold text-white">Current Price</p>
-                  <p className="text-zinc-400 text-sm mt-2">
-                    Standard Stripe checkout with credit/debit card
-                  </p>
+              <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-5">
+                <div className="flex items-center gap-3 mb-3">
+                  <Coins className="h-5 w-5 text-amber-400" />
+                  <h4 className="font-medium text-white">Pay with Tokens</h4>
                 </div>
-
-                <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-5">
-                  <div className="flex items-center gap-3 mb-3">
-                    <Coins className="h-5 w-5 text-amber-400" />
-                    <h4 className="font-medium text-white">Pay with Tokens</h4>
-                  </div>
-                  <p className="text-xl font-bold text-white">Dynamic</p>
-                  <p className="text-zinc-400 text-sm mt-2">
-                    Token cost matches current price (10 tokens = $1)
-                  </p>
-                </div>
+                <p className="text-zinc-400 text-sm">
+                  Sidebar ads are activated using tokens (10 tokens = $1). The token cost matches the current tier price. Earn tokens by posting, referrals, streak milestones, and Pro membership.
+                </p>
               </div>
 
-              <h3 className="text-lg font-medium text-white mt-8 mb-3">Checkout Process</h3>
+              <h3 className="text-lg font-medium text-white mt-8 mb-3">Activation Process</h3>
               <ol className="space-y-2 text-zinc-400">
                 <li className="flex items-start gap-2">
                   <span className="text-emerald-400 font-medium">1.</span>
-                  After creating your ad draft, click the <span className="text-emerald-400">&quot;Activate&quot;</span> button
+                  After creating your ad draft, click <span className="text-emerald-400">&quot;Activate with X tokens&quot;</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-emerald-400 font-medium">2.</span>
-                  Complete payment securely via Stripe at the current tier price
+                  Tokens are deducted from your balance (ensure you have enough; earn more via referrals, streaks, engagement, or Pro)
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-emerald-400 font-medium">3.</span>
-                  Your ad becomes active immediately after successful payment
+                  Your ad becomes active immediately for 30 days
                 </li>
               </ol>
 

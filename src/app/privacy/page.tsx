@@ -114,7 +114,7 @@ export default function PrivacyPolicyPage() {
               <h2 className="text-2xl font-semibold text-white mb-4">4. Token System</h2>
               <p className="mb-4">Builders.to operates a virtual currency system:</p>
               <ul className="list-disc pl-6 space-y-2">
-                <li><strong className="text-white">Builder Tokens:</strong> Earned through engagement, referrals, streaks, and profile completion. Can be used to redeem advertisements, service listings, and local listings. Token transactions and balances are tracked for your account.</li>
+                <li><strong className="text-white">Builder Tokens:</strong> Earned through engagement (e.g. posting, karma), referrals, streak milestones, and Pro membership. Can be used to run sidebar advertisements, purchase services, or gift to other builders. Token transactions and balances are tracked for your account.</li>
               </ul>
               <p className="mt-4">
                 Tokens have no real-world monetary value and cannot be exchanged for cash.

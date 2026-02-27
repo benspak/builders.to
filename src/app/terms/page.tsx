@@ -384,9 +384,10 @@ export default function TermsOfServicePage() {
             <section>
               <h2 className="text-2xl font-semibold text-white mb-4">14. Advertising</h2>
               <p className="leading-relaxed mb-4">
-                Users may purchase advertisements to be displayed on the platform. Advertisers agree:
+                Users may run sidebar advertisements by spending tokens (in-app currency). Advertisers agree:
               </p>
               <ul className="list-disc pl-6 space-y-2">
+                <li>Sidebar ads are activated using tokens; token cost is based on current tier pricing</li>
                 <li>All advertisement content must be truthful and not misleading</li>
                 <li>Advertisements must not violate any laws or these Terms</li>
                 <li>We reserve the right to reject or remove any advertisement</li>

@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { ProfileForm } from "@/components/profile/profile-form";
 import { ProfileCompleteness } from "@/components/profile/profile-completeness";
 import { calculateProfileCompleteness } from "@/lib/profile-completeness";
-import { Settings, User, ArrowLeft, ChevronRight } from "lucide-react";
+import { Settings, User, ArrowLeft, ChevronRight, Coins } from "lucide-react";
 
 export const metadata = {
   title: "Settings - Builders.to",
@@ -138,8 +138,24 @@ export default async function SettingsPage() {
           <ProfileForm user={user} />
         </div>
 
+        {/* Tokens Link */}
+        <Link href="/tokens" className="block mt-8">
+          <div className="rounded-2xl border border-white/10 bg-zinc-900/50 backdrop-blur-sm p-6 hover:border-white/20 transition-colors">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Coins className="h-5 w-5 text-amber-400" />
+                <div>
+                  <h2 className="text-lg font-semibold text-white">Tokens</h2>
+                  <p className="text-sm text-zinc-400">Balance, referral link, earn and spend</p>
+                </div>
+              </div>
+              <ChevronRight className="h-5 w-5 text-zinc-500" />
+            </div>
+          </div>
+        </Link>
+
         {/* Account Settings Link */}
-        <Link href="/settings/account" className="block mt-8">
+        <Link href="/settings/account" className="block mt-4">
           <div className="rounded-2xl border border-white/10 bg-zinc-900/50 backdrop-blur-sm p-6 hover:border-white/20 transition-colors">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">

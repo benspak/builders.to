@@ -51,6 +51,28 @@ function transliterateForSlug(str: string): string {
   return result;
 }
 
+// Generate a unique referral code (8 chars, URL-safe)
+async function generateReferralCode(): Promise<string> {
+  const chars = "abcdefghjkmnpqrstuvwxyz23456789"; // No ambiguous chars
+  let code: string;
+  let exists = true;
+  for (let i = 0; i < 10; i++) {
+    code = "";
+    for (let j = 0; j < 8; j++) {
+      code += chars[Math.floor(Math.random() * chars.length)];
+    }
+    const existing = await prisma.user.findUnique({ where: { referralCode: code }, select: { id: true } });
+    if (!existing) {
+      exists = false;
+      break;
+    }
+  }
+  if (exists) {
+    code = `ref-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+  }
+  return code!;
+}
+
 // Helper to generate a unique slug from username
 async function getUniqueSlug(baseSlug: string): Promise<string> {
   // First transliterate, then clean up
@@ -226,13 +248,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         // Generate unique slug from username
         const slug = await getUniqueSlug(baseName);
+        const referralCode = await generateReferralCode();
 
-        // Update user with username, slug, and auto-set social URL
+        // Update user with username, slug, referral code, and auto-set social URL
         await prisma.user.update({
           where: { id: user.id },
           data: {
             slug,
             username: oauthUsername,
+            referralCode,
             // Set social URL automatically based on provider
             ...(oauthUsername &&
               account?.provider === "twitter" && {

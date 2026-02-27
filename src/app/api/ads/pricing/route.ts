@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { PLATFORM_AD_SLOTS, getCurrentAdPriceCents, formatAdPrice } from "@/lib/stripe";
+import { getAdSlotCostTokens } from "@/lib/services/tokens.service";
 
 // GET /api/ads/pricing - Get current ad pricing and slot availability
 export async function GET() {
@@ -33,12 +34,14 @@ export async function GET() {
 
     const currentPriceCents = getCurrentAdPriceCents(pricingConfig.currentTier);
     const nextTierPriceCents = getCurrentAdPriceCents(pricingConfig.currentTier + 1);
+    const costInTokens = getAdSlotCostTokens(pricingConfig.currentTier);
     const availableSlots = Math.max(0, PLATFORM_AD_SLOTS - activeAdsCount);
     const isSoldOut = availableSlots === 0;
 
     return NextResponse.json({
       currentPriceCents,
       currentPriceFormatted: formatAdPrice(currentPriceCents),
+      costInTokens,
       nextTierPriceCents,
       nextTierPriceFormatted: formatAdPrice(nextTierPriceCents),
       availableSlots,

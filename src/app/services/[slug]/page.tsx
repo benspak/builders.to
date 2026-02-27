@@ -11,6 +11,7 @@ import {
   FolderKanban,
   ExternalLink,
 } from "lucide-react";
+import { OrderWithTokens } from "@/components/services/order-with-tokens";
 import { getServiceCategoryLabel, getServiceCategoryColor } from "@/lib/utils";
 import { ReportButton } from "@/components/ui/report-button";
 import { cn } from "@/lib/utils";
@@ -257,18 +258,26 @@ export default async function ServicePage({ params }: ServicePageProps) {
           </section>
         )}
 
-        {/* CTA - Contact / Request (placeholder for future order flow) */}
+        {/* CTA - Order with tokens or view profile */}
         {!isOwner && session?.user && (
+          <OrderWithTokens
+            serviceId={service.id}
+            priceInCents={service.priceInCents}
+            serviceTitle={service.title}
+            sellerName={service.user.name || "this builder"}
+            sellerSlug={service.user.slug}
+          />
+        )}
+        {!isOwner && !session?.user && (
           <div className="card p-8 text-center">
             <p className="text-zinc-400 mb-4">
-              Want to hire {service.user.name || "this builder"} for this
-              service?
+              Want to hire {service.user.name || "this builder"} for this service?
             </p>
             <Link
-              href={`/${service.user.slug || service.user.id}`}
+              href="/signin"
               className="btn-primary inline-flex items-center gap-2"
             >
-              View profile & contact
+              Sign in to order with tokens
               <ExternalLink className="h-4 w-4" />
             </Link>
           </div>

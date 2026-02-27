@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { useState } from "react";
 import { UserMenu } from "@/components/auth/user-menu";
 import { SearchCommand } from "@/components/ui/search-command";
+import { NavbarTokenBalance } from "@/components/ui/navbar-token-balance";
 import { Plus, Rocket, ChevronDown, Sparkles, Menu, X, Building2, Rss, FolderKanban, Globe, Compass, MessageSquare, Ticket, Briefcase } from "lucide-react";
 import { BuildersLogo } from "@/components/ui/builders-logo";
 import { cn } from "@/lib/utils";
@@ -342,6 +343,9 @@ export function Navbar() {
                   </>
                 )}
               </div>
+
+              {/* Token balance */}
+              <NavbarTokenBalance />
 
               {/* Chat */}
               <Link
