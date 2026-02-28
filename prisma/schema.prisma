@@ -46,6 +46,21 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
+// User API keys for programmatic access (e.g. update CRUD)
+model UserApiKey {
+  id        String   @id @default(cuid())
+  name      String   // User-defined label (e.g. "My script")
+  keyHash   String   @unique // SHA-256 hash of the key (we only store hash, show plain key once)
+  keyPrefix String   // First 8 chars for display (e.g. "bt_abc12...")
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  lastUsedAt DateTime?
+
+  @@index([userId])
+  @@index([keyHash])
+}
+
 // Application models
 model User {
   id            String    @id @default(cuid())
@@ -178,6 +193,9 @@ model User {
 
   // Pinned Posts
   pinnedPosts PinnedPost[]
+
+  // API Keys (for programmatic access to update CRUD)
+  apiKeys UserApiKey[]
 
   // Profile Views (for "People also viewed" feature)
   profileViews           ProfileView[] @relation("ProfileViewed") // Views of this profile

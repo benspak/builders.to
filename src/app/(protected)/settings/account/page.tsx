@@ -7,7 +7,9 @@ import { TwoFactorSettings } from "@/components/auth/two-factor";
 import { DeleteAccount } from "@/components/settings/delete-account";
 import { ProSubscription } from "@/components/settings/pro-subscription";
 import { EarningsDashboard } from "@/components/settings/earnings-dashboard";
-import { Settings, ArrowLeft, Bell, Crown, DollarSign } from "lucide-react";
+import { Settings, ArrowLeft, Bell, Crown, DollarSign, Key, Code } from "lucide-react";
+import { ApiKeySettings } from "@/components/settings/api-key-settings";
+import { ApiDocsUpdates } from "@/components/settings/api-docs-updates";
 
 export const metadata = {
   title: "Account Settings - Builders.to",
@@ -94,6 +96,28 @@ export default async function AccountSettingsPage() {
         {/* Two-Factor Authentication Section */}
         <div className="mb-8">
           <TwoFactorSettings />
+        </div>
+
+        {/* API Keys Section */}
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-4">
+            <Key className="h-5 w-5 text-cyan-400" />
+            <h2 className="text-lg font-semibold text-white">API Keys</h2>
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-zinc-900/50 backdrop-blur-sm p-6">
+            <ApiKeySettings />
+          </div>
+        </div>
+
+        {/* Update posting API docs (for members) */}
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-4">
+            <Code className="h-5 w-5 text-zinc-400" />
+            <h2 className="text-lg font-semibold text-white">Update posting API</h2>
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-zinc-900/50 backdrop-blur-sm p-6">
+            <ApiDocsUpdates />
+          </div>
         </div>
 
         {/* Danger Zone Section */}

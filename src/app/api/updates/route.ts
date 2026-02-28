@@ -6,6 +6,7 @@ import { extractMentions } from "@/lib/utils";
 import { sendUserPushNotification } from "@/lib/push-notifications";
 import { createDailyUpdateForUser } from "@/lib/services/updates.service";
 import { isProMember } from "@/lib/stripe-subscription";
+import { getAuthUserId } from "@/lib/api-key-auth";
 
 // GET /api/updates - Get updates for a user or global feed
 export async function GET(request: NextRequest) {
@@ -82,8 +83,9 @@ export async function POST(request: NextRequest) {
     }
 
     const session = await auth();
+    const userId = await getAuthUserId(request, session?.user?.id);
 
-    if (!session?.user?.id) {
+    if (!userId) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
@@ -91,7 +93,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check membership tier and enforce daily post limits
-    const isPro = await isProMember(session.user.id);
+    const isPro = await isProMember(userId);
     const dailyPostLimit = isPro ? 20 : 3;
 
     // Count how many updates the user has posted today
@@ -100,7 +102,7 @@ export async function POST(request: NextRequest) {
 
     const todayPostCount = await prisma.dailyUpdate.count({
       where: {
-        userId: session.user.id,
+        userId,
         createdAt: { gte: startOfDay },
       },
     });
@@ -167,7 +169,7 @@ export async function POST(request: NextRequest) {
     }
 
     const { updateId, url: _updateUrl } = await createDailyUpdateForUser(
-      session.user.id,
+      userId,
       content.trim(),
       {
         imageUrl: imageUrl || null,
@@ -177,7 +179,7 @@ export async function POST(request: NextRequest) {
     );
 
     const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: userId },
       select: { currentStreak: true, longestStreak: true },
     });
 
@@ -221,7 +223,7 @@ export async function POST(request: NextRequest) {
     if (mentionedSlugs.length > 0) {
       // Get the current user's display name for notification
       const currentUser = await prisma.user.findUnique({
-        where: { id: session.user.id },
+        where: { id: userId },
         select: { firstName: true, lastName: true, name: true, image: true },
       });
 
@@ -234,7 +236,7 @@ export async function POST(request: NextRequest) {
         where: {
           slug: { in: mentionedSlugs },
           // Don't notify yourself
-          id: { not: session.user.id },
+          id: { not: userId },
         },
         select: { id: true, slug: true },
       });
@@ -250,7 +252,7 @@ export async function POST(request: NextRequest) {
             message: content.length > 100 ? content.slice(0, 100) + "..." : content,
             userId: user.id,
             updateId: update.id,
-            actorId: session.user.id,
+            actorId: userId,
             actorName,
             actorImage: currentUser?.image || null,
           })),
