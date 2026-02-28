@@ -34,7 +34,6 @@
     "remark-gfm": "^4.0.1",
     "resend": "^6.6.0",
     "sharp": "^0.34.5",
-    "socket.io-client": "^4.8.3",
     "stripe": "^20.1.2",
     "tailwind-merge": "^3.4.0",
     "@block65/webcrypto-web-push": "^1.0.2"

@@ -77,23 +77,11 @@ export async function GET(request: NextRequest) {
               title: true,
             },
           },
-          chatMessage: {
-            select: {
-              id: true,
-              channelId: true,
-            },
-          },
-          chatChannel: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
         },
       }).then(notifications =>
         // Fetch actor slugs for notifications with actorId
         Promise.all(notifications.map(async (notification) => {
-          const extra: { actorSlug: string | null; chatMessageId?: string | null; chatChannelId?: string | null } = { actorSlug: null };
+          const extra: { actorSlug: string | null } = { actorSlug: null };
           if (notification.actorId) {
             const actor = await prisma.user.findUnique({
               where: { id: notification.actorId },
@@ -101,8 +89,6 @@ export async function GET(request: NextRequest) {
             });
             extra.actorSlug = actor?.slug ?? null;
           }
-          extra.chatMessageId = notification.chatMessage?.id ?? notification.chatMessageId ?? null;
-          extra.chatChannelId = notification.chatChannel?.id ?? notification.chatChannelId ?? null;
           return { ...notification, ...extra };
         }))
       ),
