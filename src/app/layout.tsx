@@ -35,9 +35,9 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Builders.to — Launch pad & social network for builders",
-  description: "Builders.to is a launch pad and social network for builders, entrepreneurs, and founders. Share what you’re building, get feedback, meet collaborators, and find early users.",
-  keywords: ["builders", "startup", "projects", "feedback", "community", "launch"],
+  title: "Builders.to — A social launch pad for solo founders",
+  description: "Builders.to is a social launch pad for solo founders. Share what you’re building, get feedback, meet collaborators, and find early users.",
+  keywords: ["solo founders", "builders", "startup", "projects", "feedback", "community", "launch"],
   metadataBase: new URL("https://builders.to"),
   applicationName: "Builders.to",
   appleWebApp: {
@@ -49,15 +49,15 @@ export const metadata: Metadata = {
     telephone: false,
   },
   openGraph: {
-    title: "Builders.to — Launch together.",
-    description: "A launch pad and social network for builders, entrepreneurs, and founders. Share what you’re building, get feedback, meet collaborators, and find early users.",
+    title: "Builders.to — A social launch pad for solo founders",
+    description: "A social launch pad for solo founders. Share what you’re building, get feedback, meet collaborators, and find early users.",
     type: "website",
     siteName: "Builders.to",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Builders.to — Launch together.",
-    description: "A launch pad and social network for builders, entrepreneurs, and founders. Share what you’re building, get feedback, meet collaborators, and find early users.",
+    title: "Builders.to — A social launch pad for solo founders",
+    description: "A social launch pad for solo founders. Share what you’re building, get feedback, meet collaborators, and find early users.",
     creator: "@builderstoHQ",
   },
   icons: {

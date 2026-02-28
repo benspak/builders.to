@@ -2,7 +2,7 @@ import { ImageResponse } from 'next/og'
 
 export const runtime = 'nodejs'
 
-export const alt = 'Builders.to — Launch together.'
+export const alt = 'Builders.to — A social launch pad for solo founders'
 export const size = {
   width: 1200,
   height: 628,
@@ -135,7 +135,7 @@ export default async function Image() {
               gap: '12px',
             }}
           >
-            <span style={{ color: 'white' }}>Launch together.</span>
+            <span style={{ color: 'white' }}>A social launch pad for solo founders</span>
             <span
               style={{
                 background: 'linear-gradient(135deg, #f97316 0%, #fb923c 50%, #fbbf24 100%)',

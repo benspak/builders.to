@@ -1,8 +1,8 @@
 # Builders.to
 
-> A members-only project launchpad for builders. Share your work in progress, get feedback from the community, and find your first users.
+> A social launch pad for solo founders.
 
-Builders.to is a community platform where indie hackers, solopreneurs, and developers share their projects at any stage—from idea to launched product. Members can upvote, comment, provide feedback, post daily updates, list services, find local builders, and engage with a growing ecosystem of makers who ship.
+Builders.to is a social launch pad for solo founders. Indie hackers, solopreneurs, and developers share their projects at any stage—from idea to launched product. Members can upvote, comment, provide feedback, post daily updates, list services, find local builders, and engage with a growing ecosystem of makers who ship.
 
 ## Core Features
 

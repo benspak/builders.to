@@ -24,7 +24,7 @@ export function Footer() {
                 Builders<span className="text-orange-500">.to</span>
               </span>
               <span className="text-xs" style={{ color: "var(--foreground-subtle)" }}>
-                Launch pad & social network for builders, entrepreneurs, and founders
+                A social launch pad for solo founders
               </span>
             </div>
           </div>

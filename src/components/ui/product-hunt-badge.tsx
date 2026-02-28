@@ -27,7 +27,7 @@ export function ProductHuntBadge() {
     >
       <img
         src={`https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1057424&theme=${badgeTheme}`}
-        alt="Builders.to — Launch pad & social network for builders | Product Hunt"
+        alt="Builders.to — A social launch pad for solo founders | Product Hunt"
         width="250"
         height="54"
       />

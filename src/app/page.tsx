@@ -11,8 +11,8 @@ import { KarmaLeaderboard } from "@/components/karma";
 import { AccountabilityWidget } from "@/components/accountability";
 
 export const metadata = {
-  title: "Builders.to — Launch pad & social network for builders, entrepreneurs, and founders",
-  description: "A launch pad and social network for builders, entrepreneurs, and founders. Share daily updates, celebrate milestones, discover projects, meet collaborators, and find early users.",
+  title: "Builders.to — A social launch pad for solo founders",
+  description: "A social launch pad for solo founders. Share daily updates, celebrate milestones, discover projects, meet collaborators, and find early users.",
 };
 
 // Force dynamic rendering since this page requires database access

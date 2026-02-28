@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Privacy Policy - Builders.to",
-  description: "Privacy Policy for Builders.to - Learn how we collect, use, and protect your information.",
+  description: "Privacy Policy for Builders.to, a social launch pad for solo founders. Learn how we collect, use, and protect your information.",
 };
 
 export default function PrivacyPolicyPage() {
@@ -20,7 +20,7 @@ export default function PrivacyPolicyPage() {
         </div>
 
         <h1 className="text-4xl font-bold text-white mb-2">Privacy Policy</h1>
-        <p className="text-zinc-500 mb-12">Last updated: February 18, 2026</p>
+        <p className="text-zinc-500 mb-12">Last updated: February 28, 2026</p>
 
         <div className="prose prose-invert prose-zinc max-w-none">
           <div className="space-y-8 text-zinc-300">
@@ -28,7 +28,7 @@ export default function PrivacyPolicyPage() {
             <section>
               <h2 className="text-2xl font-semibold text-white mb-4">1. Introduction</h2>
               <p className="leading-relaxed">
-                Welcome to Builders.to (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;). We are committed to protecting your
+                Welcome to Builders.to (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;), a social launch pad for solo founders. We are committed to protecting your
                 privacy and personal information. This Privacy Policy explains how we collect, use,
                 disclose, and safeguard your information when you use our website and services.
               </p>
