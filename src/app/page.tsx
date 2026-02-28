@@ -513,7 +513,7 @@ export default function HomePage() {
           {/* Right Sidebar */}
           <aside className="xl:w-72 shrink-0 order-2 xl:order-3">
             <div className="xl:sticky xl:top-24 space-y-6">
-              {/* Mastermind - $9/mo for Slack access */}
+              {/* Mastermind Slack - Pro membership benefit */}
               <MastermindTelegramSection />
 
               {/* Email Opt-In */}

@@ -7,40 +7,23 @@ import { MessageCircle, Loader2, ExternalLink } from "lucide-react";
 const MASTERMIND_SLACK_INVITE_URL = "https://join.slack.com/t/buildersto/shared_invite/zt-3qdfqmuhu-TKxv5fHttfQ5nJooGrJLYw";
 
 export function MastermindTelegramSection() {
-  const [status, setStatus] = useState<"loading" | "subscribed" | "not-subscribed" | "signed-out">("loading");
-  const [checkoutLoading, setCheckoutLoading] = useState(false);
-  const [joinError, setJoinError] = useState<string | null>(null);
+  const [status, setStatus] = useState<"loading" | "pro" | "not-pro" | "signed-out">("loading");
 
   useEffect(() => {
-    fetch("/api/mastermind/subscribe")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.error && data.error === "Not signed in") {
+    fetch("/api/pro/subscribe")
+      .then((res) => {
+        if (res.status === 401) {
           setStatus("signed-out");
-          return;
+          return null;
         }
-        setStatus(data.isActive ? "subscribed" : "not-subscribed");
+        return res.json();
       })
-      .catch(() => setStatus("not-subscribed"));
+      .then((data) => {
+        if (data == null) return;
+        setStatus(data.isPro ? "pro" : "not-pro");
+      })
+      .catch(() => setStatus("not-pro"));
   }, []);
-
-  const handleJoin = async () => {
-    setCheckoutLoading(true);
-    setJoinError(null);
-    try {
-      const res = await fetch("/api/mastermind/subscribe", { method: "POST" });
-      const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-        return;
-      }
-      setJoinError(data.error || "Something went wrong. Please try again.");
-    } catch {
-      setJoinError("Network error. Please try again.");
-    } finally {
-      setCheckoutLoading(false);
-    }
-  };
 
   if (status === "loading") {
     return (
@@ -56,7 +39,7 @@ export function MastermindTelegramSection() {
     );
   }
 
-  if (status === "subscribed") {
+  if (status === "pro") {
     return (
       <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 overflow-hidden">
         <div className="flex items-center gap-2 px-4 py-3 border-b border-emerald-500/20 bg-emerald-500/10">
@@ -90,7 +73,7 @@ export function MastermindTelegramSection() {
         </div>
         <div className="p-4">
           <p className="text-sm text-zinc-300 mb-3">
-            Join the private Builders.to Mastermind Slack workspace. Get feedback, accountability, and connect with serious builders.
+            Join the private Builders.to Mastermind Slack workspace. Get feedback, accountability, and connect with serious builders. Included with Pro membership.
           </p>
           <Link
             href="/sign-in?callbackUrl=/feed"
@@ -103,7 +86,7 @@ export function MastermindTelegramSection() {
     );
   }
 
-  // not-subscribed
+  // not-pro (signed in, no Pro)
   return (
     <div className="rounded-xl border border-violet-500/30 bg-zinc-900/50 overflow-hidden">
       <div className="flex items-center gap-2 px-4 py-3 border-b border-violet-500/20 bg-violet-500/5">
@@ -112,29 +95,15 @@ export function MastermindTelegramSection() {
       </div>
       <div className="p-4">
         <p className="text-sm text-zinc-300 mb-3">
-          Join the private Builders.to Mastermind Slack workspace. Get feedback, accountability, and connect with serious builders—$9/month.
+          Join the private Builders.to Mastermind Slack workspace. Get feedback, accountability, and connect with serious builders. Included with Pro membership.
         </p>
-        <button
-          type="button"
-          onClick={handleJoin}
-          disabled={checkoutLoading}
-          className="w-full flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-violet-500 to-purple-500 px-3 py-2.5 text-sm font-medium text-white hover:from-violet-600 hover:to-purple-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+        <Link
+          href="/settings"
+          className="w-full flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-violet-500 to-purple-500 px-3 py-2.5 text-sm font-medium text-white hover:from-violet-600 hover:to-purple-600 transition-all"
         >
-          {checkoutLoading ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Redirecting…
-            </>
-          ) : (
-            <>
-              Join for $9/month
-              <ExternalLink className="h-4 w-4" />
-            </>
-          )}
-        </button>
-        {joinError && (
-          <p className="mt-2 text-xs text-amber-400">{joinError}</p>
-        )}
+          Upgrade to Pro for access
+          <ExternalLink className="h-4 w-4" />
+        </Link>
       </div>
     </div>
   );
