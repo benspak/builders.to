@@ -44,6 +44,7 @@ export default async function ProtectedLayout({
       userId={session.user!.id} 
       userEmail={userEmail}
       emailVerified={emailVerified}
+      devBypassAvailable={process.env.EMAIL_DEV_MODE === "true"}
     >
       {children}
     </EmailCollectionWrapper>

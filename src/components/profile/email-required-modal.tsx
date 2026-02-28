@@ -9,6 +9,8 @@ interface EmailRequiredModalProps {
   onComplete: () => void;
   /** If true, show verification pending state for this email */
   pendingVerificationEmail?: string | null;
+  /** When true, show "Development: skip verification" (only when EMAIL_DEV_MODE=true) */
+  devBypassAvailable?: boolean;
 }
 
 type ModalStep = "enter_email" | "verification_sent" | "resend";
@@ -17,6 +19,7 @@ export function EmailRequiredModal({
   userId, 
   onComplete,
   pendingVerificationEmail,
+  devBypassAvailable = false,
 }: EmailRequiredModalProps) {
   const router = useRouter();
   const [email, setEmail] = useState(pendingVerificationEmail || "");
@@ -26,6 +29,7 @@ export function EmailRequiredModal({
     pendingVerificationEmail ? "verification_sent" : "enter_email"
   );
   const [resendCooldown, setResendCooldown] = useState(0);
+  const [skipLoading, setSkipLoading] = useState(false);
 
   // Prevent escape key from closing the modal
   useEffect(() => {
@@ -99,6 +103,29 @@ export function EmailRequiredModal({
   const handleChangeEmail = () => {
     setStep("enter_email");
     setError("");
+  };
+
+  const handleDevSkip = async () => {
+    if (!devBypassAvailable || !email) return;
+    setSkipLoading(true);
+    setError("");
+    try {
+      const response = await fetch("/api/email/verify/skip", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to skip verification");
+      }
+      onComplete();
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setSkipLoading(false);
+    }
   };
 
   // Check if email has been verified (poll for verification status)
@@ -283,6 +310,21 @@ export function EmailRequiredModal({
                 <ArrowLeft className="h-4 w-4" />
                 Use a different email
               </button>
+
+              {devBypassAvailable && (
+                <button
+                  type="button"
+                  onClick={handleDevSkip}
+                  disabled={skipLoading}
+                  className="w-full flex items-center justify-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 py-3 px-4 font-medium text-amber-400 hover:bg-amber-500/20 focus:outline-none focus:ring-2 focus:ring-amber-500/20 disabled:opacity-50 transition-all"
+                >
+                  {skipLoading ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    "Development: skip verification"
+                  )}
+                </button>
+              )}
             </div>
 
             <p className="text-xs text-center text-zinc-500 mt-6">

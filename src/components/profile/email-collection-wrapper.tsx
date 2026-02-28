@@ -7,6 +7,8 @@ interface EmailCollectionWrapperProps {
   userId: string;
   userEmail: string | null;
   emailVerified: boolean;
+  /** When true, show a "Development: skip verification" option (only when EMAIL_DEV_MODE=true) */
+  devBypassAvailable?: boolean;
   children: React.ReactNode;
 }
 
@@ -14,6 +16,7 @@ export function EmailCollectionWrapper({
   userId,
   userEmail,
   emailVerified,
+  devBypassAvailable = false,
   children,
 }: EmailCollectionWrapperProps) {
   const [showModal, setShowModal] = useState(false);
@@ -48,6 +51,7 @@ export function EmailCollectionWrapper({
           userId={userId} 
           onComplete={handleComplete}
           pendingVerificationEmail={userEmail && !emailVerified ? userEmail : null}
+          devBypassAvailable={devBypassAvailable}
         />
       )}
     </>
