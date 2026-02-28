@@ -171,7 +171,7 @@ export function ProUpgradePrompt({
             </div>
           ) : (
             <Link
-              href={`/signin?callbackUrl=/settings`}
+              href={`/signin?callbackUrl=/settings/account`}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 text-zinc-900 text-sm font-medium hover:from-amber-400 hover:to-orange-400 transition-all"
             >
               Sign in to upgrade
@@ -307,7 +307,7 @@ export function ProUpgradePrompt({
         ) : (
           <div className="text-center">
             <Link
-              href={`/signin?callbackUrl=/settings`}
+              href={`/signin?callbackUrl=/settings/account`}
               className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 text-zinc-900 font-semibold hover:from-amber-400 hover:to-orange-400 transition-all"
             >
               Sign in to upgrade to Pro

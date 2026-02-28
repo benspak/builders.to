@@ -386,16 +386,6 @@ export default function PrivacyPolicyPage() {
                     X Community
                   </a>
                 </li>
-                <li>
-                  <a
-                    href="https://discord.com/invite/G7nmswWkbn"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-orange-500 hover:text-orange-400"
-                  >
-                    Discord Server
-                  </a>
-                </li>
               </ul>
             </section>
 

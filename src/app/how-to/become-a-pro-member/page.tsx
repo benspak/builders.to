@@ -310,7 +310,7 @@ export default function BecomeAProMemberPage() {
                     <p className="text-zinc-400 text-sm mt-1">
                       Click on your profile picture in the top-right corner and select
                       <span className="text-orange-400"> Settings</span> from the menu, or visit
-                      <span className="text-orange-400"> builders.to/settings</span> directly.
+                      <span className="text-orange-400"> builders.to/settings/account</span> directly.
                     </p>
                   </div>
                 </li>
@@ -435,7 +435,7 @@ export default function BecomeAProMemberPage() {
                   <h3 className="font-medium text-white">Is there a refund policy?</h3>
                   <p className="text-zinc-400 text-sm mt-2">
                     Subscription payments are generally non-refundable once your billing period begins.
-                    However, if you have issues, please reach out to the community on Discord or X
+                    However, if you have issues, please reach out to the community on X
                     and we&apos;ll do our best to help.
                   </p>
                 </div>
@@ -450,7 +450,7 @@ export default function BecomeAProMemberPage() {
                 Join Builders Pro and unlock all premium features today.
               </p>
               <Link
-                href="/settings"
+                href="/settings/account"
                 className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-3 text-sm font-semibold text-zinc-900 transition-all hover:from-amber-400 hover:to-orange-400"
               >
                 Get Builders Pro

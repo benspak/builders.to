@@ -236,14 +236,6 @@ export default function ArticlesPage() {
             >
               X Community
             </a>
-            <a
-              href="https://discord.com/invite/G7nmswWkbn"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-lg bg-zinc-800 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-700"
-            >
-              Discord Server
-            </a>
           </div>
         </div>
       </div>

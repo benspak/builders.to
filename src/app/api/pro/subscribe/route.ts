@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
 
     // Create checkout session
     const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
-    const returnUrl = `${baseUrl}/settings`;
+    const returnUrl = `${baseUrl}/settings/account`;
 
     const { sessionId, url } = await createProCheckoutSession(
       session.user.id,
