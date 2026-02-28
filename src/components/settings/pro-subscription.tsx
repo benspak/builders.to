@@ -11,6 +11,7 @@ import {
   Rocket,
   Building2,
   MessageSquare,
+  Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ProBadge } from "@/components/ui/pro-badge";
@@ -255,6 +256,10 @@ export function ProSubscription() {
                   <li className="flex items-center gap-3 text-zinc-300">
                     <Building2 className="h-4 w-4 text-amber-400 flex-shrink-0" />
                     <span className="text-sm">Add and manage company profiles</span>
+                  </li>
+                  <li className="flex items-center gap-3 text-zinc-300">
+                    <Users className="h-4 w-4 text-amber-400 flex-shrink-0" />
+                    <span className="text-sm">Slack Mastermind Group</span>
                   </li>
                 </ul>
               </div>
