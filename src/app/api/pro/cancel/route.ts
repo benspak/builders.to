@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import {
   cancelProSubscription,
   reactivateProSubscription,
@@ -17,6 +18,17 @@ export async function POST() {
       return NextResponse.json(
         { error: "You must be signed in" },
         { status: 401 }
+      );
+    }
+
+    const sub = await prisma.proSubscription.findUnique({
+      where: { userId: session.user.id },
+      select: { plan: true },
+    });
+    if (sub?.plan === "LIFETIME") {
+      return NextResponse.json(
+        { error: "Lifetime memberships don't renew and can't be cancelled." },
+        { status: 400 }
       );
     }
 

@@ -135,7 +135,14 @@ export async function GET(
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    return NextResponse.json(user);
+    const { getFirst1000Status } = await import("@/lib/first-1000");
+    const { isFirst1000, signupRank } = await getFirst1000Status(user.id, user.createdAt);
+
+    return NextResponse.json({
+      ...user,
+      isFirst1000,
+      signupRank,
+    });
   } catch (error) {
     console.error("Error fetching user:", error);
     return NextResponse.json(

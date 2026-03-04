@@ -151,7 +151,7 @@ export default function EarnFromPostingPage() {
                     <div>
                       <p className="font-medium text-white">Active Pro Membership</p>
                       <p className="text-sm text-zinc-400 mt-1">
-                        You must have an active Builders Pro subscription ($3.99/month or $39.99/year).
+                        You must have an active Builders Pro subscription ($3.99/month or $39.99/year; monthly and yearly plans are currently at intro pricing).
                         <Link href="/how-to/become-a-pro-member" className="text-amber-400 hover:text-amber-300 ml-1">
                           Learn how to become Pro →
                         </Link>
@@ -349,7 +349,7 @@ export default function EarnFromPostingPage() {
                     <p className="text-zinc-400 text-sm mt-1">
                       If you&apos;re not already a Pro member, subscribe to unlock Creator Rewards.
                       Go to <Link href="/settings" className="text-emerald-400">Settings</Link> and
-                      choose Monthly ($3.99) or Yearly ($39.99).
+                      choose Monthly ($3.99) or Yearly ($39.99) (currently at intro pricing).
                     </p>
                   </div>
                 </li>

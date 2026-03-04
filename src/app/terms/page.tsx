@@ -400,7 +400,7 @@ export default function TermsOfServicePage() {
               <h2 className="text-2xl font-semibold text-white mb-4">15. Pro Subscriptions</h2>
               <p className="mb-4">Pro subscription plans provide enhanced features:</p>
               <ul className="list-disc pl-6 space-y-2">
-                <li><strong className="text-white">Plan Options:</strong> Monthly ($3.99/month) or Yearly ($39.99/year) billing</li>
+                <li><strong className="text-white">Plan Options:</strong> Monthly ($3.99/month) or Yearly ($39.99/year) billing (currently at intro pricing)</li>
                 <li><strong className="text-white">Pro Rewards:</strong> Pro users may earn money for quality content. Rewards are discretionary and subject to our policies.</li>
                 <li><strong className="text-white">Unlimited Chat History:</strong> Pro users receive unlimited message history across all channels and DMs (free accounts: 90 days).</li>
                 <li><strong className="text-white">DALL-E Access:</strong> Pro users can generate AI images. Usage is subject to OpenAI&apos;s policies.</li>

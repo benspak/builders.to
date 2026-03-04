@@ -19,10 +19,16 @@ import { ProBadge } from "@/components/ui/pro-badge";
 interface SubscriptionStatus {
   isActive: boolean;
   isPro: boolean;
-  plan: "MONTHLY" | "YEARLY" | null;
+  plan: "MONTHLY" | "YEARLY" | "LIFETIME" | null;
   status: "INACTIVE" | "ACTIVE" | "PAST_DUE" | "CANCELLED";
   currentPeriodEnd: string | null;
   cancelAtPeriodEnd: boolean;
+}
+
+interface LifetimeRemaining {
+  sold: number;
+  remaining: number;
+  cap: number;
 }
 
 export function ProSubscription() {
@@ -32,6 +38,7 @@ export function ProSubscription() {
   const [cancelling, setCancelling] = useState(false);
   const [reactivating, setReactivating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [lifetimeRemaining, setLifetimeRemaining] = useState<LifetimeRemaining | null>(null);
 
   // Fetch subscription status
   useEffect(() => {
@@ -51,6 +58,23 @@ export function ProSubscription() {
     }
 
     fetchData();
+  }, []);
+
+  // Fetch lifetime remaining count (for countdown when not Pro)
+  useEffect(() => {
+    async function fetchLifetime() {
+      try {
+        const res = await fetch("/api/pro/lifetime/remaining");
+        if (res.ok) {
+          const data = await res.json();
+          setLifetimeRemaining(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch lifetime remaining:", err);
+      }
+    }
+
+    fetchLifetime();
   }, []);
 
   const handleSubscribe = async (plan: "MONTHLY" | "YEARLY") => {
@@ -104,6 +128,25 @@ export function ProSubscription() {
       setError(err instanceof Error ? err.message : "Failed to cancel");
     } finally {
       setCancelling(false);
+    }
+  };
+
+  const handleLifetimeCheckout = async () => {
+    setSubscribing(true);
+    setError(null);
+
+    try {
+      const response = await fetch("/api/pro/lifetime/checkout", { method: "POST" });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to create checkout");
+      }
+
+      window.location.href = data.url;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to start checkout");
+      setSubscribing(false);
     }
   };
 
@@ -186,24 +229,37 @@ export function ProSubscription() {
                 <div>
                   <p className="text-sm text-zinc-400">Current Plan</p>
                   <p className="text-lg font-semibold text-white">
-                    {status.plan === "YEARLY" ? "Yearly" : "Monthly"} Pro
+                    {status.plan === "LIFETIME"
+                      ? "Lifetime Pro"
+                      : status.plan === "YEARLY"
+                        ? "Yearly Pro"
+                        : "Monthly Pro"}
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm text-zinc-400">
-                    {status.cancelAtPeriodEnd ? "Expires" : "Renews"}
-                  </p>
-                  <p className="text-lg font-semibold text-white">
-                    {periodEnd?.toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
-                  </p>
+                  {status.plan === "LIFETIME" ? (
+                    <>
+                      <p className="text-sm text-zinc-400">Expires</p>
+                      <p className="text-lg font-semibold text-white">Never</p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-sm text-zinc-400">
+                        {status.cancelAtPeriodEnd ? "Expires" : "Renews"}
+                      </p>
+                      <p className="text-lg font-semibold text-white">
+                        {periodEnd?.toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
+                      </p>
+                    </>
+                  )}
                 </div>
               </div>
 
-              {status.cancelAtPeriodEnd ? (
+              {status.plan !== "LIFETIME" && status.cancelAtPeriodEnd ? (
                 <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30">
                   <p className="text-sm text-amber-400 mb-3">
                     Your subscription is set to cancel. You'll lose Pro benefits after{" "}
@@ -222,7 +278,7 @@ export function ProSubscription() {
                     Keep My Subscription
                   </button>
                 </div>
-              ) : (
+              ) : status.plan !== "LIFETIME" ? (
                 <button
                   onClick={handleCancel}
                   disabled={cancelling}
@@ -230,7 +286,7 @@ export function ProSubscription() {
                 >
                   {cancelling ? "Cancelling..." : "Cancel subscription"}
                 </button>
-              )}
+              ) : null}
             </div>
           ) : (
             // Not subscribed - show plans
@@ -265,7 +321,7 @@ export function ProSubscription() {
               </div>
 
               {/* Pricing */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {/* Monthly */}
                 <button
                   onClick={() => handleSubscribe("MONTHLY")}
@@ -315,7 +371,40 @@ export function ProSubscription() {
                     Subscribe
                   </div>
                 </button>
+
+                {/* Lifetime */}
+                <button
+                  onClick={handleLifetimeCheckout}
+                  disabled={subscribing || (lifetimeRemaining?.remaining ?? 1) <= 0}
+                  className={cn(
+                    "p-4 rounded-xl border text-left transition-all relative",
+                    "bg-gradient-to-br from-violet-500/10 to-fuchsia-500/10",
+                    "border-violet-500/30",
+                    "hover:border-violet-500/50",
+                    "disabled:opacity-50 disabled:cursor-not-allowed"
+                  )}
+                >
+                  {lifetimeRemaining && lifetimeRemaining.remaining > 0 && (
+                    <span className="absolute -top-2 -right-2 px-2 py-0.5 rounded-full bg-violet-500 text-white text-xs font-bold">
+                      {lifetimeRemaining.remaining} left
+                    </span>
+                  )}
+                  <p className="text-2xl font-bold text-white">$500</p>
+                  <p className="text-sm text-zinc-400">one-time · Pro forever</p>
+                  <div className="mt-3 flex items-center gap-2 text-violet-400 text-sm font-medium">
+                    {subscribing ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <ExternalLink className="h-4 w-4" />
+                    )}
+                    Get Lifetime
+                  </div>
+                </button>
               </div>
+              <p className="mt-3 text-sm text-zinc-500">
+                Monthly and yearly plans are currently at intro pricing. Lifetime is limited to{" "}
+                {lifetimeRemaining?.cap ?? 100} members.
+              </p>
             </div>
           )}
         </div>

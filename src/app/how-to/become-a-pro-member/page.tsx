@@ -227,7 +227,7 @@ export default function BecomeAProMemberPage() {
               </div>
 
               <p className="leading-relaxed mb-6">
-                Builders Pro is available in two billing options:
+                Builders Pro is available in two billing options. Monthly and yearly plans are currently listed at intro pricing.
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -329,7 +329,7 @@ export default function BecomeAProMemberPage() {
                   <div>
                     <p className="font-medium text-white">Choose Your Plan</p>
                     <p className="text-zinc-400 text-sm mt-1">
-                      Select either the Monthly ($3.99/month) or Yearly ($39.99/year) plan.
+                      Select either the Monthly ($3.99/month) or Yearly ($39.99/year) plan (currently at intro pricing).
                       The yearly plan saves you 17% compared to monthly billing.
                     </p>
                   </div>

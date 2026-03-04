@@ -6,7 +6,7 @@ import { useState } from "react";
 import { UserMenu } from "@/components/auth/user-menu";
 import { SearchCommand } from "@/components/ui/search-command";
 import { NavbarTokenBalance } from "@/components/ui/navbar-token-balance";
-import { Plus, Rocket, ChevronDown, Sparkles, Menu, X, Building2, Rss, FolderKanban, Globe, Compass, Ticket, Briefcase } from "lucide-react";
+import { Plus, Rocket, ChevronDown, Sparkles, Menu, X, Building2, Rss, FolderKanban, Globe, Compass, Ticket, Briefcase, Trophy } from "lucide-react";
 import { BuildersLogo } from "@/components/ui/builders-logo";
 import { cn } from "@/lib/utils";
 
@@ -73,6 +73,15 @@ export function Navbar() {
                     >
                       <Compass className="h-3.5 w-3.5 text-cyan-400" />
                       Discover
+                    </Link>
+                    <Link
+                      href="/leaderboard"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-white/5"
+                      style={{ color: "var(--foreground-muted)" }}
+                    >
+                      <Trophy className="h-3.5 w-3.5 text-amber-400" />
+                      Leaderboard
                     </Link>
                     <Link
                       href="/projects"
@@ -188,6 +197,15 @@ export function Navbar() {
                   >
                     <Compass className="h-4 w-4 text-cyan-400" />
                     Discover
+                  </Link>
+                  <Link
+                    href="/leaderboard"
+                    onClick={() => setDiscoverOpen(false)}
+                    className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-white/5"
+                    style={{ color: "var(--foreground-muted)" }}
+                  >
+                    <Trophy className="h-4 w-4 text-amber-400" />
+                    Leaderboard
                   </Link>
                   <Link
                     href="/projects"

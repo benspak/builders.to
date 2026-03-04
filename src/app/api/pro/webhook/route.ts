@@ -10,6 +10,7 @@ import {
   activateMastermindSubscription,
   updateMastermindSubscriptionStatus,
 } from "@/lib/stripe-mastermind";
+import { activateLifetimeMembership } from "@/lib/stripe-lifetime";
 
 // Route segment config for webhook handling
 // Use nodejs runtime and disable body size limit for webhook payloads
@@ -128,6 +129,18 @@ export async function POST(request: Request) {
         console.log(`[Pro Webhook] Checkout session metadata: ${JSON.stringify(session.metadata)}`);
         console.log(`[Pro Webhook] Session mode: ${session.mode}`);
         console.log(`[Pro Webhook] Session subscription: ${session.subscription}`);
+
+        // Lifetime membership: one-time payment (no subscription)
+        if (session.mode === "payment" && session.metadata?.type === "lifetime_membership") {
+          const userId = session.metadata.userId;
+          if (!userId) {
+            console.error("[Pro Webhook] Lifetime: missing userId in metadata");
+            break;
+          }
+          await activateLifetimeMembership(userId, session.id);
+          console.log(`[Pro Webhook] Activated lifetime membership for user ${userId}`);
+          break;
+        }
 
         const subscriptionId = session.subscription as string;
         if (!subscriptionId) {

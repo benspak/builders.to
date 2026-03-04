@@ -135,39 +135,42 @@ export function ProUpgradePrompt({
           </div>
 
           {isAuthenticated ? (
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => handleSubscribe("MONTHLY")}
-                disabled={subscribing}
-                className={cn(
-                  "px-3 py-1.5 rounded-lg text-sm font-medium transition-all",
-                  "bg-zinc-800 border border-zinc-700 text-zinc-300",
-                  "hover:border-amber-500/50 hover:text-white",
-                  "disabled:opacity-50 disabled:cursor-not-allowed"
-                )}
-              >
-                {subscribing ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  "$3.99/mo"
-                )}
-              </button>
-              <button
-                onClick={() => handleSubscribe("YEARLY")}
-                disabled={subscribing}
-                className={cn(
-                  "px-3 py-1.5 rounded-lg text-sm font-medium transition-all",
-                  "bg-gradient-to-r from-amber-500 to-orange-500 text-zinc-900",
-                  "hover:from-amber-400 hover:to-orange-400",
-                  "disabled:opacity-50 disabled:cursor-not-allowed"
-                )}
-              >
-                {subscribing ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  "$39.99/yr"
-                )}
-              </button>
+            <div className="flex flex-col items-end gap-1">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleSubscribe("MONTHLY")}
+                  disabled={subscribing}
+                  className={cn(
+                    "px-3 py-1.5 rounded-lg text-sm font-medium transition-all",
+                    "bg-zinc-800 border border-zinc-700 text-zinc-300",
+                    "hover:border-amber-500/50 hover:text-white",
+                    "disabled:opacity-50 disabled:cursor-not-allowed"
+                  )}
+                >
+                  {subscribing ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    "$3.99/mo"
+                  )}
+                </button>
+                <button
+                  onClick={() => handleSubscribe("YEARLY")}
+                  disabled={subscribing}
+                  className={cn(
+                    "px-3 py-1.5 rounded-lg text-sm font-medium transition-all",
+                    "bg-gradient-to-r from-amber-500 to-orange-500 text-zinc-900",
+                    "hover:from-amber-400 hover:to-orange-400",
+                    "disabled:opacity-50 disabled:cursor-not-allowed"
+                  )}
+                >
+                  {subscribing ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    "$39.99/yr"
+                  )}
+                </button>
+              </div>
+              <p className="text-[10px] text-zinc-500">Intro pricing</p>
             </div>
           ) : (
             <Link
@@ -301,7 +304,7 @@ export function ProUpgradePrompt({
             </div>
 
             <p className="mt-4 text-center text-sm text-zinc-500">
-              Secure payment via Stripe. Cancel anytime.
+              Monthly and yearly plans are currently at intro pricing. Secure payment via Stripe. Cancel anytime.
             </p>
           </>
         ) : (

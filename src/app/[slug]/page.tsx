@@ -27,7 +27,9 @@ import {
 import { FollowButton, FollowStats, GiftSuccessToast, GiftTokensButton, PeopleAlsoViewed, ProfileViewTracker } from "@/components/profile";
 import { ReportButton } from "@/components/ui/report-button";
 import { ProBadgeWithTooltip } from "@/components/ui/pro-badge";
+import { First1000Badge } from "@/components/ui/first-1000-badge";
 import { KarmaBadge } from "@/components/karma";
+import { getFirst1000Status } from "@/lib/first-1000";
 import { ProfilePartnerButton } from "@/components/accountability";
 import { Suspense } from "react";
 import { formatRelativeTime, getStatusColor, getStatusLabel, getCategoryColor, getCategoryLabel, getMemberRoleLabel, getMemberRoleColor, getCompanyUrl, formatLocationSlug } from "@/lib/utils";
@@ -545,6 +547,8 @@ export default async function SlugPage({ params }: PageProps) {
     year: "numeric",
   });
 
+  const { isFirst1000, signupRank } = await getFirst1000Status(user.id, user.createdAt);
+
   const socialLinks = [
     { url: user.twitterUrl, icon: XIcon, label: "X" },
     { url: user.youtubeUrl, icon: YouTubeIcon, label: "YouTube" },
@@ -644,6 +648,9 @@ export default async function SlugPage({ params }: PageProps) {
                   <div>
                     <h1 className="text-2xl sm:text-3xl font-bold text-white flex items-center gap-2 flex-wrap">
                       {displayName}
+                      {isFirst1000 && (
+                        <First1000Badge size="md" signupRank={signupRank} />
+                      )}
                       {user.proSubscription?.status === "ACTIVE" && (
                         <ProBadgeWithTooltip size="lg" />
                       )}
@@ -821,6 +828,23 @@ export default async function SlugPage({ params }: PageProps) {
                 {/* Credibility Signals */}
                 <div className="pt-4 border-t border-white/5 space-y-3">
                   <h4 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Builder Stats</h4>
+
+                  {/* First 1000 Builders */}
+                  {isFirst1000 && (
+                    <div className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-amber-500/10 to-transparent border border-amber-500/20">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/20">
+                        <Award className="h-4 w-4 text-amber-400" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium text-white flex items-center gap-2">
+                          <First1000Badge size="sm" signupRank={signupRank} />
+                        </div>
+                        <div className="text-xs text-zinc-500">
+                          {signupRank ? `Builder #${signupRank}` : "Early supporter"} on Builders.to
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Karma/Reputation */}
                   {user.karma > 0 && (

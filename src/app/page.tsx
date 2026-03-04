@@ -5,6 +5,8 @@ import { auth } from "@/lib/auth";
 import { isProMember } from "@/lib/stripe-subscription";
 import { CombinedFeed, OpenJobs, EmailOptIn, MastermindTelegramSection } from "@/components/feed";
 import { SiteViewsCounter } from "@/components/analytics/site-views-counter";
+import { MonthlyViewsCounter } from "@/components/analytics/monthly-views-counter";
+import { MembersCounter } from "@/components/analytics/members-counter";
 import { SidebarAd } from "@/components/ads";
 import { ProUpgradePrompt } from "@/components/pro";
 import { KarmaLeaderboard } from "@/components/karma";
@@ -484,6 +486,24 @@ export default function HomePage() {
                 }
               >
                 <SidebarAdSection />
+              </Suspense>
+
+              {/* Traffic: total monthly views under ad spot */}
+              <MonthlyViewsCounter />
+
+              {/* Total sign-ups and goal */}
+              <Suspense
+                fallback={
+                  <div className="rounded-2xl border border-white/10 bg-zinc-900/50 backdrop-blur-sm p-4 animate-pulse">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="h-4 w-4 bg-zinc-800 rounded" />
+                      <div className="h-4 w-20 bg-zinc-800 rounded" />
+                    </div>
+                    <div className="h-3 w-40 bg-zinc-800 rounded" />
+                  </div>
+                }
+              >
+                <MembersCounter />
               </Suspense>
 
               {/* Karma Leaderboard - Top Builders */}

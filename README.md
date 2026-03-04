@@ -88,8 +88,8 @@ A members-only launchpad and community platform for indie hackers and builders. 
 
 ### ⭐ Pro Subscription
 
-- **Pro Monthly** — $3.99/month for premium features
-- **Pro Yearly** — $39.99/year (save ~17%)
+- **Pro Monthly** — $3.99/month for premium features (currently at intro pricing)
+- **Pro Yearly** — $39.99/year (save ~17%) (currently at intro pricing)
 - **Unlimited Projects** — Free accounts can share up to 3 projects; Pro unlocks unlimited
 - **Pro Rewards** — Earn real money for quality content
 - **DALL-E Image Generation** — Create AI images for posts

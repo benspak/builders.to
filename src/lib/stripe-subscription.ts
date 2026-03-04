@@ -11,7 +11,7 @@ import { prisma } from "./prisma";
  * - Monthly token grants
  */
 
-// Pro subscription pricing
+// Pro subscription pricing (currently at intro pricing)
 export const PRO_MONTHLY_PRICE_CENTS = 399; // $3.99
 export const PRO_YEARLY_PRICE_CENTS = 3999; // $39.99
 
@@ -160,7 +160,7 @@ export async function reactivateProSubscription(userId: string): Promise<boolean
 export async function getProSubscriptionStatus(userId: string): Promise<{
   isActive: boolean;
   isPro: boolean;
-  plan: "MONTHLY" | "YEARLY" | null;
+  plan: "MONTHLY" | "YEARLY" | "LIFETIME" | null;
   status: "INACTIVE" | "ACTIVE" | "PAST_DUE" | "CANCELLED";
   currentPeriodEnd: Date | null;
   cancelAtPeriodEnd: boolean;
