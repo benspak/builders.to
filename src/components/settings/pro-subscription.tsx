@@ -12,7 +12,10 @@ import {
   Building2,
   MessageSquare,
   Users,
-  CreditCard,
+  Zap,
+  Flame,
+  Gem,
+  Check,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ProBadge } from "@/components/ui/pro-badge";
@@ -35,13 +38,78 @@ interface LifetimeRemaining {
   cap: number;
 }
 
+// Match /pricing page: four membership options for plan management
+const MANAGEMENT_TIERS = [
+  {
+    id: "FREE" as const,
+    name: "Free",
+    price: "$0",
+    period: "/month",
+    description: "Build in public. Start earning from day one.",
+    icon: Crown,
+    features: [
+      "Post up to 3x per day to the feed",
+      "Earn karma for community engagement",
+      "Earn advertising credits for posting",
+      "Access to public founder community content",
+    ],
+  },
+  {
+    id: "PRO" as const,
+    name: "Pro",
+    price: "$3.99",
+    period: "/month",
+    description: "Stay consistent and get your work seen.",
+    icon: Zap,
+    features: [
+      "Post up to 20x per day to the feed",
+      "50 monthly ad credits ($5 value)",
+      "Access to the private Pro Slack",
+      "Weekly sprint check-ins via Slack",
+      "Everything in Free",
+    ],
+  },
+  {
+    id: "PREMIUM" as const,
+    name: "Premium",
+    price: "$19.99",
+    period: "/month",
+    description: "Accountability infrastructure for founders who ship.",
+    icon: Flame,
+    features: [
+      "Daily accountability check-ins via chat",
+      "Weekly Sit Rep meetings over Zoom",
+      "100 monthly ad credits ($10 value)",
+      "Priority feed visibility",
+      "Everything in Pro",
+    ],
+  },
+  {
+    id: "FOUNDERS_CIRCLE" as const,
+    name: "Founder's Circle",
+    price: "$49.99",
+    period: "/month",
+    description: "Direct coaching access and a seat at the inner table.",
+    icon: Gem,
+    features: [
+      "Monthly 1-on-1 coaching call (30 min)",
+      "Unlimited daily posts to the feed",
+      "250 monthly ad credits ($25 value)",
+      "Private Founder's Circle channel",
+      "Featured member spotlight",
+      "Early access to platform features",
+      "Everything in Premium",
+    ],
+  },
+];
+
 export function ProSubscription() {
   const [status, setStatus] = useState<SubscriptionStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [subscribing, setSubscribing] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [reactivating, setReactivating] = useState(false);
-  const [openingPortal, setOpeningPortal] = useState(false);
+  const [changingPlan, setChangingPlan] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [lifetimeRemaining, setLifetimeRemaining] = useState<LifetimeRemaining | null>(null);
 
@@ -50,7 +118,6 @@ export function ProSubscription() {
     async function fetchData() {
       try {
         const statusRes = await fetch("/api/pro/subscribe");
-
         if (statusRes.ok) {
           const data = await statusRes.json();
           setStatus(data);
@@ -61,7 +128,6 @@ export function ProSubscription() {
         setLoading(false);
       }
     }
-
     fetchData();
   }, []);
 
@@ -186,27 +252,46 @@ export function ProSubscription() {
     }
   };
 
-  const handleManageSubscription = async () => {
-    setOpeningPortal(true);
+  const handleChangePlan = async (
+    tier: "FREE" | "PRO" | "PREMIUM" | "FOUNDERS_CIRCLE",
+    plan?: "MONTHLY" | "YEARLY"
+  ) => {
+    if (tier === "FREE") {
+      if (
+        !confirm(
+          "Switch to Free? Your subscription will cancel at the end of your billing period. You'll keep benefits until then."
+        )
+        ) {
+        return;
+        }
+    }
+    setChangingPlan(tier);
     setError(null);
-
     try {
-      const response = await fetch("/api/pro/portal", {
+      const response = await fetch("/api/pro/change-plan", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tier, ...(plan && { plan }) }),
       });
-
       const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.error || "Failed to open billing portal");
+        throw new Error(data.error || "Failed to change plan");
       }
-
-      if (data.url) {
-        window.location.href = data.url;
+      if (tier === "FREE") {
+        setStatus((prev) =>
+          prev ? { ...prev, cancelAtPeriodEnd: true } : null
+        );
+      } else {
+        const res = await fetch("/api/pro/subscribe");
+        if (res.ok) {
+          const data = await res.json();
+          setStatus(data);
+        }
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to open billing portal");
-      setOpeningPortal(false);
+      setError(err instanceof Error ? err.message : "Failed to change plan");
+    } finally {
+      setChangingPlan(null);
     }
   };
 
@@ -302,23 +387,6 @@ export function ProSubscription() {
 
               {status.plan !== "LIFETIME" ? (
                 <>
-                  <div className="flex flex-wrap items-center gap-3">
-                    <button
-                      onClick={handleManageSubscription}
-                      disabled={openingPortal}
-                      className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-amber-500 text-zinc-900 font-medium hover:bg-amber-400 transition-colors disabled:opacity-50"
-                    >
-                      {openingPortal ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <CreditCard className="h-4 w-4" />
-                      )}
-                      Manage subscription
-                    </button>
-                    <span className="text-sm text-zinc-500">
-                      Upgrade, downgrade, or update payment method
-                    </span>
-                  </div>
                   {status.cancelAtPeriodEnd ? (
                     <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30">
                       <p className="text-sm text-amber-400 mb-3">
@@ -338,15 +406,108 @@ export function ProSubscription() {
                         Keep My Subscription
                       </button>
                     </div>
-                  ) : (
-                    <button
-                      onClick={handleCancel}
-                      disabled={cancelling}
-                      className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors"
-                    >
-                      {cancelling ? "Cancelling..." : "Cancel subscription"}
-                    </button>
-                  )}
+                  ) : null}
+                  <p className="text-sm font-semibold text-zinc-400 uppercase tracking-wider">
+                    Choose your plan
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {MANAGEMENT_TIERS.map((tier) => {
+                      const Icon = tier.icon;
+                      const isCurrent =
+                        tier.id !== "FREE" &&
+                        status.tier === tier.id &&
+                        !status.cancelAtPeriodEnd;
+                      const isFree = tier.id === "FREE";
+                      const isLoading = changingPlan === tier.id;
+                      return (
+                        <div
+                          key={tier.id}
+                          className={cn(
+                            "rounded-2xl border overflow-hidden flex flex-col",
+                            isCurrent
+                              ? "border-amber-500/50 bg-gradient-to-b from-amber-500/10 to-transparent"
+                              : "border-white/10 bg-zinc-900/50"
+                          )}
+                        >
+                          <div className="p-6">
+                            <div className="flex items-center gap-3 mb-4">
+                              <div
+                                className={cn(
+                                  "flex h-10 w-10 items-center justify-center rounded-xl",
+                                  isCurrent ? "bg-amber-500/20" : "bg-zinc-800"
+                                )}
+                              >
+                                <Icon
+                                  className={cn(
+                                    "h-5 w-5",
+                                    isCurrent ? "text-amber-400" : "text-zinc-400"
+                                  )}
+                                />
+                              </div>
+                              <h2 className="text-xl font-bold text-white">
+                                {tier.name}
+                              </h2>
+                            </div>
+                            <p className="text-zinc-400 text-sm mb-4">
+                              {tier.description}
+                            </p>
+                            <div className="flex items-baseline gap-1 mb-6">
+                              <span className="text-3xl font-bold text-white">
+                                {tier.price}
+                              </span>
+                              <span className="text-zinc-500">{tier.period}</span>
+                            </div>
+                            <ul className="space-y-3">
+                              {tier.features.map((feature) => (
+                                <li
+                                  key={feature}
+                                  className="flex items-start gap-2 text-sm text-zinc-300"
+                                >
+                                  <Check className="h-4 w-4 text-emerald-500 flex-shrink-0 mt-0.5" />
+                                  <span>{feature}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                          <div className="mt-auto p-6 pt-0">
+                            {isCurrent ? (
+                              <div className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-medium bg-zinc-800 text-zinc-400 border border-white/10">
+                                <BadgeCheck className="h-4 w-4" />
+                                Current plan
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() =>
+                                  isFree
+                                    ? handleChangePlan("FREE")
+                                    : handleChangePlan(
+                                        tier.id,
+                                        tier.id === "PRO"
+                                          ? (status?.plan ?? "MONTHLY")
+                                          : undefined
+                                      )
+                                }
+                                disabled={!!changingPlan}
+                                className={cn(
+                                  "inline-flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl font-medium transition-colors",
+                                  isFree
+                                    ? "bg-zinc-800 text-white hover:bg-zinc-700 border border-white/10"
+                                    : "bg-amber-500 text-zinc-900 hover:bg-amber-400 disabled:opacity-50"
+                                )}
+                              >
+                                {isLoading ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : null}
+                                {isFree
+                                  ? "Switch to Free"
+                                  : `Switch to ${tier.name}`}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </>
               ) : null}
             </div>
@@ -498,7 +659,7 @@ export function ProSubscription() {
                 </button>
               </div>
               <p className="mt-3 text-sm text-zinc-500">
-                Lifetime is limited to {lifetimeRemaining?.cap ?? 100} members. Use the billing portal to change between Pro, Premium, and Founder's Circle.
+                Lifetime is limited to {lifetimeRemaining?.cap ?? 100} members. Active members can switch between Free, Pro, Premium, and Founder's Circle from the plan selector above.
               </p>
             </div>
           )}

@@ -257,6 +257,55 @@ export async function reactivateProSubscription(userId: string): Promise<boolean
 }
 
 /**
+ * Update an existing Pro subscription to a different tier/plan (upgrade or downgrade).
+ * Stripe will prorate. Webhook customer.subscription.updated will sync DB.
+ */
+export async function updateProSubscriptionTier(
+  userId: string,
+  tier: "PRO" | "PREMIUM" | "FOUNDERS_CIRCLE",
+  plan?: "MONTHLY" | "YEARLY"
+): Promise<{ success: boolean; error?: string }> {
+  const stripe = getStripe();
+
+  const subscription = await prisma.proSubscription.findUnique({
+    where: { userId },
+    select: { stripeSubscriptionId: true, plan: true },
+  });
+
+  if (!subscription?.stripeSubscriptionId) {
+    return { success: false, error: "No active subscription found" };
+  }
+
+  const effectivePlan = tier === "PRO" ? (plan ?? subscription.plan ?? "MONTHLY") : "MONTHLY";
+  const newPriceId =
+    tier === "PRO" ? getProPriceId(effectivePlan) : getFoundersTierPriceId(tier);
+
+  try {
+    const stripeSub = await stripe.subscriptions.retrieve(subscription.stripeSubscriptionId);
+    const itemId = stripeSub.items.data[0]?.id;
+    if (!itemId) {
+      return { success: false, error: "Subscription has no items" };
+    }
+
+    await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
+      items: [{ id: itemId, price: newPriceId }],
+      proration_behavior: "create_prorations",
+      metadata: {
+        ...stripeSub.metadata,
+        plan: effectivePlan,
+        tier,
+      },
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("[Pro Subscription] Failed to update tier:", error);
+    const message = error instanceof Error ? error.message : "Failed to update plan";
+    return { success: false, error: message };
+  }
+}
+
+/**
  * Get the current Pro subscription status for a user (includes Founders Edition tier)
  */
 export async function getProSubscriptionStatus(userId: string): Promise<{
