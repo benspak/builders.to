@@ -12,6 +12,7 @@ import {
   Building2,
   MessageSquare,
   Users,
+  CreditCard,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ProBadge } from "@/components/ui/pro-badge";
@@ -40,6 +41,7 @@ export function ProSubscription() {
   const [subscribing, setSubscribing] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [reactivating, setReactivating] = useState(false);
+  const [openingPortal, setOpeningPortal] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lifetimeRemaining, setLifetimeRemaining] = useState<LifetimeRemaining | null>(null);
 
@@ -184,6 +186,30 @@ export function ProSubscription() {
     }
   };
 
+  const handleManageSubscription = async () => {
+    setOpeningPortal(true);
+    setError(null);
+
+    try {
+      const response = await fetch("/api/pro/portal", {
+        method: "POST",
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to open billing portal");
+      }
+
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to open billing portal");
+      setOpeningPortal(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="rounded-2xl border border-white/10 bg-zinc-900/50 backdrop-blur-sm p-6">
@@ -274,33 +300,54 @@ export function ProSubscription() {
                 </div>
               </div>
 
-              {status.plan !== "LIFETIME" && status.cancelAtPeriodEnd ? (
-                <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30">
-                  <p className="text-sm text-amber-400 mb-3">
-                    Your subscription is set to cancel. You'll lose Pro benefits after{" "}
-                    {periodEnd?.toLocaleDateString()}.
-                  </p>
-                  <button
-                    onClick={handleReactivate}
-                    disabled={reactivating}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-amber-500 text-zinc-900 font-medium hover:bg-amber-400 transition-colors disabled:opacity-50"
-                  >
-                    {reactivating ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <RefreshCw className="h-4 w-4" />
-                    )}
-                    Keep My Subscription
-                  </button>
-                </div>
-              ) : status.plan !== "LIFETIME" ? (
-                <button
-                  onClick={handleCancel}
-                  disabled={cancelling}
-                  className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors"
-                >
-                  {cancelling ? "Cancelling..." : "Cancel subscription"}
-                </button>
+              {status.plan !== "LIFETIME" ? (
+                <>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <button
+                      onClick={handleManageSubscription}
+                      disabled={openingPortal}
+                      className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-amber-500 text-zinc-900 font-medium hover:bg-amber-400 transition-colors disabled:opacity-50"
+                    >
+                      {openingPortal ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <CreditCard className="h-4 w-4" />
+                      )}
+                      Manage subscription
+                    </button>
+                    <span className="text-sm text-zinc-500">
+                      Upgrade, downgrade, or update payment method
+                    </span>
+                  </div>
+                  {status.cancelAtPeriodEnd ? (
+                    <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30">
+                      <p className="text-sm text-amber-400 mb-3">
+                        Your subscription is set to cancel. You'll lose Pro benefits after{" "}
+                        {periodEnd?.toLocaleDateString()}.
+                      </p>
+                      <button
+                        onClick={handleReactivate}
+                        disabled={reactivating}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-amber-500 text-zinc-900 font-medium hover:bg-amber-400 transition-colors disabled:opacity-50"
+                      >
+                        {reactivating ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <RefreshCw className="h-4 w-4" />
+                        )}
+                        Keep My Subscription
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={handleCancel}
+                      disabled={cancelling}
+                      className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors"
+                    >
+                      {cancelling ? "Cancelling..." : "Cancel subscription"}
+                    </button>
+                  )}
+                </>
               ) : null}
             </div>
           ) : (
