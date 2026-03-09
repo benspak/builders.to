@@ -94,7 +94,12 @@ async function FeedContent() {
               image: true,
               slug: true,
               headline: true,
-              // Include first company with logo for display next to username
+              proSubscription: {
+                select: { status: true, tier: true },
+              },
+              lifetimeMember: {
+                select: { userId: true },
+              },
               companies: {
                 where: { logo: { not: null } },
                 take: 1,
@@ -356,17 +361,37 @@ async function FeedContent() {
       : [];
     const pollVoteMap = new Map(pollVotes.map(v => [v.updateId, v.optionId]));
 
-    // Transform updates to include like, comment, and poll vote info
-    const updatesWithLikes = updates.map(update => ({
-      ...update,
-      likesCount: update._count.likes,
-      commentsCount: update._count.comments,
-      isLiked: session?.user?.id
-        ? update.likes.some(like => like.userId === session.user.id)
-        : false,
-      isPinned: currentUserPinnedIds.has(update.id),
-      votedOptionId: pollVoteMap.get(update.id) || null,
-    }));
+    const tierOrder = (
+      tier: string | undefined,
+      status: string | undefined,
+      isLifetime: boolean
+    ) => {
+      if (status === "ACTIVE" && tier === "FOUNDERS_CIRCLE") return 3;
+      if (status === "ACTIVE" && tier === "PREMIUM") return 2;
+      if (status === "ACTIVE" && tier === "PRO") return 1;
+      if (isLifetime) return 1;
+      return 0;
+    };
+
+    const updatesWithLikes = updates.map(update => {
+      const { proSubscription, lifetimeMember, ...userWithoutSub } = update.user;
+      return {
+        ...update,
+        user: userWithoutSub,
+        authorTierOrder: tierOrder(
+          proSubscription?.tier,
+          proSubscription?.status,
+          !!lifetimeMember?.userId
+        ),
+        likesCount: update._count.likes,
+        commentsCount: update._count.comments,
+        isLiked: session?.user?.id
+          ? update.likes.some(like => like.userId === session.user.id)
+          : false,
+        isPinned: currentUserPinnedIds.has(update.id),
+        votedOptionId: pollVoteMap.get(update.id) || null,
+      };
+    });
 
     // Transform feed events
     const feedEventsWithLikes = feedEvents.map(event => ({

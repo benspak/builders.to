@@ -125,6 +125,10 @@ model User {
   referralCode        String? @unique
   referredById        String?
 
+  // Ad credits (Founders Edition: earn by posting or monthly grant by tier)
+  adCreditsBalance    Int      @default(0)
+  adCreditsPeriodStart DateTime? // Start of current grant period for monthly reset
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -1665,7 +1669,14 @@ enum ProPlan {
   LIFETIME // One-time $500, limited to 100 members
 }
 
-// Pro Subscription - tracks membership status
+// Founders Edition tier (Pro, Premium, Founder's Circle)
+enum SubscriptionTier {
+  PRO             // $3.99/mo - 20 posts/day, 50 ad credits/mo
+  PREMIUM         // $19.99/mo - 20 posts/day, 100 ad credits/mo, Zoom, check-ins, priority feed
+  FOUNDERS_CIRCLE // $49.99/mo - unlimited posts, 250 ad credits/mo, 1-on-1, spotlight, early access
+}
+
+// Pro Subscription - tracks membership status (Founders Edition: Pro, Premium, Founder's Circle)
 model ProSubscription {
   id     String @id @default(cuid())
   userId String @unique
@@ -1678,6 +1689,7 @@ model ProSubscription {
   // Subscription status
   status ProSubscriptionStatus @default(INACTIVE)
   plan   ProPlan               @default(MONTHLY)
+  tier   SubscriptionTier      @default(PRO)
 
   // Billing dates
   currentPeriodStart DateTime?

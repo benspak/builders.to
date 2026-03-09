@@ -5,6 +5,7 @@ import {
   activateProSubscription,
   updateProSubscriptionStatus,
   getSubscriptionIdFromInvoice,
+  getTierFromPriceId,
 } from "@/lib/stripe-subscription";
 import {
   activateMastermindSubscription,
@@ -179,10 +180,12 @@ export async function POST(request: Request) {
         }
 
         const userId = session.metadata.userId;
-        const plan = session.metadata.plan as "MONTHLY" | "YEARLY";
+        const plan = (session.metadata.plan as "MONTHLY" | "YEARLY") || "MONTHLY";
+        const priceId = subscription.items.data[0].price.id;
+        const tier = getTierFromPriceId(priceId) ?? "PRO";
 
-        if (!userId || !plan) {
-          console.error("[Pro Webhook] Missing userId or plan in metadata");
+        if (!userId) {
+          console.error("[Pro Webhook] Missing userId in metadata");
           break;
         }
 
@@ -190,13 +193,14 @@ export async function POST(request: Request) {
           userId,
           session.customer as string,
           subscriptionId,
-          subscription.items.data[0].price.id,
+          priceId,
           plan,
           periodStart || new Date(),
-          periodEnd || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+          periodEnd || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+          tier
         );
 
-        console.log(`[Pro Webhook] Activated Pro subscription for user ${userId}`);
+        console.log(`[Pro Webhook] Activated Founders Edition subscription for user ${userId} tier=${tier}`);
         break;
       }
 
@@ -246,13 +250,17 @@ export async function POST(request: Request) {
           break;
         }
 
+        const priceId = subscription.items?.data?.[0]?.price?.id;
+        const tier = priceId ? getTierFromPriceId(priceId) ?? undefined : undefined;
+
         await updateProSubscriptionStatus(
           invoiceSubId,
           "ACTIVE",
           finalPeriodStart || undefined,
           finalPeriodEnd || undefined,
           undefined,
-          userId
+          userId,
+          tier
         );
 
         console.log(`[Pro Webhook] Invoice paid for user ${userId}`);
@@ -325,13 +333,17 @@ export async function POST(request: Request) {
             console.log(`[Pro Webhook] Mapped Stripe status "${subscription.status}" to INACTIVE for subscription ${subscription.id}`);
         }
 
+        const priceId = subscription.items?.data?.[0]?.price?.id;
+        const tier = priceId ? getTierFromPriceId(priceId) ?? undefined : undefined;
+
         await updateProSubscriptionStatus(
           subscription.id,
           status,
           updatePeriodStart || undefined,
           updatePeriodEnd || undefined,
           subscription.cancel_at_period_end,
-          subUserId || undefined
+          subUserId || undefined,
+          tier
         );
 
         console.log(`[Pro Webhook] Subscription updated: ${subscription.id} -> ${status}`);

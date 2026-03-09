@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { createProCheckoutSession, verifyAndSyncProStatus } from "@/lib/stripe-subscription";
+import { createFoundersCheckoutSession, verifyAndSyncProStatus } from "@/lib/stripe-subscription";
 
 /**
  * POST /api/pro/subscribe
@@ -19,14 +19,12 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { plan } = body;
+    const { plan, tier } = body;
 
-    if (!plan || !["MONTHLY", "YEARLY"].includes(plan)) {
-      return NextResponse.json(
-        { error: "Invalid plan. Must be MONTHLY or YEARLY" },
-        { status: 400 }
-      );
-    }
+    const effectiveTier = tier && ["PRO", "PREMIUM", "FOUNDERS_CIRCLE"].includes(tier) ? tier : "PRO";
+    const effectivePlan = (effectiveTier === "PRO" && plan && ["MONTHLY", "YEARLY"].includes(plan))
+      ? plan
+      : "MONTHLY";
 
     // Get user email
     const user = await prisma.user.findUnique({
@@ -49,20 +47,20 @@ export async function POST(request: NextRequest) {
 
     if (existingSubscription?.status === "ACTIVE") {
       return NextResponse.json(
-        { error: "You already have an active Pro subscription" },
+        { error: "You already have an active subscription. Use the billing portal to change plan." },
         { status: 400 }
       );
     }
 
-    // Create checkout session
     const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
     const returnUrl = `${baseUrl}/settings/account`;
 
-    const { sessionId, url } = await createProCheckoutSession(
+    const { sessionId, url } = await createFoundersCheckoutSession(
       session.user.id,
       user.email,
-      plan,
-      returnUrl
+      effectiveTier,
+      returnUrl,
+      effectiveTier === "PRO" ? effectivePlan : undefined
     );
 
     return NextResponse.json({ sessionId, url });
@@ -96,6 +94,7 @@ export async function GET() {
       select: {
         status: true,
         plan: true,
+        tier: true,
         currentPeriodEnd: true,
         cancelAtPeriodEnd: true,
         stripeSubscriptionId: true,
@@ -124,6 +123,7 @@ export async function GET() {
             select: {
               status: true,
               plan: true,
+              tier: true,
               currentPeriodEnd: true,
               cancelAtPeriodEnd: true,
               stripeSubscriptionId: true,
@@ -143,16 +143,19 @@ export async function GET() {
         isActive: false,
         isPro: false,
         plan: null,
+        tier: "FREE",
         status: "INACTIVE",
         currentPeriodEnd: null,
         cancelAtPeriodEnd: false,
       });
     }
 
+    const isActive = subscription.status === "ACTIVE";
     return NextResponse.json({
-      isActive: subscription.status === "ACTIVE",
-      isPro: subscription.status === "ACTIVE",
+      isActive,
+      isPro: isActive,
       plan: subscription.plan,
+      tier: isActive ? subscription.tier : "FREE",
       status: subscription.status,
       currentPeriodEnd: subscription.currentPeriodEnd,
       cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,

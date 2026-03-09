@@ -5,7 +5,8 @@ import { rateLimit, RATE_LIMITS, rateLimitResponse } from "@/lib/rate-limit";
 import { extractMentions } from "@/lib/utils";
 import { sendUserPushNotification } from "@/lib/push-notifications";
 import { createDailyUpdateForUser } from "@/lib/services/updates.service";
-import { isProMember } from "@/lib/stripe-subscription";
+import { getSubscriptionTier, getDailyPostLimit } from "@/lib/stripe-subscription";
+import { grantEarnedForPost } from "@/lib/ad-credits";
 import { getAuthUserId } from "@/lib/api-key-auth";
 
 // GET /api/updates - Get updates for a user or global feed
@@ -92,11 +93,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check membership tier and enforce daily post limits
-    const isPro = await isProMember(userId);
-    const dailyPostLimit = isPro ? 20 : 3;
+    const tier = await getSubscriptionTier(userId);
+    const dailyPostLimit = getDailyPostLimit(tier);
 
-    // Count how many updates the user has posted today
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
 
@@ -108,16 +107,19 @@ export async function POST(request: NextRequest) {
     });
 
     if (todayPostCount >= dailyPostLimit) {
-      const limitLabel = isPro ? "20 posts" : "3 posts";
+      const limitLabel = tier === "FREE" ? "3 posts" : tier === "FOUNDERS_CIRCLE" ? "unlimited" : "20 posts";
       return NextResponse.json(
         {
-          error: isPro
-            ? `You've reached your daily limit of ${limitLabel}. Come back tomorrow!`
-            : `Free members can post ${limitLabel} per day. Upgrade to Pro for up to 20 posts per day!`,
+          error:
+            tier === "FREE"
+              ? `Free members can post ${limitLabel} per day. Upgrade to Pro for up to 20 posts per day!`
+              : tier === "FOUNDERS_CIRCLE"
+                ? "Unexpected limit reached."
+                : `You've reached your daily limit of ${limitLabel}. Come back tomorrow!`,
           code: "DAILY_LIMIT_REACHED",
           dailyLimit: dailyPostLimit,
           postsToday: todayPostCount,
-          isPro,
+          tier,
         },
         { status: 429 }
       );
@@ -177,6 +179,8 @@ export async function POST(request: NextRequest) {
         pollOptions: validatedPollOptions || undefined,
       }
     );
+
+    grantEarnedForPost(userId).catch(console.error);
 
     const user = await prisma.user.findUnique({
       where: { id: userId },

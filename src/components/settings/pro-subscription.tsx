@@ -16,10 +16,13 @@ import {
 import { cn } from "@/lib/utils";
 import { ProBadge } from "@/components/ui/pro-badge";
 
+type TierLabel = "FREE" | "PRO" | "PREMIUM" | "FOUNDERS_CIRCLE";
+
 interface SubscriptionStatus {
   isActive: boolean;
   isPro: boolean;
   plan: "MONTHLY" | "YEARLY" | "LIFETIME" | null;
+  tier: TierLabel;
   status: "INACTIVE" | "ACTIVE" | "PAST_DUE" | "CANCELLED";
   currentPeriodEnd: string | null;
   cancelAtPeriodEnd: boolean;
@@ -77,7 +80,10 @@ export function ProSubscription() {
     fetchLifetime();
   }, []);
 
-  const handleSubscribe = async (plan: "MONTHLY" | "YEARLY") => {
+  const handleSubscribe = async (
+    tier: "PRO" | "PREMIUM" | "FOUNDERS_CIRCLE",
+    plan?: "MONTHLY" | "YEARLY"
+  ) => {
     setSubscribing(true);
     setError(null);
 
@@ -85,7 +91,10 @@ export function ProSubscription() {
       const response = await fetch("/api/pro/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan }),
+        body: JSON.stringify({
+          tier,
+          plan: tier === "PRO" ? (plan ?? "MONTHLY") : undefined,
+        }),
       });
 
       const data = await response.json();
@@ -231,9 +240,15 @@ export function ProSubscription() {
                   <p className="text-lg font-semibold text-white">
                     {status.plan === "LIFETIME"
                       ? "Lifetime Pro"
-                      : status.plan === "YEARLY"
-                        ? "Yearly Pro"
-                        : "Monthly Pro"}
+                      : status.tier === "FOUNDERS_CIRCLE"
+                        ? status.plan === "YEARLY"
+                          ? "Yearly Founder's Circle"
+                          : "Founder's Circle"
+                        : status.tier === "PREMIUM"
+                          ? "Premium"
+                          : status.plan === "YEARLY"
+                            ? "Yearly Pro"
+                            : "Pro"}
                   </p>
                 </div>
                 <div className="text-right">
@@ -320,11 +335,11 @@ export function ProSubscription() {
                 </ul>
               </div>
 
-              {/* Pricing */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {/* Monthly */}
+              {/* Pricing - Founders Edition */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Pro Monthly */}
                 <button
-                  onClick={() => handleSubscribe("MONTHLY")}
+                  onClick={() => handleSubscribe("PRO", "MONTHLY")}
                   disabled={subscribing}
                   className={cn(
                     "p-4 rounded-xl border text-left transition-all",
@@ -333,54 +348,91 @@ export function ProSubscription() {
                     "disabled:opacity-50 disabled:cursor-not-allowed"
                   )}
                 >
-                  <p className="text-2xl font-bold text-white">$3.99</p>
+                  <p className="text-lg font-semibold text-white">Pro</p>
+                  <p className="text-2xl font-bold text-white mt-1">$3.99</p>
                   <p className="text-sm text-zinc-400">per month</p>
+                  <p className="text-xs text-zinc-500 mt-2">20 posts/day · 50 ad credits/mo</p>
                   <div className="mt-3 flex items-center gap-2 text-amber-400 text-sm font-medium">
-                    {subscribing ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <ExternalLink className="h-4 w-4" />
-                    )}
+                    {subscribing ? <Loader2 className="h-4 w-4 animate-spin" /> : <ExternalLink className="h-4 w-4" />}
                     Subscribe
                   </div>
                 </button>
 
-                {/* Yearly */}
+                {/* Pro Yearly */}
                 <button
-                  onClick={() => handleSubscribe("YEARLY")}
+                  onClick={() => handleSubscribe("PRO", "YEARLY")}
                   disabled={subscribing}
                   className={cn(
                     "p-4 rounded-xl border text-left transition-all relative",
                     "bg-gradient-to-br from-amber-500/10 to-orange-500/10",
-                    "border-amber-500/30",
-                    "hover:border-amber-500/50",
+                    "border-amber-500/30 hover:border-amber-500/50",
                     "disabled:opacity-50 disabled:cursor-not-allowed"
                   )}
                 >
                   <span className="absolute -top-2 -right-2 px-2 py-0.5 rounded-full bg-amber-500 text-zinc-900 text-xs font-bold">
                     Save 17%
                   </span>
-                  <p className="text-2xl font-bold text-white">$39.99</p>
+                  <p className="text-lg font-semibold text-white">Pro</p>
+                  <p className="text-2xl font-bold text-white mt-1">$39.99</p>
                   <p className="text-sm text-zinc-400">per year</p>
+                  <p className="text-xs text-zinc-500 mt-2">20 posts/day · 50 ad credits/mo</p>
                   <div className="mt-3 flex items-center gap-2 text-amber-400 text-sm font-medium">
-                    {subscribing ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <ExternalLink className="h-4 w-4" />
-                    )}
+                    {subscribing ? <Loader2 className="h-4 w-4 animate-spin" /> : <ExternalLink className="h-4 w-4" />}
                     Subscribe
                   </div>
                 </button>
 
-                {/* Lifetime */}
+                {/* Premium */}
+                <button
+                  onClick={() => handleSubscribe("PREMIUM")}
+                  disabled={subscribing}
+                  className={cn(
+                    "p-4 rounded-xl border text-left transition-all",
+                    "bg-gradient-to-br from-orange-500/10 to-red-500/10",
+                    "border-orange-500/30 hover:border-orange-500/50",
+                    "disabled:opacity-50 disabled:cursor-not-allowed"
+                  )}
+                >
+                  <p className="text-lg font-semibold text-white">Premium</p>
+                  <p className="text-2xl font-bold text-white mt-1">$19.99</p>
+                  <p className="text-sm text-zinc-400">per month</p>
+                  <p className="text-xs text-zinc-500 mt-2">100 ad credits · Zoom · Priority feed</p>
+                  <div className="mt-3 flex items-center gap-2 text-orange-400 text-sm font-medium">
+                    {subscribing ? <Loader2 className="h-4 w-4 animate-spin" /> : <ExternalLink className="h-4 w-4" />}
+                    Subscribe
+                  </div>
+                </button>
+
+                {/* Founder's Circle */}
+                <button
+                  onClick={() => handleSubscribe("FOUNDERS_CIRCLE")}
+                  disabled={subscribing}
+                  className={cn(
+                    "p-4 rounded-xl border text-left transition-all relative",
+                    "bg-gradient-to-br from-violet-500/10 to-fuchsia-500/10",
+                    "border-violet-500/30 hover:border-violet-500/50",
+                    "disabled:opacity-50 disabled:cursor-not-allowed"
+                  )}
+                >
+                  <p className="text-lg font-semibold text-white">Founder's Circle</p>
+                  <p className="text-2xl font-bold text-white mt-1">$49.99</p>
+                  <p className="text-sm text-zinc-400">per month</p>
+                  <p className="text-xs text-zinc-500 mt-2">Unlimited posts · 250 credits · 1-on-1</p>
+                  <div className="mt-3 flex items-center gap-2 text-violet-400 text-sm font-medium">
+                    {subscribing ? <Loader2 className="h-4 w-4 animate-spin" /> : <ExternalLink className="h-4 w-4" />}
+                    Subscribe
+                  </div>
+                </button>
+              </div>
+
+              {/* Lifetime */}
+              <div className="mt-4 pt-4 border-t border-white/10">
                 <button
                   onClick={handleLifetimeCheckout}
                   disabled={subscribing || (lifetimeRemaining?.remaining ?? 1) <= 0}
                   className={cn(
-                    "p-4 rounded-xl border text-left transition-all relative",
-                    "bg-gradient-to-br from-violet-500/10 to-fuchsia-500/10",
-                    "border-violet-500/30",
-                    "hover:border-violet-500/50",
+                    "w-full sm:w-auto p-4 rounded-xl border text-left transition-all relative",
+                    "bg-zinc-800/50 border-violet-500/30 hover:border-violet-500/50",
                     "disabled:opacity-50 disabled:cursor-not-allowed"
                   )}
                 >
@@ -389,21 +441,17 @@ export function ProSubscription() {
                       {lifetimeRemaining.remaining} left
                     </span>
                   )}
-                  <p className="text-2xl font-bold text-white">$500</p>
+                  <p className="text-lg font-semibold text-white">Lifetime Pro</p>
+                  <p className="text-2xl font-bold text-white mt-1">$500</p>
                   <p className="text-sm text-zinc-400">one-time · Pro forever</p>
-                  <div className="mt-3 flex items-center gap-2 text-violet-400 text-sm font-medium">
-                    {subscribing ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <ExternalLink className="h-4 w-4" />
-                    )}
+                  <div className="mt-3 inline-flex items-center gap-2 text-violet-400 text-sm font-medium">
+                    {subscribing ? <Loader2 className="h-4 w-4 animate-spin" /> : <ExternalLink className="h-4 w-4" />}
                     Get Lifetime
                   </div>
                 </button>
               </div>
               <p className="mt-3 text-sm text-zinc-500">
-                Monthly and yearly plans are currently at intro pricing. Lifetime is limited to{" "}
-                {lifetimeRemaining?.cap ?? 100} members.
+                Lifetime is limited to {lifetimeRemaining?.cap ?? 100} members. Use the billing portal to change between Pro, Premium, and Founder's Circle.
               </p>
             </div>
           )}

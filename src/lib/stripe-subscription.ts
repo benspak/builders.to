@@ -1,19 +1,25 @@
 import Stripe from "stripe";
+import type { SubscriptionTier } from "@prisma/client";
 import { getStripe } from "./stripe";
 import { prisma } from "./prisma";
 
 /**
- * Stripe Subscription utilities for Pro Membership
+ * Stripe Subscription utilities for Founders Edition (Pro, Premium, Founder's Circle)
  *
  * This module handles:
- * - Pro membership subscription checkout
+ * - Founders Edition subscription checkout (Pro / Premium / Founder's Circle)
  * - Subscription management (cancel, reactivate)
+ * - Tier resolution and limits
  * - Monthly token grants
  */
 
 // Pro subscription pricing (currently at intro pricing)
 export const PRO_MONTHLY_PRICE_CENTS = 399; // $3.99
 export const PRO_YEARLY_PRICE_CENTS = 3999; // $39.99
+export const PREMIUM_MONTHLY_PRICE_CENTS = 1999; // $19.99
+export const FOUNDERS_CIRCLE_MONTHLY_PRICE_CENTS = 4999; // $49.99
+
+export type EffectiveTier = "FREE" | SubscriptionTier;
 
 // Get price IDs from environment
 export function getProPriceId(plan: "MONTHLY" | "YEARLY"): string {
@@ -32,8 +38,92 @@ export function getProPriceId(plan: "MONTHLY" | "YEARLY"): string {
   }
 }
 
+/** Get Stripe price ID for Premium or Founder's Circle (monthly only). */
+export function getFoundersTierPriceId(tier: "PREMIUM" | "FOUNDERS_CIRCLE"): string {
+  if (tier === "PREMIUM") {
+    const priceId = process.env.STRIPE_PREMIUM_MONTHLY_PRICE_ID;
+    if (!priceId) {
+      throw new Error("STRIPE_PREMIUM_MONTHLY_PRICE_ID is not configured");
+    }
+    return priceId;
+  }
+  const priceId = process.env.STRIPE_FOUNDERS_CIRCLE_MONTHLY_PRICE_ID;
+  if (!priceId) {
+    throw new Error("STRIPE_FOUNDERS_CIRCLE_MONTHLY_PRICE_ID is not configured");
+  }
+  return priceId;
+}
+
+/** Resolve Stripe price ID to Founders Edition tier. */
+export function getTierFromPriceId(priceId: string): SubscriptionTier | null {
+  const proMonthly = process.env.STRIPE_PRO_MONTHLY_PRICE_ID;
+  const proYearly = process.env.STRIPE_PRO_YEARLY_PRICE_ID;
+  const premium = process.env.STRIPE_PREMIUM_MONTHLY_PRICE_ID;
+  const founders = process.env.STRIPE_FOUNDERS_CIRCLE_MONTHLY_PRICE_ID;
+  if (priceId === proMonthly || priceId === proYearly) return "PRO";
+  if (priceId === premium) return "PREMIUM";
+  if (priceId === founders) return "FOUNDERS_CIRCLE";
+  return null;
+}
+
+/** Daily post limit by tier: Free 3, Pro 20, Premium 20, Founder's Circle unlimited (cap at 100 for sanity). */
+export function getDailyPostLimit(tier: EffectiveTier): number {
+  switch (tier) {
+    case "FREE":
+      return 3;
+    case "PRO":
+    case "PREMIUM":
+      return 20;
+    case "FOUNDERS_CIRCLE":
+      return 100; // effectively unlimited
+    default:
+      return 3;
+  }
+}
+
 /**
- * Create a Stripe Checkout session for Pro subscription
+ * Get the user's effective Founders Edition tier (FREE or subscription tier).
+ */
+export async function getSubscriptionTier(userId: string): Promise<EffectiveTier> {
+  const lifetime = await prisma.lifetimeMember.findUnique({
+    where: { userId },
+    select: { userId: true },
+  });
+  if (lifetime) {
+    const sub = await prisma.proSubscription.findUnique({
+      where: { userId },
+      select: { status: true, tier: true },
+    });
+    if (sub?.status === "ACTIVE") return sub.tier;
+    return "PRO";
+  }
+
+  const subscription = await prisma.proSubscription.findUnique({
+    where: { userId },
+    select: { status: true, tier: true },
+  });
+
+  if (!subscription || subscription.status !== "ACTIVE") {
+    return "FREE";
+  }
+
+  return subscription.tier;
+}
+
+/** True if user has Premium or Founder's Circle. */
+export async function isPremiumOrAbove(userId: string): Promise<boolean> {
+  const tier = await getSubscriptionTier(userId);
+  return tier === "PREMIUM" || tier === "FOUNDERS_CIRCLE";
+}
+
+/** True if user has Founder's Circle. */
+export async function isFoundersCircle(userId: string): Promise<boolean> {
+  const tier = await getSubscriptionTier(userId);
+  return tier === "FOUNDERS_CIRCLE";
+}
+
+/**
+ * Create a Stripe Checkout session for Pro subscription (legacy; prefer createFoundersCheckoutSession)
  */
 export async function createProCheckoutSession(
   userId: string,
@@ -41,10 +131,30 @@ export async function createProCheckoutSession(
   plan: "MONTHLY" | "YEARLY",
   returnUrl: string
 ): Promise<{ sessionId: string; url: string }> {
-  const stripe = getStripe();
-  const priceId = getProPriceId(plan);
+  return createFoundersCheckoutSession(userId, email, "PRO", returnUrl, plan);
+}
 
-  // Check if user already has a Stripe customer ID
+/**
+ * Create a Stripe Checkout session for Founders Edition (Pro, Premium, or Founder's Circle).
+ * For Pro, pass plan (MONTHLY or YEARLY). For Premium and Founder's Circle only monthly is supported.
+ */
+export async function createFoundersCheckoutSession(
+  userId: string,
+  email: string,
+  tier: "PRO" | "PREMIUM" | "FOUNDERS_CIRCLE",
+  returnUrl: string,
+  plan?: "MONTHLY" | "YEARLY"
+): Promise<{ sessionId: string; url: string }> {
+  const stripe = getStripe();
+
+  let priceId: string;
+  const effectivePlan = tier === "PRO" ? (plan ?? "MONTHLY") : "MONTHLY";
+  if (tier === "PRO") {
+    priceId = getProPriceId(effectivePlan);
+  } else {
+    priceId = getFoundersTierPriceId(tier);
+  }
+
   const existingSubscription = await prisma.proSubscription.findUnique({
     where: { userId },
     select: { stripeCustomerId: true },
@@ -53,29 +163,25 @@ export async function createProCheckoutSession(
   const sessionParams: Stripe.Checkout.SessionCreateParams = {
     mode: "subscription",
     payment_method_types: ["card"],
-    line_items: [
-      {
-        price: priceId,
-        quantity: 1,
-      },
-    ],
+    line_items: [{ price: priceId, quantity: 1 }],
     success_url: `${returnUrl}?success=true&session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${returnUrl}?cancelled=true`,
     metadata: {
       type: "pro_subscription",
       userId,
-      plan,
+      plan: effectivePlan,
+      tier,
     },
     subscription_data: {
       metadata: {
         type: "pro_subscription",
         userId,
-        plan,
+        plan: effectivePlan,
+        tier,
       },
     },
   };
 
-  // Use existing customer if available
   if (existingSubscription?.stripeCustomerId) {
     sessionParams.customer = existingSubscription.stripeCustomerId;
   } else {
@@ -83,11 +189,7 @@ export async function createProCheckoutSession(
   }
 
   const session = await stripe.checkout.sessions.create(sessionParams);
-
-  return {
-    sessionId: session.id,
-    url: session.url!,
-  };
+  return { sessionId: session.id, url: session.url! };
 }
 
 /**
@@ -155,12 +257,13 @@ export async function reactivateProSubscription(userId: string): Promise<boolean
 }
 
 /**
- * Get the current Pro subscription status for a user
+ * Get the current Pro subscription status for a user (includes Founders Edition tier)
  */
 export async function getProSubscriptionStatus(userId: string): Promise<{
   isActive: boolean;
   isPro: boolean;
   plan: "MONTHLY" | "YEARLY" | "LIFETIME" | null;
+  tier: EffectiveTier;
   status: "INACTIVE" | "ACTIVE" | "PAST_DUE" | "CANCELLED";
   currentPeriodEnd: Date | null;
   cancelAtPeriodEnd: boolean;
@@ -170,6 +273,7 @@ export async function getProSubscriptionStatus(userId: string): Promise<{
     select: {
       status: true,
       plan: true,
+      tier: true,
       currentPeriodEnd: true,
       cancelAtPeriodEnd: true,
     },
@@ -179,10 +283,12 @@ export async function getProSubscriptionStatus(userId: string): Promise<{
     return null;
   }
 
+  const isActive = subscription.status === "ACTIVE";
   return {
-    isActive: subscription.status === "ACTIVE",
-    isPro: subscription.status === "ACTIVE",
+    isActive,
+    isPro: isActive,
     plan: subscription.plan,
+    tier: isActive ? subscription.tier : "FREE",
     status: subscription.status,
     currentPeriodEnd: subscription.currentPeriodEnd,
     cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
@@ -197,7 +303,8 @@ function isValidDate(date: Date | null | undefined): date is Date {
 }
 
 /**
- * Activate a Pro subscription after successful checkout
+ * Activate a Founders Edition subscription after successful checkout.
+ * Tier is derived from stripePriceId if not provided.
  */
 export async function activateProSubscription(
   userId: string,
@@ -206,15 +313,17 @@ export async function activateProSubscription(
   stripePriceId: string,
   plan: "MONTHLY" | "YEARLY",
   currentPeriodStart: Date,
-  currentPeriodEnd: Date
+  currentPeriodEnd: Date,
+  tier?: SubscriptionTier
 ): Promise<void> {
-  // Validate dates - use defaults if invalid
   const validPeriodStart = isValidDate(currentPeriodStart) ? currentPeriodStart : new Date();
-  const validPeriodEnd = isValidDate(currentPeriodEnd) 
-    ? currentPeriodEnd 
+  const validPeriodEnd = isValidDate(currentPeriodEnd)
+    ? currentPeriodEnd
     : new Date(Date.now() + (plan === "YEARLY" ? 365 : 30) * 24 * 60 * 60 * 1000);
 
-  console.log(`[Pro Subscription] Activating for user ${userId}`);
+  const resolvedTier: SubscriptionTier = tier ?? getTierFromPriceId(stripePriceId) ?? "PRO";
+
+  console.log(`[Pro Subscription] Activating for user ${userId} tier=${resolvedTier}`);
   console.log(`[Pro Subscription] Period: ${validPeriodStart.toISOString()} - ${validPeriodEnd.toISOString()}`);
 
   await prisma.proSubscription.upsert({
@@ -226,6 +335,7 @@ export async function activateProSubscription(
       stripePriceId,
       status: "ACTIVE",
       plan,
+      tier: resolvedTier,
       currentPeriodStart: validPeriodStart,
       currentPeriodEnd: validPeriodEnd,
       cancelAtPeriodEnd: false,
@@ -236,6 +346,7 @@ export async function activateProSubscription(
       stripePriceId,
       status: "ACTIVE",
       plan,
+      tier: resolvedTier,
       currentPeriodStart: validPeriodStart,
       currentPeriodEnd: validPeriodEnd,
       cancelAtPeriodEnd: false,
@@ -259,7 +370,8 @@ export async function updateProSubscriptionStatus(
   currentPeriodStart?: Date,
   currentPeriodEnd?: Date,
   cancelAtPeriodEnd?: boolean,
-  userId?: string
+  userId?: string,
+  tier?: SubscriptionTier
 ): Promise<void> {
   const updateData: {
     status: "ACTIVE" | "PAST_DUE" | "CANCELLED" | "INACTIVE";
@@ -267,11 +379,13 @@ export async function updateProSubscriptionStatus(
     currentPeriodEnd?: Date;
     cancelAtPeriodEnd?: boolean;
     stripeSubscriptionId?: string;
+    tier?: SubscriptionTier;
   } = { status };
 
   if (currentPeriodStart) updateData.currentPeriodStart = currentPeriodStart;
   if (currentPeriodEnd) updateData.currentPeriodEnd = currentPeriodEnd;
   if (cancelAtPeriodEnd !== undefined) updateData.cancelAtPeriodEnd = cancelAtPeriodEnd;
+  if (tier !== undefined) updateData.tier = tier;
 
   try {
     await prisma.proSubscription.update({
@@ -511,12 +625,15 @@ export async function verifyAndSyncProStatus(
 
       if (stripeStatus === "active" || stripeStatus === "trialing") {
         const { periodStart, periodEnd } = getSubscriptionPeriodDates(stripeSub as unknown as Record<string, unknown>);
-        console.log(`[Pro Sync] Strategy 1: Period start=${periodStart?.toISOString() || "unknown"}, end=${periodEnd?.toISOString() || "unknown"}`);
+        const priceId = stripeSub.items.data[0]?.price?.id;
+        const tier = priceId ? (getTierFromPriceId(priceId) ?? "PRO") : undefined;
+        console.log(`[Pro Sync] Strategy 1: Period start=${periodStart?.toISOString() || "unknown"}, end=${periodEnd?.toISOString() || "unknown"}, tier=${tier}`);
 
         await prisma.proSubscription.update({
           where: { userId },
           data: {
             status: "ACTIVE",
+            ...(tier && { tier }),
             ...(periodStart && { currentPeriodStart: periodStart }),
             ...(periodEnd && { currentPeriodEnd: periodEnd }),
             cancelAtPeriodEnd: stripeSub.cancel_at_period_end,
@@ -552,8 +669,9 @@ export async function verifyAndSyncProStatus(
         const monthlyPriceId = process.env.STRIPE_PRO_MONTHLY_PRICE_ID;
         const priceId = activeSub.items.data[0]?.price?.id;
         const plan = priceId === monthlyPriceId ? "MONTHLY" : "YEARLY";
+        const tier = priceId ? (getTierFromPriceId(priceId) ?? "PRO") : undefined;
 
-        console.log(`[Pro Sync] Strategy 2: Syncing sub ${activeSub.id}, plan=${plan}, priceId=${priceId}`);
+        console.log(`[Pro Sync] Strategy 2: Syncing sub ${activeSub.id}, plan=${plan}, tier=${tier}, priceId=${priceId}`);
 
         await prisma.proSubscription.update({
           where: { userId },
@@ -562,6 +680,7 @@ export async function verifyAndSyncProStatus(
             stripeSubscriptionId: activeSub.id,
             stripePriceId: priceId,
             plan: plan as "MONTHLY" | "YEARLY",
+            ...(tier && { tier }),
             ...(periodStart && { currentPeriodStart: periodStart }),
             ...(periodEnd && { currentPeriodEnd: periodEnd }),
             cancelAtPeriodEnd: activeSub.cancel_at_period_end,
@@ -600,15 +719,19 @@ export async function verifyAndSyncProStatus(
         for (const activeSub of subs.data) {
           const monthlyPriceId = process.env.STRIPE_PRO_MONTHLY_PRICE_ID;
           const yearlyPriceId = process.env.STRIPE_PRO_YEARLY_PRICE_ID;
+          const premiumPriceId = process.env.STRIPE_PREMIUM_MONTHLY_PRICE_ID;
+          const foundersPriceId = process.env.STRIPE_FOUNDERS_CIRCLE_MONTHLY_PRICE_ID;
           const priceId = activeSub.items.data[0]?.price?.id;
           const isProPrice = priceId === monthlyPriceId || priceId === yearlyPriceId;
+          const isPremiumOrFounders = priceId === premiumPriceId || priceId === foundersPriceId;
           const isProMetadata = activeSub.metadata?.type === "pro_subscription";
 
-          console.log(`[Pro Sync] Strategy 3: Sub ${activeSub.id} priceId=${priceId}, isProPrice=${isProPrice}, isProMetadata=${isProMetadata}, monthlyPriceId=${monthlyPriceId}, yearlyPriceId=${yearlyPriceId}`);
+          console.log(`[Pro Sync] Strategy 3: Sub ${activeSub.id} priceId=${priceId}, isProPrice=${isProPrice}, isProMetadata=${isProMetadata}`);
 
-          if (isProPrice || isProMetadata) {
+          if (isProPrice || isProMetadata || isPremiumOrFounders) {
             const { periodStart, periodEnd } = getSubscriptionPeriodDates(activeSub as unknown as Record<string, unknown>);
-            const plan = priceId === monthlyPriceId ? "MONTHLY" : "YEARLY";
+            const tier = priceId ? (getTierFromPriceId(priceId) ?? "PRO") : "PRO";
+            const plan = tier === "PRO" ? (priceId === monthlyPriceId ? "MONTHLY" : "YEARLY") : "MONTHLY";
 
             await prisma.proSubscription.upsert({
               where: { userId },
@@ -619,6 +742,7 @@ export async function verifyAndSyncProStatus(
                 stripePriceId: priceId,
                 status: "ACTIVE",
                 plan: plan as "MONTHLY" | "YEARLY",
+                tier,
                 currentPeriodStart: periodStart,
                 currentPeriodEnd: periodEnd,
                 cancelAtPeriodEnd: activeSub.cancel_at_period_end,
@@ -629,6 +753,7 @@ export async function verifyAndSyncProStatus(
                 stripePriceId: priceId,
                 status: "ACTIVE",
                 plan: plan as "MONTHLY" | "YEARLY",
+                tier,
                 ...(periodStart && { currentPeriodStart: periodStart }),
                 ...(periodEnd && { currentPeriodEnd: periodEnd }),
                 cancelAtPeriodEnd: activeSub.cancel_at_period_end,

@@ -30,6 +30,8 @@ interface DailyUpdate {
   commentsCount: number;
   isLiked: boolean;
   isPinned?: boolean;
+  /** Priority feed: 0=Free, 1=Pro, 2=Premium, 3=Founder's Circle */
+  authorTierOrder?: number;
   // Poll attachment (optional)
   pollQuestion?: string | null;
   pollExpiresAt?: Date | string | null;
@@ -198,6 +200,9 @@ export function CombinedFeed({
     // NOTE: Disabled USER_JOINED events - too many sign-ups were cluttering the feed
     // ...userJoinedEvents.map((e) => ({ type: "userJoined" as const, data: e })),
   ].sort((a, b) => {
+    const tierA = a.type === "update" ? (a.data as DailyUpdate).authorTierOrder ?? 0 : 0;
+    const tierB = b.type === "update" ? (b.data as DailyUpdate).authorTierOrder ?? 0 : 0;
+    if (tierB !== tierA) return tierB - tierA;
     const dateA = new Date(a.data.createdAt).getTime();
     const dateB = new Date(b.data.createdAt).getTime();
     return dateB - dateA;
