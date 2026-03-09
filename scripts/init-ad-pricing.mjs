@@ -3,8 +3,9 @@
 /**
  * Initialize Ad Pricing Configuration
  *
- * This script sets up the initial pricing tier based on current active ads.
- * Since we currently have 10 ads running (over the 8 slot limit), we start at tier 1 ($10).
+ * Base price for ads is $5/month (tier 0). This script sets the current tier
+ * based on how many active ads exist: tier 0 when fewer than 8 slots are filled,
+ * tier 1 when 8+ are filled, etc.
  *
  * Pricing tiers:
  * - Tier 0: $5 (base)

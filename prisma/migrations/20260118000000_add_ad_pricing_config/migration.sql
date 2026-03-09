@@ -11,6 +11,6 @@ CREATE TABLE "AdPricingConfig" (
 );
 
 -- Insert the singleton row with initial tier
--- Starting at tier 1 ($10) since we currently have 10 ads running (over the 8 slot limit)
+-- Base price is $5 (tier 0). We started at tier 1 ($10) at migration time because we had 10 ads running (over the 8 slot limit).
 INSERT INTO "AdPricingConfig" ("id", "currentTier", "lastUpdated")
 VALUES ('singleton', 1, CURRENT_TIMESTAMP);

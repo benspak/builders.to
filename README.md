@@ -119,8 +119,8 @@ A members-only launchpad and community platform for indie hackers and builders. 
 
 ### 📢 Advertising
 
-- **Sidebar Ads** — Limited to 8 slots platform-wide with dynamic pricing
-- **Dynamic Pricing** — Price doubles when slots fill up (ensures quality exposure)
+- **Sidebar Ads** — Limited to 8 slots platform-wide; starting at $5/month
+- **Dynamic Pricing** — Price doubles when slots fill up (e.g. $5 → $10 → $20; ensures quality exposure)
 - **Impression & Click Tracking** — Full analytics dashboard
 - **Token Redemption** — Use tokens to unlock ad spots
 

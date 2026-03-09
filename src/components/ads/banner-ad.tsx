@@ -117,7 +117,7 @@ export function BannerAd({ isAuthenticated = false }: BannerAdProps) {
 
   // Show placeholder if no active ads
   if (!loading && !ad) {
-    const priceDisplay = pricing?.currentPriceFormatted || "$10";
+    const priceDisplay = pricing?.currentPriceFormatted || "$5";
     const isSoldOut = pricing?.isSoldOut ?? false;
 
     return (

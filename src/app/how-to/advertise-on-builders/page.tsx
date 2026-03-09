@@ -392,7 +392,7 @@ export default function AdvertiseOnBuildersPage() {
                 </ul>
                 <div className="mt-4 p-3 bg-zinc-800/50 rounded-lg">
                   <p className="text-xs text-zinc-500">
-                    Example: Starting at $10/mo → $20/mo → $40/mo as demand increases
+                    Example: Starting at $5/mo → $10/mo → $20/mo as demand increases
                   </p>
                 </div>
               </div>

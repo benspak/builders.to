@@ -19,7 +19,7 @@ export function getCurrentAdPriceCents(pricingTier: number): number {
   return BASE_AD_PRICE_CENTS * Math.pow(2, pricingTier);
 }
 
-// Format price for display (e.g., 1000 -> "$10")
+// Format price for display (e.g., 500 -> "$5", 1000 -> "$10")
 export function formatAdPrice(priceCents: number): string {
   return `$${(priceCents / 100).toFixed(0)}`;
 }

@@ -132,7 +132,7 @@ export function SidebarAd({ isAuthenticated = false }: SidebarAdProps) {
 
   // Show placeholder if no active ads
   if (!loading && !ad) {
-    const priceDisplay = pricing?.currentPriceFormatted || "$10";
+    const priceDisplay = pricing?.currentPriceFormatted || "$5";
     const isSoldOut = pricing?.isSoldOut ?? false;
     const availableSlots = pricing?.availableSlots ?? 0;
     const totalSlots = pricing?.totalSlots ?? 8;
