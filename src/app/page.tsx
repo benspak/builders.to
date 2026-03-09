@@ -57,12 +57,9 @@ async function FeedContent() {
     const session = await auth();
 
     // Fetch daily updates and feed events (milestones)
-    // Polls are now part of updates (as an attachment type)
-    // Fetch all for SEO indexability - the CombinedFeed component handles "load more" UX
     const [updates, feedEvents] = await Promise.all([
       prisma.dailyUpdate.findMany({
         orderBy: { createdAt: "desc" },
-        // Fetch more items for SEO - component will handle pagination UX
         take: 100,
         select: {
           id: true,
@@ -70,7 +67,6 @@ async function FeedContent() {
           imageUrl: true,
           gifUrl: true,
           createdAt: true,
-          // Poll fields
           pollQuestion: true,
           pollExpiresAt: true,
           pollOptions: {
@@ -79,9 +75,7 @@ async function FeedContent() {
               id: true,
               text: true,
               order: true,
-              _count: {
-                select: { votes: true },
-              },
+              _count: { select: { votes: true } },
             },
           },
           user: {
@@ -94,12 +88,6 @@ async function FeedContent() {
               image: true,
               slug: true,
               headline: true,
-              proSubscription: {
-                select: { status: true, tier: true },
-              },
-              lifetimeMember: {
-                select: { userId: true },
-              },
               companies: {
                 where: { logo: { not: null } },
                 take: 1,
@@ -113,22 +101,12 @@ async function FeedContent() {
               },
             },
           },
-          likes: {
-            select: {
-              userId: true,
-            },
-          },
-          _count: {
-            select: {
-              likes: true,
-              comments: true,
-            },
-          },
+          likes: { select: { userId: true } },
+          _count: { select: { likes: true, comments: true } },
         },
       }),
       prisma.feedEvent.findMany({
         orderBy: { createdAt: "desc" },
-        // Fetch more items for SEO
         take: 50,
         include: {
           milestone: {
@@ -149,7 +127,6 @@ async function FeedContent() {
                       lastName: true,
                       image: true,
                       slug: true,
-                      // Include first company with logo for display next to username
                       companies: {
                         where: { logo: { not: null } },
                         take: 1,
@@ -167,17 +144,8 @@ async function FeedContent() {
               },
             },
           },
-          likes: {
-            select: {
-              userId: true,
-            },
-          },
-          _count: {
-            select: {
-              likes: true,
-              comments: true,
-            },
-          },
+          likes: { select: { userId: true } },
+          _count: { select: { likes: true, comments: true } },
         },
       }).then(async (events) => {
         // For status update events, fetch the user info
@@ -361,37 +329,17 @@ async function FeedContent() {
       : [];
     const pollVoteMap = new Map(pollVotes.map(v => [v.updateId, v.optionId]));
 
-    const tierOrder = (
-      tier: string | undefined,
-      status: string | undefined,
-      isLifetime: boolean
-    ) => {
-      if (status === "ACTIVE" && tier === "FOUNDERS_CIRCLE") return 3;
-      if (status === "ACTIVE" && tier === "PREMIUM") return 2;
-      if (status === "ACTIVE" && tier === "PRO") return 1;
-      if (isLifetime) return 1;
-      return 0;
-    };
-
-    const updatesWithLikes = updates.map(update => {
-      const { proSubscription, lifetimeMember, ...userWithoutSub } = update.user;
-      return {
-        ...update,
-        user: userWithoutSub,
-        authorTierOrder: tierOrder(
-          proSubscription?.tier,
-          proSubscription?.status,
-          !!lifetimeMember?.userId
-        ),
-        likesCount: update._count.likes,
-        commentsCount: update._count.comments,
-        isLiked: session?.user?.id
-          ? update.likes.some(like => like.userId === session.user.id)
-          : false,
-        isPinned: currentUserPinnedIds.has(update.id),
-        votedOptionId: pollVoteMap.get(update.id) || null,
-      };
-    });
+    const updatesWithLikes = updates.map(update => ({
+      ...update,
+      authorTierOrder: 0,
+      likesCount: update._count.likes,
+      commentsCount: update._count.comments,
+      isLiked: session?.user?.id
+        ? update.likes.some(like => like.userId === session.user.id)
+        : false,
+      isPinned: currentUserPinnedIds.has(update.id),
+      votedOptionId: pollVoteMap.get(update.id) || null,
+    }));
 
     // Transform feed events
     const feedEventsWithLikes = feedEvents.map(event => ({
