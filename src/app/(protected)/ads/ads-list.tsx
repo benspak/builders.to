@@ -24,9 +24,10 @@ interface Advertisement {
 
 interface AdsListProps {
   initialAds: Advertisement[];
+  currentPriceFormatted?: string;
 }
 
-export function AdsList({ initialAds }: AdsListProps) {
+export function AdsList({ initialAds, currentPriceFormatted }: AdsListProps) {
   const router = useRouter();
   const [ads, setAds] = useState(initialAds);
 
@@ -44,6 +45,7 @@ export function AdsList({ initialAds }: AdsListProps) {
           key={ad.id}
           ad={ad}
           onDelete={handleDelete}
+          currentPriceFormatted={currentPriceFormatted}
         />
       ))}
     </div>

@@ -78,7 +78,7 @@ async function AdsListServer() {
     );
   }
 
-  // Pass serialized ads to the client component
+  // Pass serialized ads and current price to the client component
   const serializedAds = ads.map((ad) => ({
     ...ad,
     startDate: ad.startDate?.toISOString() || null,
@@ -86,7 +86,7 @@ async function AdsListServer() {
     createdAt: ad.createdAt.toISOString(),
   }));
 
-  return <AdsList initialAds={serializedAds} />;
+  return <AdsList initialAds={serializedAds} currentPriceFormatted={currentPriceFormatted} />;
 }
 
 export default function AdsPage() {

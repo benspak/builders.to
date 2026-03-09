@@ -39,6 +39,7 @@ interface Advertisement {
 interface AdCardProps {
   ad: Advertisement;
   onDelete?: (id: string) => void;
+  currentPriceFormatted?: string;
 }
 
 const getStatusConfig = (status: AdStatus, isAdRemoved: boolean): { label: string; color: string; icon: React.ElementType } => {
@@ -72,7 +73,7 @@ const getStatusConfig = (status: AdStatus, isAdRemoved: boolean): { label: strin
   return baseConfig[status];
 };
 
-export function AdCard({ ad, onDelete }: AdCardProps) {
+export function AdCard({ ad, onDelete, currentPriceFormatted }: AdCardProps) {
   const [showMenu, setShowMenu] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
@@ -278,7 +279,7 @@ export function AdCard({ ad, onDelete }: AdCardProps) {
               ) : (
                 <>
                   <CreditCard className="h-4 w-4" />
-                  Pay $5 to Activate
+                  Pay {currentPriceFormatted ?? "$5"} to Activate
                 </>
               )}
             </button>
