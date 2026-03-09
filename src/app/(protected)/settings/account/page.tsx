@@ -6,8 +6,7 @@ import { NotificationSettings } from "@/components/pwa";
 import { TwoFactorSettings } from "@/components/auth/two-factor";
 import { DeleteAccount } from "@/components/settings/delete-account";
 import { ProSubscription } from "@/components/settings/pro-subscription";
-import { EarningsDashboard } from "@/components/settings/earnings-dashboard";
-import { Settings, ArrowLeft, Bell, Crown, DollarSign, Key, Code } from "lucide-react";
+import { Settings, ArrowLeft, Bell, Crown, Key, Code } from "lucide-react";
 import { ApiKeySettings } from "@/components/settings/api-key-settings";
 import { ApiDocsUpdates } from "@/components/settings/api-docs-updates";
 
@@ -73,15 +72,6 @@ export default async function AccountSettingsPage() {
             <h2 className="text-lg font-semibold text-white">Pro Membership</h2>
           </div>
           <ProSubscription />
-        </div>
-
-        {/* Creator Rewards Section */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-4">
-            <DollarSign className="h-5 w-5 text-emerald-400" />
-            <h2 className="text-lg font-semibold text-white">Creator Rewards</h2>
-          </div>
-          <EarningsDashboard />
         </div>
 
         {/* Push Notifications Section */}

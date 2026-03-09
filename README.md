@@ -386,7 +386,6 @@ The database includes 50+ models covering:
 - **Analytics**: SiteView, ProjectView, ProjectClick, UpdateView, LocalListingView
 - **Social**: Follow, Report
 - **Subscriptions**: Pro subscriptions, Stripe integration
-- **Rewards**: Post rewards, earnings, payouts
 - **Platforms**: Connected platforms (Twitter, LinkedIn), OAuth tokens
 - **AI**: User interests, tone preferences, posting style
 

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { NotificationType } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { rateLimit, RATE_LIMITS, rateLimitResponse } from "@/lib/rate-limit";
@@ -158,16 +159,21 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      validatedPollOptions = pollOptions.map((opt: string, index: number) => {
-        const text = typeof opt === "string" ? opt.trim() : "";
-        if (!text || text.length === 0) {
-          throw new Error(`Option ${index + 1} is empty`);
-        }
-        if (text.length > 50) {
-          throw new Error(`Option ${index + 1} must be 50 characters or less`);
-        }
-        return { text, order: index };
-      });
+      try {
+        validatedPollOptions = pollOptions.map((opt: string, index: number) => {
+          const text = typeof opt === "string" ? opt.trim() : "";
+          if (!text || text.length === 0) {
+            throw new Error(`Option ${index + 1} is empty`);
+          }
+          if (text.length > 50) {
+            throw new Error(`Option ${index + 1} must be 50 characters or less`);
+          }
+          return { text, order: index };
+        });
+      } catch (pollErr) {
+        const message = pollErr instanceof Error ? pollErr.message : "Invalid poll options";
+        return NextResponse.json({ error: message }, { status: 400 });
+      }
     }
 
     const { updateId, url: _updateUrl } = await createDailyUpdateForUser(
@@ -215,8 +221,9 @@ export async function POST(request: NextRequest) {
     });
 
     if (!update) {
+      console.error("[updates] createDailyUpdateForUser returned updateId but findUnique found no update:", updateId);
       return NextResponse.json(
-        { error: "Failed to create update" },
+        { error: "Update was created but could not be retrieved. Please refresh the feed." },
         { status: 500 }
       );
     }
@@ -246,12 +253,10 @@ export async function POST(request: NextRequest) {
       });
 
       // Create notifications for each mentioned user
-      // Note: USER_MENTIONED type added in schema - run `npx prisma generate` after migration
       if (mentionedUsers.length > 0) {
         await prisma.notification.createMany({
           data: mentionedUsers.map((user) => ({
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            type: "USER_MENTIONED" as any,
+            type: NotificationType.USER_MENTIONED,
             title: `${actorName} mentioned you`,
             message: content.length > 100 ? content.slice(0, 100) + "..." : content,
             userId: user.id,
@@ -287,8 +292,24 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     console.error("Error creating update:", error);
+    // Extract message from Error, Prisma errors, or unknown throws
+    let message = "Failed to create update";
+    if (error instanceof Error) {
+      message = error.message;
+      // Prisma errors sometimes have extra context
+      const prismaErr = error as Error & { code?: string; meta?: unknown };
+      if (prismaErr.code) {
+        console.error("[Prisma]", prismaErr.code, prismaErr.meta);
+      }
+    } else if (typeof error === "object" && error !== null && "message" in error && typeof (error as { message: unknown }).message === "string") {
+      message = (error as { message: string }).message;
+    } else if (typeof error === "string") {
+      message = error;
+    } else {
+      console.error("Non-Error thrown:", String(error));
+    }
     return NextResponse.json(
-      { error: "Failed to create update" },
+      { error: message },
       { status: 500 }
     );
   }

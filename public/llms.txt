@@ -130,7 +130,6 @@ Builders.to is a social launch pad for solo founders. Indie hackers, solopreneur
 - `/how-to/idea-to-first-customer` - Roadmap from idea to paying customer
 - `/how-to/find-technical-cofounder` - Finding the right technical co-founder
 - `/how-to/advertise-on-builders` - How to run ads on Builders.to
-- `/how-to/earn-from-posting` - How Pro members earn from quality content
 - `/growth-hacks` - Growth tactics for indie hackers
 - `/growth-hacks/builder-badge-method` - Build authority with the Builder-Badge Method
 - `/growth-hacks/build-in-public` - Complete guide to building in public

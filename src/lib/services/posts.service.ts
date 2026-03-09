@@ -3,7 +3,6 @@ import prisma from '@/lib/prisma';
 import { getUserConnections } from './platforms.service';
 import { postTweet } from './twitter.service';
 import { postToLinkedIn } from './linkedin.service';
-import { createPostReward } from './rewards.service';
 
 export interface CreatePostInput {
   content: string;
@@ -439,12 +438,6 @@ async function publishToPlatform(
             },
           });
         }
-
-        // Try to create a post reward for eligible pro users
-        // This runs async and doesn't block the post creation
-        createPostReward(userId, update.id, post.content).catch((error) => {
-          console.error('[Rewards] Error creating post reward:', error);
-        });
 
         return {
           id: update.id,

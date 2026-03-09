@@ -114,12 +114,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.5,
     },
     {
-      url: `${BASE_URL}/how-to/earn-from-posting`,
-      lastModified: new Date("2026-02-08"),
-      changeFrequency: "monthly",
-      priority: 0.5,
-    },
-    {
       url: `${BASE_URL}/growth-hacks`,
       lastModified: new Date("2026-02-08"),
       changeFrequency: "weekly",

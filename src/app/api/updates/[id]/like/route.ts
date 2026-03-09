@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { notifyLike } from "@/lib/push-notifications";
-import { updateEngagementBonus } from "@/lib/services/rewards.service";
 import { awardKarmaForUpdateLike } from "@/lib/services/karma.service";
 
 // POST /api/updates/[id]/like - Toggle like on an update
@@ -63,11 +62,6 @@ export async function POST(
       // Get updated count
       const likesCount = await prisma.updateLike.count({
         where: { updateId },
-      });
-
-      // Update engagement bonus (runs async, doesn't block response)
-      updateEngagementBonus(updateId).catch((error) => {
-        console.error("[Rewards] Error updating engagement bonus:", error);
       });
 
       return NextResponse.json({
@@ -137,11 +131,6 @@ export async function POST(
         // Award karma to update owner for receiving a like
         awardKarmaForUpdateLike(update.userId, updateId, session.user.id).catch(console.error);
       }
-
-      // Update engagement bonus (runs async, doesn't block response)
-      updateEngagementBonus(updateId).catch((error) => {
-        console.error("[Rewards] Error updating engagement bonus:", error);
-      });
 
       return NextResponse.json({
         liked: true,

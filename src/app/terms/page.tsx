@@ -49,7 +49,7 @@ export default function TermsOfServicePage() {
                 <li>Posting and browsing local classifieds</li>
                 <li>Earning and using virtual tokens</li>
                 <li>Purchasing and displaying advertisements</li>
-                <li>Subscribing to Pro plans for enhanced features and rewards</li>
+                <li>Subscribing to Pro plans for enhanced features</li>
                 <li>Using AI-powered content generation and analysis tools</li>
                 <li>Cross-posting content to connected social media platforms (Twitter/X, LinkedIn)</li>
                 <li>Hosting and attending events and meetups</li>
@@ -401,7 +401,6 @@ export default function TermsOfServicePage() {
               <p className="mb-4">Pro subscription plans provide enhanced features:</p>
               <ul className="list-disc pl-6 space-y-2">
                 <li><strong className="text-white">Plan Options:</strong> Monthly ($3.99/month) or Yearly ($39.99/year) billing (currently at intro pricing)</li>
-                <li><strong className="text-white">Pro Rewards:</strong> Pro users may earn money for quality content. Rewards are discretionary and subject to our policies.</li>
                 <li><strong className="text-white">Unlimited Chat History:</strong> Pro users receive unlimited message history across all channels and DMs (free accounts: 90 days).</li>
                 <li><strong className="text-white">DALL-E Access:</strong> Pro users can generate AI images. Usage is subject to OpenAI&apos;s policies.</li>
                 <li><strong className="text-white">Billing:</strong> Subscriptions are billed through Stripe and auto-renew unless cancelled.</li>
@@ -444,7 +443,6 @@ export default function TermsOfServicePage() {
                 <li>Service order disputes should be resolved between buyer and seller</li>
                 <li>We may issue refunds at our discretion for technical errors or extenuating circumstances</li>
                 <li>Chargebacks may result in account suspension pending investigation</li>
-                <li>Pro rewards payouts are processed through Stripe and subject to minimum payout thresholds</li>
               </ul>
             </section>
 
@@ -534,7 +532,6 @@ export default function TermsOfServicePage() {
                 <li>Your right to use the Service will immediately cease</li>
                 <li>Any unused tokens or coins will be forfeited</li>
                 <li>Pro subscription will be cancelled without refund for the current period</li>
-                <li>Pending Pro rewards may be forfeited</li>
                 <li>Active service orders may be cancelled</li>
                 <li>Active listings and advertisements may be removed</li>
                 <li>Connected platform authorizations will be revoked</li>

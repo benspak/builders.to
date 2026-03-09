@@ -90,7 +90,7 @@ export default function PrivacyPolicyPage() {
                 <li>Display your projects, profile, and content to the community</li>
                 <li>Enable interactions between community members (comments, upvotes, follows, chat channels, direct messages)</li>
                 <li>Process token rewards for engagement, referrals, and profile completion</li>
-                <li>Process Pro subscription payments and rewards payouts through Stripe</li>
+                <li>Process Pro subscription payments through Stripe</li>
                 <li>Process payments through Stripe for services, listings, and advertisements</li>
                 <li>Generate AI-powered content suggestions based on your preferences and interests</li>
                 <li>Cross-post your content to connected social media platforms (Twitter/X, LinkedIn)</li>
@@ -123,12 +123,10 @@ export default function PrivacyPolicyPage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-white mb-4">5. Pro Subscriptions and Rewards</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">5. Pro Subscriptions</h2>
               <p className="mb-4">Builders.to offers Pro subscription plans with enhanced features:</p>
               <ul className="list-disc pl-6 space-y-2">
                 <li><strong className="text-white">Subscription Data:</strong> We store your Stripe customer ID, subscription ID, plan type (monthly/yearly), and billing dates.</li>
-                <li><strong className="text-white">Pro Rewards:</strong> Pro users may earn real money for quality content. We track post rewards earned, pending earnings, and lifetime earnings.</li>
-                <li><strong className="text-white">Payout Information:</strong> Reward payouts are processed through Stripe. We maintain records of payout amounts and dates.</li>
               </ul>
               <p className="mt-4">
                 Subscription payments are handled by Stripe. We do not store your credit card information directly.
@@ -351,7 +349,7 @@ export default function PrivacyPolicyPage() {
                 We retain your information for as long as your account is active or as needed to provide
                 services. We may retain certain information for legitimate business purposes, legal compliance,
                 dispute resolution, or to enforce our agreements. Token transaction history is retained
-                for audit purposes. Pro subscription and rewards data is retained for financial records.
+                for audit purposes. Pro subscription data is retained for financial records.
                 Platform connection tokens are deleted when you disconnect a platform. Chat message
                 accessibility depends on your subscription tier (90 days for free accounts, unlimited for
                 Pro). Chat moderation audit logs are retained for platform integrity. Anonymized analytics
