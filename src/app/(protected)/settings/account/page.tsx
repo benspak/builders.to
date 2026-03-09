@@ -43,7 +43,7 @@ export default async function AccountSettingsPage() {
         <div className="absolute top-1/2 -left-40 h-96 w-96 rounded-full bg-cyan-500/10 blur-3xl" />
       </div>
 
-      <div className="relative mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="relative mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Back link */}
         <Link
           href="/settings"

@@ -410,7 +410,7 @@ export function ProSubscription() {
                   <p className="text-sm font-semibold text-zinc-400 uppercase tracking-wider">
                     Choose your plan
                   </p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
                     {MANAGEMENT_TIERS.map((tier) => {
                       const Icon = tier.icon;
                       const isCurrent =
@@ -423,14 +423,14 @@ export function ProSubscription() {
                         <div
                           key={tier.id}
                           className={cn(
-                            "rounded-2xl border overflow-hidden flex flex-col",
+                            "rounded-2xl border overflow-hidden flex flex-col min-h-0",
                             isCurrent
                               ? "border-amber-500/50 bg-gradient-to-b from-amber-500/10 to-transparent"
                               : "border-white/10 bg-zinc-900/50"
                           )}
                         >
-                          <div className="p-6">
-                            <div className="flex items-center gap-3 mb-4">
+                          <div className="p-6 flex flex-col flex-1 min-h-0">
+                            <div className="flex items-center gap-3 mb-4 flex-shrink-0">
                               <div
                                 className={cn(
                                   "flex h-10 w-10 items-center justify-center rounded-xl",
@@ -448,28 +448,28 @@ export function ProSubscription() {
                                 {tier.name}
                               </h2>
                             </div>
-                            <p className="text-zinc-400 text-sm mb-4">
+                            <p className="text-zinc-400 text-sm mb-4 flex-shrink-0">
                               {tier.description}
                             </p>
-                            <div className="flex items-baseline gap-1 mb-6">
+                            <div className="flex items-baseline gap-1 mb-4 flex-shrink-0">
                               <span className="text-3xl font-bold text-white">
                                 {tier.price}
                               </span>
                               <span className="text-zinc-500">{tier.period}</span>
                             </div>
-                            <ul className="space-y-3">
+                            <ul className="space-y-3 flex-1 min-h-0 overflow-y-auto">
                               {tier.features.map((feature) => (
                                 <li
                                   key={feature}
                                   className="flex items-start gap-2 text-sm text-zinc-300"
                                 >
                                   <Check className="h-4 w-4 text-emerald-500 flex-shrink-0 mt-0.5" />
-                                  <span>{feature}</span>
+                                  <span className="break-words">{feature}</span>
                                 </li>
                               ))}
                             </ul>
                           </div>
-                          <div className="mt-auto p-6 pt-0">
+                          <div className="flex-shrink-0 p-6 pt-0">
                             {isCurrent ? (
                               <div className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-medium bg-zinc-800 text-zinc-400 border border-white/10">
                                 <BadgeCheck className="h-4 w-4" />
