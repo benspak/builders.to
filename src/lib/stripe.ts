@@ -13,6 +13,12 @@ export const BASE_AD_PRICE_CENTS = 500; // $5 starting price
 // Ad duration
 export const SIDEBAR_AD_DURATION_DAYS = 30;
 
+// Effective tier from current active ad count: 0–7 ads = tier 0 ($5), 8–15 = tier 1 ($10), etc.
+// Use this for display and charge amount so price is $5 when there's capacity.
+export function getEffectiveAdTier(activeAdsCount: number): number {
+  return Math.floor(activeAdsCount / PLATFORM_AD_SLOTS);
+}
+
 // Calculate current ad price based on pricing tier
 // Tier 0 = $5, Tier 1 = $10, Tier 2 = $20, Tier 3 = $40, etc.
 export function getCurrentAdPriceCents(pricingTier: number): number {

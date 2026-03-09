@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getStripe, SIDEBAR_AD_DURATION_DAYS, PLATFORM_AD_SLOTS, getCurrentAdPriceCents, formatAdPrice } from "@/lib/stripe";
+import { getStripe, SIDEBAR_AD_DURATION_DAYS, PLATFORM_AD_SLOTS, getEffectiveAdTier, getCurrentAdPriceCents, formatAdPrice } from "@/lib/stripe";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -75,18 +75,8 @@ export async function POST(request: Request, { params }: RouteParams) {
       );
     }
 
-    // Get current pricing tier
-    let pricingConfig = await prisma.adPricingConfig.findUnique({
-      where: { id: "singleton" },
-    });
-
-    if (!pricingConfig) {
-      pricingConfig = await prisma.adPricingConfig.create({
-        data: { id: "singleton", currentTier: 0 },
-      });
-    }
-
-    const currentPriceCents = getCurrentAdPriceCents(pricingConfig.currentTier);
+    const effectiveTier = getEffectiveAdTier(activeAdsCount);
+    const currentPriceCents = getCurrentAdPriceCents(effectiveTier);
 
     // If there's an existing pending payment session, we'll create a new one
     if (ad.status === "PENDING_PAYMENT" && ad.stripeSessionId) {
@@ -126,7 +116,7 @@ export async function POST(request: Request, { params }: RouteParams) {
         adId: ad.id,
         userId: session.user.id,
         type: "sidebar_ad",
-        pricingTier: pricingConfig.currentTier.toString(),
+        pricingTier: effectiveTier.toString(),
         priceCents: currentPriceCents.toString(),
       },
       customer_email: session.user.email || undefined,

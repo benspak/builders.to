@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Megaphone, Plus, Loader2 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
-import { PLATFORM_AD_SLOTS, getCurrentAdPriceCents, formatAdPrice } from "@/lib/stripe";
+import { PLATFORM_AD_SLOTS, getEffectiveAdTier, getCurrentAdPriceCents, formatAdPrice } from "@/lib/stripe";
 import { AdsList } from "./ads-list";
 
 export const metadata = {
@@ -40,17 +40,8 @@ async function AdsListServer() {
     },
   });
 
-  let pricingConfig = await prisma.adPricingConfig.findUnique({
-    where: { id: "singleton" },
-  });
-
-  if (!pricingConfig) {
-    pricingConfig = await prisma.adPricingConfig.create({
-      data: { id: "singleton", currentTier: 0 },
-    });
-  }
-
-  const currentPriceFormatted = formatAdPrice(getCurrentAdPriceCents(pricingConfig.currentTier));
+  const effectiveTier = getEffectiveAdTier(platformActiveCount);
+  const currentPriceFormatted = formatAdPrice(getCurrentAdPriceCents(effectiveTier));
   const availableSlots = Math.max(0, PLATFORM_AD_SLOTS - platformActiveCount);
 
   if (ads.length === 0) {

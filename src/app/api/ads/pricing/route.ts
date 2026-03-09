@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { PLATFORM_AD_SLOTS, getCurrentAdPriceCents, formatAdPrice } from "@/lib/stripe";
+import { PLATFORM_AD_SLOTS, getEffectiveAdTier, getCurrentAdPriceCents, formatAdPrice } from "@/lib/stripe";
 import { getAdSlotCostTokens } from "@/lib/services/tokens.service";
 
 // GET /api/ads/pricing - Get current ad pricing and slot availability
@@ -17,24 +17,10 @@ export async function GET() {
       },
     });
 
-    // Get or create pricing config (singleton)
-    let pricingConfig = await prisma.adPricingConfig.findUnique({
-      where: { id: "singleton" },
-    });
-
-    // If no config exists, create it with default tier
-    if (!pricingConfig) {
-      pricingConfig = await prisma.adPricingConfig.create({
-        data: {
-          id: "singleton",
-          currentTier: 0,
-        },
-      });
-    }
-
-    const currentPriceCents = getCurrentAdPriceCents(pricingConfig.currentTier);
-    const nextTierPriceCents = getCurrentAdPriceCents(pricingConfig.currentTier + 1);
-    const costInTokens = getAdSlotCostTokens(pricingConfig.currentTier);
+    const effectiveTier = getEffectiveAdTier(activeAdsCount);
+    const currentPriceCents = getCurrentAdPriceCents(effectiveTier);
+    const nextTierPriceCents = getCurrentAdPriceCents(effectiveTier + 1);
+    const costInTokens = getAdSlotCostTokens(effectiveTier);
     const availableSlots = Math.max(0, PLATFORM_AD_SLOTS - activeAdsCount);
     const isSoldOut = availableSlots === 0;
 
@@ -47,7 +33,7 @@ export async function GET() {
       availableSlots,
       totalSlots: PLATFORM_AD_SLOTS,
       activeAdsCount,
-      pricingTier: pricingConfig.currentTier,
+      pricingTier: effectiveTier,
       isSoldOut,
       // Scarcity messaging
       scarcityMessage: isSoldOut

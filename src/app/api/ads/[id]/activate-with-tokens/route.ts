@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import {
   PLATFORM_AD_SLOTS,
   SIDEBAR_AD_DURATION_DAYS,
+  getEffectiveAdTier,
 } from "@/lib/stripe";
 import { debit as debitTokens, getAdSlotCostTokens } from "@/lib/services/tokens.service";
 
@@ -74,16 +75,8 @@ export async function POST(_request: Request, { params }: RouteParams) {
       );
     }
 
-    let pricingConfig = await prisma.adPricingConfig.findUnique({
-      where: { id: "singleton" },
-    });
-    if (!pricingConfig) {
-      pricingConfig = await prisma.adPricingConfig.create({
-        data: { id: "singleton", currentTier: 0 },
-      });
-    }
-
-    const costTokens = getAdSlotCostTokens(pricingConfig.currentTier);
+    const effectiveTier = getEffectiveAdTier(activeAdsCount);
+    const costTokens = getAdSlotCostTokens(effectiveTier);
 
     try {
       await debitTokens({

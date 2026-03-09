@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { PLATFORM_AD_SLOTS, getCurrentAdPriceCents, formatAdPrice } from "@/lib/stripe";
+import { PLATFORM_AD_SLOTS, getEffectiveAdTier, getCurrentAdPriceCents, formatAdPrice } from "@/lib/stripe";
 
 // GET /api/ads/count - Get current user's active ad count and platform availability
 export async function GET() {
@@ -33,18 +33,8 @@ export async function GET() {
       },
     });
 
-    // Get pricing config
-    let pricingConfig = await prisma.adPricingConfig.findUnique({
-      where: { id: "singleton" },
-    });
-
-    if (!pricingConfig) {
-      pricingConfig = await prisma.adPricingConfig.create({
-        data: { id: "singleton", currentTier: 0 },
-      });
-    }
-
-    const currentPriceCents = getCurrentAdPriceCents(pricingConfig.currentTier);
+    const effectiveTier = getEffectiveAdTier(platformActiveCount);
+    const currentPriceCents = getCurrentAdPriceCents(effectiveTier);
     const availableSlots = Math.max(0, PLATFORM_AD_SLOTS - platformActiveCount);
 
     return NextResponse.json({
@@ -55,7 +45,7 @@ export async function GET() {
       isSoldOut: availableSlots === 0,
       currentPriceCents,
       currentPriceFormatted: formatAdPrice(currentPriceCents),
-      pricingTier: pricingConfig.currentTier,
+      pricingTier: effectiveTier,
     });
   } catch (error) {
     console.error("Error fetching ad count:", error);

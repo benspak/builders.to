@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
-import { PLATFORM_AD_SLOTS, getCurrentAdPriceCents, formatAdPrice } from "@/lib/stripe";
+import { PLATFORM_AD_SLOTS, getEffectiveAdTier, getCurrentAdPriceCents, formatAdPrice } from "@/lib/stripe";
 import { AdAnalytics, CheckoutButton } from "@/components/ads";
 import { DeleteAdButton } from "./delete-button";
 import { cn } from "@/lib/utils";
@@ -102,18 +102,8 @@ export default async function AdDetailPage({ params }: PageProps) {
     },
   });
 
-  // Get pricing config
-  let pricingConfig = await prisma.adPricingConfig.findUnique({
-    where: { id: "singleton" },
-  });
-
-  if (!pricingConfig) {
-    pricingConfig = await prisma.adPricingConfig.create({
-      data: { id: "singleton", currentTier: 0 },
-    });
-  }
-
-  const currentPriceCents = getCurrentAdPriceCents(pricingConfig.currentTier);
+  const effectiveTier = getEffectiveAdTier(activeAdsCount);
+  const currentPriceCents = getCurrentAdPriceCents(effectiveTier);
   const currentPriceFormatted = formatAdPrice(currentPriceCents);
   const availableSlots = Math.max(0, PLATFORM_AD_SLOTS - activeAdsCount);
   const isSoldOut = availableSlots === 0;
@@ -246,7 +236,7 @@ export default async function AdDetailPage({ params }: PageProps) {
                 <strong className="text-zinc-300">{availableSlots} of {PLATFORM_AD_SLOTS} slots available</strong>
                 {availableSlots <= 2 && availableSlots > 0 && (
                   <span className="text-amber-400 ml-2">
-                    - Price increases to {formatAdPrice(getCurrentAdPriceCents(pricingConfig.currentTier + 1))}/mo when full!
+                    - Price increases to {formatAdPrice(getCurrentAdPriceCents(effectiveTier + 1))}/mo when full!
                   </span>
                 )}
                 {isSoldOut && (

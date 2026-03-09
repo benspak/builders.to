@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { AdForm } from "@/components/ads";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { PLATFORM_AD_SLOTS, getCurrentAdPriceCents, formatAdPrice } from "@/lib/stripe";
+import { PLATFORM_AD_SLOTS, getEffectiveAdTier, getCurrentAdPriceCents, formatAdPrice } from "@/lib/stripe";
 
 export const metadata = {
   title: "Create Ad - Builders.to",
@@ -30,18 +30,8 @@ export default async function NewAdPage() {
     },
   });
 
-  // Get or create pricing config
-  let pricingConfig = await prisma.adPricingConfig.findUnique({
-    where: { id: "singleton" },
-  });
-
-  if (!pricingConfig) {
-    pricingConfig = await prisma.adPricingConfig.create({
-      data: { id: "singleton", currentTier: 0 },
-    });
-  }
-
-  const currentPriceCents = getCurrentAdPriceCents(pricingConfig.currentTier);
+  const effectiveTier = getEffectiveAdTier(activeAdsCount);
+  const currentPriceCents = getCurrentAdPriceCents(effectiveTier);
   const currentPriceFormatted = formatAdPrice(currentPriceCents);
   const availableSlots = Math.max(0, PLATFORM_AD_SLOTS - activeAdsCount);
   const isSoldOut = availableSlots === 0;
@@ -86,7 +76,7 @@ export default async function NewAdPage() {
                 <h3 className="text-sm font-medium text-red-400">All Ad Slots Filled</h3>
                 <p className="text-xs text-zinc-400 mt-1">
                   All {PLATFORM_AD_SLOTS} ad slots are currently in use. Create your ad now and it will
-                  be ready to activate as soon as a slot becomes available. Price will be {formatAdPrice(getCurrentAdPriceCents(pricingConfig.currentTier + 1))}/mo when slots reopen.
+                  be ready to activate as soon as a slot becomes available. Price will be {formatAdPrice(getCurrentAdPriceCents(effectiveTier + 1))}/mo when slots reopen.
                 </p>
               </div>
             </div>
@@ -102,7 +92,7 @@ export default async function NewAdPage() {
                 <h3 className="text-sm font-medium text-amber-400">Limited Availability</h3>
                 <p className="text-xs text-zinc-400 mt-1">
                   Only {availableSlots} of {PLATFORM_AD_SLOTS} ad slots remaining at {currentPriceFormatted}/mo.
-                  Price doubles to {formatAdPrice(getCurrentAdPriceCents(pricingConfig.currentTier + 1))}/mo when slots fill up.
+                  Price doubles to {formatAdPrice(getCurrentAdPriceCents(effectiveTier + 1))}/mo when slots fill up.
                 </p>
               </div>
             </div>
@@ -126,8 +116,8 @@ export default async function NewAdPage() {
             <div className="text-right">
               <span className="text-2xl font-bold text-white">{currentPriceFormatted}</span>
               <span className="text-sm text-zinc-500">/month</span>
-              {pricingConfig.currentTier > 0 && (
-                <p className="text-xs text-zinc-500 mt-1">Tier {pricingConfig.currentTier} pricing</p>
+              {effectiveTier > 0 && (
+                <p className="text-xs text-zinc-500 mt-1">Tier {effectiveTier} pricing</p>
               )}
             </div>
           </div>
