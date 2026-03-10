@@ -95,14 +95,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Require complete profile (username and image) before posting
-    const user = await prisma.user.findUnique({
+    const profileUser = await prisma.user.findUnique({
       where: { id: userId },
       select: { username: true, image: true },
     });
-    if (!user?.username || !user?.image) {
+    if (!profileUser?.username || !profileUser?.image) {
       const missingFields = [];
-      if (!user?.username) missingFields.push("username");
-      if (!user?.image) missingFields.push("profile image");
+      if (!profileUser?.username) missingFields.push("username");
+      if (!profileUser?.image) missingFields.push("profile image");
       return NextResponse.json(
         {
           error: `Please complete your profile before posting. Missing: ${missingFields.join(" and ")}.`,
