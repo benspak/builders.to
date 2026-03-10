@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ProfileForm } from "@/components/profile/profile-form";
 import { ProfileCompleteness } from "@/components/profile/profile-completeness";
+import { OnboardingChecklist } from "@/components/onboarding/onboarding-checklist";
 import { calculateProfileCompleteness } from "@/lib/profile-completeness";
 import { Settings, User, ArrowLeft, ChevronRight, Coins } from "lucide-react";
 
@@ -43,6 +44,7 @@ export default async function SettingsPage() {
       profileBackgroundImage: true,
       calendarUrl: true,
       image: true,
+      emailVerified: true,
       // Status
       status: true,
       // Tech stack & matching
@@ -68,6 +70,16 @@ export default async function SettingsPage() {
   if (!user) {
     redirect("/signin");
   }
+
+  const [updateCount, projectCount] = await Promise.all([
+    prisma.dailyUpdate.count({ where: { userId: user.id } }),
+    prisma.project.count({ where: { userId: user.id } }),
+  ]);
+
+  const profileComplete = Boolean(user.username?.trim() && user.image?.trim());
+  const emailVerified = !!user.emailVerified;
+  const hasPost = updateCount > 0;
+  const hasProject = projectCount > 0;
 
   // Calculate profile completeness
   const completeness = calculateProfileCompleteness({
@@ -105,6 +117,14 @@ export default async function SettingsPage() {
           <ArrowLeft className="h-4 w-4" />
           {user.slug ? "View Profile" : "Back to Projects"}
         </Link>
+
+        {/* Onboarding checklist */}
+        <OnboardingChecklist
+          profileComplete={profileComplete}
+          emailVerified={emailVerified}
+          hasPost={hasPost}
+          hasProject={hasProject}
+        />
 
         {/* Header */}
         <div className="flex items-center justify-between gap-4 mb-8">
