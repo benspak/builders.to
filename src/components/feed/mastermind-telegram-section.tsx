@@ -98,7 +98,7 @@ export function MastermindTelegramSection() {
           Join the private Builders.to Mastermind Slack workspace. Get feedback, accountability, and connect with serious builders. Included with Pro membership.
         </p>
         <Link
-          href="/settings"
+          href="/settings/account"
           className="w-full flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-violet-500 to-purple-500 px-3 py-2.5 text-sm font-medium text-white hover:from-violet-600 hover:to-purple-600 transition-all"
         >
           Upgrade to Pro for access

@@ -204,7 +204,7 @@ export function UserMenu() {
             </Link>
 
             <Link
-              href="/settings"
+              href="/settings/account"
               onClick={() => setIsOpen(false)}
               className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-black/5 dark:hover:bg-white/5"
               style={{ color: "var(--foreground-muted)" }}
