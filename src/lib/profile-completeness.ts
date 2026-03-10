@@ -92,14 +92,6 @@ export const PROFILE_FIELDS: ProfileField[] = [
     category: "important",
     icon: "Globe",
   },
-  {
-    key: "status",
-    label: "Status",
-    description: "Share what you're currently working on",
-    weight: 2,
-    category: "important",
-    icon: "MessageCircle",
-  },
 ];
 
 export interface UserProfileData {
@@ -117,7 +109,6 @@ export interface UserProfileData {
   twitchUrl?: string | null;
   githubUrl?: string | null;
   producthuntUrl?: string | null;
-  status?: string | null;
 }
 
 export function calculateProfileCompleteness(user: UserProfileData): ProfileCompletenessResult {
@@ -213,9 +204,6 @@ function checkFieldComplete(fieldKey: string, user: UserProfileData): boolean {
 
     case "websiteUrl":
       return Boolean(user.websiteUrl?.trim());
-
-    case "status":
-      return Boolean(user.status?.trim());
 
     default:
       return false;
