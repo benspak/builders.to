@@ -12,7 +12,6 @@ import {
   Briefcase,
   Users,
   Code,
-  MessageCircle,
   X,
   Mail,
   Bell,
@@ -87,9 +86,6 @@ interface ProfileFormProps {
     profileBackgroundImage: string | null;
     calendarUrl: string | null;
     image: string | null;
-    // Status
-    status: string | null;
-    statusUpdatedAt: Date | null;
     // Intent flags
     openToWork: boolean;
     lookingForCofounder: boolean;
@@ -134,8 +130,6 @@ export function ProfileForm({ user }: ProfileFormProps) {
     calendarUrl: user.calendarUrl || "",
     // Profile image
     image: user.image || "",
-    // Status
-    status: user.status || "",
     // Intent flags
     openToWork: user.openToWork ?? false,
     lookingForCofounder: user.lookingForCofounder ?? false,
@@ -193,37 +187,6 @@ export function ProfileForm({ user }: ProfileFormProps) {
           Profile updated successfully!
         </div>
       )}
-
-      {/* Status - What are you working on? (FIRST) */}
-      <div className="p-4 rounded-xl bg-gradient-to-r from-orange-500/5 to-cyan-500/5 border border-orange-500/20">
-        <label htmlFor="status" className="flex items-center gap-2 text-sm font-medium text-zinc-300 mb-2">
-          <MessageCircle className="h-4 w-4 text-orange-500" />
-          What are you working on?
-        </label>
-        <div className="relative">
-          <input
-            id="status"
-            type="text"
-            maxLength={100}
-            placeholder="Building a new feature 🚀"
-            value={formData.status}
-            onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-            className="input pr-10"
-          />
-          {formData.status && (
-            <button
-              type="button"
-              onClick={() => setFormData({ ...formData, status: "" })}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          )}
-        </div>
-        <p className="mt-2 text-xs text-zinc-500">
-          {formData.status.length}/100 characters - This will be displayed prominently on your profile
-        </p>
-      </div>
 
       {/* Profile Photo */}
       <div className="p-4 rounded-xl bg-zinc-800/30 border border-zinc-700/50">

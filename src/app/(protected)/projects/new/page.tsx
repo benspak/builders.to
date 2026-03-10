@@ -107,7 +107,7 @@ export default async function NewProjectPage({ searchParams }: NewProjectPagePro
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Link
-                href="/settings/account"
+                href="/settings"
                 className="btn-primary"
               >
                 Complete Profile

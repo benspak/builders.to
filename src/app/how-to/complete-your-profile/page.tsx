@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import {
   User,
   Settings,
-  MessageCircle,
   Camera,
   ImageIcon,
   MapPin,
@@ -67,14 +66,13 @@ export default function CompleteYourProfilePage() {
             {[
               { href: "#introduction", label: "Introduction" },
               { href: "#access-settings", label: "Step 1: Access Settings" },
-              { href: "#status-update", label: "Step 2: Status Update" },
-              { href: "#profile-photo", label: "Step 3: Profile Photo & Background" },
-              { href: "#basic-info", label: "Step 4: Basic Information" },
-              { href: "#headline-bio", label: "Step 5: Headline & Bio" },
-              { href: "#social-profiles", label: "Step 6: Social Profiles" },
-              { href: "#featured-content", label: "Step 7: Featured Content" },
-              { href: "#intent-flags", label: "Step 8: Intent Flags" },
-              { href: "#calendar-link", label: "Step 9: Calendar Link" },
+              { href: "#profile-photo", label: "Step 2: Profile Photo & Background" },
+              { href: "#basic-info", label: "Step 3: Basic Information" },
+              { href: "#headline-bio", label: "Step 4: Headline & Bio" },
+              { href: "#social-profiles", label: "Step 5: Social Profiles" },
+              { href: "#featured-content", label: "Step 6: Featured Content" },
+              { href: "#intent-flags", label: "Step 7: Intent Flags" },
+              { href: "#calendar-link", label: "Step 8: Calendar Link" },
               { href: "#completeness-tips", label: "Profile Completeness Tips" },
             ].map((item) => (
               <a
@@ -144,40 +142,13 @@ export default function CompleteYourProfilePage() {
               </p>
             </section>
 
-            {/* Step 2: Status Update */}
-            <section id="status-update">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-zinc-800">
-                  <MessageCircle className="h-5 w-5 text-orange-500" />
-                </div>
-                <h2 className="text-2xl font-semibold text-white">Step 2: Status Update</h2>
-              </div>
-              <p className="leading-relaxed">
-                The <span className="text-orange-400">&quot;What are you working on?&quot;</span> field is
-                prominently displayed at the top of your profile. It&apos;s a great way to share your
-                current focus with the community.
-              </p>
-              <div className="mt-4 rounded-xl border border-zinc-800 bg-zinc-900/50 p-4">
-                <p className="text-sm font-medium text-zinc-300 mb-2">Good status examples:</p>
-                <ul className="space-y-1 text-sm text-zinc-400">
-                  <li>• &quot;Building a new AI-powered writing tool 🚀&quot;</li>
-                  <li>• &quot;Launching my SaaS next week!&quot;</li>
-                  <li>• &quot;Learning Rust and loving it&quot;</li>
-                  <li>• &quot;Open to freelance projects&quot;</li>
-                </ul>
-              </div>
-              <p className="mt-4 text-sm text-zinc-500">
-                Maximum 100 characters. Update it regularly to keep your profile fresh!
-              </p>
-            </section>
-
-            {/* Step 3: Profile Photo & Background */}
+            {/* Step 2: Profile Photo & Background */}
             <section id="profile-photo">
               <div className="flex items-center gap-3 mb-4">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-zinc-800">
                   <Camera className="h-5 w-5 text-orange-500" />
                 </div>
-                <h2 className="text-2xl font-semibold text-white">Step 3: Profile Photo & Background</h2>
+                <h2 className="text-2xl font-semibold text-white">Step 2: Profile Photo & Background</h2>
               </div>
 
               <h3 className="text-lg font-medium text-white mt-6 mb-3">Profile Photo</h3>
@@ -223,13 +194,13 @@ export default function CompleteYourProfilePage() {
               </ol>
             </section>
 
-            {/* Step 4: Basic Information */}
+            {/* Step 3: Basic Information */}
             <section id="basic-info">
               <div className="flex items-center gap-3 mb-4">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-zinc-800">
                   <User className="h-5 w-5 text-orange-500" />
                 </div>
-                <h2 className="text-2xl font-semibold text-white">Step 4: Basic Information</h2>
+                <h2 className="text-2xl font-semibold text-white">Step 3: Basic Information</h2>
               </div>
 
               <div className="space-y-6">
@@ -273,13 +244,13 @@ export default function CompleteYourProfilePage() {
               </div>
             </section>
 
-            {/* Step 5: Headline & Bio */}
+            {/* Step 4: Headline & Bio */}
             <section id="headline-bio">
               <div className="flex items-center gap-3 mb-4">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-zinc-800">
                   <FileText className="h-5 w-5 text-orange-500" />
                 </div>
-                <h2 className="text-2xl font-semibold text-white">Step 5: Headline & Bio</h2>
+                <h2 className="text-2xl font-semibold text-white">Step 4: Headline & Bio</h2>
               </div>
 
               <h3 className="text-lg font-medium text-white mt-6 mb-3">Headline (120 characters max)</h3>
@@ -327,13 +298,13 @@ export default function CompleteYourProfilePage() {
               </div>
             </section>
 
-            {/* Step 6: Social Profiles */}
+            {/* Step 5: Social Profiles */}
             <section id="social-profiles">
               <div className="flex items-center gap-3 mb-4">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-zinc-800">
                   <LinkIcon className="h-5 w-5 text-orange-500" />
                 </div>
-                <h2 className="text-2xl font-semibold text-white">Step 6: Social Profiles</h2>
+                <h2 className="text-2xl font-semibold text-white">Step 5: Social Profiles</h2>
               </div>
               <p className="leading-relaxed">
                 Connect your social media profiles to make it easy for others to find and follow you.
@@ -362,7 +333,7 @@ export default function CompleteYourProfilePage() {
               </div>
             </section>
 
-            {/* Step 7: Featured Content */}
+            {/* Step 6: Featured Content */}
             <section id="featured-content">
               <div className="flex items-center gap-3 mb-4">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-red-500 to-purple-600">
@@ -370,7 +341,7 @@ export default function CompleteYourProfilePage() {
                     <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
                   </svg>
                 </div>
-                <h2 className="text-2xl font-semibold text-white">Step 7: Featured Content</h2>
+                <h2 className="text-2xl font-semibold text-white">Step 6: Featured Content</h2>
               </div>
               <p className="leading-relaxed">
                 Showcase a video on your profile by adding a YouTube or Twitch video URL. This is a
@@ -387,13 +358,13 @@ export default function CompleteYourProfilePage() {
               </p>
             </section>
 
-            {/* Step 8: Intent Flags */}
+            {/* Step 7: Intent Flags */}
             <section id="intent-flags">
               <div className="flex items-center gap-3 mb-4">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-zinc-800">
                   <Briefcase className="h-5 w-5 text-orange-500" />
                 </div>
-                <h2 className="text-2xl font-semibold text-white">Step 8: Intent Flags</h2>
+                <h2 className="text-2xl font-semibold text-white">Step 7: Intent Flags</h2>
               </div>
               <p className="leading-relaxed">
                 Let the community know what you&apos;re looking for by enabling one or more intent flags.
@@ -441,13 +412,13 @@ export default function CompleteYourProfilePage() {
               </div>
             </section>
 
-            {/* Step 9: Calendar Link */}
+            {/* Step 8: Calendar Link */}
             <section id="calendar-link">
               <div className="flex items-center gap-3 mb-4">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-zinc-800">
                   <Calendar className="h-5 w-5 text-orange-500" />
                 </div>
-                <h2 className="text-2xl font-semibold text-white">Step 9: Calendar Link</h2>
+                <h2 className="text-2xl font-semibold text-white">Step 8: Calendar Link</h2>
               </div>
               <p className="leading-relaxed">
                 Add your Calendly, Cal.com, or other booking link to make it easy for others to
@@ -524,13 +495,6 @@ export default function CompleteYourProfilePage() {
                   <div className="flex items-center gap-3">
                     <LinkIcon className="h-5 w-5 text-cyan-500" />
                     <span className="text-zinc-300">Website URL</span>
-                  </div>
-                  <span className="text-cyan-400 font-medium">5 points</span>
-                </div>
-                <div className="flex items-center justify-between rounded-lg border border-zinc-800 bg-zinc-900/50 p-4">
-                  <div className="flex items-center gap-3">
-                    <MessageCircle className="h-5 w-5 text-cyan-500" />
-                    <span className="text-zinc-300">Status</span>
                   </div>
                   <span className="text-cyan-400 font-medium">5 points</span>
                 </div>

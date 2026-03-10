@@ -473,8 +473,6 @@ function getEventTypeDescription(type: string): string {
       return "project launch";
     case "PROJECT_ACQUIRED":
       return "project acquisition";
-    case "STATUS_UPDATE":
-      return "status update";
     case "PROJECT_STATUS_CHANGE":
       return "project update";
     case "PROJECT_CREATED":

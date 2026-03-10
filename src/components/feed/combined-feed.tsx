@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { UpdateItem } from "@/components/updates/update-item";
 import { MilestoneEventCard } from "./milestone-event-card";
-import { StatusUpdateCard } from "./status-update-card";
 import { ProjectStatusChangeCard } from "./project-status-change-card";
 import { ProjectCreatedCard } from "./project-created-card";
 import { JobPostedCard } from "./job-posted-card";
@@ -148,7 +147,6 @@ interface FeedEvent {
 type FeedItem =
   | { type: "update"; data: DailyUpdate }
   | { type: "milestone"; data: FeedEvent }
-  | { type: "status"; data: FeedEvent }
   | { type: "projectStatusChange"; data: FeedEvent }
   | { type: "projectCreated"; data: FeedEvent }
   | { type: "jobPosted"; data: FeedEvent }
@@ -180,9 +178,8 @@ export function CombinedFeed({
   const [isLoading, setIsLoading] = useState(false);
   // Separate different event types
   const milestoneEvents = feedEvents.filter(
-    (e) => e.type !== "STATUS_UPDATE" && e.type !== "PROJECT_STATUS_CHANGE" && e.type !== "PROJECT_CREATED" && e.type !== "JOB_POSTED" && e.type !== "USER_JOINED"
+    (e) => e.type !== "PROJECT_STATUS_CHANGE" && e.type !== "PROJECT_CREATED" && e.type !== "JOB_POSTED" && e.type !== "USER_JOINED"
   );
-  const statusEvents = feedEvents.filter((e) => e.type === "STATUS_UPDATE");
   const projectStatusChangeEvents = feedEvents.filter((e) => e.type === "PROJECT_STATUS_CHANGE");
   const projectCreatedEvents = feedEvents.filter((e) => e.type === "PROJECT_CREATED");
   const jobPostedEvents = feedEvents.filter((e) => e.type === "JOB_POSTED");
@@ -193,7 +190,6 @@ export function CombinedFeed({
   const feedItems: FeedItem[] = [
     ...updates.map((u) => ({ type: "update" as const, data: u })),
     ...milestoneEvents.map((e) => ({ type: "milestone" as const, data: e })),
-    ...statusEvents.map((e) => ({ type: "status" as const, data: e })),
     ...projectStatusChangeEvents.map((e) => ({ type: "projectStatusChange" as const, data: e })),
     ...projectCreatedEvents.map((e) => ({ type: "projectCreated" as const, data: e })),
     ...jobPostedEvents.map((e) => ({ type: "jobPosted" as const, data: e })),
@@ -237,19 +233,6 @@ export function CombinedFeed({
           update={item.data}
           currentUserId={currentUserId}
           showAuthor={showAuthor}
-        />
-      );
-    }
-
-    if (item.type === "status" && item.data.user) {
-      return (
-        <StatusUpdateCard
-          key={`status-${item.data.id}`}
-          event={{
-            ...item.data,
-            user: item.data.user,
-          }}
-          currentUserId={currentUserId}
         />
       );
     }

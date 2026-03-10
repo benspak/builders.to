@@ -1,5 +1,4 @@
 export { MilestoneEventCard } from "./milestone-event-card";
-export { StatusUpdateCard } from "./status-update-card";
 export { ProjectStatusChangeCard } from "./project-status-change-card";
 export { ProjectCreatedCard } from "./project-created-card";
 export { JobPostedCard } from "./job-posted-card";

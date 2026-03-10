@@ -104,9 +104,6 @@ export async function GET(
         calendarUrl: true,
         image: true,
         createdAt: true,
-        // Status
-        status: true,
-        statusUpdatedAt: true,
         // Intent flags
         openToWork: true,
         lookingForCofounder: true,
@@ -192,8 +189,6 @@ export async function PATCH(
       calendarUrl,
       // Profile image
       image,
-      // Status
-      status,
       // Intent flags
       openToWork,
       lookingForCofounder,
@@ -211,7 +206,7 @@ export async function PATCH(
     // Get current user data for comparison
     const currentUser = await prisma.user.findUnique({
       where: { id },
-      select: { slug: true, name: true, username: true, status: true },
+      select: { slug: true, name: true, username: true },
     });
 
     let slug = currentUser?.slug;
@@ -348,10 +343,6 @@ export async function PATCH(
       locationSlug = generateLocationSlug(trimmedCity);
     }
 
-    // Check if status is being updated to a new non-empty value
-    const trimmedStatus = status?.trim() || null;
-    const statusChanged = status !== undefined && trimmedStatus && trimmedStatus !== currentUser?.status;
-
     // Validate image URL if provided
     if (image !== undefined && image !== null && image !== "") {
       const trimmedImage = image.trim();
@@ -405,11 +396,6 @@ export async function PATCH(
         calendarUrl: calendarUrl?.trim() || null,
         // Profile background image - update if provided (allow null to clear)
         ...(profileBackgroundImage !== undefined && { profileBackgroundImage: profileBackgroundImage?.trim() || null }),
-        // Status - update if provided, allow clearing with empty string
-        ...(status !== undefined && {
-          status: trimmedStatus,
-          statusUpdatedAt: trimmedStatus ? new Date() : null,
-        }),
         // Intent flags - only update if explicitly provided
         ...(typeof openToWork === 'boolean' && { openToWork }),
         ...(typeof lookingForCofounder === 'boolean' && { lookingForCofounder }),
@@ -448,8 +434,6 @@ export async function PATCH(
         lookingForCofounder: true,
         availableForContract: true,
         openToMeeting: true,
-        status: true,
-        statusUpdatedAt: true,
         currentStreak: true,
         longestStreak: true,
         // Tech stack & matching
@@ -465,17 +449,6 @@ export async function PATCH(
         karmaLevel: true,
       },
     });
-
-    // Create a feed event if status was changed to a new value
-    if (statusChanged && trimmedStatus) {
-      await prisma.feedEvent.create({
-        data: {
-          type: "STATUS_UPDATE",
-          userId: id,
-          title: trimmedStatus,
-        },
-      });
-    }
 
     // Update email preferences if any are provided
     const hasEmailPreferenceUpdate =

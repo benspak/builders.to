@@ -117,7 +117,7 @@ export function generateWelcomeEmail({
                         </td>
                         <td>
                           <p style="margin: 0; font-size: 15px; font-weight: 600; color: #ffffff;">
-                            Post your first status update
+                            Post your first daily update
                           </p>
                           <p style="margin: 4px 0 0; font-size: 13px; color: #a1a1aa;">
                             Share your progress, wins, or just say hello. The community loves to celebrate with you!
@@ -217,7 +217,7 @@ Here's how to get started:
 2. Add your first project
    Share what you're building with the community. It can be a side project, startup, or anything you're excited about!
 
-3. Post your first status update
+3. Post your first daily update
    Share your progress, wins, or just say hello. The community loves to celebrate with you!
 
 View your profile: ${profileUrl}

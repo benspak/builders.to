@@ -18,7 +18,6 @@ import {
   Code,
   Flame,
   Star,
-  MessageCircle,
   ArrowLeft,
   Award,
   Target,
@@ -228,9 +227,6 @@ export default async function SlugPage({ params }: PageProps) {
       calendarUrl: true,
       image: true,
       createdAt: true,
-      // Status
-      status: true,
-      statusUpdatedAt: true,
       // Intent flags
       openToWork: true,
       lookingForCofounder: true,
@@ -665,14 +661,6 @@ export default async function SlugPage({ params }: PageProps) {
                       <p className="mt-1 text-zinc-400 text-sm sm:text-base max-w-xl">
                         {user.headline}
                       </p>
-                    )}
-
-                    {/* Status */}
-                    {user.status && (
-                      <div className="mt-3 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-orange-500/10 to-cyan-500/10 border border-orange-500/20 px-4 py-2">
-                        <MessageCircle className="h-4 w-4 text-orange-400 flex-shrink-0" />
-                        <span className="text-sm text-zinc-200">{user.status}</span>
-                      </div>
                     )}
 
                     {/* Intent Badges */}

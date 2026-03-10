@@ -45,13 +45,10 @@ export default async function SettingsPage() {
       calendarUrl: true,
       image: true,
       emailVerified: true,
-      // Status
-      status: true,
       // Tech stack & matching
       techStack: true,
       interests: true,
       buildingCategory: true,
-      statusUpdatedAt: true,
       // Intent flags
       openToWork: true,
       lookingForCofounder: true,

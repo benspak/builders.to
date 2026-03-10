@@ -148,8 +148,6 @@ async function FeedContent() {
           _count: { select: { likes: true, comments: true } },
         },
       }).then(async (events) => {
-        // For status update events, fetch the user info
-        const statusEvents = events.filter(e => e.type === "STATUS_UPDATE");
         // For project status change events and project created events, fetch the project info
         const projectStatusChangeEvents = events.filter(e => e.type === "PROJECT_STATUS_CHANGE");
         const projectCreatedEvents = events.filter(e => e.type === "PROJECT_CREATED");
@@ -157,38 +155,6 @@ async function FeedContent() {
         const jobPostedEvents = events.filter(e => e.type === "JOB_POSTED");
         // For user joined events, fetch user info with location
         const userJoinedEvents = events.filter(e => e.type === "USER_JOINED");
-        // Fetch users for status updates
-        let userMap = new Map<string, { id: string; name: string | null; displayName: string | null; firstName: string | null; lastName: string | null; image: string | null; slug: string | null; headline: string | null; companies: { id: string; name: string; slug: string | null; logo: string | null }[] }>();
-        if (statusEvents.length > 0) {
-          const userIds = Array.from(new Set(statusEvents.map(e => e.userId)));
-          const users = await prisma.user.findMany({
-            where: { id: { in: userIds } },
-            select: {
-              id: true,
-              name: true,
-              displayName: true,
-              firstName: true,
-              lastName: true,
-              image: true,
-              slug: true,
-              headline: true,
-              // Include first company with logo for display next to username
-              companies: {
-                where: { logo: { not: null } },
-                take: 1,
-                orderBy: { createdAt: "asc" },
-                select: {
-                  id: true,
-                  name: true,
-                  slug: true,
-                  logo: true,
-                },
-              },
-            },
-          });
-          userMap = new Map(users.map(u => [u.id, u]));
-        }
-
         // Fetch users for user joined events (with location data)
         let userJoinedMap = new Map<string, { id: string; name: string | null; displayName: string | null; firstName: string | null; lastName: string | null; image: string | null; slug: string | null; headline: string | null; city: string | null; state: string | null; country: string | null; companies: { id: string; name: string; slug: string | null; logo: string | null }[] }>();
         if (userJoinedEvents.length > 0) {
@@ -297,11 +263,9 @@ async function FeedContent() {
 
         return events.map(event => ({
           ...event,
-          user: event.type === "STATUS_UPDATE"
-            ? userMap.get(event.userId) || null
-            : event.type === "USER_JOINED"
-              ? userJoinedMap.get(event.userId) || null
-              : null,
+          user: event.type === "USER_JOINED"
+            ? userJoinedMap.get(event.userId) || null
+            : null,
           project: (event.type === "PROJECT_STATUS_CHANGE" || event.type === "PROJECT_CREATED") && event.projectId ? projectMap.get(event.projectId) || null : null,
           companyRole: event.type === "JOB_POSTED" && event.companyRoleId ? companyRoleMap.get(event.companyRoleId) || null : null,
         }));
